@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Erg Chebbi at 18:40 — Layered Dunes, Low Sun</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600&family=Marcellus&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#ffeeda; --ember:#ff9a4d; --rose:#ff5f7e;
+    --plum:#2a0f2c; --ink:#170716; --brass:#e8b070;
+    --disp:"Marcellus","Bodoni MT","Didot",Georgia,serif;
+    --meta:"Barlow Condensed","Oswald","Arial Narrow",system-ui,sans-serif;
+    --p1:0; --p2:0; --p3:0; --p4:0; --p5:0; --pd:0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:#170716;color:var(--cream);overflow:hidden;
+    font-family:var(--meta);-webkit-font-smoothing:antialiased}
+
+  .field{position:fixed;inset:0;overflow:hidden;background:linear-gradient(180deg,#1b0a24 0%,#3d1040 20%,#7c1c4d 40%,#bb2b50 56%,#e45f3c 70%,#f79a42 84%,#ffcd6b 100%)}
+  #sky{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .haze{position:absolute;left:-6%;right:-6%;height:26%;pointer-events:none;z-index:3;
+    background:linear-gradient(180deg,rgba(255,190,120,0) 0%,rgba(255,186,110,.30) 58%,rgba(255,214,150,.16) 100%);
+    mix-blend-mode:screen;filter:blur(2px)}
+  .grain{position:absolute;inset:0;pointer-events:none;z-index:9;opacity:.16;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/></filter><rect width='140' height='140' filter='url(%23n)'/></svg>")}
+
+  /* ---------- type over the sky ---------- */
+  .title{position:absolute;left:clamp(18px,3.4vw,58px);top:clamp(20px,5vh,66px);z-index:6;
+    mix-blend-mode:screen}
+  .title .k{font-size:clamp(9px,1vw,11px);letter-spacing:.5em;text-transform:uppercase;
+    color:rgba(255,238,218,.72);display:flex;align-items:center;gap:12px}
+  .title .k::before{content:"";width:clamp(30px,5vw,72px);height:1px;background:rgba(255,238,218,.55)}
+  .title h1{font-family:var(--disp);font-weight:400;font-size:clamp(38px,7.4vw,104px);
+    line-height:.94;letter-spacing:.005em;margin:14px 0 0;
+    text-shadow:0 3px 34px rgba(60,10,40,.5)}
+  .title h1 i{font-style:italic;color:var(--brass)}
+  .title p{margin-top:16px;max-width:38ch;font-size:clamp(12.5px,1.15vw,15px);line-height:1.75;
+    color:rgba(255,238,218,.86);text-shadow:0 2px 18px rgba(60,10,40,.6)}
+
+  .station{position:absolute;right:clamp(18px,3.4vw,58px);top:clamp(20px,4vh,52px);z-index:6;
+    text-align:right;font-size:10px;letter-spacing:.28em;text-transform:uppercase;line-height:2.1;
+    color:rgba(255,238,218,.6);mix-blend-mode:screen}
+  .station b{display:block;font-weight:500;color:var(--brass);letter-spacing:.34em}
+
+  /* ---------- compass ---------- */
+  .instr{position:absolute;right:clamp(16px,3vw,52px);bottom:clamp(16px,3vh,44px);z-index:7;
+    display:flex;align-items:center;gap:16px}
+  .read{text-align:right;font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;
+    color:rgba(255,238,218,.62);line-height:2.15}
+  .read b{display:block;font-weight:500;font-size:15px;letter-spacing:.16em;color:var(--cream)}
+  .read .bars{display:flex;gap:3px;justify-content:flex-end;margin-top:6px}
+  .read .bars i{width:16px;height:3px;background:rgba(255,238,218,.2);position:relative;overflow:hidden}
+  .read .bars i::after{content:"";position:absolute;left:0;top:0;bottom:0;width:var(--w,20%);
+    background:var(--brass)}
+  .rose{width:clamp(84px,9vw,120px);height:clamp(84px,9vw,120px);flex:0 0 auto;filter:drop-shadow(0 8px 18px rgba(30,4,20,.6))}
+
+  .caption{position:absolute;left:clamp(18px,3.4vw,58px);bottom:clamp(16px,3vh,44px);z-index:6;
+    max-width:30ch;font-size:11.5px;line-height:1.85;color:rgba(255,238,218,.7);
+    border-left:1px solid rgba(255,180,120,.4);padding-left:14px}
+  .caption b{color:var(--brass);font-weight:500;letter-spacing:.22em;text-transform:uppercase;font-size:9.5px;display:block;margin-bottom:5px}
+
+  .hint{position:absolute;left:50%;transform:translateX(-50%);bottom:clamp(12px,1.6vh,22px);z-index:7;
+    font-size:9px;letter-spacing:.34em;text-transform:uppercase;color:rgba(255,238,218,.45);
+    display:flex;gap:20px;align-items:center;white-space:nowrap}
+  .hint span{display:flex;align-items:center;gap:7px}
+  .hint span::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--brass)}
+
+  @media (max-width:820px){
+    .caption{display:none}
+    .instr{gap:10px}
+    .rose{width:70px;height:70px}
+  }
+  @media (max-width:460px){
+    .station{display:none}
+    .title p{display:none}
+    .read .bars{display:none}
+  }
+  @keyframes walk{0%,100%{transform:rotate(9deg)}50%{transform:rotate(-11deg)}}
+  @keyframes walk2{0%,100%{transform:rotate(-9deg)}50%{transform:rotate(10deg)}}
+  @keyframes march{from{transform:translateX(-260px)}to{transform:translateX(1900px)}}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.2px)}}
+  .camel .lf{transform-origin:5px 0;animation:walk 1.05s ease-in-out infinite}
+  .camel .rf{transform-origin:5px 0;animation:walk2 1.05s ease-in-out infinite}
+  .caravan{animation:march 215s linear infinite}
+  .caravan .body{animation:bob 1.05s ease-in-out infinite}
+</style>
+</head>
+<body>
+<div class="field">
+  <svg id="sky" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0"    stop-color="#1b0a24"/>
+        <stop offset=".17"  stop-color="#3d1040"/>
+        <stop offset=".36"  stop-color="#7c1c4d"/>
+        <stop offset=".53"  stop-color="#bb2b50"/>
+        <stop offset=".66"  stop-color="#e45f3c"/>
+        <stop offset=".78"  stop-color="#f79a42"/>
+        <stop offset=".88"  stop-color="#ffcd6b"/>
+        <stop offset="1"    stop-color="#e8834a"/>
+      </linearGradient>
+      <radialGradient id="sunG" cx=".5" cy=".5" r=".5">
+        <stop offset="0" stop-color="#fff6d8"/>
+        <stop offset=".34" stop-color="#ffdc8a" stop-opacity=".95"/>
+        <stop offset=".62" stop-color="#ff9a4a" stop-opacity=".42"/>
+        <stop offset="1" stop-color="#ff6a3c" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="glowG" cx=".5" cy=".5" r=".5">
+        <stop offset="0" stop-color="#ffbe72" stop-opacity=".72"/>
+        <stop offset=".45" stop-color="#ff8a4e" stop-opacity=".26"/>
+        <stop offset="1" stop-color="#ff7a4a" stop-opacity="0"/>
+      </radialGradient>
+      <filter id="shimmer" x="-4%" y="-40%" width="108%" height="180%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.004 0.028" numOctaves="2" seed="9" result="n"/>
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="4" xChannelSelector="R" yChannelSelector="G"/>
+      </filter>
+      <filter id="soft" x="-6%" y="-6%" width="112%" height="112%">
+        <feGaussianBlur id="fb" stdDeviation="1.1"/>
+      </filter>
+    </defs>
+
+    <rect width="1600" height="900" fill="url(#skyG)"/>
+    <g id="cloudband" opacity=".5"></g>
+    <ellipse cx="1090" cy="628" rx="470" ry="330" fill="url(#glowG)"/>
+    <circle cx="1090" cy="628" r="190" fill="url(#sunG)"/>
+    <circle id="sundisc" cx="1090" cy="628" r="41" fill="#fff3cf" opacity=".96"/>
+    <g id="horizonShimmer" filter="url(#shimmer)"></g>
+    <g id="layers"></g>
+  </svg>
+  <div class="haze" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+</div>
+
+<header class="title">
+  <span class="k">Erg Chebbi &middot; Merzouga &middot; Morocco</span>
+  <h1>Five Ridges<br>Before <i>Darkness</i></h1>
+  <p>The sun drops behind the third erg in about eleven minutes. What is left is five parallel
+    ridges, each one ten minutes of walking apart, and the light sliding off them as if poured.</p>
+</header>
+
+<div class="station" aria-hidden="true">
+  <b>18:40:12</b>
+  27.8615&deg; N &middot; 5.6220&deg; W<br>
+  Air 31&deg;C &middot; Wind 6 kn SW
+</div>
+
+<div class="caption">
+  <b>Field note 114</b>
+  Windward faces hold the day's heat and read bright; slip faces fall into shadow within
+  seconds of the crest. A caravan crossing the second ridge needs eleven minutes to clear it.
+</div>
+
+<div class="instr">
+  <div class="read">
+    Heading
+    <b id="hdg">214&deg; SW</b>
+    <div class="bars" aria-hidden="true">
+      <i></i><i></i><i></i><i></i><i></i>
+    </div>
+  </div>
+  <svg class="rose" viewBox="0 0 120 120" role="img" aria-label="Compass rose showing heading">
+    <circle cx="60" cy="60" r="52" fill="rgba(24,4,20,.42)" stroke="rgba(255,190,120,.5)" stroke-width="1"/>
+    <circle cx="60" cy="60" r="44" fill="none" stroke="rgba(255,190,120,.22)" stroke-width="1"/>
+    <g id="ticks" stroke="rgba(255,220,180,.55)"></g>
+    <g font-family="Barlow Condensed, sans-serif" font-size="9" letter-spacing="1"
+       fill="rgba(255,232,200,.8)" text-anchor="middle">
+      <text x="60" y="18">N</text><text x="104" y="64">E</text>
+      <text x="60" y="110">S</text><text x="16" y="64">W</text>
+    </g>
+    <g id="needle">
+      <path d="M60 22 L67 62 L60 56 L53 62 Z" fill="#ffd08a"/>
+      <path d="M60 98 L53 58 L60 64 L67 58 Z" fill="rgba(255,238,218,.42)"/>
+    </g>
+    <circle cx="60" cy="60" r="3.4" fill="#ff9a4d"/>
+  </svg>
+</div>
+
+<div class="hint">
+  <span>Move to parallax</span><span>Scroll to dolly</span>
+</div>
+
+<noscript>
+  <div style="position:relative;z-index:20;padding:26px;font-family:Georgia,serif;max-width:56ch;
+       background:rgba(20,4,18,.82);border:1px solid rgba(255,190,120,.3)">
+    <h2 style="font-size:24px;font-weight:400;color:#ffcd6b">Five Ridges Before Darkness</h2>
+    <p style="margin-top:12px;line-height:1.8;color:#ffeeda">A static study of the parallel dune
+    ridges of the Erg Chebbi near Merzouga at 18:40 local time. The parallax, the heat shimmer and
+    the crossing caravan are drawn live with JavaScript; without it you are looking at the sky.</p>
+  </div>
+</noscript>
+
+<script>
+(function(){
+  "use strict";
+  var svg = document.getElementById("sky");
+  var layersG = document.getElementById("layers");
+  var horizonG = document.getElementById("horizonShimmer");
+  var cloudG = document.getElementById("cloudband");
+  var ticksG = document.getElementById("ticks");
+  var needle = document.getElementById("needle");
+  var hdgTxt = document.getElementById("hdg");
+  var bars = document.querySelectorAll(".read .bars i");
+  var W = 1600, H = 900, STEP = 8;
+
+  function mul(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; var t=Math.imul(a^a>>>15,1|a);
+    t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+
+  /* ---------- ridge generator ---------- */
+  function ridgeGen(seed, oct){
+    var r = mul(seed), ph=[], fr=[], am=[], tot=0;
+    for (var o=0;o<oct;o++){
+      ph.push(r()*Math.PI*2);
+      fr.push(0.00085*Math.pow(1.72,o));
+      am.push(Math.pow(0.58,o)); tot += am[o];
+    }
+    return function(x){
+      var s=0;
+      for (var o=0;o<oct;o++) s += am[o]*Math.sin(x*fr[o]+ph[o]) + am[o]*0.45*Math.sin(x*fr[o]*2.7+ph[o]*1.7);
+      return s/tot*0.5;
+    };
+  }
+
+  var LAYERS = [
+    {y:596, amp:26, seed:11, oct:2, blur:1.6, face:"#a45a72", lit:"#ffd9a6", sh:"#5e2745", rip:0.10, pf:0.05, pfy:0.012, op:0.96, rim:0.55},
+    {y:644, amp:40, seed:29, oct:3, blur:1.1, face:"#8a3f5c", lit:"#ffc98d", sh:"#431a34", rip:0.13, pf:0.10, pfy:0.024, op:0.98, rim:0.7},
+    {y:706, amp:58, seed:47, oct:3, blur:0.7, face:"#5d2440", lit:"#ffb877", sh:"#2a0d22", rip:0.15, pf:0.18, pfy:0.042, op:1,   rim:0.85},
+    {y:790, amp:84, seed:83, oct:4, blur:0.4, face:"#380f26", lit:"#e08a58", sh:"#17060f", rip:0.13, pf:0.30, pfy:0.066, op:1,   rim:1},
+    {y:904, amp:120,seed:131,oct:4, blur:0,   face:"#1d0716", lit:"#b0603f", sh:"#0d0309", rip:0.10, pf:0.46, pfy:0.100, op:1,   rim:1}
+  ];
+
+  function buildLayer(cfg, idx){
+    var r = ridgeGen(cfg.seed, cfg.oct);
+    var gid = "L"+idx;
+    var pts = [];
+    for (var x=0;x<=W;x+=STEP){ pts.push([x, cfg.y - r(x)*cfg.amp]); }
+
+    var body = "M0,"+pts[0][1].toFixed(1);
+    for (var i=1;i<pts.length;i++) body += " L"+pts[i][0].toFixed(1)+","+pts[i][1].toFixed(1);
+    body += " L"+W+","+H+" L0,"+H+" Z";
+
+    /* slip-face shadow: the steep side of every ridge */
+    var sh = "M"+pts[0][0]+","+pts[0][1].toFixed(1);
+    for (var j=1;j<pts.length;j++){
+      var p = pts[j], pp = pts[j-1], pn = pts[j+1]||p;
+      var slope = (pn[1]-pp[1]);
+      var d = slope > 0 ? Math.min(46, cfg.amp*0.55) : 2;
+      sh += " L"+p[0].toFixed(1)+","+(p[1]+d).toFixed(1);
+    }
+    sh += " L"+W+","+H+" L0,"+H+" Z";
+
+    /* rippled sand texture */
+    var rip = "";
+    var rows = 16;
+    for (var rI=0;rI<rows;rI++){
+      var off = 10 + rI*(cfg.amp*0.42+8);
+      var d2 = "", wob = 0.6 + rI*0.09;
+      for (var q=0;q<pts.length;q++){
+        var yy = pts[q][1] + off + Math.sin(pts[q][0]*0.021 + rI*0.8)*wob*2.2
+                 + Math.sin(pts[q][0]*0.006 + rI*0.4)*5;
+        d2 += (q?" L":"M")+pts[q][0].toFixed(1)+","+yy.toFixed(1);
+      }
+      var a = (cfg.rip * (1 - rI/rows)).toFixed(3);
+      rip += '<path d="'+d2+'" fill="none" stroke="#ffe0b4" stroke-opacity="'+a+'" stroke-width="1.1"/>';
+      var d3 = "";
+      for (var q2=0;q2<pts.length;q2++){
+        var yy2 = pts[q2][1] + off + 1.8;
+        d3 += (q2?" L":"M")+pts[q2][0].toFixed(1)+","+yy2.toFixed(1);
+      }
+      rip += '<path d="'+d3+'" fill="none" stroke="#000000" stroke-opacity="'+(a*0.75).toFixed(3)+'" stroke-width="1"/>';
+    }
+
+    var crest = "M"+pts[0][0]+","+pts[0][1].toFixed(1);
+    for (var c=1;c<pts.length;c++) crest += " L"+pts[c][0].toFixed(1)+","+pts[c][1].toFixed(1);
+
+    return '<g class="l" id="'+gid+'" data-pf="'+cfg.pf+'" data-pfy="'+cfg.pfy+'" opacity="'+cfg.op+'">'+
+      '<defs>'+
+        '<linearGradient id="fg'+idx+'" x1="0" y1="0" x2="0" y2="1">'+
+          '<stop offset="0" stop-color="'+cfg.lit+'" stop-opacity=".9"/>'+
+          '<stop offset=".14" stop-color="'+cfg.face+'"/>'+
+          '<stop offset="1" stop-color="'+cfg.sh+'"/>'+
+        '</linearGradient>'+
+        '<clipPath id="clip'+idx+'"><path d="'+body+'"/></clipPath>'+
+        (cfg.blur>0?'<filter id="bl'+idx+'"><feGaussianBlur stdDeviation="'+cfg.blur+'"/></filter>':'')+
+      '</defs>'+
+      '<path d="'+body+'" fill="url(#fg'+idx+')" '+(cfg.blur>0?'filter="url(#bl'+idx+')"':'')+'/>'+
+      '<g clip-path="url(#clip'+idx+')">'+rip+'</g>'+
+      '<path d="'+sh+'" fill="'+cfg.sh+'" opacity=".92"/>'+
+      '<path d="'+crest+'" fill="none" stroke="'+cfg.lit+'" stroke-opacity="'+cfg.rim+'" stroke-width="2.1" stroke-linecap="round"/>'+
+      '<path d="'+crest+'" fill="none" stroke="#fff6e2" stroke-opacity="'+(cfg.rim*0.4).toFixed(2)+'" stroke-width="0.7"/>'+
+    '</g>';
+  }
+
+  var html = "";
+  for (var i=LAYERS.length-1;i>=0;i--) html += buildLayer(LAYERS[i], i);
+  layersG.innerHTML = html;
+
+  /* the far ridge lives inside the shimmer filter so heat distorts it */
+  (function(){
+    var l0 = document.getElementById("L0");
+    if (l0) horizonG.appendChild(l0);
+    /* sliver of dune + sun glow so the filter has something to chew */
+    var sl = document.createElementNS("http://www.w3.org/2000/svg","path");
+    sl.setAttribute("d","M0,600 L"+W+",586 L"+W+",640 L0,660 Z");
+    sl.setAttribute("fill","#8a3f5c"); sl.setAttribute("opacity",".35");
+    horizonG.insertBefore(sl, horizonG.firstChild);
+  })();
+
+  /* ---------- cloud bands ---------- */
+  (function(){
+    var r = mul(5), s = "";
+    for (var i=0;i<11;i++){
+      var y = 120 + r()*400, w = 180 + r()*460, x = r()*W - 100, h = 5 + r()*13;
+      s += '<rect x="'+x.toFixed(0)+'" y="'+y.toFixed(0)+'" width="'+w.toFixed(0)+'" height="'+h.toFixed(0)+
+           '" rx="'+(h/2).toFixed(1)+'" fill="#ffd7a8" opacity="'+(0.05+r()*0.16).toFixed(3)+'"/>';
+    }
+    cloudG.innerHTML = s;
+  })();
+
+  /* ---------- ticks ---------- */
+  (function(){
+    var s = "";
+    for (var a=0;a<360;a+=15){
+      var r1 = a%45===0?44:48, x1=60+Math.sin(a*Math.PI/180)*r1, y1=60-Math.cos(a*Math.PI/180)*r1;
+      var r2 = 51, x2=60+Math.sin(a*Math.PI/180)*r2, y2=60-Math.cos(a*Math.PI/180)*r2;
+      s += '<line x1="'+x1.toFixed(1)+'" y1="'+y1.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+
+           '" stroke-width="'+(a%45===0?1.4:0.7)+'"/>';
+    }
+    ticksG.innerHTML = s;
+  })();
+
+  /* ---------- caravan ---------- */
+  (function(){
+    var defs = '<defs><g id="camel">'+
+      '<g class="body">'+
+        '<ellipse cx="0" cy="0" rx="16" ry="8.4"/>'+
+        '<ellipse cx="-4" cy="-6.4" rx="8.6" ry="6.2"/>'+
+        '<ellipse cx="7" cy="-5.6" rx="7.4" ry="5.4"/>'+
+        '<path d="M12,-3 L15,-19 Q16,-23 19,-22 L21,-20 L18,-17 L16.5,-2 Z"/>'+
+        '<ellipse cx="20.4" cy="-21.6" rx="6.4" ry="3.5" transform="rotate(-8 20.4 -21.6)"/>'+
+        '<path d="M-15,-2 L-19,2 L-16,3 Z"/>'+
+      '</g>'+
+      '<g class="lf"><rect x="-10" y="0" width="3.4" height="19" rx="1.7"/></g>'+
+      '<g class="rf"><rect x="9" y="0" width="3.4" height="19" rx="1.7"/></g>'+
+      '<g class="lf" style="animation-delay:-.5s"><rect x="-4" y="0" width="3.4" height="19" rx="1.7"/></g>'+
+      '<g class="rf" style="animation-delay:-.5s"><rect x="13" y="0" width="3.4" height="19" rx="1.7"/></g>'+
+      '</g></defs>';
+    svg.insertAdjacentHTML("afterbegin", defs);
+    var marks = "";
+    var n = 5, sc = [1,1.05,.96,1.02,.9];
+    for (var i=0;i<n;i++){
+      var x = i*46, s = sc[i];
+      var rider = (i===1||i===3) ?
+        '<g transform="translate(-4,-14) scale(.9)"><ellipse cx="0" cy="0" rx="2.4" ry="4.6"/>'+
+        '<circle cx="0" cy="-6.4" r="2.5"/><path d="M1,-2 L6,4" stroke-width="1.6" fill="none"/></g>' : '';
+      marks += '<g transform="translate('+x+',0) scale('+s+')"><use href="#camel"/>'+
+               '<ellipse cx="0" cy="19.5" rx="18" ry="2.4" fill="#17060f" opacity=".28"/>' + rider + '</g>';
+      if (i<n-1) marks += '<path d="M'+(x+18)+',6 L'+(x+46-18)+',6" stroke-width="1" fill="none" opacity=".55"/>';
+    }
+    var g = document.createElementNS("http://www.w3.org/2000/svg","g");
+    g.setAttribute("class","caravan");
+    g.setAttribute("fill","#1b0512");
+    g.innerHTML = marks;
+    var target = document.getElementById("L2");
+    (target || layersG).insertBefore(g, target ? target.nextSibling : layersG.firstChild);
+  })();
+
+  /* ---------- parallax ---------- */
+  var px=0, py=0, dolly=0, targetX=0, targetY=0, targetD=0, heading=0, tHead=0;
+  var lnodes = layersG.querySelectorAll(".l");
+
+  window.addEventListener("pointermove", function(e){
+    targetX = (e.clientX/window.innerWidth - 0.5)*2;
+    targetY = (e.clientY/window.innerHeight - 0.5)*2;
+    tHead = targetX;
+  }, {passive:true});
+  window.addEventListener("wheel", function(e){
+    targetD = Math.max(-1, Math.min(1, targetD + e.deltaY*0.0016));
+  }, {passive:true});
+
+  var CARDS = {N:"N",NE:"NE",E:"E",SE:"SE",S:"S",SW:"SW",W:"W",NW:"NW"};
+  var t0 = performance.now();
+  function frame(now){
+    var t = (now - t0)/1000;
+    px += (targetX-px)*0.055;
+    py += (targetY-py)*0.055;
+    dolly += (targetD-dolly)*0.05;
+    heading += (tHead*170 - heading)*0.06;
+
+    for (var i=0;i<lnodes.length;i++){
+      var n = lnodes[i], pf = +n.getAttribute("data-pf"), pfy = +n.getAttribute("data-pfy");
+      n.setAttribute("transform","translate("+(-px*pf*170).toFixed(2)+","+(-py*pfy*140 - dolly*pfy*300).toFixed(2)+")");
+    }
+    var cv = layersG.querySelector(".caravan");
+    if (cv) cv.setAttribute("transform","translate("+(-px*0.18*170).toFixed(1)+","+(-py*0.042*140).toFixed(1)+")");
+    var sun = document.getElementById("sundisc");
+    if (sun){ sun.setAttribute("cx", 1090 + px*22); }
+
+    var disp = document.querySelector("#shimmer feDisplacementMap");
+    if (disp) disp.setAttribute("scale", (3.2 + Math.sin(t*1.6)*2.6 + Math.sin(t*4.1)*1.3).toFixed(2));
+
+    var deg = ((360 + (heading%360+360)%360) - 180 + 360) % 360;
+    needle.setAttribute("transform","rotate("+deg.toFixed(1)+" 60 60)");
+    var card = Math.round(deg/45)%8;
+    hdgTxt.textContent = Math.round(deg)+"&deg; " + CARDS[card];
+    for (var b=0;b<bars.length;b++){
+      var v = Math.min(100, Math.max(6, (b+1)/bars.length*100 * (0.55 + Math.abs(px)*0.5)));
+      bars[b].style.setProperty("--w", v.toFixed(0)+"%");
+    }
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

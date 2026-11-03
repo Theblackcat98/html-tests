@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atelier Briolet — Marquetry &amp; Grain, Commode Vitraine № 0412</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   ATELIER BRIOLET — MARQUETRY & GRAIN
+   Technique: layered repeating-linear-gradient grain warped by an
+   inline feTurbulence displacement, clip-path intarsia, satin sheen
+   via blend modes. Skeleton: pinned split (cabinet | identity).
+   ============================================================ */
+:root{
+  --ink:#1c1611;
+  --ink2:#4a3c2e;
+  --paper:#efe7d8;
+  --paper2:#e3d8c4;
+  --brass:#b08640;
+  --brass2:#e2c583;
+  --gloss:.42;        /* polish */
+  --sheenX:50%;
+  --sheenA:104deg;
+  --mark:rgba(176,134,64,0);
+  --ox:0px; --oy:0px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--paper);color:var(--ink);
+  font-family:"Jost","Helvetica Neue",Arial,sans-serif;
+  font-weight:300;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+.serif{font-family:"Cormorant Garamond",Georgia,serif}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ================= left: the cabinet ================= */
+.split{
+  display:grid;grid-template-columns:minmax(0,1.02fr) minmax(320px,.98fr);
+  min-height:100dvh;
+}
+@media (max-width:960px){ .split{grid-template-columns:1fr} }
+
+.left{
+  position:relative;padding:clamp(1.2rem,3vw,2.6rem) clamp(1rem,2.4vw,2.2rem) 3rem;
+  background:
+    radial-gradient(120% 90% at 50% -8%, #f6f0e4 0%, #e6dcc9 52%, #d5c7ae 100%);
+  display:flex;flex-direction:column;gap:1rem;
+  border-right:1px solid rgba(28,22,17,.14);
+}
+.roomwall{
+  position:absolute;inset:0;pointer-events:none;opacity:.5;
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.025) 0 1px, transparent 1px 5px),
+    repeating-linear-gradient(0deg, rgba(0,0,0,.02) 0 1px, transparent 1px 6px);
+}
+.left .lbl{
+  position:relative;font-size:.6rem;letter-spacing:.34em;text-transform:uppercase;
+  color:var(--ink2);
+}
+.left .lbl b{color:var(--brass);font-weight:500}
+
+/* ---------- the carcass ---------- */
+.cab{
+  position:relative;margin:0 auto;width:min(100%,520px);
+  filter:drop-shadow(0 34px 42px rgba(40,26,12,.34));
+}
+/* carcass frame: walnut */
+.frame{
+  position:relative;padding:clamp(10px,2vw,20px);
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.14) 0 1px, rgba(255,255,255,.05) 1px 3px, transparent 3px 11px),
+    linear-gradient(100deg,#4a3320,#2f2013 46%,#3f2b1a);
+  box-shadow:
+    inset 0 2px 0 rgba(226,197,131,.35),
+    inset 0 -3px 6px rgba(0,0,0,.6),
+    inset 2px 0 0 rgba(226,197,131,.16),
+    inset -2px 0 0 rgba(0,0,0,.4);
+  border-radius:3px;
+}
+/* cornice */
+.cornice{
+  height:clamp(14px,2.2vw,24px);
+  background:linear-gradient(180deg,#6a4a2c,#3a2716 62%,#241708);
+  border-radius:3px 3px 0 0;
+  box-shadow:inset 0 1px 0 rgba(236,210,150,.5), 0 4px 8px -2px rgba(0,0,0,.6);
+  margin:-4px -2px 0;
+}
+.stack{display:flex;flex-direction:column;gap:clamp(7px,1.1vw,12px);padding:clamp(8px,1.4vw,14px) 0}
+
+/* ---------- one drawer front ---------- */
+.drw{
+  position:relative;overflow:hidden;isolation:isolate;
+  border-radius:2px;
+  box-shadow:
+    0 6px 14px -6px rgba(0,0,0,.6),
+    inset 0 1px 0 rgba(255,232,190,.28),
+    inset 0 -1px 0 rgba(0,0,0,.5);
+  transition:transform .5s cubic-bezier(.2,1.2,.3,1), box-shadow .4s;
+  cursor:default;
+}
+.drw.wide{aspect-ratio:16/9}
+.drw.half{aspect-ratio:22/9}
+.drw .field{position:absolute;inset:0}
+/* the veneer field: cross-banded, then figured */
+.drw .grain{
+  position:absolute;inset:0;z-index:1;
+  background:
+    repeating-linear-gradient(93deg,
+      rgba(0,0,0,.13) 0 1px, rgba(255,255,255,.07) 1px 3px, transparent 3px 9px),
+    repeating-linear-gradient(87deg,
+      rgba(74,44,18,.20) 0 2px, transparent 2px 15px),
+    repeating-linear-gradient(90deg,
+      rgba(255,236,200,.10) 0 26%, rgba(58,34,14,.16) 26% 50%,
+      rgba(255,236,200,.08) 50% 76%, rgba(58,34,14,.14) 76% 100%),
+    linear-gradient(168deg,#c8a066,#a97c40 44%,#8a5f2c 72%,#b5894c);
+}
+.drw .grain.figured{
+  background:
+    repeating-linear-gradient(93deg,
+      rgba(0,0,0,.11) 0 1px, rgba(255,255,255,.08) 1px 4px, transparent 4px 13px),
+    repeating-linear-gradient(88deg,
+      rgba(74,44,18,.16) 0 3px, transparent 3px 21px),
+    linear-gradient(172deg,#d8b478,#b0854a 50%,#8a6130);
+}
+.drw .grain.dark{
+  background:
+    repeating-linear-gradient(91deg, rgba(0,0,0,.3) 0 1px, rgba(255,255,255,.05) 1px 3px, transparent 3px 12px),
+    linear-gradient(170deg,#4b3520,#2c1d11 56%,#1d1309);
+}
+/* turbulence warp: the grain is never a straight line */
+.grainwarp{position:absolute;inset:-6%;z-index:2;pointer-events:none;
+  filter:url(#woodDisp);mix-blend-mode:overlay;opacity:.55}
+
+/* ---------- intarsia: sunburst ---------- */
+.rosette{position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);
+  width:64%;aspect-ratio:1;z-index:4}
+.rosette .wedge{
+  position:absolute;inset:0;clip-path:polygon(50% 50%,100% 0%,50% 0%);
+  filter:drop-shadow(0 0 0 rgba(0,0,0,0));
+  transition:transform .45s cubic-bezier(.2,1.2,.3,1), filter .3s;
+}
+.rosette .wedge:nth-child(1),.rosette .wedge:nth-child(5){background:linear-gradient(120deg,#2c1d11,#523a22)}
+.rosette .wedge:nth-child(2),.rosette .wedge:nth-child(6){background:linear-gradient(120deg,#e6cfa4,#c9a970)}
+.rosette .wedge:nth-child(3),.rosette .wedge:nth-child(7){background:linear-gradient(120deg,#6d4a24,#3a2716)}
+.rosette .wedge:nth-child(4),.rosette .wedge:nth-child(8){background:linear-gradient(120deg,#4a2b3a,#241722)}
+/* fine bevel on every inlay piece */
+.rosette .wedge::after{
+  content:"";position:absolute;inset:0;
+  box-shadow:inset 0 1px 0 rgba(255,238,205,.45), inset 1px 0 0 rgba(255,238,205,.2),
+             inset 0 -1px 0 rgba(0,0,0,.45);
+  clip-path:inherit;
+}
+.disc{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:23%;aspect-ratio:1;border-radius:50%;z-index:6;
+  background:radial-gradient(circle at 35% 30%, #3a2413, #150d06 70%);
+  box-shadow:0 0 0 2px var(--brass2), 0 0 0 3px #6d5223, inset 0 0 12px rgba(0,0,0,.9);
+}
+.disc::after{
+  content:"";position:absolute;inset:26%;border-radius:50%;
+  background:conic-gradient(from 0deg,#e2c583,#8a6a2f,#e2c583,#8a6a2f,#e2c583);
+  opacity:.85;
+}
+.rosette.on .wedge{filter:drop-shadow(0 0 8px rgba(226,197,131,.75))}
+.rosette.on .disc{box-shadow:0 0 0 2px #fff0cf, 0 0 22px 4px rgba(226,197,131,.7), inset 0 0 12px rgba(0,0,0,.9)}
+
+/* ---------- intarsia: leaf champêtre ---------- */
+.leafpanel{position:absolute;left:6%;right:6%;top:14%;bottom:16%;z-index:4}
+.leafpanel .stem{
+  position:absolute;left:8%;right:8%;top:52%;height:2px;
+  background:linear-gradient(90deg,transparent,#2c1d11 12%,#2c1d11 88%,transparent);
+}
+.leafpanel .lf{
+  position:absolute;width:17%;height:34%;
+  background:linear-gradient(150deg,#d9b57e,#a5773c);
+  box-shadow:inset 0 1px 0 rgba(255,240,210,.5), inset 0 -1px 0 rgba(0,0,0,.4);
+  transform-origin:0 100%;
+  transition:filter .3s, transform .45s cubic-bezier(.2,1.2,.3,1);
+}
+.leafpanel .lf.dark{background:linear-gradient(150deg,#4a2f1c,#2a190d)}
+.leafpanel .lf.viol{background:linear-gradient(150deg,#5c3348,#2e1a28)}
+.leafpanel .lf.bf{
+  background:none;border-radius:0 60% 0 60%;
+  box-shadow:inset 0 1px 0 rgba(255,240,210,.45);
+  border:1px solid rgba(255,240,210,.35);
+}
+.leafpanel.on .lf{filter:drop-shadow(0 0 7px rgba(226,197,131,.8))}
+
+/* ---------- stringing / edge banding ---------- */
+.string{
+  position:absolute;z-index:7;pointer-events:none;
+  box-shadow:0 0 0 1px rgba(90,62,26,.7);
+}
+.string.t{left:0;right:0;top:0;height:4px;background:linear-gradient(180deg,#efe0b6,#a9873f)}
+.string.b{left:0;right:0;bottom:0;height:4px;background:linear-gradient(0deg,#efe0b6,#a9873f)}
+.string.l{top:0;bottom:0;left:0;width:4px;background:linear-gradient(90deg,#efe0b6,#a9873f)}
+.string.r{top:0;bottom:0;right:0;width:4px;background:linear-gradient(270deg,#efe0b6,#a9873f)}
+.boxwood{position:absolute;z-index:7;pointer-events:none;opacity:.85;
+  background:linear-gradient(180deg,#f2e6c2,#cdb489)}
+
+/* ---------- hardware ---------- */
+.escutcheon{
+  position:absolute;left:50%;transform:translateX(-50%);z-index:9;
+  width:min(96px,26%);aspect-ratio:2.7/1;
+  background:linear-gradient(180deg,#f0d9a2,#b08640 46%,#6d5223);
+  box-shadow:0 3px 6px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,246,220,.8);
+  border-radius:2px;display:grid;place-items:center;
+}
+.escutcheon::after{content:"";width:34%;height:44%;background:linear-gradient(180deg,#1c1611,#0d0906);
+  border-radius:1px;box-shadow:inset 0 1px 0 rgba(226,197,131,.5)}
+.escutcheon span{
+  position:absolute;bottom:-1.5em;left:50%;transform:translateX(-50%);
+  font-size:.52rem;letter-spacing:.24em;text-transform:uppercase;color:var(--ink2);white-space:nowrap;
+}
+.two{position:absolute;display:flex;justify-content:space-between;left:16%;right:16%}
+.two .escutcheon{position:relative;left:auto;transform:none;width:22%}
+
+/* ---------- plinth ---------- */
+.plinth{
+  height:clamp(16px,2.4vw,28px);margin:0 -2px;
+  background:linear-gradient(180deg,#4a3320,#2a1c10);
+  box-shadow:inset 0 2px 0 rgba(226,197,131,.3), 0 14px 22px -10px rgba(0,0,0,.8);
+  border-radius:0 0 4px 4px;
+}
+
+/* ---------- satin varnish ---------- */
+.varnish{position:absolute;inset:0;z-index:10;pointer-events:none;mix-blend-mode:soft-light;opacity:var(--gloss)}
+.varnish.b{position:absolute;inset:0;z-index:10;pointer-events:none;mix-blend-mode:screen;opacity:calc(var(--gloss) * .42)}
+.spec{
+  position:absolute;inset:-10%;z-index:11;pointer-events:none;mix-blend-mode:overlay;
+  opacity:calc(var(--gloss) * 1.5);
+  background:linear-gradient(var(--sheenA),
+    transparent 38%, rgba(255,246,225,.30) 47%, rgba(255,255,255,.55) 50%,
+    rgba(255,246,225,.26) 53%, transparent 62%);
+  transform:translate3d(calc((var(--sheenX) - 50%) * .18),0,0);
+  transition:opacity .2s;
+}
+
+/* ---------- hover highlight ---------- */
+.inlay{transition:filter .3s, opacity .3s}
+.inlay:hover{filter:drop-shadow(0 0 9px rgba(226,197,131,.85)) brightness(1.08)}
+.cab.lit .inlay:not(.lit){filter:brightness(.8) saturate(.88)}
+.cab.lit .inlay.lit{filter:drop-shadow(0 0 13px rgba(255,236,190,.95)) brightness(1.12)}
+
+/* readout chip over the cabinet */
+.readout{
+  position:absolute;left:0;right:0;bottom:-2.4rem;text-align:center;
+  font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--ink2);
+  min-height:1.2em;
+}
+.readout b{color:var(--brass);font-weight:500}
+
+/* ================= right: identity ================= */
+.right{padding:clamp(1.4rem,3.2vw,3rem) clamp(1rem,3vw,2.6rem) 3rem;
+  display:flex;flex-direction:column;gap:1.6rem}
+.mark{display:flex;align-items:center;gap:.9rem}
+.mark svg{flex:none}
+.mark .wm{font-family:"Cormorant Garamond",Georgia,serif;font-weight:500;
+  font-size:clamp(1.3rem,2.6vw,1.9rem);letter-spacing:.16em;text-transform:uppercase;line-height:1}
+.mark .wm small{display:block;font-size:.44em;letter-spacing:.42em;color:var(--ink2);margin-top:.35em}
+.eyebrow{font-size:.6rem;letter-spacing:.34em;text-transform:uppercase;color:var(--brass);font-weight:500}
+h1{font-family:"Cormorant Garamond",Georgia,serif;font-weight:300;
+  font-size:clamp(2.1rem,4.6vw,3.4rem);line-height:1.04;letter-spacing:-.008em;margin:.7rem 0 1rem}
+h1 em{font-style:italic;color:#8a5f2c}
+.lede{font-size:1rem;line-height:1.72;max-width:46ch}
+.lede b{font-weight:500;border-bottom:1px solid var(--brass)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem}
+@media (max-width:520px){ .two-col{grid-template-columns:1fr} }
+.block h4{font-size:.6rem;letter-spacing:.26em;text-transform:uppercase;color:var(--ink2);
+  font-weight:500;padding-bottom:.45rem;border-bottom:1px solid rgba(28,22,17,.16);margin-bottom:.7rem}
+.block p{font-size:.82rem;line-height:1.7;color:var(--ink2)}
+.spec-list{list-style:none}
+.spec-list li{display:grid;grid-template-columns:1.1rem 1fr auto;gap:.6rem;align-items:center;
+  padding:.42rem 0;border-bottom:1px dotted rgba(28,22,17,.2);font-size:.78rem;cursor:default;
+  transition:color .2s, background .2s}
+.spec-list li:hover{color:#8a5f2c}
+.spec-list li u{width:13px;height:13px;border-radius:2px;text-decoration:none;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
+.spec-list li i{font-style:normal;font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);opacity:.75}
+.ctrl{margin-top:.4rem}
+.ctrl label{display:flex;justify-content:space-between;font-size:.6rem;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--ink2);margin-bottom:.5rem}
+.ctrl output{color:#8a5f2c}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:3px;
+  background:linear-gradient(90deg,#b08640,#e2c583);outline:none;cursor:ew-resize}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+  background:#efe7d8;box-shadow:0 0 0 2px #8a5f2c, 0 2px 6px rgba(0,0,0,.4)}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border:0;border-radius:50%;background:#efe7d8;
+  box-shadow:0 0 0 2px #8a5f2c}
+.hint{font-size:.66rem;line-height:1.6;color:var(--ink2);margin-top:.6rem;opacity:.85}
+
+/* serial plate */
+.plate{
+  margin-top:auto;display:flex;flex-wrap:wrap;gap:.5rem 1.6rem;align-items:center;
+  border:1px solid rgba(28,22,17,.2);padding:.8rem 1rem;
+  background:linear-gradient(180deg,#f6f0e4,#e6dcc9);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8), 0 6px 16px -10px rgba(0,0,0,.4);
+}
+.plate .no{font-family:"Cormorant Garamond",Georgia,serif;font-size:1.7rem;line-height:1;color:#8a5f2c}
+.plate dl{display:grid;grid-template-columns:auto auto;gap:0 1rem;font-size:.62rem;
+  letter-spacing:.12em;text-transform:uppercase}
+.plate dt{color:var(--ink2);opacity:.7}
+.plate dd{color:var(--ink)}
+.plate .stamp{margin-left:auto;width:52px;height:52px;border:1.5px solid rgba(138,95,44,.5);
+  border-radius:50%;display:grid;place-items:center;text-align:center;
+  font-size:.44rem;letter-spacing:.14em;text-transform:uppercase;color:#8a5f2c;
+  transform:rotate(-9deg);line-height:1.35;opacity:.8}
+@media (prefers-reduced-motion:reduce){ *{transition-duration:.01ms !important} }
+</style>
+</head>
+<body>
+
+<!-- hidden filter: the grain warp -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <filter id="woodDisp" x="-8%" y="-8%" width="116%" height="116%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.004 0.05" numOctaves="4" seed="19" result="warp"/>
+      <feDisplacementMap in="SourceGraphic" in2="warp" scale="14" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+<noscript>
+  <p style="padding:1.2rem;font-family:Jost,sans-serif;line-height:1.7;max-width:60ch">
+    The cabinet front is drawn with CSS gradients, clip-path intarsia and an SVG
+    turbulence filter. Without JavaScript the grain, the inlays and the satin coat
+    still render; only the polish slider and the hover call-outs go quiet.
+  </p>
+</noscript>
+
+<main class="split">
+
+  <!-- ============ LEFT: the piece ============ -->
+  <section class="left">
+    <div class="roomwall" aria-hidden="true"></div>
+    <div class="lbl">Commode <b>Vitraine</b> · 1889 pattern, made 2026 · <span id="lblHover">no piece selected</span></div>
+
+    <div class="cab" id="cab">
+      <div class="cornice" aria-hidden="true"></div>
+      <div class="frame">
+
+        <!-- wide drawer: sunburst medallion on cross-banded walnut -->
+        <div class="stack">
+          <div class="drw wide" data-name="Medallion, eight rays" data-ven="Noyer, Érable, Amarante, Ébène">
+            <div class="field"><div class="grain"></div></div>
+            <div class="grainwarp" aria-hidden="true"></div>
+            <div class="rosette inlay" id="rosette" tabindex="0"
+                 aria-label="Inlaid rosette, eight rays, walnut, maple, purpleheart and ebony">
+              <div class="wedge" style="transform:rotate(0deg)"></div>
+              <div class="wedge" style="transform:rotate(45deg)"></div>
+              <div class="wedge" style="transform:rotate(90deg)"></div>
+              <div class="wedge" style="transform:rotate(315deg)"></div>
+              <div class="wedge" style="transform:rotate(180deg)"></div>
+              <div class="wedge" style="transform:rotate(135deg)"></div>
+              <div class="wedge" style="transform:rotate(270deg)"></div>
+              <div class="wedge" style="transform:rotate(225deg)"></div>
+              <div class="disc"></div>
+            </div>
+            <div class="string t"></div><div class="string b"></div>
+            <div class="string l"></div><div class="string r"></div>
+            <div class="escutcheon" style="bottom:12%"><span>brass, hand-cut</span></div>
+            <div class="varnish"></div><div class="varnish b"></div><div class="spec"></div>
+          </div>
+
+          <!-- two drawers: leaf marquetry -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:clamp(7px,1.1vw,12px)">
+            <div class="drw half" data-name="Champêtre, left leaf" data-ven="Érable, Noyer, Filet de buis">
+              <div class="field"><div class="grain figured"></div></div>
+              <div class="grainwarp" aria-hidden="true"></div>
+              <div class="leafpanel inlay" tabindex="0" aria-label="Leaf marquetry panel, sycamore and walnut with boxwood stringing">
+                <div class="stem"></div>
+                <div class="lf" style="left:10%;top:36%;transform:rotate(-38deg)"></div>
+                <div class="lf dark" style="left:26%;top:30%;transform:rotate(-12deg) scale(.86)"></div>
+                <div class="lf" style="left:42%;top:24%;transform:rotate(16deg) scale(.72)"></div>
+                <div class="lf viol" style="left:58%;top:34%;transform:rotate(40deg) scale(.7)"></div>
+                <div class="bf" style="left:66%;top:18%;transform:rotate(64deg)"></div>
+                <div class="lf dark" style="left:12%;top:66%;transform:rotate(34deg) scale(.62)"></div>
+                <div class="lf" style="left:34%;top:70%;transform:rotate(6deg) scale(.58)"></div>
+              </div>
+              <div class="string t"></div><div class="string b"></div>
+              <div class="string l"></div><div class="string r"></div>
+              <div class="two"><div class="escutcheon"></div><div class="escutcheon"></div></div>
+              <div class="varnish"></div><div class="varnish b"></div><div class="spec"></div>
+            </div>
+
+            <div class="drw half" data-name="Champêtre, right leaf" data-ven="Érable, Amarante, Filet de buis">
+              <div class="field"><div class="grain figured"></div></div>
+              <div class="grainwarp" aria-hidden="true"></div>
+              <div class="leafpanel inlay" tabindex="0" aria-label="Leaf marquetry panel, sycamore, purpleheart and boxwood stringing">
+                <div class="stem"></div>
+                <div class="bf" style="left:8%;top:24%;transform:rotate(18deg)"></div>
+                <div class="lf viol" style="left:24%;top:18%;transform:rotate(44deg) scale(.74)"></div>
+                <div class="lf" style="left:44%;top:26%;transform:rotate(8deg)"></div>
+                <div class="lf dark" style="left:62%;top:32%;transform:rotate(-24deg) scale(.82)"></div>
+                <div class="lf" style="left:76%;top:44%;transform:rotate(-56deg) scale(.6)"></div>
+                <div class="lf dark" style="left:56%;top:64%;transform:rotate(-6deg) scale(.66)"></div>
+                <div class="lf viol" style="left:26%;top:62%;transform:rotate(24deg) scale(.6)"></div>
+              </div>
+              <div class="string t"></div><div class="string b"></div>
+              <div class="string l"></div><div class="string r"></div>
+              <div class="two"><div class="escutcheon"></div><div class="escutcheon"></div></div>
+              <div class="varnish"></div><div class="varnish b"></div><div class="spec"></div>
+            </div>
+          </div>
+
+          <!-- deep drawer: plain walnut, so the marquetry can breathe -->
+          <div class="drw" style="aspect-ratio:26/7" data-name="Plain field" data-ven="Noyer de Macassar, book-matched">
+            <div class="field"><div class="grain dark"></div></div>
+            <div class="grainwarp" aria-hidden="true"></div>
+            <div class="boxwood" style="left:8%;right:8%;top:22%;height:2px"></div>
+            <div class="boxwood" style="left:8%;right:8%;bottom:22%;height:2px"></div>
+            <div class="string t"></div><div class="string b"></div>
+            <div class="string l"></div><div class="string r"></div>
+            <div class="two"><div class="escutcheon"></div><div class="escutcheon"></div></div>
+            <div class="varnish"></div><div class="varnish b"></div><div class="spec"></div>
+          </div>
+        </div>
+
+      </div>
+      <div class="plinth" aria-hidden="true"></div>
+      <p class="readout" id="readout">Hover an inlaid panel</p>
+    </div>
+  </section>
+
+  <!-- ============ RIGHT: identity ============ -->
+  <section class="right">
+
+    <div class="mark">
+      <svg width="46" height="46" viewBox="0 0 46 46" role="img" aria-label="Atelier Briolet monogram">
+        <circle cx="23" cy="23" r="22" fill="none" stroke="#8a5f2c" stroke-width="1"/>
+        <circle cx="23" cy="23" r="17" fill="none" stroke="#8a5f2c" stroke-width=".5" opacity=".7"/>
+        <path d="M23 6 L38 23 L23 40 L8 23 Z" fill="none" stroke="#8a5f2c" stroke-width="1"/>
+        <path d="M23 12 L32 23 L23 34 L14 23 Z" fill="#8a5f2c" opacity=".16"/>
+        <text x="23" y="27.4" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif"
+              font-size="13" fill="#8a5f2c">AB</text>
+      </svg>
+      <div class="wm">Atelier Briolet<small>Ébénisterie · Lyon · 1889</small></div>
+    </div>
+
+    <div>
+      <div class="eyebrow">Marquetry &amp; grain · sheet 3 of 9</div>
+      <h1>Wood remembers<br>which way the <em>tree grew</em>.</h1>
+      <p class="lede">
+        A cabinet front is not a picture. It is four veneers, a boxwood line and a
+        decision about direction. In this one the walnut is <b>book-matched</b> about
+        the centre stile, the field is <b>cross-banded</b> so the light changes as you
+        walk past it, and the rosette is eight separate pieces cut from a single
+        packet — no two rays are the same piece of wood, which is exactly the point.
+      </p>
+    </div>
+
+    <div class="two-col">
+      <div class="block">
+        <h4>Venner packet</h4>
+        <ul class="spec-list" id="venList">
+          <li><u style="background:#3a2415"></u><span>Noyer de Macassar</span><i>Field</i></li>
+          <li><u style="background:#c9a970"></u><span>Érable sycomore</span><i>Rays 2, 6</i></li>
+          <li><u style="background:#2c1d11"></u><span>Ébène de Macassar</span><i>Medallion</i></li>
+          <li><u style="background:#4a2b3a"></u><span>Amarante</span><i>Rays 4, 8</i></li>
+          <li><u style="background:#d8b478"></u><span>Chêne de Pannes</span><i>Leaves</i></li>
+          <li><u style="background:#efe0b6"></u><span>Filet de buis</span><i>Stringing</i></li>
+        </ul>
+      </div>
+      <div class="block">
+        <h4>The finish</h4>
+        <p>
+          Eleven coats of shellac, cut back between each one, then two of matt
+          varnish and a hand-rubbed wax. Nothing is sprayed. The sheen you can move
+          across the front is not a texture — it is the coat, at 62° to the light.
+        </p>
+        <p style="margin-top:.7rem">
+          One drawer is left plain on purpose. After two panels of figuration, an
+          unfigured field reads louder than either of them.
+        </p>
+      </div>
+    </div>
+
+    <div class="block">
+      <h4>Bench controls</h4>
+      <div class="ctrl">
+        <label for="polish">Polish <output id="polishOut">SATIN 42 %</output></label>
+        <input type="range" id="polish" min="0" max="100" step="1" value="42">
+        <p class="hint">
+          Ninety years of handling take a piece from matte to mirror. Move the polish
+          up and the specular band sharpens; at zero the front goes dry and flat, the
+          way a freshly scraped panel does. Hover an inlay to read its packet.
+        </p>
+      </div>
+    </div>
+
+    <div class="plate">
+      <div class="no">№ 0412</div>
+      <dl>
+        <dt>Series</dt><dd>Vitraine</dd>
+        <dt>Cabinetmaker</dt><dd>A. Briolet &amp; fils</dd>
+        <dt>Veneers</dt><dd>6 species, 1 040 pieces</dd>
+        <dt>Inlay</dt><dd>Hand-cut, no machine</dd>
+        <dt>Lead time</dt><dd>14 months</dd>
+      </dl>
+      <div class="stamp">Briolet<br>façon<br>de Lyon</div>
+    </div>
+
+  </section>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var root = document.documentElement;
+  var cab = document.getElementById('cab');
+  var readout = document.getElementById('readout');
+  var lblHover = document.getElementById('lblHover');
+  var inlays = Array.prototype.slice.call(document.querySelectorAll('.inlay'));
+
+  /* ---- hover an inlay: light it, dim the rest, name the packet ---- */
+  function light(el){
+    var name = el.getAttribute('data-name') || '';
+    var ven = el.getAttribute('data-ven') || '';
+    var owner = el.closest('.drw');
+    for (var i=0;i<inlays.length;i++) inlays[i].classList.toggle('lit', inlays[i] === el);
+    cab.classList.add('lit');
+    el.classList.add('on');
+    readout.innerHTML = name + ' — <b>' + ven + '</b>';
+    lblHover.textContent = name;
+    if (owner && owner.querySelector('.rosette') === el) rosetteLift();
+  }
+  function dim(){
+    for (var i=0;i<inlays.length;i++){ inlays[i].classList.remove('lit'); inlays[i].classList.remove('on'); }
+    cab.classList.remove('lit');
+    readout.textContent = 'Hover an inlaid panel';
+    lblHover.textContent = 'no piece selected';
+  }
+  var ROSE_BASE = [0,45,90,315,180,135,270,225];
+  function rosetteLift(){
+    var w = document.querySelectorAll('#rosette .wedge');
+    for (var i=0;i<w.length;i++) w[i].style.transform = 'rotate(' + (ROSE_BASE[i] + (i%2 ? 3.5 : -3.5)) + 'deg)';
+  }
+  function rosetteDrop(){
+    var w = document.querySelectorAll('#rosette .wedge');
+    for (var i=0;i<w.length;i++) w[i].style.transform = 'rotate(' + ROSE_BASE[i] + 'deg)';
+  }
+  for (var j=0;j<inlays.length;j++){
+    (function(el){
+      el.addEventListener('pointerenter', function(){ light(el); });
+      el.addEventListener('focus', function(){ light(el); });
+      el.addEventListener('pointerleave', function(){ dim(); rosetteDrop(); });
+      el.addEventListener('blur', function(){ dim(); rosetteDrop(); });
+    })(inlays[j]);
+  }
+  cab.addEventListener('pointerleave', function(){ dim(); rosetteDrop(); });
+
+  /* ---- veneer list hover highlights the matching ray group ---- */
+  var ven = Array.prototype.slice.call(document.querySelectorAll('#venList li'));
+  for (var k=0;k<ven.length;k++){
+    ven[k].addEventListener('pointerenter', function(){ root.style.setProperty('--mark','rgba(226,197,131,.9)'); });
+    ven[k].addEventListener('pointerleave', function(){ root.style.setProperty('--mark','rgba(176,134,64,0)'); });
+  }
+
+  /* ---- polish slider ---- */
+  var polish = document.getElementById('polish');
+  var polishOut = document.getElementById('polishOut');
+  var SHEENS = ['MATTE 0°', 'SATIN 38°', 'SATIN 62°', 'SEMI-GLOSS 74°', 'MIRROR 88°'];
+  function apply(){
+    var v = +polish.value / 100;
+    root.style.setProperty('--gloss', (0.12 + v * 0.95).toFixed(3));
+    root.style.setProperty('--sheenA', (74 + (1 - v) * 46).toFixed(0) + 'deg');
+    var name = SHEENS[Math.min(4, Math.floor(v * 4.99))];
+    polishOut.textContent = name + ' · ' + polish.value + ' %';
+  }
+  polish.addEventListener('input', apply);
+  apply();
+
+  /* ---- pointer moves the specular band across the coat ---- */
+  document.querySelector('.left').addEventListener('pointermove', function(e){
+    var r = this.getBoundingClientRect();
+    var x = ((e.clientX - r.left) / r.width) * 100;
+    root.style.setProperty('--sheenX', x.toFixed(1) + '%');
+  }, {passive:true});
+
+  /* ---- keyboard: bracket keys walk the inlays ---- */
+  document.addEventListener('keydown', function(e){
+    if (e.key !== '[' && e.key !== ']') return;
+    var cur = inlays.indexOf(document.querySelector('.inlay.lit'));
+    var next = e.key === '[' ? (cur + inlays.length - 1) % inlays.length : (cur + 1) % inlays.length;
+    inlays[next].focus();
+  });
+})();
+</script>
+</body>
+</html>

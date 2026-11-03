@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>一息 — Ink Brush Poster</title>
+<style>
+  :root{
+    --bone:#f1ebdd; --bone-2:#e8e0cf;
+    --ink:#14110e; --ink-soft:#2a2520;
+    --seal:#b3261e;
+    --mono:ui-monospace,"DejaVu Sans Mono",Menlo,Consolas,monospace;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden}
+  body{background:var(--bone);color:var(--ink);font-family:var(--serif)}
+
+  /* the whole field is one still image: the paper never moves */
+  .field{position:fixed;inset:0;background:var(--bone);overflow:hidden}
+  .paper{position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;opacity:.55;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='340' height='340'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='5' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='340' height='340' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+    background-size:340px 340px}
+  .fibres{position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;opacity:.3}
+  .edge{position:absolute;inset:0;pointer-events:none;
+    box-shadow:inset 0 0 160px -30px rgba(90,70,40,.35),inset 0 0 40px -10px rgba(90,70,40,.18)}
+
+  .stage{position:absolute;inset:0;display:grid;grid-template-columns:1fr clamp(120px,13vw,190px)}
+
+  /* ---- the art ---- */
+  .art{position:relative;display:grid;place-items:center;padding:clamp(20px,5vh,70px)}
+  svg.artwork{width:100%;height:auto;max-height:82vh;display:block;overflow:visible}
+  #breath{transform-box:fill-box;transform-origin:center}
+
+  /* ---- vertical type column ---- */
+  .rail{border-left:1px solid rgba(20,17,14,.14);position:relative;display:grid;
+    grid-template-rows:1fr auto;padding:clamp(18px,3vh,36px) clamp(10px,1.6vw,20px)}
+  .rail .v{writing-mode:vertical-rl;text-orientation:mixed;justify-self:center;align-self:start;
+    display:flex;flex-direction:row-reverse;gap:clamp(12px,2.4vh,26px);max-height:100%}
+  .rail .v p{margin:0;font:400 10.5px/1.9 var(--mono);letter-spacing:.24em;text-transform:uppercase;
+    color:rgba(20,17,14,.62);white-space:nowrap}
+  .rail .v p b{color:var(--ink);font-weight:600}
+  .rail .v hr{border:0;border-left:1px solid rgba(20,17,14,.16);margin:0;align-self:stretch}
+  .rail .bottom{writing-mode:vertical-rl;justify-self:center;font:400 9.5px/1.9 var(--mono);
+    letter-spacing:.3em;text-transform:uppercase;color:rgba(20,17,14,.42)}
+
+  /* ---- seal ---- */
+  .seal{position:absolute;right:calc(clamp(120px,13vw,190px) + clamp(18px,4vw,70px));
+    bottom:clamp(26px,7vh,72px);width:clamp(66px,7.4vw,104px);aspect-ratio:1;
+    animation:stamp .5s cubic-bezier(.2,1.4,.4,1) both;animation-delay:2.4s}
+  @keyframes stamp{from{opacity:0;transform:scale(1.5) rotate(-9deg)}to{opacity:.94;transform:none}}
+  .seal svg{width:100%;height:100%;display:block}
+
+  /* ---- controls ---- */
+  .bar{position:absolute;left:clamp(18px,4vw,70px);bottom:clamp(20px,5vh,54px);
+    display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{font:600 9.5px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;
+    padding:9px 12px;border:1px solid rgba(20,17,14,.32);background:transparent;color:var(--ink);
+    cursor:pointer;border-radius:1px;transition:.16s}
+  button:hover{background:var(--ink);color:var(--bone)}
+  button[aria-pressed="true"]{background:var(--ink);color:var(--bone);border-color:var(--ink)}
+  .bar .sub{font:400 9.5px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;
+    color:rgba(20,17,14,.45);margin-left:8px}
+  .state{position:absolute;left:clamp(18px,4vw,70px);top:clamp(18px,4vh,42px);
+    font:600 9.5px/1.8 var(--mono);letter-spacing:.26em;text-transform:uppercase}
+  .state span{display:block;color:rgba(20,17,14,.45);font-weight:400;letter-spacing:.2em}
+  @media (max-width:720px){
+    .stage{grid-template-columns:1fr 84px}
+    .rail .v p{font-size:9px;letter-spacing:.16em}
+    .seal{right:calc(84px + 16px)}
+  }
+</style>
+</head>
+<body>
+<div class="field">
+  <div class="paper"></div>
+  <svg class="fibres" aria-hidden="true">
+    <filter id="fib"><feTurbulence type="fractalNoise" baseFrequency="0.004 0.09" numOctaves="3" seed="4"/>
+      <feColorMatrix type="saturate" values="0"/></filter>
+    <rect width="100%" height="100%" filter="url(#fib)" opacity=".5"/>
+  </svg>
+
+  <div class="stage">
+    <div class="art">
+      <svg class="artwork" id="svg" viewBox="0 0 1000 560" aria-label="Brush calligraphy poster">
+        <defs>
+          <!-- edge wobble: the hand is never perfectly steady -->
+          <filter id="rough" x="-8%" y="-8%" width="116%" height="116%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.013 0.021" numOctaves="3" seed="17" result="t"/>
+            <feDisplacementMap in="SourceGraphic" in2="t" scale="7" xChannelSelector="R" yChannelSelector="G"/>
+          </filter>
+          <!-- dry brush: anisotropic noise eats streaks out of the ink -->
+          <filter id="dryf" x="0%" y="0%" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.9 0.02" numOctaves="4" seed="9" result="n"/>
+            <feColorMatrix in="n" type="matrix" result="a"
+              values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0 1"/>
+            <feComponentTransfer in="a" result="m">
+              <feFuncA type="table" tableValues="0.10 0.55 0.86 1 1 1"/>
+            </feComponentTransfer>
+            <feComposite in="SourceGraphic" in2="m" operator="out"/>
+          </filter>
+          <mask id="dry"><rect x="-20%" y="-20%" width="140%" height="140%" fill="#fff" filter="url(#dryf)"/></mask>
+        </defs>
+        <g id="breath" mask="url(#dry)" filter="url(#rough)">
+          <g id="strokes"></g>
+        </g>
+      </svg>
+    </div>
+
+    <div class="rail">
+      <div class="v">
+        <p>A field note on <b>single-stroke calligraphy</b></p><hr>
+        <p>Brush · goat hair, size 40</p><hr>
+        <p>Ink · pine soot in rice glue</p><hr>
+        <p>Paper · bone white, 300 gsm, uncoated</p><hr>
+        <p>Strokes · <b id="scount">—</b></p><hr>
+        <p>Pressure · start firm, leave light</p>
+      </div>
+      <div class="bottom">Plate 07 · the collection of 100</div>
+    </div>
+  </div>
+
+  <div class="seal" id="seal">
+    <svg viewBox="0 0 100 100" aria-label="Red seal">
+      <rect x="2" y="2" width="96" height="96" rx="2" fill="#b3261e"/>
+      <g fill="#f1ebdd">
+        <!-- four abstract seal-script marks carved in relief -->
+        <path d="M18 20h26v6H24v14h18v6H24v14h20v6H18z"/>
+        <path d="M56 20h8v26h-8zM50 50h20v6H50zM50 60h20v6H50zM50 70h20v6H50z"/>
+        <path d="M16 60h10v20H16zM30 62h6v16h-6z"/>
+        <path d="M60 56h20v6H60zM60 66h20v6H60zM60 76h20v6H60z"/>
+      </g>
+      <rect x="2" y="2" width="96" height="96" rx="2" fill="none" stroke="#f1ebdd" stroke-width="2.4" opacity=".55"/>
+    </svg>
+  </div>
+
+  <div class="state">Now drawing<span id="state2">FORM · 0%</span></div>
+
+  <div class="bar">
+    <button data-set="0" aria-pressed="true">Form</button>
+    <button data-set="1" aria-pressed="false">Ink</button>
+    <button data-set="2" aria-pressed="false">One</button>
+    <button id="replay">Draw again</button>
+    <span class="sub">Space replays the stroke</span>
+  </div>
+
+  <div class="edge"></div>
+</div>
+
+<script>
+(function(){
+const NS="http://www.w3.org/2000/svg";
+const svg=document.getElementById("svg");
+const host=document.getElementById("strokes");
+const $=id=>document.getElementById(id);
+const breath=document.getElementById("breath");
+
+/* ================= brush skeleton font =================
+   Each letter is a list of strokes; each stroke is a centre line
+   plus a width profile. Coordinates live in a 100 x 100 box.        */
+const L={
+  F:[ {p:[[20,0],[16,34],[15,70],[17,100]]},
+      {p:[[22,8],[50,5],[78,1]]},
+      {p:[[18,52],[44,49],[70,46]]} ],
+  O:[ {p:[[76,14],[44,2],[16,26],[14,62],[40,98],[72,80],[80,36],[76,14]]} ],
+  R:[ {p:[[22,0],[17,48],[18,100]]},
+      {p:[[24,10],[64,6],[72,26],[58,46],[24,52]]},
+      {p:[[44,52],[64,74],[84,100]]} ],
+  M:[ {p:[[12,100],[17,54],[20,0]]},
+      {p:[[20,0],[40,44],[52,74]]},
+      {p:[[52,74],[64,44],[82,0]]},
+      {p:[[82,0],[84,52],[88,100]]} ],
+  I:[ {p:[[50,2],[49,50],[52,100]]} ],
+  N:[ {p:[[18,100],[16,52],[16,0]]},
+      {p:[[16,0],[52,52],[86,100]]},
+      {p:[[86,100],[84,50],[86,0]]} ],
+  K:[ {p:[[18,0],[15,48],[17,100]]},
+      {p:[[80,0],[46,40],[20,52]]},
+      {p:[[36,44],[60,72],[86,100]]} ],
+  E:[ {p:[[22,0],[17,50],[20,100]]},
+      {p:[[24,6],[52,3],[80,0]]},
+      {p:[[18,52],[42,51],[66,50]]},
+      {p:[[20,96],[50,98],[82,100]]} ]
+};
+const SETS=[
+  {word:"FORM", s:2.05, sub:"form follows the hand, never the ruler"},
+  {word:"INK",  s:2.78, sub:"one pigment, one solvent, no second chances"},
+  {word:"ONE",  s:2.62, sub:"the shortest sentence the hand can write"}
+];
+const VB_W=1000, VB_H=560, BASE_Y=420;
+
+/* ---------- curve helpers ---------- */
+function cr(pts,per){
+  const out=[];
+  for(let i=0;i<pts.length-1;i++){
+    const p0=pts[Math.max(0,i-1)],p1=pts[i],p2=pts[i+1],p3=pts[Math.min(pts.length-1,i+2)];
+    for(let s=0;s<per;s++){
+      const t=s/per,t2=t*t,t3=t2*t;
+      out.push([
+        .5*((2*p1[0])+(-p0[0]+p2[0])*t+(2*p0[0]-5*p1[0]+4*p2[0]-p3[0])*t2+(-p0[0]+3*p1[0]-3*p2[0]+p3[0])*t3),
+        .5*((2*p1[1])+(-p0[1]+p2[1])*t+(2*p0[1]-5*p1[1]+4*p2[1]-p3[1])*t2+(-p0[1]+3*p1[1]-3*p2[1]+p3[1])*t3)
+      ]);
+    }
+  }
+  out.push(pts[pts.length-1].slice());
+  return out;
+}
+/* pressure profile: firm entry, swelling belly, dry release (units of the 100 box) */
+function profile(kind,seed){
+  const n=14,W=[];
+  for(let i=0;i<n;i++){
+    const u=i/(n-1);
+    let v;
+    if(kind==="head") v=Math.pow(1-u,0.75)*0.80+Math.sin(u*Math.PI)*0.34;
+    else if(kind==="tail") v=Math.pow(1-u,1.9)*0.86+0.05;
+    else if(kind==="both") v=Math.pow(u,0.55)*Math.pow(1-u,0.85)*1.45+0.05;
+    else v=Math.sin(Math.pow(u,0.9)*Math.PI)*0.82+0.14;
+    W.push(v*13.5*(0.88+0.24*((seed*9301+49297)%233)/233));
+  }
+  return W;
+}
+function ribbon(samples,W){
+  const n=samples.length,left=[],right=[];
+  for(let i=0;i<n;i++){
+    const a=samples[Math.max(0,i-1)],b=samples[Math.min(n-1,i+1)];
+    let dx=b[0]-a[0],dy=b[1]-a[1];
+    const l=Math.hypot(dx,dy)||1;dx/=l;dy/=l;
+    const w=W[i]/2;
+    left.push([samples[i][0]-dy*w,samples[i][1]+dx*w]);
+    right.push([samples[i][0]+dy*w,samples[i][1]-dx*w]);
+  }
+  let d="M"+left[0][0].toFixed(2)+","+left[0][1].toFixed(2);
+  for(let i=1;i<n;i++)d+="L"+left[i][0].toFixed(2)+","+left[i][1].toFixed(2);
+  for(let i=n-1;i>=0;i--)d+="L"+right[i][0].toFixed(2)+","+right[i][1].toFixed(2);
+  return d+"Z";
+}
+function pathOf(pts){
+  let d="M"+pts[0][0].toFixed(2)+","+pts[0][1].toFixed(2);
+  for(let i=1;i<pts.length;i++)d+="L"+pts[i][0].toFixed(2)+","+pts[i][1].toFixed(2);
+  return d;
+}
+
+/* ---------- build a set ---------- */
+let strokes=[];      // {reveal path, length, delay, maxW}
+let setIndex=0, t0=0, done=false;
+
+function build(idx){
+  setIndex=idx;
+  const S=SETS[idx];
+  host.innerHTML="";
+  const defs=svg.querySelector("defs");
+  // clear old reveal masks
+  [...defs.querySelectorAll("[data-rev]")].forEach(n=>n.remove());
+  strokes=[];
+
+  const adv=92*S.s;
+  const total=adv*(S.word.length-1)+100*S.s;
+  const cursor=(VB_W-total)/2;
+  const parts=[];
+  let c=cursor;
+  S.word.split("").forEach((ch,ci)=>{
+    (L[ch]||[]).forEach(st=>{
+      const mapped=st.p.map(p=>[p[0],p[1]]);
+      parts.push({pts:mapped,x:c,y:BASE_Y-100*S.s,s:S.s,k:parts.length*0.37+ci*0.9});
+    });
+    c+=adv;
+  });
+
+  parts.forEach((p,i)=>{
+    const samples=cr(p.pts,7).map(q=>[q[0]*p.s+p.x,q[1]*p.s+p.y]);
+    const n=samples.length;
+    const W=profile(i%3===0?"head":i%3===1?"both":"tail",i+3);
+    const maxW=Math.max.apply(null,W)*p.s;
+    const d=ribbon(samples,W.map(w=>w*p.s));
+    const center=pathOf(samples);
+
+    const gid="stroke"+i;
+    const g=document.createElementNS(NS,"g");
+    const use=document.createElementNS(NS,"path");
+    use.setAttribute("d",d);
+    use.setAttribute("fill", i%7===3 ? "#2a2520" : "#14110e");
+    g.appendChild(use);
+
+    const mid=document.createElementNS(NS,"path");
+    mid.setAttribute("d",center);
+    mid.setAttribute("fill","none");
+    mid.setAttribute("stroke","#fff");
+    mid.setAttribute("stroke-width",maxW*1.05);
+    mid.setAttribute("stroke-linecap","round");
+    mid.setAttribute("stroke-linejoin","round");
+
+    const mask=document.createElementNS(NS,"mask");
+    mask.setAttribute("id","rv"+i);
+    mask.setAttribute("data-rev","1");
+    mask.setAttribute("maskUnits","userSpaceOnUse");
+    mask.setAttribute("x",-200);mask.setAttribute("y",-200);
+    mask.setAttribute("width",1600);mask.setAttribute("height",1200);
+    mask.appendChild(mid);
+    defs.appendChild(mask);
+
+    g.setAttribute("mask","url(#rv"+i+")");
+    host.appendChild(g);
+
+    const len=mid.getTotalLength?mid.getTotalLength():1400;
+    mid.setAttribute("stroke-dasharray",len);
+    mid.setAttribute("stroke-dashoffset",len);
+    strokes.push({mid,len,delay:i*0.17, maxW});
+  });
+
+  $("scount").textContent=strokes.length+" · "+S.word;
+  t0=performance.now();done=false;
+  breath.style.transform="none";
+}
+
+/* ---------- timeline ---------- */
+function tick(now){
+  if(!done){
+    const el=(now-t0)/1000;
+    let allDone=true;
+    strokes.forEach(s=>{
+      const u=Math.max(0,Math.min(1,(el-s.delay)/0.72));
+      s.mid.setAttribute("stroke-dashoffset",(s.len*(1-ease(u))).toFixed(1));
+      if(u<1)allDone=false;
+    });
+    const pct=Math.round(strokes.reduce((a,s)=>a+Math.max(0,Math.min(1,(el-s.delay)/0.72)),0)/strokes.length*100);
+    $("state2").textContent=SETS[setIndex].word+" · "+pct+"%";
+    if(allDone)done=true;
+  } else {
+    // idle breathing: 9 s, barely there, but the paper is perfectly still
+    const b=(Math.sin((now)/9000*Math.PI*2))*0.5+0.5;
+    breath.style.transform="scale("+(1+b*0.006).toFixed(5)+") rotate("+((b-0.5)*0.22).toFixed(3)+"deg)";
+    $("state2").textContent=SETS[setIndex].word+" · "+SETS[setIndex].sub;
+  }
+  requestAnimationFrame(tick);
+}
+function ease(u){return u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2;}
+
+document.querySelectorAll("[data-set]").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("[data-set]").forEach(o=>o.setAttribute("aria-pressed",String(o===b)));
+  build(+b.dataset.set);
+  $("seal").style.animation="none";void $("seal").offsetWidth;
+  $("seal").style.animation="stamp .5s cubic-bezier(.2,1.4,.4,1) both .9s";
+}));
+$("replay").addEventListener("click",()=>build(setIndex));
+addEventListener("keydown",e=>{
+  if(e.code==="Space"){e.preventDefault();build(setIndex);}
+  if(e.key==="ArrowRight"){const b=document.querySelectorAll("[data-set]")[(setIndex+1)%3];b.click();}
+  if(e.key==="ArrowLeft"){const b=document.querySelectorAll("[data-set]")[(setIndex+2)%3];b.click();}
+});
+
+build(0);
+requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>

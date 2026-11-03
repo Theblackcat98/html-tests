@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HARBOUR DISTRICT — An Isometric City at 7:12 PM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky-1:#2a1a3f;
+    --sky-2:#7a3b52;
+    --sky-3:#d9743f;
+    --sky-4:#f6b46a;
+    --ground:#2b2434;
+    --ground2:#3a2f42;
+    --road:#241d2c;
+    --water:#16304a;
+    --lit:#ffd89a;
+    --tilt:60deg;
+    --spin:0deg;
+    --lift:0px;
+    --c1:#e8dcc8;
+    --c2:#c9b9a0;
+    --c3:#8f7f6d;
+    --c4:#5a4d43;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:"Space Grotesk","Helvetica Neue",Arial,sans-serif;
+    color:var(--c1); background:#150e1f; overflow:hidden;
+  }
+  .sky{position:fixed;inset:0;z-index:0;
+    background:
+      radial-gradient(30% 22% at 72% 66%, rgba(255,214,150,.55), transparent 70%),
+      linear-gradient(180deg, var(--sky-1) 0%, var(--sky-2) 26%, var(--sky-3) 58%, var(--sky-4) 88%, #f3d29a 100%);}
+  .sky::after{content:"";position:absolute;inset:0;
+    background:radial-gradient(80% 60% at 72% 74%, rgba(255,196,120,.28), transparent 62%);
+    mix-blend-mode:screen}
+  .stars{position:fixed;inset:0;z-index:1;opacity:.5;mix-blend-mode:screen;
+    background-image:
+      radial-gradient(1.4px 1.4px at 18% 14%, rgba(255,255,255,.8), transparent 100%),
+      radial-gradient(1px 1px at 62% 9%, rgba(255,255,255,.55), transparent 100%),
+      radial-gradient(1.2px 1.2px at 84% 22%, rgba(255,255,255,.7), transparent 100%),
+      radial-gradient(1px 1px at 38% 26%, rgba(255,255,255,.4), transparent 100%);
+    background-size:100% 100%;}
+  .haze{position:fixed;inset:0;z-index:6;pointer-events:none;
+    background:linear-gradient(180deg, rgba(21,14,31,.5) 0%, transparent 22%, transparent 62%, rgba(21,14,31,.86) 100%);}
+
+  .stage{position:fixed;inset:0;z-index:3;perspective:1500px;perspective-origin:50% 44%;
+    cursor:grab;touch-action:none;overflow:hidden}
+  .stage.drag{cursor:grabbing}
+  .world{
+    position:absolute; left:50%; top:48%; width:0; height:0;
+    transform-style:preserve-3d;
+    transform:translate3d(0,var(--lift),0) rotateX(var(--tilt)) rotateZ(calc(45deg + var(--spin)));
+    will-change:transform;
+  }
+  .plane{position:absolute;transform-style:preserve-3d}
+  .ground{left:0;top:0;width:1000px;height:1000px;transform:translate(-500px,-500px) translateZ(-1.2px);
+    background:
+      linear-gradient(0deg, var(--road) 0 2px, transparent 2px 46px),
+      linear-gradient(90deg, var(--road) 0 2px, transparent 2px 46px),
+      repeating-linear-gradient(45deg, rgba(255,255,255,.014) 0 6px, transparent 6px 12px),
+      linear-gradient(140deg, var(--ground2), var(--ground) 60%);
+    box-shadow:0 0 0 1px rgba(255,190,130,.14) inset;}
+  .water{left:0;top:0;width:1000px;height:200px;transform:translate(-500px,-500px) translateZ(-0.9px);
+    background:
+      repeating-linear-gradient(90deg, rgba(255,200,150,.12) 0 22px, transparent 22px 54px),
+      linear-gradient(180deg, rgba(120,190,220,.30), rgba(20,48,74,.9) 70%);
+    box-shadow:0 14px 30px -20px rgba(0,0,0,.9) inset;}
+  .pier{left:0;top:0;width:300px;height:26px;transform:translate(-150px,-500px) translateZ(2px);
+    background:repeating-linear-gradient(90deg,#4a3b2c 0 3px,#5b4936 3px 6px);
+    box-shadow:0 0 0 1px rgba(0,0,0,.5)}
+
+  .cube{position:absolute;left:0;top:0;transform-style:preserve-3d}
+  .f{position:absolute;left:0;top:0;backface-visibility:visible}
+  .top{width:var(--w);height:var(--d);margin-left:calc(var(--w)/-2);margin-top:calc(var(--d)/-2);
+    transform:translateZ(var(--h))}
+  .fr{width:var(--w);height:var(--h);margin-left:calc(var(--w)/-2);margin-top:calc(var(--h)/-2);
+    transform:translate3d(0,calc(var(--d)/-2),calc(var(--h)/2)) rotateX(90deg)}
+  .lf{width:var(--d);height:var(--h);margin-left:calc(var(--d)/-2);margin-top:calc(var(--h)/-2);
+    transform:translate3d(calc(var(--w)/-2),0,calc(var(--h)/2)) rotateX(90deg) rotateY(-90deg)}
+  .rt{width:var(--d);height:var(--h);margin-left:calc(var(--d)/-2);margin-top:calc(var(--h)/-2);
+    transform:translate3d(calc(var(--w)/-2),0,calc(var(--h)/2)) rotateX(90deg) rotateY(90deg)}
+  .fr{background-color:var(--b1);background-image:
+      radial-gradient(circle at 50% 50%, var(--lit) 0 1.5px, transparent 1.8px),
+      radial-gradient(circle at 50% 50%, rgba(255,192,124,.3) 0 1.1px, transparent 1.5px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,.24) 0 1px, transparent 1px 7px),
+      repeating-linear-gradient(0deg, rgba(0,0,0,.2) 0 1px, transparent 1px 8px);
+    background-size:14px 16px, 7px 8px, 100% 100%, 100% 100%;
+    background-position:2px 3px, 0 0, 0 0, 0 0;}
+  .lf{background-color:var(--b2);background-image:
+      radial-gradient(circle at 50% 50%, rgba(255,214,158,.8) 0 1.2px, transparent 1.5px),
+      radial-gradient(circle at 50% 50%, rgba(255,196,128,.18) 0 1px, transparent 1.4px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,.28) 0 1px, transparent 1px 8px),
+      repeating-linear-gradient(0deg, rgba(0,0,0,.22) 0 1px, transparent 1px 9px);
+    background-size:16px 18px, 8px 9px, 100% 100%, 100% 100%;
+    background-position:1px 4px, 0 0, 0 0, 0 0;}
+  .rt{background-color:var(--b3);filter:brightness(.86)}
+  .top{background-color:var(--b4);box-shadow:0 0 0 1px rgba(255,220,180,.10) inset}
+  .cap{background-color:var(--b5);filter:brightness(1.06)}
+
+  .tree{position:absolute;left:0;top:0;transform-style:preserve-3d}
+  .trunk{width:5px;height:12px;margin-left:-2.5px;margin-top:-6px;background:#3c2a1c;
+    transform:translate3d(0,0,6px) rotateX(90deg)}
+  .leaf{width:20px;height:20px;margin:-10px 0 0 -10px;clip-path:polygon(50% 0,72% 42%,50% 46%,28% 42%);
+    background:linear-gradient(180deg,#3f6b4a,#20402c);transform:translate3d(0,0,12px) rotateX(90deg)}
+
+  .car{position:absolute;left:0;top:0;transform-style:preserve-3d}
+  .body{width:15px;height:8px;margin-left:-7.5px;margin-top:-4px;background:var(--car);
+    transform:translate3d(0,0,5px) rotateX(90deg);box-shadow:0 0 5px rgba(255,220,150,.5)}
+  .cab{width:8px;height:7px;margin:-3.5px 0 0 -4px;background:rgba(30,40,60,.85);
+    transform:translate3d(1px,0,9px) rotateX(90deg)}
+
+  .lamp{position:absolute;left:0;top:0;transform-style:preserve-3d}
+  .bulb{width:5px;height:5px;margin:-2.5px;background:#ffe2a8;border-radius:50%;
+    transform:translate3d(0,0,26px);box-shadow:0 0 12px 4px rgba(255,206,130,.55)}
+
+  .shade{position:fixed;left:0;top:0;right:0;bottom:0;z-index:7;pointer-events:none;
+    background:radial-gradient(76% 68% at 50% 46%, transparent 48%, rgba(18,10,26,.6) 100%)}
+
+  .ui{position:fixed;z-index:8;pointer-events:none}
+  .tl{left:clamp(14px,3vw,38px);top:clamp(14px,3vh,32px);max-width:min(46ch,64vw)}
+  .tl .k{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.34em;
+    text-transform:uppercase;color:#f0c68a;opacity:.85}
+  .tl h1{font-size:clamp(26px,4.4vw,60px);font-weight:700;letter-spacing:-.02em;line-height:.95;
+    margin:8px 0 10px;text-shadow:0 3px 18px rgba(0,0,0,.5)}
+  .tl p{font-size:clamp(11.5px,1.05vw,14px);line-height:1.75;font-weight:300;color:#e2d6c6;opacity:.86}
+  .tl p b{font-weight:500;color:#ffd89a}
+  .tr{right:clamp(14px,3vw,38px);top:clamp(14px,3vh,32px);text-align:right;
+    font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.2em;
+    text-transform:uppercase;color:#f0c68a}
+  .tr div{margin-bottom:9px}
+  .tr span{color:#c8b9ad;opacity:.75}
+  .br{right:clamp(14px,3vw,38px);bottom:clamp(14px,3vh,30px);text-align:right;
+    font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.28em;
+    text-transform:uppercase;color:#f0c68a;opacity:.8}
+  .bl{left:clamp(14px,3vw,38px);bottom:clamp(14px,3vh,30px);
+    font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.28em;
+    text-transform:uppercase;color:#c8b9ad;opacity:.7}
+  .bar{position:fixed;left:50%;bottom:clamp(12px,2.4vh,24px);transform:translateX(-50%);z-index:8;
+    display:flex;gap:8px;pointer-events:auto}
+  .bar button{font-family:"JetBrains Mono",monospace;font-size:9.5px;letter-spacing:.22em;
+    text-transform:uppercase;color:#ffd89a;background:rgba(20,12,30,.55);
+    border:1px solid rgba(255,200,140,.35);padding:8px 14px;cursor:pointer;backdrop-filter:blur(6px)}
+  .bar button:hover,.bar button:focus-visible{background:rgba(255,200,140,.16);outline:none}
+  @media (max-width:760px){
+    .tr{display:none}
+    .tl p{font-size:12px;line-height:1.6}
+    .stage{perspective:1000px}
+  }
+</style>
+</head>
+<body>
+<div class="sky" aria-hidden="true"></div>
+<div class="stars" aria-hidden="true"></div>
+
+<div class="stage" id="stage">
+  <div class="world" id="world">
+    <div class="plane water" aria-hidden="true"></div>
+    <div class="plane ground" aria-hidden="true"></div>
+    <div class="plane pier" aria-hidden="true"></div>
+  </div>
+</div>
+
+<div class="shade" aria-hidden="true"></div>
+<div class="haze" aria-hidden="true"></div>
+
+<div class="ui tl">
+  <div class="k">Diorama 07 &nbsp;/&nbsp; Harbour District</div>
+  <h1>Six&nbsp;Blocks Before<br>the Lights Go Out</h1>
+  <p>Forty-one buildings, one pier, a scatter of taxis on the ring road. The sun drops behind
+     the water tower at <b>7:12 PM</b> and every window decides, independently, whether to stay lit.
+     Drag the district to walk around it.</p>
+</div>
+
+<div class="ui tr">
+  <div>Blocks <span>6 × 6</span></div>
+  <div>Parcels <span>36</span></div>
+  <div>Elevation <span>+0.0 m</span></div>
+  <div>Sun <span>−4.2°</span></div>
+</div>
+
+<div class="ui bl">Drag to rotate &nbsp;·&nbsp; release to let it drift</div>
+<div class="ui br" id="readout">Heading 045° &nbsp;·&nbsp; Tilt 60°</div>
+
+<div class="bar">
+  <button id="spin" type="button">Pause drift</button>
+  <button id="tilt" type="button">Flatten</button>
+</div>
+
+<noscript>
+  <p style="position:fixed;left:50%;bottom:64px;transform:translateX(-50%);z-index:9;
+     font:10px/1 'JetBrains Mono',monospace;letter-spacing:.24em;text-transform:uppercase;color:#ffd89a">
+    Static dusk &mdash; the diorama requires JavaScript</p>
+</noscript>
+
+<script>
+(function(){
+  var world = document.getElementById('world');
+  var stage = document.getElementById('stage');
+  var readout = document.getElementById('readout');
+  var root = document.documentElement;
+
+  var seed = 19274;
+  function rnd(){ seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
+  function pick(a){ return a[Math.floor(rnd()*a.length)]; }
+
+  var WALLS = ['#4c4152','#5a4a5e','#3f3a4c','#6a5450','#3a4450','#5c4a44','#443a4a','#6e5a4a'];
+  var ROOFS = ['#2a2430','#332a30','#2b3040','#3a2f28','#26262e'];
+  var CARS  = ['#e6d6b0','#d8734f','#7fa9c4','#e0c25a','#b56f7a'];
+
+  function mk(tag, cls, parent, x, y, z, w, d, h, vars){
+    var e = document.createElement(tag);
+    e.className = cls;
+    e.style.setProperty('--w', w+'px');
+    e.style.setProperty('--d', d+'px');
+    e.style.setProperty('--h', h+'px');
+    for (var k in vars) e.style.setProperty(k, vars[k]);
+    e.style.transform = 'translate3d('+x+'px,'+y+'px,'+z+'px)';
+    parent.appendChild(e);
+    return e;
+  }
+
+  function building(x, y, w, d, h){
+    var lit = rnd();
+    var v = {
+      '--b1': pick(WALLS), '--b2': '#2a2532', '--b3': '#1e1a26',
+      '--b4': pick(ROOFS), '--b5': pick(ROOFS)
+    };
+    var c = mk('div','cube', world, x, y, 0.4, w, d, h, v);
+    ['top','fr','lf','rt'].forEach(function(f){
+      var el = document.createElement('div');
+      el.className = 'f '+f; el.style.cssText = 'position:absolute;left:0;top:0';
+      c.appendChild(el);
+    });
+    if (h > 90 && rnd() > .45){
+      var cw = w*0.34, cd = d*0.34, ch = 10 + rnd()*26;
+      var cv = {'--b1':v['--b1'],'--b2':v['--b2'],'--b3':v['--b3'],'--b4':v['--b5'],'--b5':v['--b5']};
+      var c2 = mk('div','cube', world, x + (rnd()-.5)*w*.4, y + (rnd()-.5)*d*.4, h, cw, cd, ch, cv);
+      ['top','fr','lf','rt'].forEach(function(f){
+        var el = document.createElement('div');
+        el.className = 'f '+f; el.style.cssText = 'position:absolute;left:0;top:0';
+        c2.appendChild(el);
+      });
+    }
+    if (lit > .28){
+      var pl = document.createElement('div');
+      pl.className = 'lamp';
+      pl.style.transform = 'translate3d('+(x+w*.5)+'px,'+(y+d*.5)+'px,0.6px)';
+      var b = document.createElement('div'); b.className='bulb'; pl.appendChild(b);
+      world.appendChild(pl);
+    }
+  }
+
+  function tree(x, y){
+    var t = document.createElement('div'); t.className='tree';
+    t.style.transform = 'translate3d('+x+'px,'+y+'px,0.4px)';
+    var a = document.createElement('div'); a.className='trunk';
+    var b = document.createElement('div'); b.className='leaf';
+    t.appendChild(a); t.appendChild(b); world.appendChild(t);
+  }
+  function car(x, y, c){
+    var e = document.createElement('div'); e.className='car';
+    e.style.setProperty('--car', c);
+    e.style.transform = 'translate3d('+x+'px,'+y+'px,0.5px)';
+    var b = document.createElement('div'); b.className='body';
+    var k = document.createElement('div'); k.className='cab';
+    e.appendChild(b); e.appendChild(k); world.appendChild(e);
+  }
+
+  var CELL = 46, N = 6, S = 500;
+  for (var gx = 0; gx < N; gx++){
+    for (var gy = 0; gy < N; gy++){
+      var x = -S + CELL/2 + gx*CELL;
+      var y = -S + CELL/2 + gy*CELL;
+      if (y < -S + 120) { tree(x, y); continue; }
+      if (rnd() < .12) { tree(x, y); continue; }
+      var inset = 3 + rnd()*3;
+      var w = CELL - inset*2 - rnd()*8;
+      var d = CELL - inset*2 - rnd()*8;
+      var h = 18 + Math.pow(rnd(), 1.9) * 168;
+      building(x, y, Math.max(12, w), Math.max(12, d), h);
+    }
+  }
+  for (var i = 0; i < 14; i++){
+    var along = -S + 40 + i * (1000/14);
+    car(along, -S + 46*(N%2?1:0) + (i%2? -3 : 3), pick(CARS));
+  }
+  for (var t2 = 0; t2 < 10; t2++){
+    var tx = -S + 60 + t2*92;
+    tree(tx, S - 40);
+  }
+
+  var spin = 0, target = 0, tilt = 60, tiltTarget = 60;
+  var dragging = false, lastX = 0, lastY = 0, vx = 0, auto = true;
+
+  stage.addEventListener('pointerdown', function(e){
+    dragging = true; auto = false; lastX = e.clientX; lastY = e.clientY;
+    stage.classList.add('drag'); stage.setPointerCapture(e.pointerId);
+  });
+  stage.addEventListener('pointermove', function(e){
+    if (!dragging) return;
+    var dx = e.clientX - lastX;
+    vx = dx * 0.34; spin += vx;
+    tiltTarget = Math.max(38, Math.min(72, tiltTarget - (e.clientY - lastY) * 0.12));
+    lastX = e.clientX; lastY = e.clientY;
+  });
+  function end(){ dragging = false; stage.classList.remove('drag'); }
+  stage.addEventListener('pointerup', end);
+  stage.addEventListener('pointercancel', end);
+
+  var spinBtn = document.getElementById('spin');
+  spinBtn.addEventListener('click', function(){
+    auto = !auto;
+    spinBtn.textContent = auto ? 'Pause drift' : 'Resume drift';
+  });
+  document.getElementById('tilt').addEventListener('click', function(){
+    tiltTarget = tiltTarget > 52 ? 40 : 64;
+    this.textContent = tiltTarget > 52 ? 'Flatten' : 'Raise';
+  });
+
+  function loop(){
+    if (!dragging){
+      if (auto) spin += 0.055;
+      vx *= 0.94;
+      if (Math.abs(vx) > 0.02 && !auto) spin += vx;
+    }
+    tilt += (tiltTarget - tilt) * 0.06;
+    spin = ((spin % 360) + 360) % 360;
+    root.style.setProperty('--spin', spin.toFixed(2) + 'deg');
+    root.style.setProperty('--tilt', tilt.toFixed(2) + 'deg');
+    if (readout && (loop.n = (loop.n||0)+1) % 6 === 0){
+      var h = Math.round(spin);
+      readout.textContent = 'Heading ' + String(h).padStart(3,'0') + '°  ·  Tilt ' + Math.round(tilt) + '°';
+    }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

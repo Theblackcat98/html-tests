@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>REFRACTION STUDY Nº 4 — Hall of Optical Glass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --void:#04090b;
+    --teal-deep:#062228;
+    --ink:#dff2f4;
+    --dim:rgba(223,242,244,.5);
+    --aqua:#5fe3d6;
+    --ice:#bfe9ff;
+    --amber:#ffcf94;
+    --serif:"Instrument Serif",Georgia,serif;
+    --sans:"Space Grotesk",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    --rx:-24deg; --ry:-30deg;
+  }
+  html,body{height:100%}
+  body{
+    font-family:var(--sans);
+    background:
+      radial-gradient(90% 70% at 50% 8%, #0b2a30 0%, #061a20 42%, var(--void) 78%);
+    color:var(--ink);
+    min-height:100dvh;overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  .noise{
+    position:fixed;inset:-25%;z-index:9;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .frame-vig{
+    position:fixed;inset:0;z-index:8;pointer-events:none;
+    box-shadow:inset 0 0 220px 40px rgba(0,0,0,.9);
+    background:radial-gradient(120% 100% at 50% 42%, transparent 52%, rgba(0,0,0,.5) 100%);
+  }
+
+  .shell{position:relative;z-index:5;min-height:100dvh;display:flex;flex-direction:column;padding:clamp(18px,3vw,46px)}
+
+  header{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:13px}
+  .brand i{
+    width:34px;height:34px;flex:none;position:relative;
+    background:linear-gradient(135deg, rgba(95,227,214,.5), rgba(191,233,255,.12));
+    box-shadow:inset 0 0 0 1px rgba(191,233,255,.5), 0 0 24px rgba(95,227,214,.3);
+    transform:rotate(45deg);
+  }
+  .brand b{display:block;font-size:12px;letter-spacing:.36em;text-transform:uppercase;font-weight:500}
+  .brand small{display:block;font-size:9px;letter-spacing:.24em;color:var(--dim);margin-top:4px;text-transform:uppercase}
+  nav{display:flex;gap:clamp(12px,1.8vw,30px);font-size:9.5px;letter-spacing:.3em;text-transform:uppercase;padding-top:6px}
+  nav a{color:var(--dim);text-decoration:none;transition:color .35s;padding-bottom:4px;border-bottom:1px solid transparent}
+  nav a:hover{color:var(--aqua);border-color:var(--aqua)}
+
+  main{flex:1;display:grid;grid-template-columns:minmax(240px,1fr) minmax(0,1.85fr) minmax(200px,.85fr);
+    gap:clamp(16px,2.4vw,40px);align-items:center}
+  @media (max-width:1080px){ main{grid-template-columns:1fr;gap:20px} .copy{order:2} .legend{order:3} }
+
+  .copy h1{
+    font-family:var(--serif);font-weight:400;
+    font-size:clamp(40px,5.4vw,84px);line-height:.92;letter-spacing:-.01em;margin-top:16px;
+  }
+  .copy h1 em{font-style:italic;color:var(--aqua)}
+  .kicker{font-size:9.5px;letter-spacing:.44em;text-transform:uppercase;color:var(--amber);display:flex;align-items:center;gap:12px}
+  .kicker::after{content:"";height:1px;flex:1;max-width:120px;background:linear-gradient(90deg,var(--amber),transparent)}
+  .copy p{margin-top:20px;font-size:14.5px;line-height:1.78;color:rgba(223,242,244,.78);max-width:36ch;font-weight:300}
+  .copy p b{color:#fff;font-weight:400}
+  .meta{margin-top:26px;display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:9.5px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--dim);border-top:1px solid rgba(95,227,214,.2);padding-top:16px;max-width:32ch}
+  .meta b{color:var(--ink);font-weight:400;text-align:right;letter-spacing:.06em;font-variant-numeric:tabular-nums}
+
+  /* ================= 3D STAGE ================= */
+  .stage{
+    position:relative;height:clamp(360px,58vh,660px);
+    perspective:1150px;perspective-origin:50% 44%;
+    display:grid;place-items:center;cursor:grab;touch-action:none;
+  }
+  .stage.drag{cursor:grabbing}
+  .scene{
+    position:relative;width:420px;height:300px;
+    transform-style:preserve-3d;
+    transform:rotateX(var(--rx)) rotateY(var(--ry));
+    transition:transform .28s cubic-bezier(.22,.9,.24,1);
+  }
+  .stage.drag .scene{transition:none}
+
+  /* floor */
+  .floor{
+    position:absolute;left:-320px;right:-320px;top:0;bottom:0;
+    transform:rotateX(90deg) translateZ(-150px);
+    transform-origin:center center;
+    background:
+      radial-gradient(50% 50% at 50% 46%, rgba(24,86,92,.55), rgba(4,14,18,.9) 70%),
+      linear-gradient(0deg, #020809, #061a20);
+    box-shadow:inset 0 0 90px rgba(0,0,0,.9);
+  }
+  .floor::after{
+    content:"";position:absolute;inset:0;
+    background:
+      repeating-linear-gradient(90deg, rgba(95,227,214,.07) 0 1px, transparent 1px 56px),
+      repeating-linear-gradient(0deg, rgba(95,227,214,.07) 0 1px, transparent 1px 56px);
+    mask-image:radial-gradient(60% 60% at 50% 50%, #000 10%, transparent 78%);
+    -webkit-mask-image:radial-gradient(60% 60% at 50% 50%, #000 10%, transparent 78%);
+  }
+  /* caustics */
+  .caustics{
+    position:absolute;inset:0;overflow:hidden;mix-blend-mode:screen;opacity:.85;pointer-events:none;
+  }
+  .caustics i{
+    position:absolute;border-radius:50%;
+    background:radial-gradient(circle at 40% 40%, rgba(190,250,255,.5), rgba(95,227,214,.18) 42%, transparent 70%);
+    filter:blur(9px);mix-blend-mode:screen;
+    animation:drift 11s ease-in-out infinite alternate;
+  }
+  @keyframes drift{0%{transform:translate(-14px,10px) scale(.9);opacity:.5}100%{transform:translate(18px,-12px) scale(1.2);opacity:.95}}
+  .caustic-ridge{
+    position:absolute;left:16%;right:16%;bottom:22%;height:34%;
+    background:radial-gradient(60% 100% at 50% 100%, rgba(120,230,255,.22), transparent 72%);
+    filter:blur(16px);mix-blend-mode:screen;
+  }
+
+  /* light source */
+  .lamp{
+    position:absolute;left:-260px;top:-210px;width:220px;height:220px;
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(255,255,255,.95) 0%, rgba(255,240,210,.5) 22%, rgba(255,220,160,.14) 50%, transparent 72%);
+    mix-blend-mode:screen;filter:blur(6px);
+    animation:flicker 7s ease-in-out infinite;
+  }
+  @keyframes flicker{0%,100%{opacity:.9;transform:scale(1)}43%{opacity:1;transform:scale(1.04)}71%{opacity:.78;transform:scale(.97)}}
+  .shaft{
+    position:absolute;left:-40px;top:-160px;width:420px;height:520px;
+    background:linear-gradient(198deg, rgba(255,244,220,.20), rgba(180,240,255,.06) 52%, transparent 76%);
+    clip-path:polygon(6% 0%, 34% 0%, 100% 100%, 0% 100%);
+    filter:blur(14px);mix-blend-mode:screen;pointer-events:none;
+  }
+
+  /* ---------- glass cube ---------- */
+  .cube{
+    position:absolute;left:50%;top:50%;width:190px;height:190px;margin:-95px 0 0 -95px;
+    transform-style:preserve-3d;cursor:pointer;
+  }
+  .cube--a{transform:translate3d(-120px,10px,0) rotateY(24deg) rotateX(-6deg)}
+  .cube--b{transform:translate3d(120px,-20px,-60px) rotateY(-18deg) rotateX(8deg) scale(.72)}
+  .cube--c{transform:translate3d(40px,64px,80px) rotateY(38deg) rotateX(-12deg) scale(.46)}
+  .face{
+    position:absolute;inset:0;
+    backface-visibility:hidden;
+    background:
+      linear-gradient(135deg, rgba(255,255,255,.30) 0%, rgba(120,220,255,.05) 34%, rgba(255,255,255,.02) 62%, rgba(95,227,214,.22) 100%);
+    box-shadow:
+      inset 0 0 0 1px rgba(214,250,255,.42),
+      inset 0 0 26px rgba(160,240,255,.22),
+      0 0 30px rgba(95,227,214,.14);
+    backdrop-filter:blur(3px) saturate(1.5);
+    -webkit-backdrop-filter:blur(3px) saturate(1.5);
+  }
+  .face::after{
+    content:"";position:absolute;inset:0;mix-blend-mode:screen;
+    background:linear-gradient(118deg, rgba(255,255,255,.5) 0%, transparent 26%, transparent 66%, rgba(191,233,255,.34) 100%);
+  }
+  .f1{transform:translateZ(95px)}
+  .f2{transform:rotateY(180deg) translateZ(95px)}
+  .f3{transform:rotateY(90deg) translateZ(95px)}
+  .f4{transform:rotateY(-90deg) translateZ(95px)}
+  .f5{transform:rotateX(90deg) translateZ(95px)}
+  .f6{transform:rotateX(-90deg) translateZ(95px)}
+  .f2,.f4,.f6{background-image:linear-gradient(210deg, rgba(255,255,255,.24), rgba(95,227,214,.16) 60%, rgba(160,220,255,.10));}
+
+  /* dispersion fringes */
+  .fringe{
+    position:absolute;inset:-6px;pointer-events:none;mix-blend-mode:screen;opacity:.5;
+    background:
+      linear-gradient(90deg, rgba(255,60,60,.55), rgba(60,255,180,.3) 30%, rgba(90,150,255,.4) 62%, rgba(255,90,200,.45));
+    filter:blur(9px);
+  }
+  .fringe--2{filter:blur(16px);opacity:.32;inset:-16px}
+
+  /* inner prism (3 faces) */
+  .prism{
+    position:absolute;left:50%;top:50%;width:0;height:0;
+    transform-style:preserve-3d;cursor:pointer;
+  }
+  .prism--main{transform:translate3d(0,0,110px)}
+  .pface{
+    position:absolute;width:0;height:0;margin-top:-66px;
+    border-left:78px solid transparent;
+    border-right:78px solid transparent;
+    border-bottom:132px solid rgba(190,245,255,.24);
+    filter:blur(.4px);
+    backface-visibility:hidden;
+    mix-blend-mode:screen;
+    box-shadow:0 0 22px rgba(120,230,255,.35);
+  }
+  .pface::after{
+    content:"";position:absolute;left:-78px;top:0;width:156px;height:132px;
+    background:linear-gradient(160deg, rgba(255,255,255,.5), rgba(255,120,180,.3) 45%, rgba(90,200,255,.35));
+    mix-blend-mode:screen;
+  }
+  .pa{transform:rotateX(-72deg)}
+  .pb{transform:rotateY(120deg) rotateX(-72deg)}
+  .pc{transform:rotateY(-120deg) rotateX(-72deg)}
+  .prism--tall{transform:translate3d(60px,0,150px) rotateY(-30deg) scale(.8)}
+
+  /* tint swatch rings under the cubes */
+  .halo{
+    position:absolute;left:50%;top:50%;width:340px;height:340px;margin:-170px 0 0 -170px;
+    transform:translateZ(-40px);
+    background:radial-gradient(circle, var(--tint, rgba(95,227,214,.3)) 0%, transparent 62%);
+    mix-blend-mode:screen;filter:blur(22px);opacity:.5;
+    transition:background .5s;
+    pointer-events:none;
+  }
+
+  .legend{
+    display:flex;flex-direction:column;gap:10px;
+  }
+  .legend h2{font-size:9.5px;letter-spacing:.38em;text-transform:uppercase;color:var(--amber)}
+  .tints{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+  .tint-btn{
+    display:flex;align-items:center;gap:12px;padding:11px 13px;border:0;cursor:pointer;
+    background:rgba(223,242,244,.04);box-shadow:inset 0 0 0 1px rgba(223,242,244,.14);
+    color:var(--ink);text-align:left;transition:background .35s, box-shadow .35s, transform .35s;
+    border-radius:2px;
+  }
+  .tint-btn:hover{transform:translateX(4px);background:rgba(223,242,244,.09)}
+  .tint-btn.on{background:rgba(95,227,214,.14);box-shadow:inset 0 0 0 1px rgba(95,227,214,.5)}
+  .tint-btn i{width:16px;height:16px;flex:none;border-radius:50%;box-shadow:0 0 12px currentColor}
+  .tint-btn span{font-size:10.5px;letter-spacing:.18em;text-transform:uppercase}
+  .tint-btn small{display:block;font-size:9px;letter-spacing:.08em;color:var(--dim);margin-top:3px;text-transform:none}
+  .readline{margin-top:18px;font-size:11px;line-height:1.7;color:var(--dim);border-top:1px solid rgba(95,227,214,.18);padding-top:14px}
+  .readline b{color:var(--aqua);font-weight:400}
+
+  footer{
+    display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;
+    border-top:1px solid rgba(95,227,214,.16);padding-top:16px;margin-top:8px;
+    font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--dim)
+  }
+  footer b{color:var(--ink);font-weight:400}
+  .tip{display:flex;align-items:center;gap:9px}
+  .tip i{width:5px;height:5px;border-radius:50%;background:var(--aqua);box-shadow:0 0 10px var(--aqua);animation:b 2.4s ease-in-out infinite}
+  @keyframes b{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.6);opacity:1}}
+
+  noscript{
+    position:relative;z-index:10;margin:20px auto 0;max-width:60ch;padding:18px 22px;border-radius:3px;
+    background:rgba(6,26,32,.94);box-shadow:inset 0 0 0 1px rgba(95,227,214,.4);
+    font-size:14px;line-height:1.65;color:var(--ink)
+  }
+  @media (max-width:560px){ nav{display:none} .stage{height:56vh} }
+</style>
+</head>
+<body>
+<div class="frame-vig" aria-hidden="true"></div>
+<div class="noise" aria-hidden="true"></div>
+
+<div class="shell">
+  <header>
+    <div class="brand">
+      <i aria-hidden="true"></i>
+      <span>
+        <b>Hall of Optical Glass</b>
+        <small>Rotunda 3 &middot; North wall</small>
+      </span>
+    </div>
+    <nav aria-label="Primary">
+      <a href="#">Studies</a>
+      <a href="#">Instruments</a>
+      <a href="#">Archive</a>
+      <a href="#">Visit</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="copy">
+      <p class="kicker">Study Nº 4</p>
+      <h1>What the light<br>does on the <em>way through</em></h1>
+      <p>
+        Four pieces of lead crystal, cast in <b>1931</b> and re-polished last winter. Turn the
+        rotunda and the dispersion walks across the floor — each edge throws a thin spectrum that
+        is <b>narrower than the eye can hold</b>.
+      </p>
+      <div class="meta">
+        <span>Material</span><b>Lead crystal, 32 % PbO</b>
+        <span>Index</span><b>n = 1.534 @ 589 nm</b>
+        <span>Abbe</span><b>64.2</b>
+        <span>Cast</span><b>Baccarat, 1931</b>
+        <span>Re-polished</span><b>Feb 2026</b>
+      </div>
+    </section>
+
+    <div class="stage" id="stage" role="img"
+         aria-label="Three-dimensional glass cubes and prisms. Drag to orbit the scene. Select a tint to recolour the glass.">
+      <div class="scene" id="scene">
+        <div class="floor" aria-hidden="true"></div>
+        <div class="caustics" id="caustics" aria-hidden="true"></div>
+        <div class="caustic-ridge" aria-hidden="true"></div>
+        <div class="lamp" aria-hidden="true"></div>
+        <div class="shaft" aria-hidden="true"></div>
+        <div class="halo" id="halo" aria-hidden="true"></div>
+
+        <div class="cube cube--a" data-object="Cube A">
+          <span class="face f1"></span><span class="face f2"></span>
+          <span class="face f3"></span><span class="face f4"></span>
+          <span class="face f5"></span><span class="face f6"></span>
+          <span class="fringe" aria-hidden="true"></span>
+        </div>
+
+        <div class="cube cube--b" data-object="Cube B">
+          <span class="face f1"></span><span class="face f2"></span>
+          <span class="face f3"></span><span class="face f4"></span>
+          <span class="face f5"></span><span class="face f6"></span>
+          <span class="fringe fringe--2" aria-hidden="true"></span>
+        </div>
+
+        <div class="cube cube--c" data-object="Cube C">
+          <span class="face f1"></span><span class="face f2"></span>
+          <span class="face f3"></span><span class="face f4"></span>
+          <span class="face f5"></span><span class="face f6"></span>
+        </div>
+
+        <div class="prism prism--main" data-object="Prism">
+          <span class="pface pa"></span><span class="pface pb"></span><span class="pface pc"></span>
+        </div>
+        <div class="prism prism--tall" data-object="Prism II" aria-hidden="true">
+          <span class="pface pa"></span><span class="pface pb"></span><span class="pface pc"></span>
+        </div>
+      </div>
+    </div>
+
+    <aside class="legend">
+      <h2>Glass stock</h2>
+      <div class="tints" id="tints">
+        <button class="tint-btn on" data-tint="0" type="button">
+          <i style="color:#5fe3d6;background:#5fe3d6"></i>
+          <span>Optical<small>Clear, 32 % PbO</small></span>
+        </button>
+        <button class="tint-btn" data-tint="1" type="button">
+          <i style="color:#ff7ad0;background:#ff7ad0"></i>
+          <span>Rose<small>Fluorite, dichroic coat</small></span>
+        </button>
+        <button class="tint-btn" data-tint="2" type="button">
+          <i style="color:#bfe9ff;background:#bfe9ff"></i>
+          <span>Selenite<small>Neutral, high dispersion</small></span>
+        </button>
+        <button class="tint-btn" data-tint="3" type="button">
+          <i style="color:#ffc477;background:#ffc477"></i>
+          <span>Amber<small>Zinc crystal, warm</small></span>
+        </button>
+        <button class="tint-btn" data-tint="4" type="button">
+          <i style="color:#9dffd0;background:#9dffd0"></i>
+          <span>Verdigris<small>Copper-doped, 1927</small></span>
+        </button>
+      </div>
+      <p class="readline">
+        Current cast: <b id="curTint">Optical clear</b>.<br>
+        Drag anywhere on the case to orbit. Click any solid to cycle its glass.
+      </p>
+    </aside>
+  </main>
+
+  <footer>
+    <span><b>Hall of Optical Glass</b> &mdash; open Wed&ndash;Sun, 10:00&ndash;18:00</span>
+    <span class="tip"><i aria-hidden="true"></i> Drag to orbit &middot; click a solid to change its glass</span>
+  </footer>
+  <noscript>The three-dimensional case needs JavaScript for orbiting and tinting. The written notes remain available above.</noscript>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- caustics on the floor ---------- */
+  var cau = document.getElementById("caustics");
+  var cols = ["rgba(190,250,255,.5)","rgba(150,255,225,.45)","rgba(255,214,180,.4)","rgba(200,230,255,.42)"];
+  for(var i=0;i<16;i++){
+    var s = document.createElement("i");
+    var sz = 30 + Math.random()*110;
+    s.style.width = sz + "px"; s.style.height = sz*(0.5+Math.random()*0.6)+"px";
+    s.style.left = (Math.random()*100) + "%";
+    s.style.top = (20 + Math.random()*70) + "%";
+    s.style.background = "radial-gradient(circle at 42% 40%, " + cols[i%cols.length] + ", transparent 68%)";
+    s.style.animationDuration = (7 + Math.random()*11) + "s";
+    s.style.animationDelay = (-Math.random()*14) + "s";
+    cau.appendChild(s);
+  }
+
+  /* ---------- orbit ---------- */
+  var stage = document.getElementById("stage"), scene = document.getElementById("scene");
+  var rx = -24, ry = -30, trx = -24, try_ = -30, drag = false, lx = 0, ly = 0, vx = 0, vy = 0, moved = 0;
+
+  stage.addEventListener("pointerdown", function(e){
+    drag = true; moved = 0; lx = e.clientX; ly = e.clientY;
+    stage.classList.add("drag");
+    stage.setPointerCapture && stage.setPointerCapture(e.pointerId);
+  });
+  window.addEventListener("pointermove", function(e){
+    if(!drag) return;
+    var dx = e.clientX - lx, dy = e.clientY - ly;
+    moved += Math.abs(dx) + Math.abs(dy);
+    vx = dx * 0.45; vy = dy * 0.35;
+    try_ = Math.max(-88, Math.min(88, try_ + dx * 0.5));
+    trx = Math.max(-72, Math.min(72, trx - dy * 0.4));
+    lx = e.clientX; ly = e.clientY;
+    render();
+  });
+  window.addEventListener("pointerup", function(){
+    drag = false; stage.classList.remove("drag");
+  });
+
+  function render(){
+    scene.style.setProperty("--rx", trx.toFixed(2) + "deg");
+    scene.style.setProperty("--ry", try_.toFixed(2) + "deg");
+  }
+
+  /* ---------- tints ---------- */
+  var TINTS = [
+    {name:"Optical clear", face:"linear-gradient(135deg, rgba(255,255,255,.30) 0%, rgba(120,220,255,.05) 34%, rgba(255,255,255,.02) 62%, rgba(95,227,214,.22) 100%)",
+     halo:"rgba(95,227,214,.34)", prism:"rgba(190,245,255,.24)", edge:"rgba(214,250,255,.42)"},
+    {name:"Rose", face:"linear-gradient(135deg, rgba(255,214,238,.34) 0%, rgba(255,120,200,.10) 34%, rgba(255,190,230,.06) 62%, rgba(255,122,208,.26) 100%)",
+     halo:"rgba(255,122,208,.34)", prism:"rgba(255,200,235,.26)", edge:"rgba(255,214,240,.48)"},
+    {name:"Selenite", face:"linear-gradient(135deg, rgba(255,255,255,.36) 0%, rgba(150,200,255,.12) 34%, rgba(220,240,255,.06) 62%, rgba(191,233,255,.28) 100%)",
+     halo:"rgba(191,233,255,.36)", prism:"rgba(215,240,255,.28)", edge:"rgba(226,244,255,.55)"},
+    {name:"Amber", face:"linear-gradient(135deg, rgba(255,240,214,.34) 0%, rgba(255,180,90,.12) 34%, rgba(255,225,180,.06) 62%, rgba(255,196,119,.28) 100%)",
+     halo:"rgba(255,196,119,.34)", prism:"rgba(255,226,180,.26)", edge:"rgba(255,236,206,.5)"},
+    {name:"Verdigris", face:"linear-gradient(135deg, rgba(214,255,238,.32) 0%, rgba(60,220,160,.12) 34%, rgba(180,255,220,.06) 62%, rgba(157,255,208,.26) 100%)",
+     halo:"rgba(157,255,208,.34)", prism:"rgba(200,255,228,.26)", edge:"rgba(214,255,238,.48)"}
+  ];
+  var faces = [].slice.call(document.querySelectorAll(".face"));
+  var prisms = [].slice.call(document.querySelectorAll(".pface"));
+  var halos = [].slice.call(document.querySelectorAll(".halo"));
+  var cur = document.getElementById("curTint");
+  var current = 0;
+  var perObject = {};
+
+  function applyTint(idx){
+    var t = TINTS[idx];
+    faces.forEach(function(f){ f.style.background = t.face; f.style.boxShadow = "inset 0 0 0 1px " + t.edge + ", inset 0 0 26px rgba(160,240,255,.2), 0 0 30px rgba(95,227,214,.14)"; });
+    prisms.forEach(function(p){ p.style.borderBottomColor = t.prism; });
+    halos.forEach(function(h){ h.style.setProperty("--tint", t.halo); });
+    cur.textContent = t.name;
+  }
+
+  document.getElementById("tints").addEventListener("click", function(e){
+    var b = e.target.closest(".tint-btn");
+    if(!b) return;
+    [].forEach.call(document.querySelectorAll(".tint-btn"), function(x){ x.classList.remove("on"); });
+    b.classList.add("on");
+    current = parseInt(b.getAttribute("data-tint"), 10) || 0;
+    applyTint(current);
+  });
+
+  /* click a solid to cycle its own glass */
+  var solids = [].slice.call(document.querySelectorAll(".cube, .prism"));
+  solids.forEach(function(s){
+    s.addEventListener("click", function(e){
+      if(moved > 8){ e.stopPropagation(); return; }
+      var key = s.getAttribute("data-object");
+      var next = ((perObject[key] == null ? current : perObject[key]) + 1) % TINTS.length;
+      perObject[key] = next;
+      var group = s.querySelectorAll(".face, .pface");
+      group.forEach(function(f){ f.style.background = ""; f.style.boxShadow = ""; f.style.borderBottomColor = ""; });
+      var t = TINTS[next];
+      s.querySelectorAll(".face").forEach(function(f){
+        f.style.background = t.face;
+        f.style.boxShadow = "inset 0 0 0 1px " + t.edge + ", inset 0 0 26px rgba(160,240,255,.2), 0 0 34px " + t.halo;
+      });
+      s.querySelectorAll(".pface").forEach(function(p){ p.style.borderBottomColor = t.prism; });
+      cur.textContent = key + " → " + t.name;
+    });
+  });
+  applyTint(0);
+
+  /* ---------- idle motion + inertia ---------- */
+  var idle = 0;
+  (function loop(){
+    idle += 0.016;
+    if(!drag){
+      try_ += vx; vx *= 0.94;
+      trx += vy; vy *= 0.94;
+      try_ = Math.max(-88, Math.min(88, try_));
+      trx = Math.max(-72, Math.min(72, trx));
+      try_ += Math.sin(idle*0.24) * 0.09;
+      trx += Math.cos(idle*0.19) * 0.06;
+    }
+    rx = trx; ry = try_;
+    render();
+    requestAnimationFrame(loop);
+  })();
+})();
+</script>
+</body>
+</html>

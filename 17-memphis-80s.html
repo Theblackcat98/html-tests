@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MEMPHIS — Ten Years of Deliberate Bad Taste, 1981–1991</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pink:#ff4f9a;
+    --teal:#4dd6c8;
+    --yellow:#ffd23f;
+    --ink:#1e1e2c;
+    --paper:#f7f3e8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--paper); color:var(--ink); overflow:hidden;
+    font-family:"Space Grotesk","Helvetica Neue",Arial,sans-serif;
+  }
+  .terrazzo{
+    position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.9;
+    background-color:var(--paper);
+    background-image:
+      radial-gradient(circle at 22% 28%, var(--pink) 0 3.4px, transparent 4px),
+      radial-gradient(circle at 71% 62%, var(--teal) 0 3px, transparent 3.6px),
+      radial-gradient(circle at 44% 79%, var(--yellow) 0 3.8px, transparent 4.4px),
+      radial-gradient(circle at 86% 16%, var(--ink) 0 2.2px, transparent 2.8px),
+      radial-gradient(circle at 8% 71%, var(--teal) 0 2.6px, transparent 3.2px),
+      repeating-linear-gradient(27deg, rgba(30,30,44,.055) 0 1.2px, transparent 1.2px 7px);
+    background-size:48px 48px, 64px 64px, 55px 55px, 38px 38px, 72px 72px, auto;
+  }
+  .stage{position:relative; z-index:2; height:100dvh; width:100%;
+    cursor:pointer; overflow:hidden}
+  .pos{position:absolute; will-change:transform; transform-origin:50% 50%}
+
+  /* ---- the headline, letters knocked off the grid ---- */
+  .lockup{left:clamp(16px,4vw,72px);top:clamp(14px,4vh,60px);z-index:6}
+  .lockup h1{display:flex;flex-wrap:nowrap;line-height:.78}
+  .lockup h1 span{
+    font-family:"Archivo Black","Arial Black",Impact,sans-serif;
+    font-size:clamp(52px,12.5vw,186px); letter-spacing:-.03em; display:block;
+    padding-right:.02em;
+  }
+  .lockup h1 span:nth-child(odd){color:var(--ink)}
+  .lockup h1 span:nth-child(3n){color:var(--pink);transform:translateY(.08em)}
+  .lockup h1 span:nth-child(4n){color:var(--teal);transform:translateY(-.05em)}
+  .lockup .row2{margin-top:-.04em;padding-left:.14em}
+  .lockup .row2 span:nth-child(3n){color:var(--ink)}
+  .lockup .row2 span:nth-child(4n){color:var(--yellow);-webkit-text-stroke:2px var(--ink)}
+  .kicker{
+    display:inline-block; background:var(--ink); color:var(--paper);
+    font-family:"Space Mono",monospace; font-size:clamp(9px,1vw,12px);
+    letter-spacing:.3em; text-transform:uppercase; padding:7px 13px; margin-bottom:14px;
+    transform:rotate(-1.6deg);
+  }
+  .sub{position:absolute;left:clamp(18px,4vw,74px);top:clamp(210px,40vh,420px);z-index:6;
+    width:min(38ch,72vw)}
+  .sub p{font-size:clamp(13px,1.15vw,16px);line-height:1.7;font-weight:500}
+  .sub p b{background:var(--yellow);padding:0 .22em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+  .sub .who{font-family:"Space Mono",monospace;font-size:10.5px;letter-spacing:.24em;
+    text-transform:uppercase;margin-top:14px;display:block;color:var(--ink);opacity:.7}
+
+  /* ---- poster blocks ---- */
+  .card{
+    background:var(--ink); color:var(--paper); padding:16px 18px;
+    box-shadow:9px 9px 0 var(--pink);
+  }
+  .card h3{font-family:"Archivo Black",sans-serif;font-size:clamp(15px,1.6vw,22px);
+    letter-spacing:.01em;text-transform:uppercase;line-height:1.05}
+  .card ul{list-style:none;margin-top:11px}
+  .card li{font-family:"Space Mono",monospace;font-size:10.5px;line-height:2;letter-spacing:.08em;
+    display:flex;justify-content:space-between;gap:14px;border-bottom:1px dashed rgba(247,243,232,.22)}
+  .card li span{color:var(--yellow)}
+  .cardA{right:clamp(14px,4vw,72px);top:clamp(18px,5vh,80px);width:clamp(198px,20vw,272px);
+    transform:rotate(2.4deg);z-index:5}
+  .cardB{right:clamp(10px,8vw,150px);bottom:clamp(70px,14vh,150px);width:clamp(186px,19vw,258px);
+    background:var(--teal);color:var(--ink);box-shadow:9px 9px 0 var(--ink);transform:rotate(-3.2deg);z-index:5}
+  .cardB .big{font-family:"Archivo Black",sans-serif;font-size:clamp(40px,5.4vw,74px);line-height:.84;
+    letter-spacing:-.02em}
+  .cardB p{font-family:"Space Mono",monospace;font-size:10px;line-height:1.75;margin-top:9px}
+
+  /* ---- confetti furniture ---- */
+  .tri{width:clamp(30px,4vw,56px);aspect-ratio:1;background:var(--yellow);
+    clip-path:polygon(50% 0,100% 100%,0 100%)}
+  .tri.p{background:var(--pink)}.tri.t{background:var(--teal)}.tri.k{background:var(--ink)}
+  .blob{background:var(--pink);mix-blend-mode:multiply}
+  .blob.b2{background:var(--teal)}.blob.b3{background:var(--yellow)}
+  .ring{border:clamp(7px,1vw,13px) solid var(--ink);background:none}
+  .bar{height:clamp(14px,1.6vw,22px);background:var(--ink)}
+  .bar.b{background:var(--pink)}.bar.c{background:var(--teal)}
+  .tape{
+    width:clamp(80px,10vw,140px);height:clamp(22px,2.4vw,32px);
+    background:rgba(255,210,63,.72);border:1px dashed var(--ink);
+    display:grid;place-items:center;font-family:"Space Mono",monospace;
+    font-size:9px;letter-spacing:.2em;text-transform:uppercase;
+  }
+  .sq{overflow:visible}
+  .sq path{
+    fill:none;stroke:var(--ink);stroke-width:3;stroke-linecap:round;
+    stroke-dasharray:9 13;animation:march 1.6s linear infinite;
+  }
+  .sq.p path{stroke:var(--pink)}.sq.t path{stroke:var(--teal)}.sq.y path{stroke:var(--yellow)}
+  .sq.k path{stroke:var(--ink)}
+  .sq.slow path{stroke-dasharray:240;stroke-dashoffset:240;animation:draw 4.2s ease-in-out infinite}
+  @keyframes march{to{stroke-dashoffset:-44}}
+  @keyframes draw{0%{stroke-dashoffset:240}55%,100%{stroke-dashoffset:0}}
+
+  .tag{
+    left:50%;bottom:clamp(58px,10vh,110px);transform:translateX(-50%) rotate(-1.4deg);
+    background:var(--yellow);border:2px solid var(--ink);padding:9px 18px;z-index:7;
+    font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.24em;text-transform:uppercase;
+    box-shadow:5px 5px 0 var(--ink);
+  }
+  .foot{
+    position:absolute; left:clamp(16px,4vw,72px);bottom:clamp(16px,3vh,34px);z-index:6;
+    font-family:"Space Mono",monospace;font-size:9.5px;letter-spacing:.22em;
+    text-transform:uppercase;opacity:.62;
+  }
+  .stamp{
+    position:absolute;right:clamp(14px,4vw,72px);bottom:clamp(16px,3vh,34px);z-index:6;
+    border:2px solid var(--ink);padding:7px 12px;transform:rotate(5deg);
+    font-family:"Space Mono",monospace;font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;
+  }
+  @media (max-width:900px){
+    .cardA{width:clamp(150px,34vw,210px);top:auto;bottom:clamp(64px,12vh,120px);right:12px}
+    .cardB{display:none}
+    .sub{top:auto;bottom:clamp(190px,34vh,300px)}
+    .lockup .row2{padding-left:.05em}
+  }
+  @media (max-width:560px){
+    .sub{width:min(40ch,86vw);bottom:clamp(180px,36vh,320px)}
+    .stamp{display:none}
+    .cardA{box-shadow:6px 6px 0 var(--pink);padding:12px}
+  }
+</style>
+</head>
+<body>
+<div class="terrazzo" aria-hidden="true"></div>
+
+<main class="stage" id="stage">
+  <header class="pos lockup" data-x="0" data-y="0" data-float="14">
+    <span class="kicker">Est. Milan &nbsp;·&nbsp; 1981 — 1991</span>
+    <h1 aria-label="Memphis Group">
+      <span class="row1" aria-hidden="true">
+        <span>M</span><span>E</span><span>M</span><span>P</span><span>H</span><span>I</span><span>S</span>
+      </span>
+    </h1>
+    <h1 class="row2" aria-hidden="true">
+      <span>G</span><span>R</span><span>O</span><span>U</span><span>P</span>
+    </h1>
+  </header>
+
+  <div class="pos sub" data-x="0" data-y="0" data-float="20">
+    <p>Ten designers, one rule: <b>nothing may be tasteful.</b> Sottsass, Scala, Lacher, De Pas,
+       D'Urbino and the rest built furniture like it was a poster for itself — laminates
+       fighting laminates, bolts left proud, colour used as structure rather than finish.
+       Then the world bought it, and taste never recovered.</p>
+    <span class="who">Curated by Ada Reiner &nbsp;·&nbsp; Kunsthalle Basel &nbsp;·&nbsp; Room 4</span>
+  </div>
+
+  <div class="pos card cardA" data-x="0" data-y="0" data-float="17">
+    <h3>Ten years,<br>nine chairs</h3>
+    <ul>
+      <li>Carlton <span>1981</span></li>
+      <li>Bel Air <span>1982</span></li>
+      <li>Tahiti <span>1983</span></li>
+      <li>First Chair <span>1983</span></li>
+      <li>Century <span>1984</span></li>
+      <li>Royal <span>1986</span></li>
+      <li>Miss <span>1987</span></li>
+      <li>Long Island <span>1988</span></li>
+      <li>Havana <span>1991</span></li>
+    </ul>
+  </div>
+
+  <div class="pos card cardB" data-x="0" data-y="0" data-float="19">
+    <div class="big">1 000<br>pieces</div>
+    <p>Objects made in a decade, of which roughly 40% still work and 100% are photographed.</p>
+  </div>
+
+  <div class="pos tri" style="left:6%;top:62%" data-x="0" data-y="0" data-float="26"></div>
+  <div class="pos tri p" style="left:20%;top:78%" data-x="0" data-y="0" data-float="23"></div>
+  <div class="pos tri t" style="left:34%;top:22%;width:34px" data-x="0" data-y="0" data-float="29"></div>
+  <div class="pos tri k" style="left:52%;top:70%;width:26px" data-x="0" data-y="0" data-float="24"></div>
+  <div class="pos tri p" style="left:93%;top:52%;width:44px" data-x="0" data-y="0" data-float="28"></div>
+
+  <div class="pos blob" style="left:8%;top:44%;width:120px;height:112px;border-radius:62% 38% 46% 54% / 45% 58% 42% 55%"
+       data-x="0" data-y="0" data-float="18"></div>
+  <div class="pos blob b2" style="left:44%;top:52%;width:76px;height:96px;border-radius:38% 62% 55% 45% / 60% 40% 60% 40%"
+       data-x="0" data-y="0" data-float="22"></div>
+  <div class="pos blob b3" style="left:60%;top:80%;width:96px;height:80px;border-radius:50% 50% 40% 60% / 30% 60% 40% 70%"
+       data-x="0" data-y="0" data-float="21"></div>
+  <div class="pos ring" style="left:12%;top:20%;width:64px;height:64px;border-radius:50%" data-x="0" data-y="0" data-float="25"></div>
+  <div class="pos ring" style="left:88%;top:24%;width:44px;height:44px;border-radius:44% 56% 50% 50%/60% 40% 60% 40%;border-color:var(--pink);border-width:9px" data-x="0" data-y="0" data-float="27"></div>
+
+  <div class="pos bar" style="left:5%;top:90%;width:120px" data-x="0" data-y="0" data-float="16"></div>
+  <div class="pos bar b" style="left:5%;top:calc(90% + 28px);width:74px" data-x="0" data-y="0" data-float="18"></div>
+  <div class="pos bar c" style="left:5%;top:calc(90% + 56px);width:96px" data-x="0" data-y="0" data-float="20"></div>
+
+  <div class="pos tape" style="left:26%;top:14%" data-x="0" data-y="0" data-float="23">archivo</div>
+  <div class="pos tape" style="left:70%;top:34%;background:rgba(77,214,200,.72)" data-x="0" data-y="0" data-float="26">laminate 04</div>
+
+  <svg class="pos sq slow" style="left:2%;top:6%;width:150px;height:64px" viewBox="0 0 150 64"
+       data-x="0" data-y="0" data-float="19">
+    <path d="M4 46 q 14 -42 28 -6 t 28 -10 t 28 6 t 28 -14 t 28 8"/>
+  </svg>
+  <svg class="pos sq" style="left:64%;top:64%;width:180px;height:70px" viewBox="0 0 180 70"
+       data-x="0" data-y="0" data-float="21">
+    <path d="M6 40 q 18 -34 36 -2 t 36 -8 t 36 10 t 36 -16 t 36 12"/>
+  </svg>
+  <svg class="pos sq p" style="left:78%;top:8%;width:120px;height:120px" viewBox="0 0 120 120"
+       data-x="0" data-y="0" data-float="24">
+    <path d="M60 10 a 50 50 0 1 1 -0.1 0 M60 30 a 30 30 0 1 1 -0.1 0 M60 50 a 10 10 0 1 1 -0.1 0"/>
+  </svg>
+  <svg class="pos sq y" style="left:14%;top:70%;width:140px;height:52px" viewBox="0 0 140 52"
+       data-x="0" data-y="0" data-float="22">
+    <path d="M4 26 l 16 -20 l 16 20 l 16 -20 l 16 20 l 16 -20 l 16 20 l 16 -20 l 16 20"/>
+  </svg>
+
+  <div class="pos tag" data-x="0" data-y="0" data-float="15" id="tag">Click anywhere</div>
+
+  <p class="foot">Forty objects, four walls &nbsp;·&nbsp; 12 March — 2 June</p>
+  <div class="stamp">Tickets F12</div>
+</main>
+
+<noscript>
+  <p style="position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;background:#1e1e2c;
+     color:#f7f3e8;padding:14px 20px;font:12px 'Space Mono',monospace;letter-spacing:.2em;text-transform:uppercase">
+    Static poster &mdash; the scatter animation requires JavaScript</p>
+</noscript>
+
+<script>
+(function(){
+  var stage = document.getElementById('stage');
+  var tag = document.getElementById('tag');
+  var nodes = Array.prototype.slice.call(document.querySelectorAll('.pos'));
+  var W = window.innerWidth, H = window.innerHeight;
+
+  nodes.forEach(function(n){
+    var r = n.getBoundingClientRect();
+    n.style.left = r.left + 'px';
+    n.style.top = r.top + 'px';
+    n._h = {
+      x: 0, y: 0, vx: 0, vy: 0, r: 0, vr: 0,
+      amp: parseFloat(n.getAttribute('data-float')) || 16,
+      ph: Math.random() * Math.PI * 2,
+      sp: 0.5 + Math.random() * 0.8
+    };
+  });
+
+  function reset(el){
+    el._h.x = 0; el._h.y = 0; el._h.vx = 0; el._h.vy = 0;
+    el._h.r = 0; el._h.vr = 0;
+  }
+  function kick(el, power){
+    var d = Math.random() * Math.PI * 2;
+    var sp = (3 + Math.random() * 9) * power;
+    el._h.vx += Math.cos(d) * sp;
+    el._h.vy += Math.sin(d) * sp - power * 2.2;
+    el._h.vr += (Math.random() - .5) * 14 * power;
+  }
+
+  var scattered = false;
+  function toggle(){
+    scattered = !scattered;
+    if (scattered){
+      nodes.forEach(function(n, i){ setTimeout(function(){ kick(n, 1); }, i * 22); });
+      tag.textContent = 'Click to gather';
+    } else {
+      tag.textContent = 'Click anywhere';
+    }
+  }
+  stage.addEventListener('click', function(e){
+    if (e.target.closest && e.target.closest('a')) return;
+    toggle();
+  });
+  document.addEventListener('keydown', function(e){
+    if (e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); toggle(); }
+    if (e.key === 'Escape'){ scattered = false; tag.textContent = 'Click anywhere'; }
+  });
+
+  function loop(t){
+    var time = t * 0.001;
+    nodes.forEach(function(n){
+      var h = n._h;
+      h.vx += (-h.x) * 0.018;
+      h.vy += (-h.y) * 0.018;
+      h.vx *= 0.94; h.vy *= 0.94;
+      h.x += h.vx; h.y += h.vy;
+      h.vr += (-h.r) * 0.03; h.vr *= 0.93; h.r += h.vr;
+      var bob = Math.sin(time * h.sp + h.ph) * (h.amp * 0.5);
+      var sway = Math.cos(time * h.sp * 0.7 + h.ph) * (h.amp * 0.18);
+      n.style.transform = 'translate3d(' + (h.x + sway).toFixed(2) + 'px,' +
+        (h.y + bob).toFixed(2) + 'px,0) rotate(' + h.r.toFixed(2) + 'deg)';
+    });
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+  window.addEventListener('resize', function(){ W = window.innerWidth; H = window.innerHeight; });
+})();
+</script>
+</body>
+</html>

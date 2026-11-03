@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dobashi Kiln — Wabi-Sabi Pottery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Zen+Old+Mincho:wght@400;500&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --plaster-1:#e2dcd2; --plaster-2:#cec5b8; --plaster-3:#b0a496;
+    --wood-1:#9a8265; --wood-2:#6d5a44; --wood-3:#4a3d2d;
+    --ink:#2f2a24; --ink-2:#6e655a; --ink-3:#9a9084;
+    --serif:"Cormorant Garamond","Zen Old Mincho",Georgia,"Times New Roman",serif;
+    --jp:"Zen Old Mincho","Yu Mincho","Hiragino Mincho ProN","Noto Serif JP",serif;
+    --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+    --px:52%; --py:28%;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden}
+  body{
+    font-family:var(--serif);color:var(--ink);
+    background:#b6aa9b;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ---------- plaster wall ---------- */
+  .wall{
+    position:fixed;inset:0;
+    background:
+      radial-gradient(140% 100% at var(--px) calc(var(--py) - 12%),
+        #f2ece2 0%, var(--plaster-1) 30%, var(--plaster-2) 66%, var(--plaster-3) 100%);
+    transition:background .25s linear;
+  }
+  .wall::before{ /* trowel marks + damp patches */
+    content:"";position:absolute;inset:0;opacity:.5;mix-blend-mode:multiply;
+    background:
+      radial-gradient(38% 26% at 18% 68%,rgba(120,104,88,.30),transparent 70%),
+      radial-gradient(30% 40% at 82% 24%,rgba(120,104,88,.22),transparent 72%),
+      repeating-linear-gradient(104deg,rgba(255,255,255,.10) 0 2px,transparent 2px 9px),
+      repeating-linear-gradient(96deg,rgba(90,76,62,.07) 0 1px,transparent 1px 14px);
+  }
+  .wall::after{ /* fine grain */
+    content:"";position:absolute;inset:0;opacity:.4;mix-blend-mode:multiply;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.45'/%3E%3C/svg%3E");
+  }
+  .light{
+    position:fixed;width:70vmax;height:70vmax;left:var(--px);top:var(--py);
+    transform:translate(-50%,-50%);pointer-events:none;mix-blend-mode:soft-light;
+    background:radial-gradient(closest-side,rgba(255,250,238,.95),rgba(255,246,228,.35) 46%,transparent 72%);
+    transition:opacity .6s ease;
+  }
+
+  /* ---------- layout ---------- */
+  .room{position:fixed;inset:0;display:grid;grid-template-columns:1fr min(36vw,430px);z-index:3}
+
+  /* ---------- left: sign + shelf ---------- */
+  .stage{position:relative;padding:clamp(20px,3.2vw,46px);display:flex;flex-direction:column;min-width:0}
+  .sign{max-width:34ch;position:relative;z-index:4}
+  .mark{
+    font-family:var(--jp);font-size:clamp(13px,1.1vw,16px);letter-spacing:.5em;
+    color:var(--ink-2);margin-bottom:14px;
+  }
+  .sign h1{
+    margin:0;font-weight:400;line-height:.92;
+    font-size:clamp(38px,5.4vw,80px);letter-spacing:-.015em;
+  }
+  .sign h1 em{font-style:italic;font-weight:300;color:#5a5147}
+  .sign .sub{margin:16px 0 0;font-size:clamp(14px,1.15vw,17px);line-height:1.65;color:#5d544a;max-width:30ch}
+  .sign .addr{
+    margin:18px 0 0;font-family:var(--mono);font-size:9.5px;line-height:2.1;
+    letter-spacing:.18em;text-transform:uppercase;color:var(--ink-3);
+  }
+  .vtitle{
+    position:absolute;right:clamp(14px,2.4vw,34px);top:clamp(20px,3.2vw,46px);
+    font-family:var(--jp);font-size:clamp(20px,2.4vw,34px);letter-spacing:.34em;
+    writing-mode:vertical-rl;color:rgba(70,62,53,.32);line-height:1.1;user-select:none;
+  }
+
+  /* shelf */
+  .shelfwrap{position:relative;flex:1;min-height:0;display:flex;align-items:flex-end;margin-top:18px}
+  .plank{
+    position:absolute;left:-2%;right:-2%;bottom:16.5%;height:19px;border-radius:2px;
+    background:
+      linear-gradient(180deg,#b39a78 0%,var(--wood-1) 18%,var(--wood-2) 62%,var(--wood-3) 100%);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.35) inset,
+      0 26px 34px -20px rgba(60,44,30,.55);
+  }
+  .plank::after{ /* wood grain */
+    content:"";position:absolute;inset:0;border-radius:inherit;opacity:.5;
+    background:repeating-linear-gradient(91deg,rgba(60,42,26,.32) 0 1px,transparent 1px 5px,
+      rgba(255,236,210,.18) 5px 6px,transparent 6px 13px);
+  }
+  .plank::before{ /* plank leading edge */
+    content:"";position:absolute;left:0;right:0;top:100%;height:5px;
+    background:linear-gradient(180deg,rgba(50,36,24,.55),transparent);
+  }
+  .cast{ /* cast shadow of plank, offset by pointer */
+    position:absolute;left:2%;right:6%;bottom:12%;height:34px;border-radius:50%;
+    background:radial-gradient(closest-side,rgba(74,54,36,.55),rgba(74,54,36,.22) 60%,transparent 82%);
+    filter:blur(9px);
+    transform:translate(calc((var(--px) - 50%) * .10), 0);
+    transition:transform .18s linear;
+  }
+  .bracket{
+    position:absolute;bottom:calc(16.5% - 42px);width:11px;height:44px;
+    background:linear-gradient(180deg,#4b3c2b,#33291e);
+    box-shadow:0 10px 16px -10px rgba(40,28,18,.8);
+  }
+  .bracket.a{left:12%} .bracket.b{right:16%}
+
+  /* ---------- vessels ---------- */
+  .shelf{
+    position:relative;width:100%;height:74%;align-self:flex-end;
+    transform:scale(var(--sc,1));transform-origin:50% 100%;
+    display:flex;align-items:flex-end;justify-content:center;gap:clamp(4px,1.6vw,26px);
+    padding-bottom:calc(16.5% + 15px);
+  }
+  .v{
+    position:relative;width:var(--w);height:var(--h);flex:0 0 auto;
+    background:none;border:0;padding:0;cursor:pointer;
+    transform-origin:50% 100%;
+    transition:transform .5s cubic-bezier(.2,.9,.2,1),filter .5s ease;
+    z-index:1;
+  }
+  .v:focus-visible{outline:1px solid #5d5348;outline-offset:6px;border-radius:6px}
+  .v .sh{
+    position:absolute;left:50%;bottom:-9px;width:150%;height:20px;transform:translateX(-50%);
+    background:radial-gradient(closest-side,rgba(70,50,34,.55),rgba(70,50,34,.22) 55%,transparent 80%);
+    filter:blur(6px);transition:opacity .5s ease,transform .5s ease;
+  }
+  .v .body{
+    position:absolute;inset:0;
+    border-radius:var(--r,46% 54% 40% 40%/14% 16% 8% 8%);
+    background-image:
+      radial-gradient(circle,var(--iron,rgba(46,30,20,.62)) 0 1px,transparent 1.45px),
+      radial-gradient(circle,var(--iron,rgba(46,30,20,.45)) 0 1.5px,transparent 2px),
+      radial-gradient(circle,rgba(255,255,255,.55) 0 1.7px,transparent 2.2px),
+      radial-gradient(115% 74% at 24% 8%,rgba(255,255,255,.52),transparent 56%),
+      repeating-linear-gradient(179deg,rgba(255,255,255,.11) 0 1px,transparent 1px 7px),
+      linear-gradient(168deg,var(--g1,#cfc3b2) 0%,var(--g2,#a08e79) 52%,var(--g3,#6f6152) 100%);
+    background-size:7px 9px,15px 13px,23px 19px,100% 100%,100% 100%,100% 100%;
+    box-shadow:
+      inset 5px 7px 14px rgba(255,255,255,.42),
+      inset -7px -12px 22px rgba(58,40,26,.30),
+      0 1px 0 rgba(255,255,255,.5);
+  }
+  .v .body::after{ /* glaze break at the foot */
+    content:"";position:absolute;left:-1px;right:-1px;bottom:0;height:13%;
+    border-radius:inherit;
+    background:linear-gradient(180deg,transparent,rgba(92,62,38,.42) 70%,rgba(66,42,24,.6));
+  }
+  .v .neck{
+    position:absolute;left:var(--nx,30%);right:var(--nr,30%);top:0;height:var(--nh,20%);
+    border-radius:var(--nr2,42% 58% 8% 8%/58% 46% 4% 4%);
+    background:linear-gradient(100deg,rgba(255,255,255,.34),transparent 34%),
+      linear-gradient(170deg,var(--g1,#cfc3b2),var(--g2,#a08e79));
+    box-shadow:inset -4px -4px 8px rgba(58,40,26,.34),inset 3px 3px 6px rgba(255,255,255,.4);
+  }
+  .v .rim{
+    position:absolute;left:var(--rx,-3%);width:var(--rw,106%);top:var(--ry,-4px);height:11px;
+    border-radius:50%;
+    background:
+      radial-gradient(closest-side at 50% 120%,rgba(38,26,18,.62),rgba(120,102,84,.24) 70%,transparent 100%),
+      linear-gradient(180deg,var(--g1,#cfc3b2),var(--g2,#a08e79));
+    box-shadow:0 1px 0 rgba(255,255,255,.6);
+  }
+  .v .rim::after{
+    content:"";position:absolute;left:6%;right:6%;top:2px;height:5px;border-radius:50%;
+    background:radial-gradient(closest-side at 50% 40%,rgba(28,20,14,.55),rgba(60,48,38,.18));
+  }
+
+  /* form-specific */
+  .v-tokkuri{--r:52% 48% 42% 42%/30% 32% 7% 7%;--nx:32%;--nr:32%;--nh:22%;--rx:-8%;--rw:116%}
+  .v-chawan{--r:50% 50% 40% 40%/9% 11% 26% 24%;--rx:-6%;--rw:112%;height:96px}
+  .v-hanaire{--r:47% 53% 36% 36%/6% 8% 5% 5%;--nx:36%;--nr:36%;--nh:14%;--rx:-6%;--rw:112%;height:266px}
+  .v-yunomi{--r:44% 48% 28% 30%/9% 11% 5% 6%;--rx:-4%;--rw:108%;height:112px}
+  .v-hiratsumi{--r:50% 50% 48% 48%/50% 50% 46% 46%;--rx:-2%;--rw:104%;height:34px}
+  .v-tsubo{--r:50% 50% 38% 38%/40% 42% 9% 9%;--nx:34%;--nr:34%;--nh:16%;--rx:-5%;--rw:110%;height:196px}
+  .v-hiratsumi .body{box-shadow:inset 4px 5px 10px rgba(255,255,255,.5),inset -6px -8px 14px rgba(58,40,26,.3),0 1px 0 rgba(255,255,255,.55)}
+
+  .v:hover{z-index:3;transform:translateY(-6px)}
+  .v.on{z-index:6;transform:translateY(-26px) scale(1.07)}
+  .v.on .sh{transform:translateX(-50%) scale(1.5);opacity:.85}
+  .v.on .body{filter:brightness(1.05)}
+
+  .hint{
+    margin:14px 0 0;font-family:var(--mono);font-size:9px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--ink-3);
+  }
+
+  /* ---------- right: museum wall label ---------- */
+  .label{
+    position:relative;display:flex;flex-direction:column;justify-content:flex-end;
+    padding:clamp(24px,3.4vw,54px) clamp(20px,2.6vw,40px) clamp(30px,4vw,64px);
+    background:linear-gradient(200deg,#efe9df 0%,#e3dbcf 55%,#d6ccbe 100%);
+    box-shadow:-1px 0 0 rgba(60,48,38,.14),-26px 0 50px -30px rgba(60,46,34,.4);
+  }
+  .label::before{ /* label paper texture */
+    content:"";position:absolute;inset:0;opacity:.32;mix-blend-mode:multiply;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23m)' opacity='.4'/%3E%3C/svg%3E");
+  }
+  .num{
+    position:absolute;top:clamp(24px,3.4vw,54px);right:clamp(20px,2.6vw,40px);
+    font-family:var(--mono);font-size:10px;letter-spacing:.24em;color:var(--ink-3);
+  }
+  .num b{font-weight:400;color:var(--ink)}
+  .idx{
+    font-family:var(--mono);font-size:9px;letter-spacing:.3em;text-transform:uppercase;
+    color:var(--ink-3);margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid rgba(60,50,40,.18);
+  }
+  .namejp{
+    font-family:var(--jp);font-size:clamp(46px,5.2vw,76px);line-height:.95;margin:0;
+    letter-spacing:.06em;font-weight:500;
+  }
+  .romaji{
+    margin:12px 0 0;font-family:var(--mono);font-size:clamp(11px,1vw,13px);
+    letter-spacing:.46em;text-transform:uppercase;color:var(--ink-2);
+  }
+  .kind{margin:4px 0 0;font-style:italic;font-size:clamp(15px,1.3vw,19px);color:#6a6157}
+  .spec{margin:26px 0 0;display:grid;gap:0;border-top:1px solid rgba(60,50,40,.16)}
+  .spec div{
+    display:grid;grid-template-columns:9.2em 1fr;gap:10px;padding:9px 0;
+    border-bottom:1px solid rgba(60,50,40,.13);
+    font-family:var(--mono);font-size:10.5px;line-height:1.7;letter-spacing:.04em;
+  }
+  .spec dt,.spec .k{color:var(--ink-3);text-transform:uppercase;letter-spacing:.16em;font-size:9px;padding-top:2px}
+  .spec .v{color:var(--ink);width:auto;height:auto;transform:none;background:none}
+  .note{
+    margin:26px 0 0;font-size:clamp(14px,1.2vw,17px);line-height:1.75;font-style:italic;
+    color:#544b42;max-width:38ch;
+  }
+  .note em{font-style:normal;display:block;margin-top:12px;font-size:11px;letter-spacing:.16em;
+    text-transform:uppercase;font-family:var(--mono);color:var(--ink-3);font-style:normal}
+  .seal{
+    position:absolute;top:clamp(24px,3.4vw,54px);left:clamp(20px,2.6vw,40px);
+    width:52px;height:52px;background:#a33a2c;color:#f0e7da;
+    display:grid;place-items:center;font-family:var(--jp);font-size:19px;line-height:1.05;
+    letter-spacing:.02em;transform:rotate(-3.5deg);border-radius:2px;
+    box-shadow:0 2px 6px rgba(120,40,30,.4);
+    opacity:.88;
+  }
+  .dots{display:flex;gap:7px;margin-top:22px}
+  .dots button{
+    width:9px;height:9px;padding:0;border-radius:50%;border:1px solid rgba(50,42,34,.4);
+    background:rgba(255,255,255,.4);cursor:pointer;transition:transform .25s ease,background .25s ease;
+  }
+  .dots button[aria-current="true"]{transform:scale(1.5);background:#544b42}
+
+  /* ---------- cursor ---------- */
+  .cur{
+    position:fixed;left:0;top:0;width:26px;height:26px;margin:-13px 0 0 -13px;
+    border:1px solid rgba(52,44,36,.55);border-radius:50%;pointer-events:none;z-index:99;
+    transition:width .25s ease,height .25s ease,margin .25s ease,border-color .25s ease,opacity .3s;
+  }
+  .cur::after{content:"";position:absolute;inset:11px;border-radius:50%;background:rgba(52,44,36,.6)}
+  .cur.hot{width:44px;height:44px;margin:-22px 0 0 -22px;border-color:rgba(120,60,40,.7)}
+  .cur.hot::after{inset:19px;background:rgba(120,60,40,.8)}
+  .stage{cursor:none}
+
+  .fade{animation:fadein 1.1s cubic-bezier(.2,.8,.2,1) both}
+  @keyframes fadein{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  .d1{animation-delay:.05s}.d2{animation-delay:.16s}.d3{animation-delay:.28s}.d4{animation-delay:.4s}
+
+  @media (max-width:860px){
+    html,body{overflow:auto}
+    .room{position:relative;grid-template-columns:1fr;min-height:100%}
+    .wall{position:fixed}
+    .light{opacity:.7}
+    .stage{min-height:100dvh;padding:18px 18px 0}
+    .shelfwrap{height:46vh;flex:none}
+    .shelf{--sc:.62}
+    .label{min-height:62dvh;padding:26px 20px 44px;box-shadow:0 -1px 0 rgba(60,48,38,.16)}
+    .num,.seal{top:26px}
+    .vtitle{font-size:16px}
+    .cur{display:none}
+    .stage{cursor:auto}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<div class="wall" id="wall" aria-hidden="true"></div>
+<div class="light" aria-hidden="true"></div>
+
+<main class="room">
+  <section class="stage" id="stage">
+    <header class="sign fade d1">
+      <div class="mark">土橋窯</div>
+      <h1>Wabi&#8209;Sabi<br><em>Pottery</em></h1>
+      <p class="sub">Six vessels pulled from the winter firing. Each was thrown once, glazed once and fired once. None of them will happen again.</p>
+      <p class="addr">Dobashi Kiln &middot; 3&#8209;11 Naka&#8209;cho, Setagaya, Tokyo<br>Second firing of the year &middot; Catalogue IV</p>
+    </header>
+
+    <div class="vtitle" aria-hidden="true">侘<br>寂</div>
+
+    <div class="shelfwrap">
+      <div class="cast" aria-hidden="true"></div>
+      <div class="plank" aria-hidden="true"></div>
+      <span class="bracket a" aria-hidden="true"></span>
+      <span class="bracket b" aria-hidden="true"></span>
+      <div class="shelf" id="shelf" role="list"></div>
+    </div>
+
+    <p class="hint fade d4">Click a vessel to bring it forward &middot; move the pointer to walk the light across the wall</p>
+  </section>
+
+  <aside class="label" id="label" aria-live="polite">
+    <div class="seal" aria-hidden="true">土<br>橋</div>
+    <div class="num">No. <b id="lNum">01</b> / 06</div>
+    <div class="idx fade d2" id="lIdx">Select a vessel</div>
+    <h2 class="namejp fade d2" id="lJp">土橋窯</h2>
+    <p class="romaji fade d2" id="lRom">Dobashi Kiln</p>
+    <p class="kind fade d2" id="lKind">Choose a piece on the shelf</p>
+    <dl class="spec fade d3" id="lSpec"></dl>
+    <p class="note fade d3" id="lNote">The shelf is lit from one window. Turn your head and the glazes change their minds.<em>Potter's note, undated</em></p>
+    <div class="dots fade d4" id="dots" role="tablist" aria-label="Vessel index"></div>
+  </aside>
+</main>
+
+<div class="cur" id="cur" aria-hidden="true"></div>
+
+<noscript><p style="position:fixed;inset:auto 0 0 0;padding:14px;background:#2f2a24;color:#e2dcd2;font:13px Georgia,serif;text-align:center">This gallery catalogue is assembled with JavaScript. The six vessels remain on the shelf regardless.</p></noscript>
+
+<script>
+(function(){
+  "use strict";
+
+  var GLAZES = [
+    { key:"tokkuri", num:"01", jp:"徳利", rom:"Tokkuri", kind:"Sake flask, h. 21 cm",
+      w:74, h:212, clay:"Iron stoneware, 8% grog", glaze:"Wood ash, three dips",
+      firing:"Reduction, cone 9", mouth:"Unglazed, hand-lipped",
+      note:"The glaze runs green down one flank because the flask leans in the kiln. We do not correct it. A flask that never leaned would be a machine." },
+    { key:"chawan", num:"02", jp:"茶碗", rom:"Chawan", kind:"Tea bowl, h. 9 cm",
+      w:118, h:96, clay:"Dark tenmoku, 12% iron", glaze:"Bare, ash-dusted, wiped at the rim",
+      firing:"Eleven hours, long cool-down", mouth:"Oval, cut on the wheel",
+      note:"Crazing appears in the third month and is welcomed. Rice water is the only thing we ask you to keep inside it." },
+    { key:"hanaire", num:"03", jp:"花入", rom:"Hanaire", kind:"Flower vase, h. 26 cm",
+      w:66, h:264, clay:"Pale porcelain, 3% ball clay", glaze:"Crackle-clear, bare foot",
+      firing:"Oxidation, cone 10", mouth:"Cut, then stoned",
+      note:"Holds three branches, or one. Two is showing off. We have never sold this vase to a person who asked for two." },
+    { key:"yunomi", num:"04", jp:"湯呑", rom:"Yunomi", kind:"Tea cup, h. 11 cm",
+      w:82, h:112, clay:"Buff grogged earthenware", glaze:"Copper matte, brushed vertical",
+      firing:"Oxidation, cone 8", mouth:"Thick, rolled outward",
+      note:"The brush marks run straight down the wall. Over the years the ash finds them first, so the cup darkens where it was weakest." },
+    { key:"hiratsumi", num:"05", jp:"平皿", rom:"Hiratsumi", kind:"Flat plate, ø 21 cm",
+      w:196, h:34, clay:"Buff stoneware", glaze:"Shino, unglazed foot ring",
+      firing:"Oxidation, cone 10", mouth:"Rim cut with a wire, then shaved",
+      note:"The foot ring should look as though a thumb made it. Ours does not, and we have stopped apologising." },
+    { key:"tsubo", num:"06", jp:"壺", rom:"Tsubo", kind:"Storage jar, 6 litres",
+      w:140, h:196, clay:"Coarse buff, 4% grog", glaze:"Tenmoku, ash runs left to stand",
+      firing:"Reduction, cone 9", mouth:"Sealed with wax, then re-fired",
+      note:"Heavy enough that you learn to lift it with your legs. The lid is deliberately slightly too large, so it is always found." }
+  ];
+
+  var PALETTES = {
+    tokkuri:["#cfd0be","#a3a891","#6d7160"],
+    chawan:["#5c4a3c","#3a2b22","#1d1512"],
+    hanaire:["#f0ece2","#d8d3c6","#a9a698"],
+    yunomi:["#9fae9c","#6d8074","#3d4a45"],
+    hiratsumi:["#e6dccb","#c6b79d","#8f7f6a"],
+    tsubo:["#6b5645","#3f3026","#20170f"]
+  };
+
+  /* ---------- build shelf ---------- */
+  var shelf = document.getElementById("shelf");
+  var els = [];
+  GLAZES.forEach(function(g,i){
+    var b = document.createElement("button");
+    b.className = "v v-" + g.key;
+    b.setAttribute("role","listitem");
+    b.setAttribute("aria-label", g.kind);
+    b.style.setProperty("--w", g.w + "px");
+    b.style.setProperty("--h", g.h + "px");
+    var p = PALETTES[g.key];
+    b.style.setProperty("--g1", p[0]);
+    b.style.setProperty("--g2", p[1]);
+    b.style.setProperty("--g3", p[2]);
+    b.style.setProperty("--iron", g.key === "chawan" ? "rgba(210,190,160,.42)" : "rgba(46,30,20,.6)");
+    b.innerHTML =
+      '<span class="sh"></span><span class="body">' +
+      (g.key === "tokkuri" || g.key === "hanaire" || g.key === "tsubo" ? '<span class="neck"></span>' : "") +
+      '<span class="rim"></span></span>';
+    b.style.animation = "fadein .9s cubic-bezier(.2,.8,.2,1) " + (0.25 + i*0.09) + "s both";
+    shelf.appendChild(b);
+    els.push(b);
+  });
+
+  /* ---------- label ---------- */
+  var L = {
+    num: document.getElementById("lNum"),
+    idx: document.getElementById("lIdx"),
+    jp:  document.getElementById("lJp"),
+    rom: document.getElementById("lRom"),
+    kind:document.getElementById("lKind"),
+    spec:document.getElementById("lSpec"),
+    note:document.getElementById("lNote")
+  };
+  var dots = document.getElementById("dots");
+  var current = -1;
+
+  function select(i){
+    if (i === current) return;
+    if (current >= 0) els[current].classList.remove("on");
+    current = i;
+    if (i < 0) return;
+    var g = GLAZES[i];
+    els[i].classList.add("on");
+    L.num.textContent = g.num;
+    L.idx.textContent = "Catalogue " + g.num;
+    L.jp.textContent = g.jp;
+    L.rom.textContent = g.rom;
+    L.kind.textContent = g.kind;
+    L.spec.innerHTML = [
+      ["Body", g.clay], ["Glaze", g.glaze], ["Firing", g.firing], ["Mouth", g.mouth]
+    ].map(function(r){
+      return '<div><span class="k">' + r[0] + '</span><span class="v">' + r[1] + '</span></div>';
+    }).join("");
+    L.note.innerHTML = g.note + "<em>" + g.rom + " &middot; second firing, catalogue IV</em>";
+    [].forEach.call(dots.children, function(d,j){
+      d.setAttribute("aria-current", j === i ? "true" : "false");
+    });
+    L.jp.parentNode.animate(
+      [{opacity:.15, transform:"translateY(8px)"},{opacity:1, transform:"none"}],
+      {duration:520, easing:"cubic-bezier(.2,.8,.2,1)"}
+    );
+  }
+
+  GLAZES.forEach(function(g,i){
+    var d = document.createElement("button");
+    d.type = "button";
+    d.setAttribute("role","tab");
+    d.setAttribute("aria-label", "Show " + g.rom);
+    d.addEventListener("click", function(){ select(i); });
+    dots.appendChild(d);
+  });
+
+  els.forEach(function(b,i){
+    b.addEventListener("click", function(){ select(i); });
+    b.addEventListener("pointerenter", function(){ cursor.classList.add("hot"); });
+    b.addEventListener("pointerleave", function(){ cursor.classList.remove("hot"); });
+    b.addEventListener("focus", function(){ select(i); });
+  });
+
+  document.addEventListener("keydown", function(e){
+    if (e.key === "ArrowRight") select((current + 1) % GLAZES.length);
+    if (e.key === "ArrowLeft") select((current - 1 + GLAZES.length) % GLAZES.length);
+  });
+
+  /* ---------- pointer light + soft shadow ---------- */
+  var wall = document.getElementById("wall");
+  var cursor = document.getElementById("cur");
+  var tx = innerWidth * 0.52, ty = innerHeight * 0.28, cx = tx, cy = ty;
+  var kx = tx, ky = ty;
+
+  addEventListener("pointermove", function(e){
+    tx = e.clientX; ty = e.clientY;
+    cursor.style.transform = "translate(" + tx + "px," + ty + "px)";
+  }, {passive:true});
+
+  function loop(){
+    cx += (tx - cx) * 0.09;
+    cy += (ty - cy) * 0.09;
+    kx += (cx - kx) * 0.06;
+    ky += (cy - ky) * 0.06;
+    var px = (kx / innerWidth * 100).toFixed(2);
+    var py = (ky / innerHeight * 100).toFixed(2);
+    wall.style.setProperty("--px", px + "%");
+    wall.style.setProperty("--py", py + "%");
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  select(0);
+})();
+</script>
+</body>
+</html>

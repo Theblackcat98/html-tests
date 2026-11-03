@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SIGNAL DECAY 067 — Block Error / Datamosh Transmission Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   067 — GLITCH / DATAMOSH
+   Skeleton : full-bleed centred type stack + side rail + console bar
+   Technique: per-glyph clip-path slice keyframes, 3-layer RGB
+              channel split w/ mix-blend-mode, canvas datamosh field
+   Colour  : hot magenta / acid green / cyan on absolute black
+   ============================================================ */
+:root{
+  --black:#000000;
+  --ink:#0b0b0d;
+  --mag:#ff1e8e;
+  --grn:#b9ff2f;
+  --cyn:#25e6ff;
+  --white:#f4f4f2;
+  --dim:rgba(244,244,242,.42);
+  --hair:rgba(244,244,242,.14);
+  --c:.28;              /* corruption 0..1 (slider)      */
+  --sx:0px;             /* channel split x                */
+  --sy:0px;             /* channel split y                */
+  --cad:6s;             /* glitch cadence in seconds      */
+  --pad:clamp(1rem,4vw,3.2rem);
+  --sans:"Space Grotesk","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--black);color:var(--white);
+  font-family:var(--sans);min-height:100dvh;overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  cursor:crosshair;
+}
+body::-webkit-scrollbar{width:0;height:0}
+
+/* ---------- canvas datamosh field ---------- */
+#mosh{position:fixed;inset:0;width:100%;height:100%;z-index:1;opacity:.9;pointer-events:none;
+  filter:contrast(1.15) saturate(1.3)}
+#veil{position:fixed;inset:0;z-index:2;pointer-events:none;
+  background:radial-gradient(120% 90% at 50% 42%,transparent 0 26%,rgba(0,0,0,.55) 62%,var(--black) 100%)}
+
+/* ---------- scanline + tear sheet ---------- */
+.scan{position:fixed;inset:0;z-index:60;pointer-events:none;mix-blend-mode:overlay;opacity:.55;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.09) 0 1px,rgba(0,0,0,.22) 1px 3px)}
+.tear{position:fixed;left:0;right:0;height:16vh;z-index:55;pointer-events:none;opacity:0;
+  background:linear-gradient(180deg,transparent,rgba(37,230,255,.16) 30%,rgba(255,30,142,.3) 55%,rgba(185,255,47,.14) 80%,transparent);
+  mix-blend-mode:screen;animation:tearRun calc(var(--cad)*.5) steps(1,end) infinite}
+@keyframes tearRun{
+  0%{transform:translateY(-30vh);opacity:0}
+  4%{opacity:.9}
+  10%{transform:translateY(12vh) skewX(-1.2deg);opacity:.8}
+  16%{transform:translateY(38vh) skewX(.7deg);opacity:0}
+  100%{transform:translateY(120vh);opacity:0}
+}
+
+/* ---------- 8-bit artifact strips ---------- */
+.bitrow{position:fixed;left:0;right:0;z-index:3;pointer-events:none;display:flex;opacity:calc(var(--c)*.9)}
+.bitrow.b1{top:16vh;height:26px;animation:bitSlide calc(var(--cad)*1.6) linear infinite}
+.bitrow.b2{bottom:23vh;height:14px;animation:bitSlide calc(var(--cad)*2.3) linear infinite reverse}
+.bitrow i{flex:1;display:block;image-rendering:pixelated}
+@keyframes bitSlide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ---------- grid rules ---------- */
+.frame{position:fixed;inset:0;z-index:4;pointer-events:none;
+  background:
+    linear-gradient(90deg,transparent calc(50% - .5px),var(--hair) calc(50% - .5px) calc(50% + .5px),transparent calc(50% + .5px)),
+    linear-gradient(90deg,transparent calc(25% - .5px),rgba(244,244,242,.06) calc(25% - .5px) calc(25% + .5px),transparent calc(25% + .5px)),
+    linear-gradient(90deg,transparent calc(75% - .5px),rgba(244,244,242,.06) calc(75% - .5px) calc(75% + .5px),transparent calc(75% + .5px))}
+
+/* ---------- side rail ---------- */
+.rail{position:fixed;left:0;top:0;bottom:0;width:var(--pad);z-index:40;
+  display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  padding:1.1rem 0;font-family:var(--mono);font-size:.6rem;letter-spacing:.3em;
+  text-transform:uppercase;color:var(--dim);writing-mode:vertical-rl}
+.rail b{color:var(--grn);font-weight:600;letter-spacing:.34em}
+.rail .dot{width:6px;height:6px;background:var(--mag);border-radius:50%;
+  box-shadow:0 0 12px var(--mag);animation:blip calc(var(--cad)*.5) steps(1) infinite}
+@keyframes blip{0%,49%{opacity:1}50%,100%{opacity:.15}}
+
+/* ---------- main stack ---------- */
+main{position:relative;z-index:10;min-height:100dvh;display:grid;
+  grid-template-columns:var(--pad) 1fr auto;
+  align-content:center;gap:clamp(1rem,3vw,2.6rem);
+  padding:clamp(4.5rem,11vh,8rem) var(--pad) clamp(5.5rem,12vh,7rem)}
+
+.col{max-width:min(1040px,88vw);justify-self:center;width:100%}
+.eyebrow{font-family:var(--mono);font-size:clamp(.6rem,1vw,.72rem);letter-spacing:.42em;
+  text-transform:uppercase;color:var(--dim);display:flex;align-items:center;gap:.8rem;margin-bottom:1.4rem}
+.eyebrow span{height:1px;width:clamp(28px,7vw,90px);background:currentColor;display:block}
+.eyebrow .hot{color:var(--mag)}
+
+h1{position:relative;font-weight:700;line-height:.82;letter-spacing:-.045em;
+  font-size:clamp(3.4rem,15.5vw,15rem);text-transform:uppercase;isolation:isolate}
+.line{display:block;position:relative}
+.line .sub{display:block;font-size:.28em;letter-spacing:.34em;color:var(--cyn);
+  font-family:var(--mono);font-weight:400;margin-top:.9em;mix-blend-mode:screen}
+.ch{position:absolute;inset:0;display:block;mix-blend-mode:screen;pointer-events:none;
+  animation:jitter calc(var(--cad)) steps(1,end) infinite}
+.ch.m{color:var(--mag);translate:calc(var(--sx)*-1) calc(var(--sy)*-1)}
+.ch.c{color:var(--cyn);translate:var(--sx) var(--sy)}
+.ch.g{color:var(--grn);translate:calc(var(--sx)*.35) calc(var(--sy)*1.4)}
+@keyframes jitter{
+  0%,100%{clip-path:inset(0 0 0 0);transform:translate(0,0)}
+  12%{clip-path:inset(18% 0 62% 0);transform:translate(-4px,-1px)}
+  14%{clip-path:inset(18% 0 62% 0);transform:translate(5px,2px)}
+  15%{clip-path:inset(0 0 0 0);transform:translate(0,0)}
+  44%{clip-path:inset(64% 0 12% 0);transform:translate(6px,0)}
+  46%{clip-path:inset(64% 0 12% 0);transform:translate(-7px,1px)}
+  48%{clip-path:inset(0 0 0 0);transform:translate(0,0)}
+  71%{clip-path:inset(38% 22% 38% 0);transform:translate(2px,3px)}
+  73%{clip-path:inset(0 0 0 0);transform:translate(0,0)}
+}
+/* per-glyph slice jumps */
+.g{display:inline-block;position:relative;animation:glyphSlice calc(var(--cad)*.5) steps(1,end) infinite;
+  animation-delay:calc(var(--i,0)*-.09s)}
+@keyframes glyphSlice{
+  0%,100%{clip-path:polygon(0 0,100% 0,100% 100%,0 100%);transform:translate(0,0)}
+  20%{clip-path:polygon(0 8%,100% 0,100% 62%,0 74%);transform:translate(-2px,0)}
+  40%{clip-path:polygon(0 40%,100% 30%,100% 100%,0 100%);transform:translate(3px,-2px)}
+  60%{clip-path:polygon(0 0,100% 12%,100% 48%,0 60%);transform:translate(-3px,1px)}
+  80%{clip-path:polygon(0 0,100% 0,100% 100%,0 100%);transform:translate(0,0)}
+}
+/* clean, high-craft base type */
+.g b{font-weight:700}
+.line .g b{color:var(--white);text-shadow:0 0 0 transparent}
+
+.deck{margin-top:clamp(1.6rem,4vh,2.6rem);max-width:46ch;
+  font-size:clamp(.94rem,1.35vw,1.12rem);font-weight:300;line-height:1.62;color:rgba(244,244,242,.78)}
+.deck b{color:var(--white);font-weight:500;box-shadow:inset 0 -.42em 0 rgba(185,255,47,.22)}
+
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));
+  gap:1px;margin-top:clamp(1.8rem,4.5vh,3rem);background:var(--hair);
+  border:1px solid var(--hair);max-width:820px}
+.meta div{background:var(--black);padding:.72rem .85rem}
+.meta dt{font-family:var(--mono);font-size:.56rem;letter-spacing:.26em;color:var(--dim);text-transform:uppercase}
+.meta dd{font-family:var(--mono);font-size:.82rem;letter-spacing:.04em;margin-top:.32rem;color:var(--grn)}
+.meta dd.m{color:var(--mag)}.meta dd.c{color:var(--cyn)}
+
+/* ---------- console panel ---------- */
+.console{align-self:end;width:clamp(190px,17vw,236px);border:1px solid var(--hair);
+  background:rgba(0,0,0,.62);backdrop-filter:blur(6px);padding:1rem 1rem 1.1rem}
+.console h2{font-family:var(--mono);font-size:.58rem;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--dim);font-weight:400;padding-bottom:.7rem;border-bottom:1px solid var(--hair);margin-bottom:.9rem;
+  display:flex;justify-content:space-between}
+.console h2 i{font-style:normal;color:var(--mag)}
+label{display:block;font-family:var(--mono);font-size:.58rem;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--dim);margin-bottom:.6rem}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;
+  background:linear-gradient(90deg,var(--grn) 0 calc(var(--c)*100%),rgba(244,244,242,.18) calc(var(--c)*100%) 100%);
+  outline:none;margin:0 0 1.1rem}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;
+  background:var(--mag);box-shadow:0 0 10px var(--mag);cursor:ew-resize;border-radius:0}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border:0;border-radius:0;
+  background:var(--mag);box-shadow:0 0 10px var(--mag);cursor:ew-resize}
+.readout{font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;color:var(--cyn);
+  display:flex;justify-content:space-between;padding:.45rem 0;border-top:1px dashed var(--hair)}
+.readout span:first-child{color:var(--dim)}
+.btn{display:block;width:100%;margin-top:.9rem;padding:.62rem .5rem;cursor:pointer;
+  background:transparent;border:1px solid var(--mag);color:var(--mag);
+  font-family:var(--mono);font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;
+  transition:background .16s,color .16s,box-shadow .16s}
+.btn:hover,.btn:focus-visible{background:var(--mag);color:var(--black);box-shadow:0 0 24px rgba(255,30,142,.55)}
+.hint{margin-top:.9rem;font-family:var(--mono);font-size:.55rem;line-height:1.6;
+  letter-spacing:.14em;color:rgba(244,244,242,.34);text-transform:uppercase}
+.hint kbd{font-family:inherit;border:1px solid var(--hair);padding:.05em .38em;color:var(--grn)}
+
+/* ---------- burst ---------- */
+.burst .ch{animation:burstBurst .42s steps(1,end) 6}
+.burst .g{animation:burstGlyph .38s steps(1,end) 6}
+.burst .tear{animation:burstTear .4s steps(1,end) 6}
+.burst::after{content:"";position:fixed;inset:0;z-index:70;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(255,30,142,.3) 0 3px,transparent 3px 9px);
+  animation:flick .38s steps(1,end) 6}
+@keyframes burstBurst{
+  0%{clip-path:inset(0 0 0 0);transform:translate(0,0)}
+  20%{clip-path:inset(8% 0 78% 0);transform:translate(-24px,6px) skewX(-6deg)}
+  40%{clip-path:inset(58% 0 20% 0);transform:translate(19px,-9px) skewX(4deg)}
+  60%{clip-path:inset(30% 14% 44% 0);transform:translate(-11px,3px)}
+  80%{clip-path:inset(72% 0 6% 0);transform:translate(26px,0) skewX(-3deg)}
+  100%{clip-path:inset(0 0 0 0);transform:translate(0,0)}
+}
+@keyframes burstGlyph{
+  0%{clip-path:polygon(0 0,100% 0,100% 100%,0 100%);transform:translate(0,0) scaleY(1)}
+  25%{clip-path:polygon(0 0,100% 4%,100% 40%,0 52%);transform:translate(-9px,0) scaleY(1.12)}
+  50%{clip-path:polygon(0 62%,100% 48%,100% 100%,0 100%);transform:translate(8px,-4px) scaleY(.88)}
+  75%{clip-path:polygon(0 10%,100% 0,100% 84%,0 96%);transform:translate(-5px,2px) scaleY(1.05)}
+  100%{clip-path:polygon(0 0,100% 0,100% 100%,0 100%);transform:translate(0,0) scaleY(1)}
+}
+@keyframes burstTear{0%{transform:translateY(-40vh)}50%{transform:translateY(60vh) skewX(3deg)}100%{transform:translateY(140vh)}}
+@keyframes flick{0%,100%{opacity:0}50%{opacity:1}}
+
+/* ---------- foot bar ---------- */
+.foot{position:fixed;left:0;right:0;bottom:0;z-index:45;display:flex;justify-content:space-between;
+  align-items:center;gap:1rem;padding:.6rem var(--pad);
+  border-top:1px solid var(--hair);background:rgba(0,0,0,.7);backdrop-filter:blur(5px);
+  font-family:var(--mono);font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.foot b{color:var(--white);font-weight:600}
+.foot .mid{color:var(--cyn)}
+
+@media (max-width:820px){
+  .rail{display:none}
+  main{grid-template-columns:1fr;padding-top:4.2rem}
+  .console{width:100%;align-self:auto}
+  .col{justify-self:start}
+  h1{font-size:clamp(2.9rem,17vw,7rem)}
+  .foot{font-size:.5rem;letter-spacing:.14em}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important}
+  .ch{clip-path:none}
+}
+</style>
+</head>
+<body>
+<canvas id="mosh" aria-hidden="true"></canvas>
+<div id="veil" aria-hidden="true"></div>
+<div class="frame" aria-hidden="true"></div>
+<div class="bitrow b1" aria-hidden="true"></div>
+<div class="bitrow b2" aria-hidden="true"></div>
+<div class="tear" aria-hidden="true"></div>
+<div class="scan" aria-hidden="true"></div>
+
+<div class="rail" aria-hidden="true">
+  <span>Signal Decay</span>
+  <span class="dot"></span>
+  <b>067</b>
+</div>
+
+<main>
+  <div></div>
+
+  <section class="col">
+    <p class="eyebrow"><span></span>Transmission Study 004 <em class="hot">/</em> Interframe Residual</p>
+
+    <h1 id="head" aria-label="Block Error">
+      <span class="line" data-text="BLOCK"></span>
+      <span class="line" data-text="ERROR"></span>
+      <span class="line sub" aria-hidden="true">Compression Has No Mercy</span>
+    </h1>
+
+    <p class="deck">
+      A codec does not forget. When the keyframe is lost it keeps drawing vectors from the
+      frame it <b>does</b> have, pulling pixels into the shape of something remembered.
+      What survives is neither picture nor noise but a third state — a smear with
+      intent, an image that can no longer commit to being one.
+    </p>
+
+    <dl class="meta">
+      <div><dt>Artefact</dt><dd class="m">P-frame cascade</dd></div>
+      <div><dt>Quantiser</dt><dd>8 bit / 4:2:0</dd></div>
+      <div><dt>Vector loss</dt><dd class="c">97.4%</dd></div>
+      <div><dt>Duration</dt><dd>04:11:08</dd></div>
+    </dl>
+  </section>
+
+  <aside class="console">
+    <h2>Corruption <i id="led"></i></h2>
+    <label for="corrupt">Signal integrity</label>
+    <input id="corrupt" type="range" min="0" max="100" value="28" aria-label="Corruption amount">
+    <div class="readout"><span>SEVERITY</span><span id="rSev">28%</span></div>
+    <div class="readout"><span>BLOCKS</span><span id="rBlk">014</span></div>
+    <div class="readout"><span>DELTA</span><span id="rDlt">+00.0</span></div>
+    <button class="btn" id="burstBtn" type="button">Force resync</button>
+    <p class="hint">Press <kbd>space</kbd> or any key to rupture the stream. Drag to steer the tear.</p>
+  </aside>
+</main>
+
+<footer class="foot">
+  <span>Dept. of <b>Lost Interframes</b></span>
+  <span class="mid">Vector residue, no source</span>
+  <span>Plate <b>067</b></span>
+</footer>
+
+<noscript>
+  <div style="position:fixed;inset:auto 0 0 0;z-index:200;background:#000;color:#b9ff2f;
+  font:12px/1.6 monospace;padding:10px 16px;border-top:1px solid #333">
+    Static plate — the interactive datamosh layer needs JavaScript. The transmission study below still reads.
+  </div>
+</noscript>
+
+<script>
+(function(){
+  "use strict";
+  var root=document.documentElement, body=document.body;
+  var cv=document.getElementById('mosh'), ctx=cv.getContext('2d');
+  var W=0,H=0,DPR=1;
+  var cor=0.28, target=0.28, burst=0, bands=[], bits=[];
+  var head=document.getElementById('head');
+
+  /* ---- build per-glyph spans with staggered slice delays ---- */
+  Array.prototype.forEach.call(head.querySelectorAll('.line[data-text]'),function(line){
+    var txt=line.dataset.text, base=document.createElement('span');
+    base.className='base';
+    Array.prototype.forEach.call(txt,function(ch,i){
+      var g=document.createElement('span');
+      g.className='g'; g.style.setProperty('--i',i);
+      g.innerHTML='<b>'+(ch===' '?'&nbsp;':ch)+'</b>';
+      base.appendChild(g);
+    });
+    ['m','c','g'].forEach(function(k){
+      var layer=base.cloneNode(true);
+      layer.className='ch '+k; layer.setAttribute('aria-hidden','true');
+      line.insertBefore(layer,line.firstChild);
+    });
+    line.insertBefore(base,line.firstChild);
+  });
+
+  /* ---- 8-bit artifact strips (pixel blocks) ---- */
+  [['.b1',46],['.b2',64]].forEach(function(pair){
+    var host=document.querySelector(pair[0]), n=pair[1], frag=document.createDocumentFragment();
+    for(var k=0;k<n;k++){
+      var i=document.createElement('i');
+      i.style.background='hsl('+((k*37+300)%360)+' 90% '+(28+(k%5)*9)+'%)';
+      i.style.opacity=(0.25+((k*13)%7)/10).toFixed(2);
+      frag.appendChild(i);
+    }
+    host.appendChild(frag.cloneNode(true)); host.appendChild(frag);
+  });
+
+  /* ---- canvas sizing ---- */
+  function size(){
+    DPR=Math.min(window.devicePixelRatio||1,2);
+    W=cv.clientWidth; H=cv.clientHeight;
+    cv.width=W*DPR; cv.height=H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  window.addEventListener('resize',size); size();
+
+  /* ---- datamosh band model: each band carries a remembered vector ---- */
+  function seed(){
+    bands.length=0;
+    for(var y=0;y<H;y+=3){
+      bands.push({y:y,h:3,dx:(Math.random()-.5)*40,dy:(Math.random()-.5)*4,
+        hue:(Math.random()*360)|0,sat:70+Math.random()*30,blk:Math.random()<.12?1:0});
+    }
+  }
+  seed();
+
+  var PAL=[[255,30,142],[185,255,47],[37,230,255],[244,244,242]];
+  function mix(a,b,t){return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];}
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    var energy=cor+burst*0.9;
+    var px = 1+Math.round(energy*11);           /* 8-bit quantisation step  */
+    var amp = 6+energy*150;                      /* block displacement       */
+    var col=Math.floor(6+cor*13+burst*10);
+
+    /* smears: draw remembered vector bands, not new ones */
+    for(var i=0;i<bands.length;i++){
+      var b=bands[i];
+      b.dx += (Math.random()-.5)*amp*0.9;
+      b.dx *= 0.86;
+      b.dy *= 0.7;
+      var dx=Math.round((b.dx*0.5+Math.sin(i*0.05+t()*0.6)*amp*0.35)/px)*px;
+      var k=i%col, c1=PAL[k%PAL.length], c2=PAL[(k+1)%PAL.length];
+      var t=(i/bands.length);
+      var rgb=mix(c1,c2,t*0.5);
+      var a=(0.045+Math.random()*0.05)*(0.4+energy*1.5);
+      if(a<0.012) continue;
+      ctx.fillStyle='rgba('+((rgb[0]/px|0)*px)+','+((rgb[1]/px|0)*px)+','+((rgb[2]/px|0)*px)+','+a.toFixed(3)+')';
+      var h=b.blk? px*3 : b.h*2;
+      ctx.fillRect(dx,b.y+Math.round(b.dy/px)*px,W*1.2,h);
+    }
+
+    /* keyframe ghost bars — hard 8-bit blocks */
+    var ghosts=Math.round(cor*10+burst*22);
+    for(var g=0;g<ghosts;g++){
+      var gy=Math.random()*H, gh=(Math.random()<.3?26:7);
+      var gc=PAL[(Math.random()*PAL.length)|0];
+      ctx.fillStyle='rgba('+gc[0]+','+gc[1]+','+gc[2]+',0.5)';
+      ctx.fillRect(Math.round((Math.random()*W*1.3-W*0.15)/px)*px,gy,Math.round(40+Math.random()*W*0.5)/px*px,gh);
+    }
+
+    /* scanline burn */
+    ctx.fillStyle='rgba(0,0,0,.32)';
+    for(var y=0;y<H;y+=4) ctx.fillRect(0,y,W,1);
+
+    var led=document.getElementById('led');
+    led.style.opacity=(0.35+Math.random()*0.65).toFixed(2);
+    requestAnimationFrame(draw);
+  }
+  var t0=performance.now(); function t(){return (performance.now()-t0)/1000;}
+
+  /* ---- pointer steers the tear ---- */
+  var px=0,py=0;
+  window.addEventListener('pointermove',function(e){
+    px=(e.clientX/window.innerWidth-0.5)*2; py=(e.clientY/window.innerHeight-0.5)*2;
+    root.style.setProperty('--sx',(px*cor*22).toFixed(1)+'px');
+    root.style.setProperty('--sy',(py*cor*12).toFixed(1)+'px');
+    bands.forEach(function(b,i){ if(i%7===0) b.dx+=px*14; });
+  },{passive:true});
+
+  /* ---- corruption slider ---- */
+  var sl=document.getElementById('corrupt'), rSev=document.getElementById('rSev'),
+      rBlk=document.getElementById('rBlk'), rDlt=document.getElementById('rDlt');
+  function apply(){
+    target=sl.value/100; cor=target;
+    root.style.setProperty('--c',cor.toFixed(3));
+    root.style.setProperty('--cad',(9-cor*7.6).toFixed(2)+'s');
+    rSev.textContent=Math.round(cor*100)+'%';
+    rBlk.textContent=String(Math.round(2+cor*46)).padStart(3,'0');
+    rDlt.textContent=(cor<0.08?'+00.0':('+'+(cor*0.42).toFixed(3).slice(1)));
+  }
+  sl.addEventListener('input',apply); apply();
+
+  /* ---- burst ---- */
+  var bt=null;
+  function rupture(){
+    body.classList.add('burst'); clearTimeout(bt);
+    burst=1;
+    bt=setTimeout(function(){ body.classList.remove('burst'); burst=0; },2400);
+  }
+  document.getElementById('burstBtn').addEventListener('click',rupture);
+  window.addEventListener('keydown',function(e){
+    if(e.target===sl||e.key==='Tab') return;
+    if(e.key===' '||e.key==='Enter') e.preventDefault();
+    rupture();
+  });
+
+  /* ease corruption toward slider so the field never snaps */
+  (function loop(){
+    cor+=(target-cor)*0.12; root.style.setProperty('--c',cor.toFixed(3));
+    setTimeout(loop,40);
+  })();
+
+  draw();
+})();
+</script>
+</body>
+</html>

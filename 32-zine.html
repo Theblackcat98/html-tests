@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NOTHING HAPPENED — a zine about nothing, photocopy №4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Bebas+Neue&family=Cutive+Mono&family=Permanent+Marker&family=Rock+Salt&family=Special+Elite&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#0b0b0b; --ink:#141414; --paper:#efece4; --paper-2:#e3dfd4;
+    --red:#c8202a; --blue:#1f3d8f;
+    --r1:"Archivo Black",Impact,sans-serif;
+    --r2:"Bebas Neue","Arial Narrow",sans-serif;
+    --r3:"Special Elite","Courier New",monospace;
+    --r4:"Rock Salt",cursive;
+    --r5:"Permanent Marker",cursive;
+    --r6:"Cutive Mono",monospace;
+    --r7:"Courier Prime",monospace;
+    --r8:"Space Mono",monospace;
+    --seed:1;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:#070707;color:#000;overflow:hidden}
+  body{font-family:var(--r7)}
+
+  /* ---- room: photocopier darkness ---- */
+  .room{
+    position:fixed;inset:0;display:grid;place-items:center;
+    background:
+      radial-gradient(70% 60% at 50% 42%,#1a1a1a 0%,#0a0a0a 62%,#000 100%);
+    cursor:crosshair;
+  }
+  .room::before{ /* ceiling lamp spill on the floor */
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(40% 30% at 50% 0%,rgba(255,255,255,.09),transparent 70%);
+  }
+  .drum{ /* copier glass */
+    position:fixed;left:50%;top:50%;width:150vmax;height:150vmax;margin:-75vmax 0 0 -75vmax;
+    pointer-events:none;opacity:.5;mix-blend-mode:overlay;
+    background:repeating-linear-gradient(91deg,rgba(255,255,255,.05) 0 2px,transparent 2px 7px);
+  }
+
+  /* ---- the sheet ---- */
+  .sheet{
+    position:relative;width:min(96vw,1180px);height:min(94dvh,780px);
+    background:var(--paper);
+    color:var(--ink);
+    box-shadow:0 40px 90px -30px #000, 0 0 0 1px rgba(255,255,255,.06);
+    transform:rotate(-.5deg);
+    overflow:hidden;
+    isolation:isolate;
+  }
+  /* torn edges, hand-cut with a blade */
+  .sheet{
+    clip-path:polygon(
+      0.4% 1.1%, 6% 0.5%, 13% 1.4%, 21% 0.3%, 29% 1.2%, 38% 0.6%, 47% 1.5%, 56% 0.4%, 65% 1.1%, 74% 0.2%, 83% 1.3%, 92% 0.5%, 99.6% 1.2%,
+      99.4% 9%, 99.8% 17%, 99.1% 25%, 99.7% 33%, 99.2% 41%, 99.8% 49%, 99.3% 57%, 99.7% 65%, 99.1% 73%, 99.8% 81%, 99.4% 89%, 99.7% 98.6%,
+      93% 99.4%, 85% 98.6%, 77% 99.5%, 69% 98.5%, 61% 99.6%, 53% 98.7%, 45% 99.5%, 37% 98.6%, 29% 99.6%, 21% 98.5%, 13% 99.6%, 6% 98.6%, 0.4% 99.4%,
+      0.7% 91%, 0.2% 83%, 0.8% 75%, 0.3% 67%, 0.9% 59%, 0.2% 51%, 0.7% 43%, 0.3% 35%, 0.8% 27%, 0.2% 19%, 0.6% 11%
+    );
+  }
+  .sheet::before{ /* toner blotches + toner roll streaks */
+    content:"";position:absolute;inset:0;z-index:6;pointer-events:none;mix-blend-mode:multiply;
+    background:
+      radial-gradient(38% 26% at 12% 82%,rgba(0,0,0,.09),transparent 70%),
+      radial-gradient(22% 18% at 78% 12%,rgba(0,0,0,.12),transparent 70%),
+      radial-gradient(60% 40% at 40% 50%,rgba(0,0,0,.05),transparent 72%),
+      linear-gradient(90deg,rgba(0,0,0,.07) 0 2px,transparent 2px 60px),
+      linear-gradient(90deg,transparent 0 240px,rgba(255,255,255,.5) 240px 250px,transparent 250px 620px);
+  }
+  .sheet::after{ /* heavy grain */
+    content:"";position:absolute;inset:-40px;z-index:7;pointer-events:none;mix-blend-mode:multiply;opacity:.55;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23g)'/%3E%3C/svg%3E");
+    animation:grainShift .7s steps(3) infinite;
+  }
+  @keyframes grainShift{
+    0%{transform:translate(0,0)}25%{transform:translate(-14px,7px)}50%{transform:translate(9px,-11px)}
+    75%{transform:translate(-6px,-5px)}100%{transform:translate(0,0)}
+  }
+  .scan{ /* the scanner bar that passes during a re-xerox */
+    position:absolute;left:0;right:0;height:22%;z-index:8;pointer-events:none;opacity:0;
+    background:linear-gradient(180deg,transparent,rgba(255,255,255,.55) 45%,rgba(255,255,255,.9) 50%,rgba(255,255,255,.55) 55%,transparent);
+    mix-blend-mode:screen;
+  }
+
+  /* ---- sheet grid ---- */
+  .grid{position:absolute;inset:0;z-index:2;padding:clamp(16px,2.6vw,34px);display:grid;
+    grid-template-columns:1fr minmax(150px,22%);grid-template-rows:auto 1fr auto;gap:clamp(10px,1.6vw,20px)}
+
+  .headline{grid-column:1/2;grid-row:1;position:relative}
+  .headline .kicker{
+    font-family:var(--r3);font-size:clamp(8px,.9vw,11px);letter-spacing:.3em;text-transform:uppercase;
+    display:inline-block;padding:3px 8px;background:#000;color:var(--paper);transform:rotate(-1.2deg)
+  }
+  .word{
+    position:relative;display:inline-block;margin:.02em .06em 0 0;line-height:.86;
+    transform:rotate(var(--rot,0deg)) translateY(var(--dy,0px));
+    text-transform:uppercase;white-space:nowrap;
+  }
+  .word::before{ /* tape */
+    content:"";position:absolute;left:-6%;right:-6%;top:18%;height:34%;
+    background:rgba(232,226,206,.85);mix-blend-mode:multiply;
+    clip-path:polygon(2% 0,98% 6%,96% 100%,4% 94%);
+    transform:rotate(var(--trot,1.4deg));z-index:-1;
+  }
+  .w-a{font-family:var(--r1);font-size:clamp(44px,9.2vw,132px);letter-spacing:-.02em;--rot:-1.6deg}
+  .w-b{font-family:var(--r4);font-size:clamp(30px,6vw,84px);letter-spacing:.02em;--rot:1.1deg;--trot:-2deg;margin-left:.14em}
+  .w-c{font-family:var(--r2);font-size:clamp(34px,7vw,96px);letter-spacing:.06em;--rot:-.6deg;--trot:2.4deg;margin-left:.02em}
+  .w-d{font-family:var(--r6);font-size:clamp(15px,2.1vw,28px);letter-spacing:.24em;--rot:1.8deg;--trot:-1deg;margin-left:.5em;opacity:.9}
+
+  .standfirst{grid-column:1/2;grid-row:2;align-self:start;max-width:52ch;margin-top:.6em}
+  .standfirst p{margin:0 0 .9em;font-family:var(--r7);font-size:clamp(12px,1.12vw,15.5px);line-height:1.62}
+  .standfirst p:first-child::first-letter{
+    font-family:var(--r1);font-size:3.1em;float:left;line-height:.82;padding:.06em .1em 0 0
+  }
+  .halftone{
+    display:inline-block;width:8.6em;height:4.4em;vertical-align:middle;margin:0 .2em;
+    background-image:radial-gradient(circle,#000 44%,transparent 46%);
+    background-size:3.2px 3.2px;opacity:.85;
+  }
+
+  /* contents */
+  .toc{grid-column:2/3;grid-row:1/3;align-self:start;transform:rotate(.7deg);position:relative}
+  .toc h3{font-family:var(--r2);font-size:clamp(18px,2.3vw,30px);letter-spacing:.04em;margin:0 0 2px;text-transform:uppercase}
+  .toc ol{list-style:none;margin:0;padding:0;font-family:var(--r6);font-size:clamp(8.5px,.82vw,11px);line-height:1.62}
+  .toc li{display:grid;grid-template-columns:2.1em 1fr;gap:.4em;border-bottom:1px dotted #000;padding:2.5px 0}
+  .toc li span{opacity:.55}
+  .toc li em{font-style:normal;font-family:var(--r3)}
+  .toc li.blank span{opacity:.25}
+  .toc li.blank em{text-decoration:line-through;opacity:.45}
+
+  /* page thumb grid */
+  .thumbs{grid-column:1/3;grid-row:2;align-self:end;display:flex;gap:clamp(4px,.8vw,10px);flex-wrap:wrap}
+  .thumb{
+    flex:1 1 0;min-width:0;position:relative;aspect-ratio:3/4;background:#d9d5ca;
+    border:1px solid #000;box-shadow:1px 1px 0 #000;
+    background-image:radial-gradient(circle,rgba(0,0,0,.55) 40%,transparent 42%);
+    background-size:3px 3px;background-blend-mode:multiply;
+    overflow:hidden;
+  }
+  .thumb i{position:absolute;left:6%;right:6%;top:8%;bottom:22%;display:block;
+    font-family:var(--r2);font-style:normal;font-size:clamp(6px,.68vw,9px);line-height:1.12;
+    text-transform:uppercase;letter-spacing:.01em;overflow:hidden}
+  .thumb b{position:absolute;left:6%;bottom:6%;font:400 clamp(5.5px,.6vw,8px)/1 var(--r6);letter-spacing:.2em}
+  .thumb.t2{background-color:#e6e2d8}
+  .thumb.t3{background-color:#cfccc1}
+  .thumb.t4{background-image:repeating-linear-gradient(45deg,#000 0 1px,transparent 1px 4px)}
+  .thumb.t5{background-image:linear-gradient(0deg,#000 0 28%,transparent 28%)}
+  .thumb.t6{background-image:radial-gradient(circle at 50% 40%,#000 0 22%,transparent 23%)}
+
+  .foot{grid-column:1/3;grid-row:3;display:flex;align-items:flex-end;gap:1em;
+    font-family:var(--r6);font-size:clamp(8px,.78vw,10px);line-height:1.5;letter-spacing:.06em}
+  .foot .box{
+    border:2px solid #000;padding:4px 8px;transform:rotate(-1.4deg);font-family:var(--r2);
+    font-size:clamp(10px,1.2vw,15px);letter-spacing:.1em;white-space:nowrap
+  }
+  .foot .grow{flex:1}
+
+  /* hand-drawn marks */
+  .marks{position:absolute;inset:0;z-index:5;pointer-events:none;overflow:hidden}
+  .marks path{fill:none;stroke:#000;stroke-linecap:round;stroke-linejoin:round}
+
+  /* staples */
+  .staple{
+    position:absolute;z-index:6;width:26px;height:9px;
+    background:linear-gradient(180deg,#d8d4ca,#8d8a83 55%,#b9b6ae);
+    box-shadow:0 1px 2px rgba(0,0,0,.5);transform-origin:50% 50%;
+  }
+  .staple::after{content:"";position:absolute;left:8%;right:8%;top:3px;height:1px;background:rgba(0,0,0,.4)}
+  .st1{left:2.2%;top:2.4%;transform:rotate(-11deg)}
+  .st2{right:2.6%;bottom:2.6%;transform:rotate(8deg)}
+  .st3{left:2.8%;bottom:3.2%;transform:rotate(3deg);width:19px}
+
+  /* stamp */
+  .stamp{
+    position:absolute;z-index:6;right:3%;top:2.6%;transform:rotate(6deg);
+    border:3px solid var(--red);color:var(--red);padding:6px 9px;
+    font-family:var(--r2);font-size:clamp(10px,1.1vw,14px);letter-spacing:.16em;line-height:1.05;
+    text-align:center;opacity:.82;mix-blend-mode:multiply
+  }
+  .stamp small{display:block;font-size:.56em;letter-spacing:.22em}
+
+  /* scrawled page number */
+  .pagenum{
+    position:absolute;z-index:6;right:4%;bottom:9%;transform:rotate(-8deg);
+    font-family:var(--r5);font-size:clamp(30px,4.4vw,58px);line-height:.8;color:#000;opacity:.9
+  }
+
+  /* re-xerox state */
+  .sheet.re{animation:kick .62s steps(1) both}
+  .sheet.re .scan{opacity:1;animation:scanbar .62s linear both}
+  @keyframes kick{
+    0%{transform:rotate(-.5deg) translate(0,0);filter:contrast(1) brightness(1)}
+    8%{transform:rotate(-.5deg) translate(-7px,3px) skewX(.5deg);filter:contrast(2.1) brightness(1.5)}
+    16%{transform:rotate(-.5deg) translate(6px,-4px);filter:contrast(1.5) brightness(1.15)}
+    24%{transform:rotate(-.5deg) translate(-3px,2px);filter:contrast(2.6) brightness(1.6)}
+    34%{transform:rotate(-.5deg) translate(2px,-1px);filter:contrast(1.2) brightness(.86)}
+    46%{transform:rotate(-.5deg) translate(-9px,5px) scale(1.004);filter:contrast(2.9) brightness(1.75)}
+    58%{transform:rotate(-.5deg) translate(5px,2px);filter:contrast(1.7) brightness(1.2)}
+    70%{transform:rotate(-.5deg) translate(-2px,-2px);filter:contrast(2.3) brightness(1.45)}
+    100%{transform:rotate(-.5deg) translate(0,0);filter:contrast(1) brightness(1)}
+  }
+  @keyframes scanbar{0%{top:-22%}100%{top:100%}}
+
+  /* lamp / machine chrome */
+  .chrome{
+    position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:space-between;
+    align-items:center;gap:14px;padding:10px clamp(12px,2.4vw,26px);
+    background:linear-gradient(180deg,#101010,#060606);
+    border-top:1px solid #262626;color:#9a9a9a;
+    font-family:var(--r6);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase
+  }
+  .chrome .led{width:7px;height:7px;border-radius:50%;background:#3b3b3b;display:inline-block;margin-right:8px;
+    box-shadow:0 0 0 1px #000}
+  .chrome .led.on{background:#ff3b2f;box-shadow:0 0 8px #ff3b2f,0 0 0 1px #000}
+  button.go{
+    font:inherit;letter-spacing:.24em;text-transform:uppercase;color:#0a0a0a;background:#c9c4b8;
+    border:0;padding:7px 16px;cursor:pointer;box-shadow:inset 0 -2px 0 rgba(0,0,0,.35)
+  }
+  button.go:active{transform:translateY(1px);box-shadow:inset 0 0 0 rgba(0,0,0,.4)}
+
+  .fadein{animation:pop .8s cubic-bezier(.2,.9,.25,1) both}
+  @keyframes pop{from{opacity:0;transform:translateY(18px) rotate(-2deg)}to{opacity:1;transform:none}}
+
+  @media (max-width:760px){
+    .room{place-items:start center;padding:10px 0 54px}
+    .sheet{height:auto;min-height:88dvh;padding-bottom:10px}
+    .grid{grid-template-columns:1fr;grid-template-rows:auto auto auto auto}
+    .headline{grid-column:1;grid-row:1}
+    .toc{grid-column:1;grid-row:3;margin-top:6px}
+    .thumbs{display:none}
+    .standfirst{grid-column:1;grid-row:2}
+    .foot{grid-column:1;grid-row:4;flex-wrap:wrap}
+    .sheet{clip-path:polygon(0 0,100% 0,100% 100%,0 100%)}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<div class="room" id="room">
+  <div class="drum" aria-hidden="true"></div>
+
+  <article class="sheet" id="sheet" tabindex="0" aria-label="Photocopied zine about nothing, twelve pages">
+    <div class="scan" aria-hidden="true"></div>
+
+    <div class="grid">
+      <div class="headline">
+        <span class="kicker">Photocopy №4 &middot; do not laminate</span><br>
+        <span class="word w-a fadein" style="--rot:-1.6deg">Nothing</span><br>
+        <span class="word w-b fadein" style="animation-delay:.1s">happened</span><br>
+        <span class="word w-c fadein" style="animation-delay:.2s">here.</span><br>
+        <span class="word w-d fadein" style="animation-delay:.3s">and we are fine about it</span>
+      </div>
+
+      <div class="standfirst fadein" style="animation-delay:.35s">
+        <p>Twelve pages. None of them are about anything. This is a complete work, printed at 78&nbsp;% on the machine at the laundrette, which means the type is mostly right.</p>
+        <p>We went looking for a subject for eleven months. There was a subject. It was not <span class="halftone" aria-hidden="true"></span> interesting enough to print, so we printed the hole it left.</p>
+        <p>Copy freely. Copy weirdly. Do not copy at all — that is also fine and honestly our favourite outcome.</p>
+      </div>
+
+      <section class="toc fadein" style="animation-delay:.45s" aria-label="Contents">
+        <h3>Contents</h3>
+        <ol>
+          <li><span>01</span><em>Cover</em></li>
+          <li><span>02</span><em>This page costs ink</em></li>
+          <li><span>03</span><em>Things that did not</em></li>
+          <li class="blank"><span>04</span><em>We looked. Not there.</em></li>
+          <li><span>05</span><em>Reconstruction</em></li>
+          <li><span>06</span><em>Load-bearing nothing</em></li>
+          <li class="blank"><span>07</span><em>Four minutes on absence</em></li>
+          <li><span>08</span><em>Interview: cupboard</em></li>
+          <li><span>09</span><em>Tribute: the call</em></li>
+          <li><span>10</span><em>How to make a little</em></li>
+          <li><span>11</span><em>We are not sorry</em></li>
+          <li class="blank"><span>12</span><em>Back — see page 2</em></li>
+        </ol>
+      </section>
+
+      <div class="thumbs fadein" style="animation-delay:.55s" aria-hidden="true"></div>
+
+      <div class="foot fadein" style="animation-delay:.6s">
+        <div class="box">Free! / copy / trade</div>
+        <div class="grow">Printed in a back room above a chip shop, one colour, both sides, badly. Set in Archivo Black, Rock Salt and whatever was on the machine. Corrections: none. Corrections we found: two.</div>
+        <div>Issue 4 &mdash; 60 copies &mdash; gone</div>
+      </div>
+    </div>
+
+    <div class="marks" aria-hidden="true">
+      <svg viewBox="0 0 1180 780" preserveAspectRatio="none" width="100%" height="100%">
+        <g stroke-width="2.2">
+          <!-- arrow from headline down to the standfirst -->
+          <path d="M470 232 C470 258 452 266 452 292 C452 316 470 322 470 340"/>
+          <path d="M460 328 L470 342 L481 327"/>
+          <!-- loop around the blank entries -->
+          <path d="M700 150 C790 140 872 156 880 200 C888 246 812 252 760 240 C712 229 704 196 742 186 C780 176 828 186 846 208"/>
+          <path d="M836 196 L850 210 L832 216"/>
+          <!-- underline under the closing line -->
+          <path d="M180 706 C300 716 430 700 560 710" stroke-width="3"/>
+          <path d="M186 714 C310 723 428 708 556 717" stroke-width="1.4" opacity=".6"/>
+        </g>
+      </svg>
+    </div>
+
+    <span class="staple st1" aria-hidden="true"></span>
+    <span class="staple st2" aria-hidden="true"></span>
+    <span class="staple st3" aria-hidden="true"></span>
+
+    <div class="stamp" aria-hidden="true">Not for<br>resale<small>sort it out</small></div>
+    <div class="pagenum" aria-hidden="true">12</div>
+  </article>
+</div>
+
+<div class="chrome">
+  <div><span class="led" id="led"></span>Copier 02 &middot; drum warm &middot; A3 tray 1</div>
+  <button class="go" id="go" type="button">Re&#8209;xerox</button>
+  <div>Click the page to rescan &middot; press R</div>
+</div>
+
+<noscript><p style="position:fixed;left:0;right:0;bottom:0;margin:0;padding:12px;background:#0b0b0b;color:#efece4;font:12px monospace;text-align:center">The zine is already printed. The re&#8209;xerox button needs JavaScript, and the machine is out of order anyway.</p></noscript>
+
+<script>
+(function(){
+  "use strict";
+
+  /* page thumbnails, cut from the same photocopy */
+  var PAGES = [
+    ["Cover",      "t1"],
+    ["Costs ink",  "t2"],
+    ["Did not",    "t3"],
+    ["Not there",  "t4"],
+    ["Rebuild",    "t5"],
+    ["Load bearing","t1"],
+    ["Absence",    "t6"],
+    ["Cupboard",   "t2"],
+    ["The call",   "t3"],
+    ["A little",   "t4"],
+    ["Not sorry",  "t5"],
+    ["Back",       "t6"]
+  ];
+  var tw = document.querySelector(".thumbs");
+  PAGES.forEach(function(p, i){
+    var d = document.createElement("div");
+    d.className = "thumb " + p[1];
+    d.innerHTML = "<i>" + p[0] + "</i><b>p." + ("0" + (i+1)).slice(-2) + "</b>";
+    tw.appendChild(d);
+  });
+
+  /* ---- re-xerox ---- */
+  var sheet = document.getElementById("sheet");
+  var led = document.getElementById("led");
+  var busy = false;
+  var running = false;
+
+  function rexerox(){
+    if (busy) return;
+    busy = true;
+    running = true;
+    led.classList.add("on");
+    sheet.classList.remove("re");
+    void sheet.offsetWidth;
+    sheet.classList.add("re");
+    clearTimeout(sheet._t);
+    sheet._t = setTimeout(function(){
+      sheet.classList.remove("re");
+      led.classList.remove("on");
+      busy = false;
+    }, 700);
+  }
+
+  document.getElementById("go").addEventListener("click", function(e){ e.stopPropagation(); rexerox(); });
+  document.getElementById("room").addEventListener("click", rexerox);
+  document.addEventListener("keydown", function(e){
+    if (e.key === "r" || e.key === "R" || e.key === " ") { e.preventDefault(); rexerox(); }
+  });
+
+  /* the machine never fully warms up: it idles with a soft mains hum flicker */
+  var dust = setInterval(function(){
+    if (busy || running) return;
+    if (Math.random() > 0.72) sheet.style.filter = "contrast(" + (1 + Math.random()*0.5).toFixed(2) + ")";
+    else sheet.style.filter = "";
+  }, 900);
+
+  /* pointer skews the sheet slightly, like a lid that is not quite square */
+  var room = document.getElementById("room");
+  var rx = 0, ry = 0, trx = 0, try_ = 0;
+  room.addEventListener("pointermove", function(e){
+    if (busy) return;
+    trx = ((e.clientY / innerHeight) - 0.5) * 1.4;
+    try_ = ((e.clientX / innerWidth) - 0.5) * -1.2;
+  }, {passive:true});
+
+  (function tick(){
+    if (!busy){
+      rx += (trx - rx) * 0.06;
+      ry += (try_ - ry) * 0.06;
+      sheet.style.transform = "rotate(-.5deg) rotateX(" + rx.toFixed(3) + "deg) rotateY(" + ry.toFixed(3) + "deg)";
+    }
+    requestAnimationFrame(tick);
+  })();
+})();
+</script>
+</body>
+</html>

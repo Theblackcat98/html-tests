@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Orrery IV — Eisenberger &amp; Holm, Instrumentmakers, Uppsala 1804</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   ORRERY IV — EISENBERGER & HOLM, 1804
+   Technique: JS 3-D point projection (azimuth / elevation /
+   distance) driving SVG line art; generated gear teeth; engraved
+   zodiac annulus. Skeleton: 12-col grid, mechanism in the middle.
+   ============================================================ */
+:root{
+  --bg:#0a0c0e;
+  --bg2:#15120e;
+  --brass:#c9a227;
+  --brass2:#f0d98c;
+  --brass3:#7d611a;
+  --lacq:#1c1512;
+  --ivory:#e8dfc8;
+  --dim:#7c7263;
+  --red:#c1553a;
+  --spin:0deg;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:
+    radial-gradient(80% 60% at 50% 34%, #1b1712 0%, #0d0b09 52%, var(--bg) 100%);
+  color:var(--ivory);
+  font-family:"Cormorant Garamond",Georgia,serif;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+svg{display:block}
+
+/* ---------------- top bar ---------------- */
+.bar{
+  display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:.5rem 1.6rem;
+  padding:.6rem clamp(.8rem,2.4vw,1.8rem);
+  border-bottom:1px solid rgba(201,162,39,.22);
+  background:linear-gradient(180deg,rgba(28,21,18,.9),rgba(28,21,18,.2));
+}
+.bar .m{font-size:clamp(.95rem,1.8vw,1.2rem);letter-spacing:.24em;text-transform:uppercase}
+.bar .m i{font-style:normal;color:var(--brass)}
+.bar .r{font-family:"IBM Plex Mono",monospace;font-size:.58rem;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--dim)}
+.bar .r b{color:var(--brass2);font-weight:400}
+
+/* ---------------- grid ---------------- */
+.grid{
+  display:grid;grid-template-columns:minmax(230px,.86fr) minmax(0,2.6fr) minmax(250px,.94fr);
+  gap:1px;background:rgba(201,162,39,.16);
+  min-height:calc(100dvh - 48px);
+}
+@media (max-width:1100px){ .grid{grid-template-columns:1fr} }
+.cell{background:var(--bg2);padding:clamp(1rem,2vw,1.6rem)}
+
+/* ---------------- left: maker's note ---------------- */
+h1{font-weight:300;font-size:clamp(1.9rem,3.6vw,2.9rem);line-height:1.04;
+  letter-spacing:.005em;margin:.4rem 0 .2rem}
+h1 em{font-style:italic;color:var(--brass)}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:.58rem;letter-spacing:.28em;
+  text-transform:uppercase;color:var(--brass);margin-bottom:.5rem}
+p{font-size:.9rem;line-height:1.72;color:#c3b9a5}
+p + p{margin-top:.8rem}
+p b{color:var(--ivory);font-weight:500}
+.note{border-top:1px solid rgba(201,162,39,.2);margin-top:1.3rem;padding-top:1rem;
+  font-size:.82rem;color:var(--dim)}
+.note b{color:var(--brass2);font-weight:400}
+
+/* ---------------- centre: the mechanism ---------------- */
+.mech{
+  position:relative;background:
+    radial-gradient(70% 55% at 50% 40%, #241d15 0%, #12100d 55%, #0a0908 100%);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.mech .cap{
+  display:flex;justify-content:space-between;align-items:center;gap:1rem;
+  font-family:"IBM Plex Mono",monospace;font-size:.56rem;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--dim);padding:0 0 .6rem;
+}
+.mech .cap b{color:var(--brass2);font-weight:400}
+#orr{width:100%;height:auto;cursor:grab;touch-action:none;flex:1;min-height:0}
+#orr.drag{cursor:grabbing}
+.star{cursor:pointer}
+.star:focus{outline:none}
+.star:focus .disc{stroke:#fff}
+
+/* controls under the mechanism */
+.deck{
+  border-top:1px solid rgba(201,162,39,.2);padding:.8rem 0 0;margin-top:.8rem;
+  display:grid;grid-template-columns:1fr 1fr auto;gap:1.2rem;align-items:end;
+}
+@media (max-width:640px){ .deck{grid-template-columns:1fr} }
+.ctl label{display:flex;justify-content:space-between;
+  font-family:"IBM Plex Mono",monospace;font-size:.55rem;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--dim);margin-bottom:.45rem}
+.ctl output{color:var(--brass2)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:3px;
+  background:linear-gradient(90deg,var(--brass3),var(--brass2));outline:none;cursor:ew-resize}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;
+  border-radius:50%;background:#f6e9c0;box-shadow:0 0 0 2px var(--brass3), 0 0 10px rgba(240,217,140,.6)}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border:0;border-radius:50%;
+  background:#f6e9c0;box-shadow:0 0 0 2px var(--brass3)}
+.btn{
+  all:unset;cursor:pointer;font-family:"IBM Plex Mono",monospace;font-size:.55rem;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--brass2);
+  border:1px solid rgba(201,162,39,.4);padding:.55em .9em;border-radius:1px;
+  transition:background .2s,color .2s;white-space:nowrap;
+}
+.btn:hover{background:rgba(201,162,39,.16);color:#fff}
+
+/* ---------------- right: plaque + table ---------------- */
+h2{font-family:"IBM Plex Mono",monospace;font-size:.58rem;letter-spacing:.28em;
+  text-transform:uppercase;color:var(--brass);font-weight:500;margin-bottom:.7rem;
+  padding-bottom:.5rem;border-bottom:1px solid rgba(201,162,39,.22)}
+.card{border:1px solid rgba(201,162,39,.26);background:linear-gradient(150deg,#1d1813,#141110);
+  padding:.9rem 1rem 1.05rem;margin-bottom:1.1rem;min-height:196px;
+  box-shadow:inset 0 1px 0 rgba(240,217,140,.16)}
+.card .ttl{display:flex;justify-content:space-between;align-items:baseline;gap:.6rem}
+.card .ttl h3{font-size:1.35rem;font-weight:400;letter-spacing:.01em;line-height:1.1}
+.card .ttl span{font-family:"IBM Plex Mono",monospace;font-size:.5rem;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--dim)}
+.card .lat{font-style:italic;color:var(--brass2);font-size:.9rem;margin-top:.1rem}
+.card p{font-size:.8rem;line-height:1.66;color:#b2a894;margin-top:.6rem}
+.card dl{display:grid;grid-template-columns:auto 1fr;gap:.24rem .8rem;margin-top:.7rem;
+  font-family:"IBM Plex Mono",monospace;font-size:.6rem}
+.card dt{color:var(--dim);letter-spacing:.1em;text-transform:uppercase;font-size:.54rem;padding-top:1px}
+.card dd{text-align:right;color:var(--ivory);font-variant-numeric:tabular-nums}
+.card.empty .lat{color:var(--dim)}
+
+.list{list-style:none}
+.list li{display:grid;grid-template-columns:1.1rem 1fr auto;gap:.6rem;align-items:center;
+  padding:.36rem 0;border-bottom:1px dotted rgba(201,162,39,.18);
+  cursor:pointer;transition:color .18s,background .18s}
+.list li:hover,.list li.on{color:var(--brass2)}
+.list li u{width:11px;height:11px;border-radius:50%;text-decoration:none;display:block;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.14)}
+.list li .n{font-size:.86rem}
+.list li .p{font-family:"IBM Plex Mono",monospace;font-size:.58rem;color:var(--dim);
+  letter-spacing:.08em;text-align:right}
+
+/* engraved plaque */
+.plaque{
+  margin-top:1.2rem;padding:1rem 1.1rem;text-align:center;
+  background:linear-gradient(160deg,#e6cf8c,#b8962f 42%,#8a6d1c 72%,#d9bf72);
+  color:#2a2110;border-radius:2px;
+  box-shadow:inset 0 1px 0 rgba(255,248,214,.7), inset 0 -2px 4px rgba(80,60,10,.5),
+             0 8px 18px -10px rgba(0,0,0,.9);
+  position:relative;overflow:hidden;
+}
+.plaque::after{content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(94deg,rgba(255,255,255,.12) 0 1px,transparent 1px 5px)}
+.plaque .t{font-family:"IBM Plex Mono",monospace;font-size:.5rem;letter-spacing:.3em;text-transform:uppercase;opacity:.7}
+.plaque .n{font-size:1.5rem;letter-spacing:.1em;margin:.2rem 0;text-shadow:0 1px 0 rgba(255,246,214,.6)}
+.plaque .l{font-family:"IBM Plex Mono",monospace;font-size:.52rem;letter-spacing:.14em;
+  line-height:1.8;opacity:.85;position:relative;z-index:2}
+.ft{border-top:1px solid rgba(201,162,39,.16);padding:1rem clamp(.8rem,2.4vw,1.8rem);
+  display:flex;flex-wrap:wrap;gap:.4rem 2rem;justify-content:space-between;
+  font-family:"IBM Plex Mono",monospace;font-size:.54rem;letter-spacing:.2em;
+  text-transform:uppercase;color:#5c554a}
+@media (prefers-reduced-motion:reduce){ *{transition-duration:.01ms !important} }
+</style>
+</head>
+<body>
+
+<noscript>
+  <p style="padding:1.2rem;line-height:1.7;max-width:64ch">
+    This orrery is projected in the browser: every orbit is a three-dimensional circle
+    transformed by a camera you control. Without JavaScript the armillary rings, the
+    engraved zodiac band and the gear train are not drawn. The catalogue, the plaque
+    and all the planetary figures are static and complete.
+  </p>
+</noscript>
+
+<header class="bar">
+  <div class="m">Eisenberger <i>&amp;</i> Holm</div>
+  <div class="r">Orrery <b>No. IV</b> · seven planets, one empty socket</div>
+  <div class="r" id="camOut">AZ 000° · EL 24° · DIST 100 %</div>
+</header>
+
+<div class="grid">
+
+  <!-- ============ LEFT ============ -->
+  <section class="cell">
+    <div class="eyebrow">Instrumentmakers · Uppsala</div>
+    <h1>The eighth<br>socket was<br><em>cut empty.</em></h1>
+    <p>
+      Eisenberger &amp; Holm built about forty of these between 1798 and 1831. Every
+      one has eight arms, because the table of the day called for eight, and on
+      <b>every one the eighth arm is a blank</b> — a socket turned to length and left
+      empty for a planet that had not been found.
+    </p>
+    <p>
+      It stayed empty for forty-two years. In 1846 a young man in Berlin looked
+      through the right glass and wrote to a newspaper about it, and the arm could
+      finally be filled, but the hole had been in the pattern for so long that
+      nobody who cast the original mould could be found to ask what they had
+      suspected.
+    </p>
+    <p class="note">
+      <b>On the gearing.</b> The maker is candid on the plaque: true relative motion
+      would put Neptune's arm at one turn in sixty thousand days and Mercury at one
+      turn in eighty-eight. The fitted trains therefore depart from strict ratio by
+      a stated factor, printed beside each wheel. The mechanism is a teaching
+      instrument, not a model, and it says so.
+    </p>
+  </section>
+
+  <!-- ============ CENTRE ============ -->
+  <section class="mech">
+    <div class="cap">
+      <span>Plate I · Solar system, geocentric arms</span>
+      <span>Drag to walk around · scroll to close in</span>
+    </div>
+
+    <svg id="orr" viewBox="0 0 1000 720" role="img"
+         aria-label="Brass orrery: the sun at centre with the orbit arms of seven planets and one empty socket">
+      <defs>
+        <radialGradient id="sun" cx=".42" cy=".4" r=".62">
+          <stop offset="0" stop-color="#fffbe8"/>
+          <stop offset=".35" stop-color="#ffd873"/>
+          <stop offset=".72" stop-color="#e09a24"/>
+          <stop offset="1" stop-color="#8a4c08"/>
+        </radialGradient>
+        <radialGradient id="halo" cx=".5" cy=".5" r=".5">
+          <stop offset="0" stop-color="#ffcf6a" stop-opacity=".55"/>
+          <stop offset=".45" stop-color="#e08a20" stop-opacity=".16"/>
+          <stop offset="1" stop-color="#e08a20" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="brassg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#f2dfa2"/><stop offset=".4" stop-color="#c9a227"/>
+          <stop offset=".72" stop-color="#7d611a"/><stop offset="1" stop-color="#e0c473"/>
+        </linearGradient>
+        <linearGradient id="bandg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#e8d493"/><stop offset=".5" stop-color="#b1902a"/>
+          <stop offset="1" stop-color="#6d5514"/>
+        </linearGradient>
+        <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="7"/>
+        </filter>
+        <filter id="soft2" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="2.4"/>
+        </filter>
+      </defs>
+
+      <!-- plinth -->
+      <ellipse id="plinth" cx="500" cy="608" rx="430" ry="72" fill="url(#bandg)" opacity=".16"/>
+      <ellipse cx="500" cy="606" rx="418" ry="66" fill="none" stroke="#c9a227" stroke-opacity=".3"/>
+      <g id="gears" opacity=".9"></g>
+
+      <g id="rings"></g>
+      <g id="orbits"></g>
+      <g id="shadow"></g>
+      <g id="bodies"></g>
+      <g id="zod"></g>
+      <g id="sunG">
+        <circle id="haloC" cx="500" cy="360" r="180" fill="url(#halo)"/>
+        <circle id="sunC" cx="500" cy="360" r="26" fill="url(#sun)"/>
+      </g>
+      <g id="arm"></g>
+    </svg>
+
+    <div class="deck">
+      <div class="ctl">
+        <label for="speed">Mechanism rate <output id="speedOut">1.00×</output></label>
+        <input type="range" id="speed" min="0" max="300" step="1" value="100">
+      </div>
+      <div class="ctl">
+        <label for="dist">Camera <output id="distOut">100 %</output></label>
+        <input type="range" id="dist" min="45" max="190" step="1" value="100">
+      </div>
+      <button class="btn" id="reset" type="button">Return to the hall view</button>
+    </div>
+  </section>
+
+  <!-- ============ RIGHT ============ -->
+  <section class="cell">
+    <h2>Card of the body</h2>
+    <div class="card" id="card">
+      <div class="ttl">
+        <h3 id="cName">The sun</h3>
+        <span id="cIdx">CENTRAL LAMP</span>
+      </div>
+      <div class="lat" id="cLat">Soli, the fitted lamp</div>
+      <p id="cDesc">Turn the milled brass collar and the whole mechanism takes one
+        revolution in thirty-one years. There is no gearing between this lamp and
+        the driving weight: the maker wanted the observer to see the arm that does
+        nothing.</p>
+      <dl>
+        <dt>Diameter</dt><dd>1 391 400 km</dd>
+        <dt>Luminosity</dt><dd>3.828 × 10²⁶ W</dd>
+        <dt>Lamp</dt><dd>brass collar, oil flame</dd>
+      </dl>
+    </div>
+
+    <h2>Catalogue of arms</h2>
+    <ul class="list" id="list"></ul>
+
+    <div class="plaque">
+      <div class="t">Engraved on the front rail</div>
+      <div class="n">ORRERY Nº IV</div>
+      <div class="l">
+        EISENBERGER &amp; HOLM · UPSALA<br>
+        Seven planets, one empty socket<br>
+        The trains compound; the ratios are not true<br>
+        Anno MDCCCIV
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer class="ft">
+  <span>Projected live: 3-D point transform, azimuth / elevation / distance</span>
+  <span>Zodiac band engraved with 12 divisions, 30° each</span>
+  <span>Sun to Neptune, 1 : 1 000 000 000 at the plate's stated scale</span>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ================= catalogue ================= */
+  var ZODIAC = ['\u2648','\u2649','\u264A','\u264B','\u264C','\u264D',
+                '\u264E','\u264F','\u2650','\u2651','\u2652','\u2653'];
+  var SIGNS = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo',
+               'Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+
+  /* r: drawn orbital radius. ratio: fitted gearing, stated on the plaque.
+     tilt: inclination. dia: drawn disc radius. */
+  var BODIES = [
+    {id:'sun',  name:'The sun',  lat:'Soli',  idx:'Central lamp', r:0,    dia:26, col:'#ffd873',
+     desc:'Turn the milled brass collar and the whole mechanism takes one revolution in thirty-one years. There is no gearing between this lamp and the driving weight: the maker wanted the observer to see the arm that does nothing.',
+     figs:[['Diameter','1 391 400 km'],['Luminosity','3.828 × 10²⁶ W'],['Lamp','brass collar, oil flame']]},
+    {id:'mer',  name:'Mercury',  lat:'Mercurius', idx:'Arm I', r:74,  dia:5,  ratio:8.0, tilt:6.9,  col:'#b7ada0', period:'87.97 d',
+     desc:'A fourth-year in the making, on a train of 64 with an escapement that had to be reset four times a night. The roller at the arm end is the only part that ever touches the observer.',
+     figs:[['Diameter','4 879 km'],['Year','87.97 d'],['Day','58.6 d'],['Satellites','none']]},
+    {id:'ven',  name:'Venus',    lat:'Venus', idx:'Arm II', r:98,  dia:7,  ratio:6.0, tilt:3.4,  col:'#e6d6ae', period:'224.7 d',
+     desc:'The brass disc is enamelled and the enamel is original. It has yellowed unevenly, more on the side that faced the window of the workshop for forty years than on the side that did not.',
+     figs:[['Diameter','12 104 km'],['Year','224.70 d'],['Day','243.0 d retrograde'],['Satellites','none']]},
+    {id:'ear',  name:'The earth',lat:'Terra',  idx:'Arm III', r:124, dia:7.4,ratio:5.0, tilt:0,    col:'#7fa6c4', period:'365.26 d',
+     desc:'The only arm that carries a second body. A small silver bead circles the earth once in 27.3 days, geared from the same wheel, so the month and the year cannot disagree.',
+     figs:[['Diameter','12 756 km'],['Year','365.26 d'],['Day','23.93 h'],['Satellites','1 — the moon, 27.32 d']]},
+    {id:'mar',  name:'Mars',     lat:'Mars',   idx:'Arm IV', r:150, dia:6,  ratio:4.0, tilt:1.85, col:'#c05f3c', period:'686.98 d',
+     desc:'Turned from boxwood and stained. There was no telescope good enough to see anything on it in 1804, and the maker says on the card that it is painted to show what one expects, not what one has seen.',
+     figs:[['Diameter','6 792 km'],['Year','686.98 d'],['Day','24.62 h'],['Satellites','none visible']]},
+    {id:'jup',  name:'Jupiter',  lat:'Iupiter',idx:'Arm V',  r:200, dia:14, ratio:2.4, tilt:1.3,  col:'#d8b98a', period:'11.86 y',
+     desc:'The largest disc on the arm, and the only one with a collar: four turned bands of boxwood were fitted to receive the four satellites the maker could not account for.',
+     figs:[['Diameter','142 984 km'],['Year','11.86 y'],['Day','9.93 h'],['Satellites','4 known in 1804']]},
+    {id:'sat',  name:'Saturn',   lat:'Saturnus',idx:'Arm VI',r:238, dia:12, ratio:1.8, tilt:2.5,  col:'#dcc38d', period:'29.46 y',
+     desc:'Fitted with a ring of thin brass, tilted eleven degrees so that it lies almost in the plane of the plate. In 1804 this was forty years early and nobody was entirely sure it was right.',
+     figs:[['Diameter','120 536 km'],['Year','29.46 y'],['Day','10.66 h'],['Satellites','1 known in 1804']]},
+    {id:'ura',  name:'Uranus',   lat:'Vranus', idx:'Arm VII',r:272, dia:8.5,ratio:1.3, tilt:0.8,  col:'#a9cfd4', period:'84.01 y',
+     desc:'Discovered 1781 and still, in 1804, the newest thing on the plate. The maker gave it a distinct blue-green enamel and a longer arm than the geometry strictly requires, to make room for the discovery.',
+     figs:[['Diameter','51 118 km'],['Year','84.01 y'],['Day','17.24 h retrograde'],['Satellites','none known until 1787']]},
+    {id:'gap',  name:'The eighth',lat:'Planum vacuum', idx:'Arm VIII — empty', r:304, dia:0, ratio:1.0, tilt:0, col:'#5c554a', period:'—', empty:true,
+     desc:'A socket turned to length and left open. There is no body on this arm. The socket was cast in 1798 and the planet it waits for was not found until 1846, forty-eight years after the first of these instruments was completed.',
+     figs:[['Diameter','—'],['Discovered','23 September 1846'],['Fitted','never'],['Socket','turned to length, left open']]}
+  ];
+
+  /* ================= svg plumbing ================= */
+  var svg = document.getElementById('orr');
+  var gRings = document.getElementById('rings');
+  var gOrbits = document.getElementById('orbits');
+  var gShadow = document.getElementById('shadow');
+  var gBodies = document.getElementById('bodies');
+  var gZod = document.getElementById('zod');
+  var gArm = document.getElementById('arm');
+  var gGears = document.getElementById('gears');
+  var camOut = document.getElementById('camOut');
+
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs){
+    var n = document.createElementNS(NS, tag);
+    for (var k in attrs) n.setAttribute(k, attrs[k]);
+    return n;
+  }
+
+  /* ================= camera + projection ================= */
+  var cam = { az: 0, el: 24, dist: 100, f: 900 };
+  var CX = 500, CY = 360, S = 1.02;   /* screen centre, world→px scale */
+
+  function project(x, y, z){
+    var ca = Math.cos(cam.az * Math.PI/180), sa = Math.sin(cam.az * Math.PI/180);
+    var ce = Math.cos(cam.el * Math.PI/180), se = Math.sin(cam.el * Math.PI/180);
+    var x1 =  x * ca + z * sa;
+    var z1 = -x * sa + z * ca;
+    var y2 =  y * ce - z1 * se;
+    var z2 =  y * se + z1 * ce;
+    var k = (cam.f / (cam.f - z2 * 1.25)) * (cam.dist / 100);
+    return { x: CX + x1 * S * k, y: CY + y2 * S * k, d: k };
+  }
+  function ringPath(radius, plane, n){
+    n = n || 72;
+    var d = '';
+    for (var i=0;i<=n;i++){
+      var a = i / n * Math.PI * 2;
+      var p = plane === 'xz'
+        ? project(Math.cos(a)*radius, 0, Math.sin(a)*radius)
+        : plane === 'xy'
+          ? project(Math.cos(a)*radius, Math.sin(a)*radius, 0)
+          : project(0, Math.cos(a)*radius, Math.sin(a)*radius);
+      d += (i ? 'L' : 'M') + p.x.toFixed(1) + ' ' + p.y.toFixed(1);
+    }
+    return d + 'Z';
+  }
+
+  /* ================= build static chrome ================= */
+  /* orbital rings */
+  var orbitPaths = {}, orbitEls = {};
+  BODIES.forEach(function(b){
+    if (!b.r) return;
+    var p = el('path', {d: ringPath(b.r, 'xz'), fill:'none',
+      stroke: b.empty ? '#5c554a' : '#c9a227',
+      'stroke-width': b.empty ? 1 : 1.2,
+      'stroke-opacity': b.empty ? .3 : .42,
+      'stroke-dasharray': b.empty ? '3 6' : 'none'});
+    gOrbits.appendChild(p);
+    orbitPaths[b.id] = p; orbitEls[b.id] = b;
+  });
+
+  /* armillary: ecliptic ring, meridian ring, equator ring, polar axis */
+  [{r:340, p:'xz', w:2.4, o:.5},
+   {r:322, p:'xy', w:1.6, o:.32},
+   {r:322, p:'yz', w:1.6, o:.32},
+   {r:186, p:'xz', w:1, o:.2}
+  ].forEach(function(c){
+    gRings.appendChild(el('path', {d:ringPath(c.r, c.p), fill:'none',
+      stroke:'url(#brassg)', 'stroke-width':c.w, 'stroke-opacity':c.o,
+      id:'ring-'+c.p+'-'+c.r}));
+  });
+  gRings.appendChild(el('path', {d:'M500 92 L500 618', stroke:'#c9a227','stroke-width':1.2,
+    'stroke-opacity':.3, id:'axis'}));
+
+  /* engraved zodiac annulus on the ecliptic ring */
+  (function(){
+    var R = 340, W = 22;
+    for (var i=0;i<ZODIAC.length;i++){
+      var a = (i/12) * Math.PI*2 - Math.PI/2;
+      var inner = project(Math.cos(a)*(R-W/2), 0, Math.sin(a)*(R-W/2));
+      var outer = project(Math.cos(a)*(R+W/2), 0, Math.sin(a)*(R+W/2));
+      gZod.appendChild(el('line', {x1:inner.x.toFixed(1), y1:inner.y.toFixed(1),
+        x2:outer.x.toFixed(1), y2:outer.y.toFixed(1),
+        stroke:'#c9a227','stroke-width':1,'stroke-opacity':.5}));
+      var t = project(Math.cos(a)*(R-4), 0, Math.sin(a)*(R-4));
+      var s = el('text', {x:t.x.toFixed(1), y:t.y.toFixed(1), 'text-anchor':'middle',
+        'font-size':'15', fill:'#e8d493', 'fill-opacity':'.75',
+        'font-family':'Georgia, serif', transform:'rotate('+(-cam.az*57.3).toFixed(0)+')'});
+      s.textContent = ZODIAC[i];
+      gZod.appendChild(s);
+      var s2 = el('text', {x:t.x.toFixed(1), y:(t.y+11).toFixed(1), 'text-anchor':'middle',
+        'font-size':'6.5', fill:'#c9a227', 'fill-opacity':'.55',
+        'font-family':'IBM Plex Mono, monospace', 'letter-spacing':'1'});
+      s2.textContent = SIGNS[i].toUpperCase().slice(0,3);
+      gZod.appendChild(s2);
+    }
+  })();
+
+  /* the movement: three meshed gears under the plate */
+  (function(){
+    function gearPath(R, teeth, tw, hole){
+      var d = '', rOut = R, rIn = R - tw;
+      for (var i=0;i<teeth;i++){
+        var a0 = (i/teeth) * Math.PI*2;
+        var step = (Math.PI*2/teeth)/4;
+        d += 'M' + (Math.cos(a0)*rIn).toFixed(2) + ' ' + (Math.sin(a0)*rIn).toFixed(2);
+        d += 'L' + (Math.cos(a0+step*.7)*rOut).toFixed(2) + ' ' + (Math.sin(a0+step*.7)*rOut).toFixed(2);
+        d += 'L' + (Math.cos(a0+step*1.8)*rOut).toFixed(2) + ' ' + (Math.sin(a0+step*1.8)*rOut).toFixed(2);
+        d += 'L' + (Math.cos(a0+step*2.4)*rIn).toFixed(2) + ' ' + (Math.sin(a0+step*2.4)*rIn).toFixed(2);
+        d += 'A' + rIn.toFixed(2) + ' ' + rIn.toFixed(2) + ' 0 0 1 ' +
+             (Math.cos(a0+step*4)*rIn).toFixed(2) + ' ' + (Math.sin(a0+step*4)*rIn).toFixed(2);
+      }
+      return d + 'Z';
+    }
+    var specs = [
+      {x:214, y:596, R:44, teeth:22, tw:9, id:'gearA', col:'#c9a227'},
+      {x:284, y:614, R:26, teeth:13, tw:7, id:'gearB', col:'#e0c473'},
+      {x:790, y:600, R:34, teeth:17, tw:8, id:'gearC', col:'#a8861f'}
+    ];
+    specs.forEach(function(s){
+      var g = el('g', {id:s.id, opacity:'.8'});
+      g.appendChild(el('path', {d: gearPath(s.R, s.teeth, s.tw), fill:'url(#brassg)',
+        'fill-opacity':'.9', stroke:'#6d5514','stroke-width':'.6'}));
+      g.appendChild(el('circle', {cx:0, cy:0, r:s.R*.3, fill:'#141110', stroke:'#e8d493',
+        'stroke-width':'.8'}));
+      for (var i=0;i<s.teeth;i+=1){
+        var a = (i/s.teeth)*Math.PI*2;
+        g.appendChild(el('line', {x1:0,y1:0,
+          x2:(Math.cos(a)*s.R*.3).toFixed(2), y2:(Math.sin(a)*s.R*.3).toFixed(2),
+          stroke:'#e8d493','stroke-width':'.5','stroke-opacity':'.5'}));
+      }
+      g.setAttribute('transform','translate('+s.x+','+s.y+')');
+      gGears.appendChild(g);
+    });
+  })();
+
+  /* ================= bodies ================= */
+  var nodes = {};
+  BODIES.forEach(function(b){
+    if (b.id === 'sun') return;
+    var sh = el('ellipse', {rx:4, ry:1.4, fill:'#000', 'fill-opacity':'0', id:'sh-'+b.id});
+    gShadow.appendChild(sh);
+    var g = el('g', {class:'star', id:'st-'+b.id, tabindex:'0', role:'button',
+      'aria-label': b.name + ' — press to focus'});
+    if (b.dia){
+      g.appendChild(el('circle', {class:'disc', r:b.dia, fill:b.col, stroke:'#2a2110',
+        'stroke-width':'1', 'fill-opacity':'.94'}));
+      g.appendChild(el('circle', {cx:-b.dia*.3, cy:-b.dia*.34, r:b.dia*.42,
+        fill:'#fff','fill-opacity':'.18'}));
+      /* Saturn's ring */
+      if (b.id === 'sat'){
+        g.appendChild(el('ellipse', {rx:b.dia*1.85, ry:b.dia*.5, fill:'none',
+          stroke:'#dcc38d','stroke-width':'1.4','stroke-opacity':'.85',
+          transform:'rotate(-11)'}));
+      }
+      /* the moon on the earth's arm */
+      if (b.id === 'ear'){
+        g.appendChild(el('circle', {id:'moonOrb', r:0, fill:'none', stroke:'#7fa6c4',
+          'stroke-width':'.8','stroke-opacity':'.5'}));
+        g.appendChild(el('circle', {id:'moon', r:2.2, fill:'#dfe6ea', stroke:'#4c5c6a',
+          'stroke-width':'.5'}));
+      }
+    } else {
+      /* the empty socket: a turned bore with no body in it */
+      g.appendChild(el('circle', {r:9, fill:'none', stroke:'#5c554a','stroke-width':'1.4',
+        'stroke-dasharray':'3 4'}));
+      g.appendChild(el('circle', {r:4, fill:'#0a0908', stroke:'#3c362d','stroke-width':'.8'}));
+    }
+    g.appendChild(el('text', {y:-b.dia-8, 'text-anchor':'middle', 'font-size':'10',
+      fill:'#e8d493','fill-opacity':'.72','font-family':'IBM Plex Mono, monospace',
+      'letter-spacing':'1.4', id:'lb-'+b.id}));
+    g.appendChild(el('line', {y1:-b.dia-6, y2:-b.dia-2, stroke:'#c9a227','stroke-width':'.6',
+      'stroke-opacity':'.5'}));
+    gBodies.appendChild(g);
+    nodes[b.id] = g;
+  });
+
+  /* the sun's arm: a bare pointer, because the sun is the lamp */
+  gArm.appendChild(el('path', {d:'M500 360 L500 300', stroke:'#c9a227','stroke-width':1.4,
+    'stroke-opacity':'.5'}));
+
+  /* ================= catalogue list ================= */
+  var list = document.getElementById('list');
+  BODIES.forEach(function(b, i){
+    var li = document.createElement('li');
+    li.setAttribute('data-id', b.id);
+    li.setAttribute('tabindex','0');
+    li.setAttribute('role','button');
+    li.innerHTML = '<u style="background:' + b.col + '"></u><span class="n">' +
+      (i === 0 ? 'Sol' : b.name) + '</span><span class="p">' +
+      (b.period === '—' ? 'empty' : b.period) + '</span>';
+    li.addEventListener('pointerenter', function(){ pick(b.id, false); });
+    li.addEventListener('focus', function(){ pick(b.id, false); });
+    li.addEventListener('click', function(){ pick(b.id, true); });
+    list.appendChild(li);
+  });
+
+  /* ================= card ================= */
+  var cName = document.getElementById('cName'), cIdx = document.getElementById('cIdx');
+  var cLat = document.getElementById('cLat'), cDesc = document.getElementById('cDesc');
+  var card = document.getElementById('card');
+  var dl = card.querySelector('dl');
+
+  function showCard(b){
+    cName.textContent = b.name;
+    cIdx.textContent = b.idx;
+    cLat.textContent = b.lat;
+    cDesc.textContent = b.desc;
+    card.classList.toggle('empty', !!b.empty);
+    var rows = b.figs.map(function(f){
+      return '<dt>' + f[0] + '</dt><dd>' + f[1] + '</dd>';
+    }).join('');
+    dl.innerHTML = rows;
+    Array.prototype.slice.call(list.children).forEach(function(li){
+      li.classList.toggle('on', li.getAttribute('data-id') === b.id);
+    });
+  }
+  var BODY = {};
+  BODIES.forEach(function(b){ BODY[b.id] = b; });
+
+  /* ================= camera easing ================= */
+  var focusTarget = null, ease = null;
+  var HAZ = {az:0, el:24, dist:100};
+  function pick(id, moveCamera){
+    var b = BODY[id];
+    if (!b) return;
+    showCard(b);
+    if (!moveCamera || id === 'sun'){ focusTarget = null; return; }
+    /* ease the camera in: lower elevation, close distance, azimuth onto the body */
+    focusTarget = {
+      el: Math.max(6, cam.el - 13),
+      dist: Math.max(45, cam.dist * 0.56),
+      az: cam.az + (id === 'gap' ? 12 : 4)
+    };
+    ease = {from:{az:cam.az, el:cam.el, dist:cam.dist}, t:0, to:focusTarget};
+  }
+  document.getElementById('reset').addEventListener('click', function(){
+    focusTarget = null;
+    ease = {from:{az:cam.az, el:cam.el, dist:cam.dist}, t:0,
+            to:{az:0, el:24, dist:100}};
+  });
+
+  /* ================= input ================= */
+  var speed = document.getElementById('speed');
+  var speedOut = document.getElementById('speedOut');
+  var dist = document.getElementById('dist');
+  var distOut = document.getElementById('distOut');
+  var rate = 1;
+  speed.addEventListener('input', function(){ rate = +speed.value/100;
+    speedOut.textContent = rate.toFixed(2) + '×'; });
+  dist.addEventListener('input', function(){
+    cam.dist = +dist.value;
+    focusTarget = null;
+    distOut.textContent = cam.dist + ' %';
+  });
+
+  var dragging = false, px = 0, py = 0;
+  svg.addEventListener('pointerdown', function(e){
+    dragging = true; px = e.clientX; py = e.clientY;
+    svg.classList.add('drag');
+    svg.setPointerCapture(e.pointerId);
+    focusTarget = null;
+  });
+  svg.addEventListener('pointermove', function(e){
+    if (!dragging) return;
+    cam.az += (e.clientX - px) * 0.42;
+    cam.el = Math.max(-8, Math.min(72, cam.el - (e.clientY - py) * 0.24));
+    px = e.clientX; py = e.clientY;
+    ease = null;
+  }, {passive:true});
+  function stop(){ dragging = false; svg.classList.remove('drag'); }
+  svg.addEventListener('pointerup', stop);
+  svg.addEventListener('pointercancel', stop);
+
+  svg.addEventListener('wheel', function(e){
+    e.preventDefault();
+    cam.dist = Math.max(45, Math.min(190, cam.dist - Math.sign(e.deltaY) * 5));
+    dist.value = cam.dist;
+    distOut.textContent = cam.dist + ' %';
+    focusTarget = null; ease = null;
+  }, {passive:false});
+
+  Object.keys(nodes).forEach(function(id){
+    var n = nodes[id];
+    n.addEventListener('click', function(ev){ ev.stopPropagation(); pick(id, true); });
+    n.addEventListener('keydown', function(ev){
+      if (ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); pick(id, true); }
+    });
+    n.addEventListener('pointerenter', function(){ showCard(BODY[id]); });
+  });
+  svg.addEventListener('click', function(){ pick('sun', false); });
+
+  /* ================= render ================= */
+  var phase = {};
+  BODIES.forEach(function(b){ phase[b.id] = Math.random() * Math.PI * 2; });
+  var mo = document.getElementById('moon');
+  var ringPathsEls = Array.prototype.slice.call(gRings.querySelectorAll('path'));
+  var zodGlyphs = Array.prototype.slice.call(gZod.querySelectorAll('text'))
+    .filter(function(t){ return t.getAttribute('font-size') === '15'; });
+  var sunC = document.getElementById('sunC'), haloC = document.getElementById('haloC');
+  var axis = gRings.querySelector('#axis');
+  var gearA = document.getElementById('gearA'), gearB = document.getElementById('gearB'),
+      gearC = document.getElementById('gearC');
+  var last = null;
+
+  function render(ts){
+    if (last === null) last = ts;
+    var dt = Math.min(64, ts - last) / 1000; last = ts;
+
+    /* camera easing */
+    if (ease){
+      ease.t = Math.min(1, ease.t + dt * 0.9);
+      var e = ease.t < 0.5 ? 2*ease.t*ease.t : 1 - Math.pow(-2*ease.t + 2, 3)/2;
+      cam.az = ease.from.az + (ease.to.az - ease.from.az) * e;
+      cam.el = ease.from.el + (ease.to.el - ease.from.el) * e;
+      cam.dist = ease.from.dist + (ease.to.dist - ease.from.dist) * e;
+      dist.value = Math.round(cam.dist);
+      distOut.textContent = Math.round(cam.dist) + ' %';
+      if (ease.t >= 1) ease = null;
+    }
+
+    /* advance the mechanism */
+    var base = 0.55 * rate;   /* sim-days per second at 1.00x */
+    BODIES.forEach(function(b){
+      if (!b.r) return;
+      var days;
+      if (b.id === 'ear') days = 365.26;
+      else if (b.id === 'mer') days = 87.97;
+      else if (b.id === 'ven') days = 224.70;
+      else if (b.id === 'mar') days = 686.98;
+      else if (b.id === 'jup') days = 4332.6;
+      else if (b.id === 'sat') days = 10759;
+      else if (b.id === 'ura') days = 30687;
+      else days = 60190;
+      phase[b.id] += (base * days / 1000) * b.ratio;
+    });
+
+    /* orbits, bodies and cast shadows */
+    for (var m=0;m<BODIES.length;m++){
+      var bb = BODIES[m];
+      if (bb.id === 'sun' || !bb.r) continue;
+
+      var ti = (bb.tilt || 0) * Math.PI/180;
+      var wx = Math.cos(phase[bb.id]) * bb.r;
+      var wy = Math.sin(phase[bb.id]) * bb.r * Math.sin(ti);
+      var wz = Math.sin(phase[bb.id]) * bb.r * Math.cos(ti);
+      var p = project(wx, wy, wz);
+
+      var path = orbitPaths[bb.id];
+      if (path) path.setAttribute('d', ringPath(bb.r, 'xz'));
+
+      var n = nodes[bb.id];
+      n.setAttribute('transform', 'translate(' + p.x.toFixed(1) + ',' + p.y.toFixed(1) + ')');
+      n.setAttribute('opacity', p.d < 0.6 ? '.5' : '1');
+      var lbl = n.querySelector('#lb-' + bb.id);
+      if (lbl) lbl.textContent = bb.id === 'gap' ? 'VIII \u00b7 EMPTY' : bb.name.toUpperCase();
+
+      /* the moon on the earth's arm */
+      if (bb.id === 'ear'){
+        mo.setAttribute('cx', (Math.cos(phase.ear*13.37)*20).toFixed(1));
+        mo.setAttribute('cy', (Math.sin(phase.ear*13.37)*7.6).toFixed(1));
+      }
+
+      /* cast shadow falls on the plinth, softened and shortened by height */
+      var se = document.getElementById('sh-' + bb.id);
+      var g2 = project(wx, 214, wz);
+      var sc = Math.max(1.6, bb.dia * 0.85 * (1.75 - Math.min(1, (g2.y - 460) / 340)));
+      se.setAttribute('cx', g2.x.toFixed(1));
+      se.setAttribute('cy', g2.y.toFixed(1));
+      se.setAttribute('rx', sc.toFixed(1));
+      se.setAttribute('ry', (sc * 0.32).toFixed(1));
+      se.setAttribute('fill-opacity', (0.34 * Math.min(1, g2.d)).toFixed(2));
+    }
+
+    /* rings + sun follow the camera */
+    for (var ri=0;ri<ringPathsEls.length;ri++){
+      var bits = ringPathsEls[ri].getAttribute('id').split('-');
+      ringPathsEls[ri].setAttribute('d', ringPath(+bits[2], bits[1]));
+    }
+    axis.setAttribute('d', 'M500 ' + project(0,-260,0).y.toFixed(1) +
+                            ' L500 ' + project(0,260,0).y.toFixed(1));
+    for (var zi=0;zi<zodGlyphs.length;zi++)
+      zodGlyphs[zi].setAttribute('transform', 'rotate(' + (-cam.az*0.6).toFixed(0) + ')');
+
+    var sunP = project(0,0,0);
+    sunC.setAttribute('cx', sunP.x.toFixed(1));
+    sunC.setAttribute('cy', sunP.y.toFixed(1));
+    haloC.setAttribute('cx', sunP.x.toFixed(1));
+    haloC.setAttribute('cy', sunP.y.toFixed(1));
+    gArm.setAttribute('transform','translate('+(-CX)+','+(-CY)+') translate(' +
+      sunP.x.toFixed(1) + ',' + sunP.y.toFixed(1) + ')');
+
+    /* the movement turns with the mechanism */
+    gearA.setAttribute('transform', 'translate(214,596) rotate(' + (phase.mer*8).toFixed(1) + ')');
+    gearB.setAttribute('transform', 'translate(284,614) rotate(' + (-phase.ven*12).toFixed(1) + ')');
+    gearC.setAttribute('transform', 'translate(790,600) rotate(' + (phase.ura*2.2).toFixed(1) + ')');
+
+    camOut.textContent = 'AZ ' + ((cam.az % 360 + 360) % 360).toFixed(0).padStart(3,'0') +
+      '\u00b0 · EL ' + cam.el.toFixed(0) + '\u00b0 · DIST ' + cam.dist.toFixed(0) + ' %';
+
+    requestAnimationFrame(render);
+  }
+
+  showCard(BODY.sun);
+  requestAnimationFrame(render);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Yoiyamacho 3 — Izakaya Neon Sign Wall</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400;700&family=Barlow+Condensed:wght@400;500;600&family=Noto+Sans+JP:wght@500;700&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --hue:8;                     /* every sign reads from this hue */
+    --wall-1:#241c1c; --wall-2:#1a1414; --wall-3:#0d0a0b;
+    --ink:#e9e2d6; --dim:#8d8177;
+    --neon: hsl(var(--hue) 92% 58%);
+    --neon-2: hsl(calc(var(--hue) + 150) 88% 60%);
+    --amber:#ffb15e;
+    --jp:"Noto Sans JP","Zen Old Mincho",sans-serif;
+    --min:"Zen Old Mincho","Yu Mincho",serif;
+    --cond:"Barlow Condensed","Arial Narrow",sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:#08070a;color:var(--ink)}
+  body{-webkit-font-smoothing:antialiased}
+
+  /* ---------- brick + plywood ---------- */
+  .wall{position:fixed;inset:0;overflow:hidden}
+  .brick{position:absolute;inset:0;
+    background-color:var(--wall-2);
+    background-image:
+      repeating-linear-gradient(0deg,rgba(0,0,0,.42) 0 2px,transparent 2px 46px),
+      repeating-linear-gradient(90deg,rgba(0,0,0,.42) 0 2px,transparent 2px 92px),
+      repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 1px,transparent 1px 92px),
+      linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.34));
+    background-size:100% 46px,92px 46px,92px 46px,100% 100%;
+    background-position:0 0,0 0,0 0,0 0;
+  }
+  .brick::after{ /* offset the alternate courses */
+    content:"";position:absolute;inset:0;
+    background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.42) 0 2px,transparent 2px 92px);
+    background-size:92px 46px;background-position:46px 23px;background-repeat:repeat-y;
+    opacity:.5;
+  }
+  .ply{position:absolute;left:0;right:0;top:0;height:44%;
+    background:linear-gradient(180deg,#2b2220,#1d1716 60%,#120e0e);
+    box-shadow:0 30px 60px -30px #000,inset 0 -2px 0 rgba(255,255,255,.06)}
+  .ply::before{content:"";position:absolute;inset:0;opacity:.5;
+    background:repeating-linear-gradient(91deg,rgba(255,255,255,.05) 0 1px,transparent 1px 4px,
+      rgba(0,0,0,.16) 4px 5px,transparent 5px 11px)}
+  .ply::after{content:"";position:absolute;inset:0;opacity:.35;
+    background:repeating-linear-gradient(88deg,rgba(0,0,0,.4) 0 1px,transparent 1px 27px)}
+  .damp{position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;opacity:.5;
+    background:
+      radial-gradient(30% 40% at 14% 72%,rgba(0,0,0,.7),transparent 70%),
+      radial-gradient(20% 26% at 86% 30%,rgba(0,0,0,.6),transparent 70%)}
+  .shaft{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;opacity:.16;
+    background:radial-gradient(60% 50% at 50% -10%,hsl(var(--hue) 80% 60%),transparent 70%)}
+
+  /* ---------- sign deck ---------- */
+  .deck{position:fixed;inset:0;z-index:4;display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(180px,20vw);
+    grid-template-rows:auto 1fr auto;padding:clamp(14px,2.2vw,30px);gap:12px}
+
+  .head{grid-column:1/3;display:flex;justify-content:space-between;align-items:flex-end;
+    padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.1);gap:16px;flex-wrap:wrap}
+  .head .t{font-family:var(--cond);font-size:clamp(20px,2.4vw,34px);font-weight:600;
+    letter-spacing:.2em;text-transform:uppercase;line-height:1;
+    color:#efe7db;text-shadow:0 0 22px rgba(255,140,90,.35)}
+  .head .t em{font-style:normal;color:var(--amber)}
+  .head .s{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--dim);line-height:1.9;text-align:right}
+  .head .s b{font-weight:400;color:#c9bdb1}
+
+  .alley{position:fixed;left:clamp(14px,2.2vw,30px);top:clamp(74px,10vh,120px);
+    z-index:3;width:min(58vw,780px);height:min(54vh,470px)}
+
+  .index{grid-column:2/3;grid-row:2/4;z-index:6;align-self:end;
+    border-top:1px solid rgba(255,255,255,.12);padding-top:10px;
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:var(--dim)}
+  .index h3{margin:0 0 8px;font-family:var(--cond);font-size:11px;letter-spacing:.3em;
+    text-transform:uppercase;color:#c9bdb1;font-weight:500}
+  .index ul{list-style:none;margin:0;padding:0;display:grid;gap:1px}
+  .index li{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;
+    padding:5px 0;border-bottom:1px solid rgba(255,255,255,.06);cursor:pointer;transition:.2s}
+  .index li:hover{color:#fff;background:rgba(255,255,255,.05)}
+  .index .sw{width:9px;height:9px;border-radius:50%;background:hsl(var(--h) 90% 60%);
+    box-shadow:0 0 8px hsl(var(--h) 90% 60%)}
+  .index .nm{font-family:var(--jp);font-size:10.5px;letter-spacing:.12em}
+  .index .rm{font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;opacity:.7}
+  .index .amp{width:5px;height:5px;border-radius:50%;background:#2c2a2c;box-shadow:0 0 0 1px #000}
+  .index .amp.on{background:#ff4b3a;box-shadow:0 0 7px #ff4b3a}
+  .index p{margin:10px 0 0;font-size:8.5px;line-height:1.8;letter-spacing:.06em;opacity:.6}
+
+  .foot{grid-column:1/3;grid-row:3;display:flex;justify-content:space-between;gap:14px;
+    align-items:flex-end;flex-wrap:wrap;font-family:var(--mono);font-size:9px;
+    letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+  .foot b{font-weight:400;color:var(--amber)}
+  button.buzz{font-family:var(--cond);font-size:11px;letter-spacing:.26em;text-transform:uppercase;
+    color:#0d0a0b;background:linear-gradient(180deg,#ffd7a8,#f0a35c);border:0;padding:9px 18px;
+    cursor:pointer;box-shadow:0 2px 0 #7d4a1c,0 0 24px -4px rgba(255,150,70,.6)}
+  button.buzz:active{transform:translateY(2px);box-shadow:0 0 18px -4px rgba(255,150,70,.5)}
+  button.buzz[aria-pressed="true"]{background:linear-gradient(180deg,#8f9aa0,#5d686e);color:#0d0a0b}
+
+  /* ---------- sign primitives ---------- */
+  .sign{position:relative;display:block;border:0;padding:0;background:none;cursor:pointer;
+    -webkit-tap-highlight-color:transparent}
+  .sign svg{display:block;overflow:visible;width:100%;height:auto}
+  .tube{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+  .core{fill:currentColor}
+  .lamp{position:absolute;inset:-14% -8%;pointer-events:none;border-radius:50%;
+    background:radial-gradient(closest-side,currentColor,transparent 72%);opacity:.5;
+    filter:blur(16px);transition:opacity .12s linear}
+
+  /* a tube that never quite strikes properly */
+  .bad .tube{animation:stutter 3.1s steps(1) infinite}
+  .bad .core{animation:stutterCore 3.1s steps(1) infinite}
+  @keyframes stutter{0%,100%{opacity:1}3%{opacity:.22}4%{opacity:1}6%{opacity:.12}7%{opacity:1}
+    44%{opacity:1}45%{opacity:.3}46%{opacity:1}47.5%{opacity:.1}48.5%{opacity:1}
+    71%{opacity:1}71.5%{opacity:.25}72%{opacity:1}72.6%{opacity:.08}73.4%{opacity:1}}
+  @keyframes stutterCore{0%,100%{opacity:.95}3%{opacity:.1}4%{opacity:.9}6%{opacity:.05}7%{opacity:.9}
+    44%{opacity:.9}45%{opacity:.12}46%{opacity:.9}47.5%{opacity:.04}48.5%{opacity:.9}
+    71%{opacity:.9}71.5%{opacity:.1}72%{opacity:.9}72.6%{opacity:.03}73.4%{opacity:.9}}
+
+  /* cold start: a few stutters, then steady */
+  .strike .tube{animation:start 9s linear infinite}
+  .strike .core{animation:startCore 9s linear infinite}
+  @keyframes start{
+    0%{opacity:1}2%{opacity:1}2.4%{opacity:.08}2.8%{opacity:1}3.4%{opacity:1}
+    3.6%{opacity:.06}3.9%{opacity:1}5%{opacity:1}5.2%{opacity:.2}5.4%{opacity:1}
+    8%{opacity:1}8.2%{opacity:.1}8.5%{opacity:1}22%{opacity:1}22.3%{opacity:.35}
+    22.6%{opacity:1}61%{opacity:1}61.4%{opacity:.14}61.8%{opacity:1}100%{opacity:1}}
+  @keyframes startCore{
+    0%{opacity:1}2%{opacity:1}2.4%{opacity:.04}2.8%{opacity:1}3.4%{opacity:1}
+    3.6%{opacity:.03}3.9%{opacity:1}5%{opacity:1}5.2%{opacity:.08}5.4%{opacity:1}
+    8%{opacity:1}8.2%{opacity:.04}8.5%{opacity:1}22%{opacity:1}22.3%{opacity:.12}
+    22.6%{opacity:1}61%{opacity:1}61.4%{opacity:.05}61.8%{opacity:1}100%{opacity:1}}
+
+  /* ---------- wet ground ---------- */
+  .ground{position:fixed;left:0;right:0;bottom:0;height:36%;z-index:2;pointer-events:none;
+    background:linear-gradient(180deg,#0a0809 0%,#050405 40%,#020203 100%)}
+  .ground::before{content:"";position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(255,255,255,.10),transparent 26%)}
+  .refl{position:absolute;inset:0;overflow:hidden;pointer-events:none;opacity:.6;
+    -webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,.85),rgba(0,0,0,.3) 42%,transparent 80%);
+    mask-image:linear-gradient(180deg,rgba(0,0,0,.85),rgba(0,0,0,.3) 42%,transparent 80%)}
+  .mirror{position:absolute;bottom:100%;transform:scaleY(-1);transform-origin:50% 100%;
+    filter:blur(2.2px) saturate(1.12) brightness(.5);
+    animation:ripple 7.4s ease-in-out infinite}
+  @keyframes ripple{0%,100%{transform:scaleY(-1) translateY(0)}50%{transform:scaleY(-1) translateY(5px)}}
+  .puddle{position:absolute;left:6%;right:6%;top:6%;height:16%;border-radius:50%;
+    background:radial-gradient(closest-side,hsl(var(--hue) 90% 55%/.22),transparent 76%);
+    filter:blur(10px)}
+
+  /* ---------- lanterns ---------- */
+  .lanterns{position:fixed;left:0;right:0;top:0;height:38%;z-index:5;pointer-events:none}
+  .lamp2{position:absolute;top:0;transform-origin:50% 0;
+    animation:sway 6.4s ease-in-out infinite}
+  .lamp2:nth-child(2){animation-duration:7.9s;animation-delay:-2s}
+  .lamp2:nth-child(3){animation-duration:8.8s;animation-delay:-4s}
+  @keyframes sway{0%,100%{transform:rotate(-1.6deg)}50%{transform:rotate(1.6deg)}}
+  .chord{position:absolute;left:50%;top:0;width:1px;height:26px;background:#0a0809;
+    transform:translateX(-50%)}
+  .chochin{width:clamp(52px,5.2vw,78px);height:clamp(72px,7.4vw,108px);border-radius:46%/40%;
+    position:relative;margin:0 auto;
+    background:radial-gradient(58% 42% at 38% 34%,#fff2df 0%,#ff9b6a 26%,#e04a2a 62%,#8d1f16 100%);
+    box-shadow:0 0 26px -2px rgba(255,110,60,.75),inset -8px -10px 24px rgba(90,20,10,.5);
+    display:grid;place-items:center}
+  .chochin::before,.chochin::after{content:"";position:absolute;left:8%;right:8%;height:5px;
+    background:#17110f;border-radius:1px}
+  .chochin::before{top:-3px} .chochin::after{bottom:-3px}
+  .chochin span{font-family:var(--min);font-weight:700;color:#2b0d08;font-size:clamp(15px,1.6vw,22px);
+    line-height:1.05;text-align:center;text-shadow:0 1px 0 rgba(255,220,190,.5)}
+  .chochin.pale{background:radial-gradient(58% 42% at 38% 34%,#fffaf0 0%,#f0e2c8 40%,#b8a888 100%);
+    box-shadow:0 0 22px -4px rgba(255,240,200,.5),inset -8px -10px 22px rgba(90,78,54,.35)}
+  .chochin.pale span{color:#3a2f1e}
+
+  /* ---------- noren + doorway ---------- */
+  .door{position:fixed;z-index:4;bottom:0;width:min(30vw,340px);height:46%;
+    background:linear-gradient(180deg,#0c0a0b 0 62%,#171314 100%);
+    box-shadow:0 0 60px -14px rgba(255,140,70,.3)}
+  .door .glow{position:absolute;left:14%;right:14%;bottom:0;height:56%;
+    background:linear-gradient(180deg,rgba(255,168,86,.42),rgba(255,140,60,0));
+    filter:blur(10px);animation:spill 5.6s ease-in-out infinite}
+  @keyframes spill{0%,100%{opacity:.75;transform:scaleY(1)}50%{opacity:1;transform:scaleY(1.07)}}
+  .door .noren{position:absolute;left:6%;right:6%;top:12%;display:flex;gap:2px}
+  .door .noren i{flex:1;height:clamp(28px,3.4vw,46px);background:linear-gradient(180deg,#1d2a2c,#101a1c);
+    border-bottom:2px solid rgba(0,0,0,.5);display:grid;place-items:center;
+    font-family:var(--min);font-style:normal;font-size:clamp(11px,1.3vw,17px);color:#d9cfae;
+    box-shadow:inset 0 -6px 10px -6px rgba(0,0,0,.8)}
+  .door .plate{position:absolute;left:50%;bottom:clamp(18px,3vh,34px);transform:translateX(-50%);
+    font-family:var(--min);font-size:clamp(10px,1.1vw,14px);letter-spacing:.28em;color:#b7a98c;
+    border:1px solid rgba(183,169,140,.4);padding:4px 12px;background:rgba(10,8,9,.7)}
+
+  @media (max-width:900px){
+    .deck{position:relative;grid-template-columns:1fr;min-height:100dvh;padding:12px}
+    .head{grid-column:1}
+    .alley{position:relative;left:auto;top:auto;width:100%;height:50vh;min-height:300px;margin-top:8px}
+    .index{grid-column:1;grid-row:auto;margin-top:10px}
+    .foot{grid-column:1;grid-row:auto}
+    .door{display:none}
+    .lanterns{display:none}
+    .refl{display:none}
+    .head .s{font-size:8px}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wall" aria-hidden="true">
+  <div class="brick"></div>
+  <div class="ply"></div>
+  <div class="damp"></div>
+  <div class="shaft"></div>
+</div>
+
+<div class="lanterns" aria-hidden="true">
+  <div class="lamp2" style="left:8%">
+    <span class="chord"></span>
+    <div class="chochin"><span>酒</span></div>
+  </div>
+  <div class="lamp2" style="left:44%">
+    <span class="chord" style="height:44px"></span>
+    <div class="chochin pale"><span>肴</span></div>
+  </div>
+  <div class="lamp2" style="left:80%">
+    <span class="chord" style="height:32px"></span>
+    <div class="chochin"><span>炉<br>端<br>焼</span></div>
+  </div>
+</div>
+
+<div class="ground" aria-hidden="true">
+  <div class="refl" id="refl"></div>
+  <div class="puddle" aria-hidden="true"></div>
+</div>
+
+<div class="door" aria-hidden="true" style="left:6%">
+  <div class="glow"></div>
+  <div class="noren"><i>や</i><i>き</i><i>と</i><i>り</i></div>
+  <div class="plate">第三号</div>
+</div>
+
+<div class="alley" id="alley" role="group" aria-label="Neon signs. Click a sign to make it buzz and change colour."></div>
+
+<div class="deck">
+  <div class="head">
+    <div class="t">Yoiyamachō <em>3</em>&mdash;chōme</div>
+    <div class="s">
+      Six signs &middot; one transformer, 60&nbsp;Hz<br>
+      Open <b>17:00 &ndash; 03:00</b> &middot; closed Mondays<br>
+      Tap a tube to hear it &middot; it changes colour if you do
+    </div>
+  </div>
+
+  <div></div>
+
+  <div class="index">
+    <h3>Signage index</h3>
+    <ul id="list"></ul>
+    <p>The hum is a real 60&nbsp;Hz mains buzz shaped by a band&#8209;pass filter. It stops when the transformer stops.</p>
+  </div>
+
+  <div class="foot">
+    <div>Sheet 3 &middot; neon on plywood &amp; brick &middot; after rain</div>
+    <button class="buzz" id="hum" type="button" aria-pressed="false">Transformer: on</button>
+    <div>Tube life <b>≈ 9,000 h</b></div>
+  </div>
+</div>
+
+<noscript><p style="position:fixed;left:0;right:0;bottom:0;margin:0;padding:12px;background:#08070a;color:#e9e2d6;font:12px monospace;text-align:center">The signs are lit. Making one buzz needs the Web Audio API, and the neighbours already complained.</p></noscript>
+
+<script>
+(function(){
+  "use strict";
+  var NS = "http://www.w3.org/2000/svg";
+  var MIN = "'Zen Old Mincho','Yu Mincho','Noto Serif JP',serif";
+  var SANS = "'Noto Sans JP','Zen Old Mincho',sans-serif";
+  var COND = "'Barlow Condensed','Arial Narrow',sans-serif";
+
+  /* ------------------------------------------------ neon signs */
+  var SIGNS = [
+    { id:"sakaben", jp:"酒処", rom:"sakaben", kind:"vertical", font:MIN, weight:700,
+      size:78, w:200, h:420, wpc:20, x:1,  y:3,  hue:8,   anim:"strike", dur:"9s",
+      plate:"#15100f", note:"Vertical box, two tubes, fitted 2019. Warmer at the top end." },
+    { id:"izakaya", jp:"IZAKAYA", rom:"izakaya", kind:"horiz", font:COND, weight:600,
+      size:62, w:560, h:112, wpc:58, x:24, y:6,  hue:188, anim:"strike", dur:"11.5s", track:"6",
+      plate:"#0e1114", note:"Ice blue. Letter spacing set with a furring strip, by hand." },
+    { id:"yakitori", jp:"やきとり", rom:"yakitori", kind:"vertical", font:MIN, weight:400,
+      size:40, w:120, h:300, wpc:12, x:86, y:2,  hue:36,  anim:"", dur:"",
+      plate:"#161109", note:"Amber. The transformer complains when this one is lit." },
+    { id:"open", jp:"OPEN", rom:"open", kind:"horiz", font:COND, weight:600,
+      size:46, w:230, h:78, wpc:24, x:72, y:40, hue:142, anim:"", dur:"",
+      plate:"#0c120e", note:"Green, 15 W. Nobody turned it on. It is simply on." },
+    { id:"oden", jp:"おでん", rom:"oden", kind:"vertical", font:MIN, weight:400,
+      size:38, w:110, h:250, wpc:11, x:25, y:52, hue:332, anim:"", dur:"",
+      plate:"#140e13", note:"Pink. Re-bent in March after a delivery van clipped it." },
+    { id:"sake", jp:"SAKE", rom:"sake", kind:"horiz", font:COND, weight:500,
+      size:40, w:260, h:74, wpc:27, x:44, y:58, hue:212, anim:"strike", dur:"13s", track:"5",
+      plate:"#0c1016", bad:true, note:"One bad contact at the left terminal. It has done this since 2016." }
+  ];
+
+  var alley = document.getElementById("alley");
+  var list = document.getElementById("list");
+  var built = [];
+
+  function tubeText(c){
+    var s = "", i;
+    var chars = c.kind === "vertical" ? c.jp.split("") : [c.jp];
+    var x = c.w / 2, step = c.kind === "vertical" ? c.size * 1.16 : 0;
+    var y0 = c.kind === "vertical" ? c.size * 0.86 : c.h * 0.72;
+    for (i = 0; i < chars.length; i++){
+      var cx = c.kind === "vertical" ? x : c.w / 2;
+      var cy = c.kind === "vertical" ? y0 + i * step : y0;
+      var common = 'x="' + cx + '" y="' + cy + '" font-family="' + c.font + '" font-size="' + c.size +
+        '" font-weight="' + (c.weight || 400) + '" text-anchor="middle"';
+      if (c.track && c.kind === "horiz") common += ' letter-spacing="' + c.track + '"';
+      if (c.kind === "vertical") common += ' writing-mode="tb" glyph-orientation-vertical="0"';
+      s += '<text class="tube" ' + common + ' stroke-width="' + (c.size * 0.3).toFixed(1) +
+           '" opacity=".2" style="filter:blur(' + (c.size * 0.07).toFixed(1) + 'px)">' + chars[i] + '</text>';
+      s += '<text class="tube" ' + common + ' stroke-width="' + (c.size * 0.15).toFixed(1) +
+           '" opacity=".45">' + chars[i] + '</text>';
+      s += '<text class="tube" ' + common + ' stroke-width="' + (c.size * 0.07).toFixed(1) +
+           '" opacity=".95">' + chars[i] + '</text>';
+      s += '<text class="core" ' + common + ' opacity=".82" style="letter-spacing:0">' + chars[i] + '</text>';
+    }
+    return s;
+  }
+
+  function makeSign(c){
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "sign " + (c.anim ? c.anim : "") + (c.bad ? " bad" : "");
+    b.style.color = "hsl(" + c.hue + " 92% 58%)";
+    b.style.setProperty("--h", c.hue);
+    b.style.position = "absolute";
+    b.style.left = c.x + "%";
+    b.style.top = c.y + "%";
+    b.style.width = c.wpc + "%";
+    b.style.animationDuration = c.dur;
+    b.setAttribute("aria-label", "Sign: " + c.jp + ", " + c.note);
+
+    var plateW = c.w + 22, plateH = c.h + 22;
+    var s = '<span class="lamp" aria-hidden="true"></span>' +
+      '<svg viewBox="0 0 ' + plateW + ' ' + plateH + '" aria-hidden="true">' +
+      '<rect x="2" y="2" width="' + (plateW - 4) + '" height="' + (plateH - 4) + '" rx="6" fill="' + c.plate + '"/>' +
+      '<rect x="2" y="2" width="' + (plateW - 4) + '" height="' + (plateH - 4) + '" rx="6" fill="none" stroke="#3a2f2a" stroke-width="1.4"/>' +
+      '<circle cx="12" cy="12" r="2.4" fill="#4a3c35"/><circle cx="' + (plateW - 12) + '" cy="' + (plateH - 12) + '" r="2.4" fill="#4a3c35"/>' +
+      '<path d="M ' + (plateW / 2) + ' 2 V 0" stroke="#241c1a" stroke-width="3"/>' +
+      tubeText(c) +
+      '</svg>';
+    b.innerHTML = s;
+    alley.appendChild(b);
+
+    var li = document.createElement("li");
+    li.style.setProperty("--h", c.hue);
+    li.innerHTML = '<span class="sw"></span><span><span class="nm">' + c.jp + '</span><br>' +
+      '<span class="rm">' + c.rom + '</span></span><span class="amp' + (c.bad ? " on" : "") + '"></span>';
+    li.title = c.note;
+    list.appendChild(li);
+
+    built.push({ cfg: c, btn: b, lamp: li.querySelector(".amp"), sw: li.querySelector(".sw") });
+    return b;
+  }
+
+  SIGNS.forEach(makeSign);
+
+  /* ------------------------------------------------ the reflection */
+  var refl = document.getElementById("refl");
+  var mirror = document.createElement("div");
+  mirror.className = "mirror";
+  var ar = alley.getBoundingClientRect(), gr = refl.parentElement.getBoundingClientRect();
+  mirror.style.left = ar.left + "px";
+  mirror.style.width = ar.width + "px";
+  mirror.innerHTML = alley.innerHTML;
+  refl.appendChild(mirror);
+  function fitMirror(){
+    ar = alley.getBoundingClientRect();
+    mirror.style.left = ar.left + "px";
+    mirror.style.width = ar.width + "px";
+  }
+  addEventListener("resize", fitMirror);
+  setTimeout(fitMirror, 300);
+
+  /* ------------------------------------------------ audio */
+  var AC = window.AudioContext || window.webkitAudioContext;
+  var ac = null, master = null, humOn = false, humNodes = [];
+  function audio(){
+    if (ac) return ac;
+    ac = new AC();
+    master = ac.createGain(); master.gain.value = 0.9; master.connect(ac.destination);
+    return ac;
+  }
+  function hum(freq, q, dur, vol){
+    if (!ac) return;
+    var t = ac.currentTime;
+    var o1 = ac.createOscillator(), o2 = ac.createOscillator();
+    o1.type = "sawtooth"; o1.frequency.value = 118;
+    o2.type = "square";   o2.frequency.value = 118 * 1.031;
+    var bp = ac.createBiquadFilter(); bp.type = "bandpass";
+    bp.frequency.value = freq; bp.Q.value = q;
+    var g = ac.createGain();
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + 0.014);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    /* the strike itself: a short filtered noise tick */
+    var n = ac.createBufferSource();
+    var len = Math.floor(ac.sampleRate * 0.05);
+    var buf = ac.createBuffer(1, len, ac.sampleRate);
+    var d = buf.getChannelData(0);
+    for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+    n.buffer = buf;
+    var hp = ac.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 1800;
+    var ng = ac.createGain(); ng.gain.value = 0.22;
+    n.connect(hp); hp.connect(ng); ng.connect(master);
+    o1.connect(bp); o2.connect(bp); bp.connect(g); g.connect(master);
+    o1.start(t); o2.start(t); n.start(t);
+    o1.stop(t + dur + 0.05); o2.stop(t + dur + 0.05);
+  }
+  function hueToFreq(h){
+    return 380 + 2200 * Math.pow(((h % 360) + 360) % 360 / 360, 1.7);
+  }
+  function startHum(){
+    audio(); humOn = true;
+    var t = ac.currentTime;
+    [60, 120, 180].forEach(function(f, i){
+      var o = ac.createOscillator(); o.type = "sine"; o.frequency.value = f;
+      var g = ac.createGain(); g.gain.value = 0.05 / (i + 1);
+      o.connect(g); g.connect(master); o.start(t); humNodes.push(o, g);
+    });
+    var len = Math.floor(ac.sampleRate * 2);
+    var buf = ac.createBuffer(1, len, ac.sampleRate);
+    var d = buf.getChannelData(0);
+    for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * 0.4;
+    var ns = ac.createBufferSource(); ns.buffer = buf; ns.loop = true;
+    var lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 420;
+    var ng = ac.createGain(); ng.gain.value = 0.022;
+    ns.connect(lp); lp.connect(ng); ng.connect(master); ns.start(t);
+    humNodes.push(ns, lp, ng);
+  }
+  function stopHum(){
+    humNodes.forEach(function(n){ try{ n.stop && n.stop(); n.disconnect(); }catch(e){} });
+    humNodes = []; humOn = false;
+  }
+  var humBtn = document.getElementById("hum");
+  humBtn.addEventListener("click", function(){
+    if (ac && ac.state === "suspended") ac.resume();
+    if (humOn){ stopHum(); humBtn.textContent = "Transformer: off"; humBtn.setAttribute("aria-pressed", "false"); }
+    else { startHum(); humBtn.textContent = "Transformer: on"; humBtn.setAttribute("aria-pressed", "true"); }
+  });
+
+  /* ------------------------------------------------ click: buzz + recolour */
+  var root = document.documentElement;
+  built.forEach(function(b, idx){
+    b.btn.addEventListener("click", function(){
+      audio(); if (ac.state === "suspended") ac.resume();
+      if (!humOn) startHum();
+      var h = (b.cfg.hue + 47) % 360;
+      b.cfg.hue = h;
+      b.btn.style.color = "hsl(" + h + " 92% 58%)";
+      b.btn.style.setProperty("--h", h);
+      b.sw.style.setProperty("--h", h);
+      root.style.setProperty("--hue", h);
+      hum(hueToFreq(h), 4.5 + (idx % 3), 0.55, 0.26);
+      b.lamp.classList.add("on");
+      setTimeout(function(){ b.lamp.classList.remove("on"); }, 1100);
+    });
+  });
+
+  /* the wall reacts to whichever tube struck last */
+  addEventListener("keydown", function(e){
+    if (e.key === "m" || e.key === "M") humBtn.click();
+  });
+})();
+</script>
+</body>
+</html>

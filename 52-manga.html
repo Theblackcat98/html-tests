@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SHINJUKU 4:41 — Manga Page, Chapter Nine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rock+Salt&family=Zen+Antique&family=Zen+Old+Mincho:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --ink:#0b0b0c; --paper:#f4f2ec; --paper2:#e7e4da; --tone:#8b8b90;
+    --sfx:"Rock Salt",cursive; --bal:"Zen Antique",serif; --cap:"Zen Old Mincho",serif;
+  }
+  html,body{height:100%}
+  body{background:#131315;color:var(--ink);font-family:var(--cap);
+    display:grid;place-items:center;padding:26px 18px 40px;overflow:hidden}
+
+  .desk{position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:
+      radial-gradient(70% 50% at 50% 8%,rgba(255,255,255,.10),transparent 62%),
+      repeating-linear-gradient(96deg,rgba(255,255,255,.018) 0 2px,transparent 2px 9px),
+      linear-gradient(170deg,#22222a,#101013 58%,#08080a)}
+  .desk::after{content:"";position:absolute;inset:0;
+    background:radial-gradient(66% 56% at 50% 44%,transparent 30%,rgba(0,0,0,.72) 100%)}
+
+  .book{position:relative;z-index:2;width:min(94vw,880px);perspective:2200px}
+  .pagewrap{position:relative;transform-style:preserve-3d;transition:transform 1.05s cubic-bezier(.62,.02,.2,1)}
+  .pagewrap.flip{transform:rotateY(-168deg)}
+  .page{position:absolute;inset:0;background:linear-gradient(160deg,#fbfaf5,#eae7dd 70%,#ddd9cd);
+    padding:14px;display:none;box-shadow:0 40px 90px -26px #000,0 2px 0 rgba(255,255,255,.25) inset;
+    backface-visibility:hidden;border-radius:2px}
+  .page.a{position:relative;display:block}
+  .page.b{transform:rotateY(180deg)}
+  .page::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.4;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+  .grid{display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:repeat(8,1fr);
+    gap:11px;height:min(78vh,1080px);position:relative;z-index:1}
+  .p1{grid-area:1/1/4/5} .p2{grid-area:1/5/3/7} .p3{grid-area:3/5/4/7}
+  .p4{grid-area:4/1/7/4} .p5{grid-area:4/4/7/7} .p6{grid-area:7/1/9/7}
+
+  .panel{position:relative;background:#000;overflow:hidden;cursor:pointer;
+    transition:transform .16s cubic-bezier(.2,.9,.3,1.2);outline:0}
+  .panel:hover{transform:scale(1.008)}
+  .panel:focus-visible{box-shadow:0 0 0 3px #d8352b}
+  .panel .art{position:absolute;inset:0;overflow:hidden}
+  .panel .art svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .panel .no{position:absolute;left:4px;bottom:2px;font-family:var(--sfx);font-size:9px;color:rgba(255,255,255,.34);z-index:4}
+
+  /* screentone / halftone utilities */
+  .tone{position:absolute;inset:0;background-image:radial-gradient(circle at 50% 50%,#000 34%,transparent 36%);
+    background-size:4px 4px;opacity:.5;mix-blend-mode:multiply}
+  .tone2{position:absolute;inset:0;background-image:radial-gradient(circle at 50% 50%,#000 28%,transparent 30%);
+    background-size:7px 7px;opacity:.42;mix-blend-mode:multiply}
+  .tone3{position:absolute;inset:0;background-image:radial-gradient(circle at 50% 50%,#000 30%,transparent 32%);
+    background-size:11px 11px;opacity:.34;mix-blend-mode:multiply}
+  .ltone{position:absolute;inset:0;opacity:.5;
+    background-image:repeating-linear-gradient(48deg,#000 0 1px,transparent 1px 4px)}
+  .ltone2{position:absolute;inset:0;opacity:.45;
+    background-image:repeating-linear-gradient(-42deg,#000 0 1px,transparent 1px 3px)}
+  .fadeB{position:absolute;left:0;right:0;bottom:0;height:52%;
+    background:linear-gradient(180deg,transparent,#000 78%)}
+  .fadeT{position:absolute;left:0;right:0;top:0;height:44%;
+    background:linear-gradient(180deg,#000 4%,transparent)}
+  .gradT{position:absolute;inset:0;background:linear-gradient(180deg,
+    rgba(0,0,0,.85) 0%,rgba(0,0,0,.34) 16%,transparent 34%)}
+
+  /* radial focus lines */
+  .focus{position:absolute;inset:-46%;mix-blend-mode:normal;opacity:.85;
+    background:repeating-conic-gradient(from 0deg at 50% 50%,
+      #000 0deg 1.1deg,transparent 1.1deg 5.4deg);
+    -webkit-mask-image:radial-gradient(circle at 50% 50%,transparent 8%,#000 26%,#000 44%,transparent 72%);
+    mask-image:radial-gradient(circle at 50% 50%,transparent 8%,#000 26%,#000 44%,transparent 72%)}
+  .focus.soft{-webkit-mask-image:radial-gradient(circle at 50% 50%,transparent 20%,#000 60%);
+    mask-image:radial-gradient(circle at 50% 50%,transparent 20%,#000 60%)}
+
+  /* horizontal speed lines */
+  .speed{position:absolute;inset:0;overflow:hidden}
+  .speed i{position:absolute;left:0;height:1.5px;background:#000;display:block}
+  .speed i.t{opacity:.72}
+
+  /* speech balloons */
+  .balloon{position:absolute;background:#fff;border:2.5px solid #000;border-radius:50%;
+    padding:9px 15px 10px;text-align:center;z-index:6;max-width:74%;
+    box-shadow:3px 4px 0 rgba(0,0,0,.18)}
+  .balloon p{font-family:var(--bal);font-size:clamp(10px,1.35vw,15px);line-height:1.28;color:#000;
+    letter-spacing:.005em}
+  .balloon.spk{border-radius:14px 14px 40px 14px;padding:7px 13px}
+  .balloon.spk p{font-weight:400;letter-spacing:.08em;text-transform:uppercase;font-size:clamp(9px,1.1vw,12px)}
+  .balloon.think{border-style:dashed;background:#fff}
+  .tail{position:absolute;z-index:5;pointer-events:none}
+
+  /* captions & sfx */
+  .cap{position:absolute;z-index:6;background:#fff;border:2px solid #000;padding:6px 11px 7px;
+    font-family:var(--cap);font-weight:700;letter-spacing:.05em;
+    font-size:clamp(9px,1.15vw,13px);text-transform:uppercase;line-height:1.35;max-width:70%}
+  .sfx{position:absolute;z-index:6;font-family:var(--sfx);color:#fff;
+    -webkit-text-stroke:2.6px #000;paint-order:stroke fill;white-space:nowrap;line-height:.9;
+    font-size:clamp(20px,4.4vw,52px);letter-spacing:.02em}
+  .sfx.fill{color:#000;-webkit-text-stroke:0}
+  .sfx.red{color:#d8352b;-webkit-text-stroke:2.4px #000}
+
+  .gutterbar{position:absolute;left:0;right:0;background:#000;z-index:3}
+  .slice{position:absolute;background:#000;z-index:3}
+  .dyn{position:absolute;inset:0;z-index:2;background:#000;
+    clip-path:polygon(0 9%,100% 0,100% 91%,0 100%)}
+  .dyn2{position:absolute;inset:0;z-index:2;background:#000;
+    clip-path:polygon(0 0,100% 7%,100% 100%,0 93%)}
+  .spd-cut{position:absolute;inset:0;z-index:2;background:#000;
+    clip-path:polygon(0 0,100% 0,100% 72%,88% 78%,74% 66%,58% 84%,42% 70%,26% 88%,12% 74%,0 82%)}
+
+  /* zoom / FLIP layer */
+  #zoom{position:fixed;inset:0;z-index:60;display:none;place-items:center;
+    background:rgba(10,10,12,.93);backdrop-filter:blur(3px)}
+  #zoom.on{display:grid}
+  #zoomBox{position:relative;transform-origin:0 0;box-shadow:0 40px 90px -20px #000}
+  #zoomBox .panel{cursor:zoom-out;height:100%;width:100%}
+  #zoomClose{position:fixed;right:20px;top:18px;z-index:70;font-family:var(--sfx);font-size:13px;
+    background:#fff;color:#000;border:2.5px solid #000;padding:8px 14px;cursor:pointer;
+    -webkit-text-stroke:0;display:none}
+  #zoomClose.on{display:block}
+
+  .ui{position:relative;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:14px;
+    margin-top:16px;flex-wrap:wrap}
+  .ui h1{font-family:var(--sfx);font-size:clamp(19px,2.6vw,27px);color:#f2eee4;letter-spacing:.03em;
+    text-shadow:3px 3px 0 #000;line-height:1}
+  .ui .lbl{font-family:var(--cap);font-size:10px;color:#8d8d96;letter-spacing:.16em;margin-top:7px;
+    text-transform:uppercase}
+  .ui .lbl b{color:#c9c4b8;font-weight:700}
+  .ui .pg{font-family:var(--sfx);font-size:11px;color:#8d8d96;letter-spacing:.14em}
+  .ui .btns{display:flex;gap:9px}
+  .ui button{font-family:var(--sfx);font-size:12.5px;background:#f4f2ec;color:#0b0b0c;
+    border:2.5px solid #000;padding:9px 16px;cursor:pointer;
+    box-shadow:4px 4px 0 #000;transition:transform .1s,box-shadow .1s}
+  .ui button:active{transform:translate(3px,3px);box-shadow:1px 1px 0 #000}
+  .ui button.ghost{background:#16161a;color:#e7e3d8;border-color:#e7e3d8;box-shadow:4px 4px 0 #000}
+  .legend{position:relative;z-index:5;margin-top:12px;font-family:var(--cap);font-size:11px;
+    letter-spacing:.14em;text-transform:uppercase;color:#7d7d86;text-align:center;line-height:1.9}
+
+  @media (max-width:760px){
+    body{padding:16px 10px 26px;place-items:start center}
+    .grid{height:auto;grid-template-columns:repeat(4,1fr);grid-template-rows:none;
+      grid-auto-rows:26vw;gap:8px}
+    .p1{grid-area:1/1/4/5} .p2{grid-area:4/1/6/3} .p3{grid-area:6/1/8/3}
+    .p4{grid-area:4/3/6/5} .p5{grid-area:6/3/8/5} .p6{grid-area:8/1/11/5}
+    .sfx{-webkit-text-stroke:1.6px #000}
+    .balloon{border-width:1.6px}
+  }
+</style>
+</head>
+<body>
+<div class="desk" aria-hidden="true"></div>
+
+<div class="book">
+  <div class="pagewrap" id="wrap">
+
+    <!-- ══════════ PAGE 1 ══════════ -->
+    <section class="page a" aria-label="Manga page 12">
+      <div class="grid">
+
+        <!-- 1 — establishing -->
+        <article class="panel p1" tabindex="0" data-n="1">
+          <div class="art">
+            <svg viewBox="0 0 400 260" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+              <defs>
+                <linearGradient id="dusk" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#000"/><stop offset=".55" stop-color="#2a2a2a"/>
+                  <stop offset="1" stop-color="#8f8f92"/>
+                </linearGradient>
+                <linearGradient id="beam" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#fff" stop-opacity=".92"/>
+                  <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <rect width="400" height="260" fill="#fff"/>
+              <rect width="400" height="150" fill="url(#dusk)"/>
+              <circle cx="322" cy="46" r="19" fill="#fff"/>
+              <g fill="#000">
+                <rect x="8" y="58" width="30" height="102"/><rect x="42" y="34" width="20" height="126"/>
+                <rect x="66" y="72" width="36" height="88"/><rect x="106" y="20" width="16" height="140"/>
+                <rect x="126" y="48" width="28" height="112"/><rect x="158" y="62" width="22" height="98"/>
+                <rect x="184" y="30" width="34" height="130"/><rect x="222" y="80" width="18" height="80"/>
+                <rect x="244" y="42" width="26" height="118"/><rect x="274" y="66" width="38" height="94"/>
+                <rect x="316" y="26" width="20" height="134"/><rect x="340" y="56" width="46" height="104"/>
+              </g>
+              <g fill="#fff" opacity=".9">
+                <rect x="13" y="66" width="4" height="5"/><rect x="22" y="66" width="4" height="5"/>
+                <rect x="13" y="80" width="4" height="5"/><rect x="47" y="44" width="4" height="5"/>
+                <rect x="47" y="58" width="4" height="5"/><rect x="72" y="82" width="4" height="5"/>
+                <rect x="86" y="82" width="4" height="5"/><rect x="72" y="96" width="4" height="5"/>
+                <rect x="110" y="32" width="4" height="5"/><rect x="110" y="46" width="4" height="5"/>
+                <rect x="131" y="58" width="4" height="5"/><rect x="142" y="72" width="4" height="5"/>
+                <rect x="189" y="42" width="4" height="5"/><rect x="203" y="42" width="4" height="5"/>
+                <rect x="203" y="58" width="4" height="5"/><rect x="250" y="52" width="4" height="5"/>
+                <rect x="284" y="76" width="4" height="5"/><rect x="298" y="76" width="4" height="5"/>
+                <rect x="321" y="38" width="4" height="5"/><rect x="352" y="66" width="4" height="5"/>
+                <rect x="368" y="80" width="4" height="5"/><rect x="352" y="94" width="4" height="5"/>
+              </g>
+              <rect x="0" y="140" width="400" height="10" fill="#000"/>
+              <g fill="#000">
+                <rect x="12" y="126" width="4" height="16"/><rect x="52" y="126" width="4" height="16"/>
+                <rect x="92" y="126" width="4" height="16"/><rect x="132" y="126" width="4" height="16"/>
+                <rect x="172" y="126" width="4" height="16"/><rect x="212" y="126" width="4" height="16"/>
+                <rect x="252" y="126" width="4" height="16"/><rect x="292" y="126" width="4" height="16"/>
+                <rect x="332" y="126" width="4" height="16"/><rect x="372" y="126" width="4" height="16"/>
+              </g>
+              <!-- courier on the viaduct -->
+              <g fill="#fff" stroke="#000" stroke-width="2.2" stroke-linecap="round" transform="translate(196 120)">
+                <circle cx="6" cy="-19" r="6.5"/><path d="M4 -12 L2 6"/>
+                <path d="M4 -10 L-12 -3"/><path d="M3 -9 L16 -12"/>
+                <path d="M2 6 L-12 15"/><path d="M2 6 L16 13"/>
+              </g>
+              <g fill="#000">
+                <rect x="0" y="150" width="400" height="110"/>
+              </g>
+              <!-- street light pools -->
+              <g opacity=".95">
+                <ellipse cx="88" cy="214" rx="52" ry="16" fill="url(#beam)"/>
+                <ellipse cx="268" cy="240" rx="62" ry="18" fill="url(#beam)"/>
+              </g>
+              <g stroke="#fff" stroke-width="1.6" fill="none" opacity=".7">
+                <path d="M70 150 L70 196"/><path d="M250 150 L250 216"/>
+              </g>
+              <path d="M0 150 L400 150 L400 260 L0 260 Z" fill="#000"/>
+              <g stroke="#fff" stroke-width="1" opacity=".24" fill="none">
+                <path d="M-10 176 q60 -8 120 0 t120 0 t120 0"/><path d="M-10 206 q80 -9 150 0 t150 0"/>
+                <path d="M-10 234 q60 -8 120 0 t120 0 t120 0"/>
+              </g>
+            </svg>
+            <div class="tone3" style="height:46%"></div>
+            <div class="gradT"></div>
+            <div class="fadeB"></div>
+          </div>
+          <div class="cap" style="left:3%;top:4%">Chapter Nine<br>THE COURIER'S LAST RUN</div>
+          <span class="no">01</span>
+        </article>
+
+        <!-- 2 — eye close-up -->
+        <article class="panel p2" tabindex="0" data-n="2">
+          <div class="art">
+            <svg viewBox="0 0 200 190" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+              <rect width="200" height="190" fill="#fff"/>
+              <path d="M0 190 C40 190 60 150 100 150 C140 150 160 190 200 190 Z" fill="#000"/>
+              <path d="M-4 118 C30 62 170 62 204 118 C170 96 30 96 -4 118 Z" fill="#000"/>
+              <ellipse cx="100" cy="112" rx="38" ry="42" fill="#fff" stroke="#000" stroke-width="4"/>
+              <ellipse cx="100" cy="112" rx="21" ry="24" fill="#000"/>
+              <circle cx="93" cy="103" r="7" fill="#fff"/>
+              <path d="M60 88 C74 72 128 70 142 86" fill="none" stroke="#000" stroke-width="7" stroke-linecap="round"/>
+              <path d="M64 140 C82 128 122 128 138 140" fill="none" stroke="#000" stroke-width="5" stroke-linecap="round"/>
+              <path d="M84 128 l-6 16 M100 130 l0 16 M116 128 l6 16" stroke="#000" stroke-width="2" fill="none"/>
+            </svg>
+            <div class="tone2" style="top:0;height:26%"></div>
+            <div class="focus" style="opacity:.42"></div>
+          </div>
+          <svg class="tail" style="right:6%;bottom:2%;width:44px" viewBox="0 0 44 40" aria-hidden="true">
+            <path d="M2 2 C14 10 20 18 42 38 C26 32 12 24 2 16 Z" fill="#fff" stroke="#000" stroke-width="2.5" stroke-linejoin="round"/>
+          </svg>
+          <div class="balloon" style="right:16%;top:12%"><p>Six blocks. Ninety seconds.<br>Maybe.</p></div>
+          <span class="no">02</span>
+        </article>
+
+        <!-- 3 — running -->
+        <article class="panel p3" tabindex="0" data-n="3">
+          <div class="art">
+            <svg viewBox="0 0 200 92" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+              <rect width="200" height="92" fill="#fff"/>
+              <g fill="#000"><rect x="0" y="72" width="200" height="20"/></g>
+              <g stroke="#000" stroke-width="1" opacity=".3">
+                <path d="M0 20 h200 M0 30 h200 M0 40 h200 M0 50 h200 M0 60 h200"/>
+              </g>
+              <g fill="#fff" stroke="#000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="96" cy="26" r="8"/>
+                <path d="M96 34 L88 56 L104 60"/>
+                <path d="M92 40 L68 34"/><path d="M100 42 L126 30"/>
+                <path d="M88 56 L66 68 L58 68"/><path d="M104 60 L124 70 L132 70"/>
+              </g>
+            </svg>
+            <div class="tone2" style="right:0;left:auto;width:32%;height:100%"></div>
+          </div>
+          <div class="speed" id="sp3" aria-hidden="true"></div>
+          <div class="sfx" style="left:4%;bottom:6%;font-size:clamp(15px,2.4vw,28px)">TAK-TAK-TAK</div>
+          <span class="no">03</span>
+        </article>
+
+        <!-- 4 — the leap (dynamic) -->
+        <article class="panel p4" tabindex="0" data-n="4">
+          <div class="art">
+            <svg viewBox="0 0 260 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+              <rect width="260" height="300" fill="#fff"/>
+              <g fill="#000">
+                <rect x="0" y="0" width="56" height="300"/><rect x="204" y="0" width="56" height="300"/>
+                <rect x="56" y="238" width="148" height="62"/>
+              </g>
+              <g fill="#fff" opacity=".85">
+                <rect x="10" y="18" width="8" height="10"/><rect x="30" y="42" width="8" height="10"/>
+                <rect x="10" y="66" width="8" height="10"/><rect x="30" y="90" width="8" height="10"/>
+                <rect x="222" y="24" width="8" height="10"/><rect x="242" y="48" width="8" height="10"/>
+                <rect x="222" y="72" width="8" height="10"/><rect x="242" y="96" width="8" height="10"/>
+              </g>
+              <g fill="#fff" stroke="#000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="130" cy="86" r="13"/>
+                <path d="M130 99 L112 138 L144 152"/>
+                <path d="M120 108 L86 78"/><path d="M140 110 L180 84"/>
+                <path d="M112 138 L78 132 L58 108"/><path d="M144 152 L176 176 L196 176"/>
+              </g>
+              <path d="M56 238 h148" stroke="#fff" stroke-width="3" stroke-dasharray="18 12"/>
+            </svg>
+            <div class="ltone" style="height:34%"></div>
+            <div class="tone2" style="top:36%;height:34%"></div>
+            <div class="fadeB"></div>
+          </div>
+          <div class="dyn" aria-hidden="true"></div>
+          <div class="sfx red" style="right:2%;top:6%;font-size:clamp(18px,3.4vw,40px);transform:rotate(-12deg)">ZUUN!</div>
+          <span class="no">04</span>
+        </article>
+
+        <!-- 5 — the door -->
+        <article class="panel p5" tabindex="0" data-n="5">
+          <div class="art">
+            <svg viewBox="0 0 260 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+              <rect width="260" height="300" fill="#000"/>
+              <path d="M40 20 L214 52 L214 300 L40 300 Z" fill="#fff"/>
+              <path d="M40 20 L214 52 L214 118 L40 92 Z" fill="#d8d8d8"/>
+              <path d="M46 30 L208 58 L208 110 L46 86 Z" fill="#000" opacity=".9"/>
+              <g fill="#fff">
+                <rect x="60" y="38" width="42" height="16" transform="rotate(6 60 38)"/>
+                <rect x="120" y="46" width="70" height="14" transform="rotate(6 120 46)"/>
+                <rect x="72" y="66" width="60" height="12" transform="rotate(6 72 66)"/>
+              </g>
+              <!-- light spill wedge -->
+              <path d="M46 86 L208 110 L240 300 L20 300 Z" fill="#fff" opacity=".92"/>
+              <path d="M46 86 L208 110 L246 300 L246 300 L120 300 Z" fill="#000" opacity=".1"/>
+              <!-- silhouette in doorway -->
+              <g fill="#000">
+                <circle cx="128" cy="150" r="17"/>
+                <path d="M128 167 q-22 0 -26 30 l-6 74 l14 0 l4 -46 l4 76 l30 0 l-2 -84 l6 84 l14 0 l-8 -96 q-4 -38 -30 -38 z"/>
+              </g>
+              <g stroke="#000" stroke-width="2" fill="none" opacity=".55">
+                <path d="M56 100 L44 300"/><path d="M96 106 L84 300"/><path d="M156 110 L164 300"/><path d="M196 114 L204 300"/>
+              </g>
+              <circle cx="212" cy="150" r="5" fill="#000"/>
+            </svg>
+            <div class="tone3" style="opacity:.2"></div>
+            <div class="gradT" style="height:26%"></div>
+          </div>
+          <div class="sfx fill" style="left:3%;bottom:3%;font-size:clamp(15px,2.6vw,30px);transform:rotate(6deg)">GADOON</div>
+          <svg class="tail" style="left:30%;top:34%;width:38px" viewBox="0 0 38 34" aria-hidden="true">
+            <path d="M36 2 C24 12 18 20 2 32 C16 28 28 20 36 10 Z" fill="#fff" stroke="#000" stroke-width="2.5" stroke-linejoin="round"/>
+          </svg>
+          <div class="balloon spk" style="right:6%;top:6%"><p>Someone's already inside.</p></div>
+          <span class="no">05</span>
+        </article>
+
+        <!-- 6 — the hand -->
+        <article class="panel p6" tabindex="0" data-n="6">
+          <div class="art">
+            <svg viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+              <rect width="400" height="200" fill="#fff"/>
+              <g fill="#000" opacity=".9">
+                <path d="M232 200 C206 168 202 128 214 96 C224 70 240 60 252 66 C262 71 262 84 258 96
+                         C266 84 280 82 286 92 C292 101 288 112 284 122
+                         C294 112 308 114 312 126 C316 138 310 152 302 164
+                         C316 158 330 164 330 178 C330 194 316 200 296 200 Z"
+                      fill="#fff" stroke="#000" stroke-width="7" stroke-linejoin="round"/>
+                <path d="M258 96 C270 100 278 108 282 118" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round"/>
+                <path d="M284 122 C296 126 304 134 306 144" fill="none" stroke="#000" stroke-width="4" stroke-linecap="round"/>
+                <path d="M214 96 C210 120 212 150 220 176" fill="none" stroke="#000" stroke-width="3"/>
+              </g>
+              <g fill="#000">
+                <ellipse cx="120" cy="60" rx="42" ry="9" opacity=".2"/>
+                <ellipse cx="120" cy="140" rx="52" ry="12" opacity=".2"/>
+              </g>
+            </svg>
+            <div class="focus" style="opacity:.5;left:-10%;right:-10%;top:-20%;bottom:-20%"></div>
+            <div class="tone" style="opacity:.3"></div>
+          </div>
+          <div class="sfx" style="left:2%;top:8%;font-size:clamp(20px,3.8vw,46px);transform:rotate(-8deg)">GRRR&mdash;</div>
+          <svg class="tail" style="right:26%;bottom:6%;width:44px" viewBox="0 0 44 40" aria-hidden="true">
+            <path d="M2 2 C14 10 20 18 42 38 C26 32 12 24 2 16 Z" fill="#fff" stroke="#000" stroke-width="2.5" stroke-linejoin="round"/>
+          </svg>
+          <div class="balloon" style="right:4%;top:6%"><p>Then it isn't a delivery.<br>It's a drop.</p></div>
+          <div class="cap" style="left:2%;bottom:2%;background:#000;color:#fff;border-color:#000">Shinjuku &middot; 4:41 a.m.</div>
+          <span class="no">06</span>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- ══════════ PAGE 2 ══════════ -->
+    <section class="page b" aria-label="Manga page 13">
+      <div class="grid" style="grid-template-rows:repeat(6,1fr)">
+        <article class="panel" tabindex="0" style="grid-area:1/1/4/7">
+          <div class="art">
+            <svg viewBox="0 0 400 260" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+              <rect width="400" height="260" fill="#fff"/>
+              <g stroke="#000" stroke-width="7" fill="none" stroke-linecap="round">
+                <path d="M-10 40 q60 -14 120 0 t130 0 t130 0"/>
+                <path d="M-10 60 q70 -14 140 0 t130 0 t130 0"/>
+                <path d="M-10 80 q60 -14 120 0 t130 0 t130 0"/>
+                <path d="M-10 100 q80 -14 160 0 t130 0 t130 0"/>
+              </g>
+              <g fill="#fff" stroke="#000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="300" cy="176" r="12"/>
+                <path d="M300 188 L286 214 L310 222"/>
+                <path d="M292 194 L258 182"/><path d="M306 198 L344 190"/>
+                <path d="M286 214 L258 234"/><path d="M310 222 L338 238"/>
+              </g>
+              <g fill="#000">
+                <rect x="0" y="206" width="180" height="54"/>
+              </g>
+              <g fill="#fff">
+                <rect x="10" y="216" width="6" height="8"/><rect x="30" y="216" width="6" height="8"/>
+                <rect x="50" y="216" width="6" height="8"/><rect x="70" y="216" width="6" height="8"/>
+                <rect x="100" y="216" width="6" height="8"/><rect x="120" y="216" width="6" height="8"/>
+                <rect x="150" y="216" width="6" height="8"/>
+              </g>
+              <g fill="#fff" stroke="#000" stroke-width="4">
+                <rect x="60" y="238" width="80" height="22"/>
+                <circle cx="74" cy="262" r="11" fill="#fff"/><circle cx="126" cy="262" r="11" fill="#fff"/>
+              </g>
+            </svg>
+            <div class="tone3" style="top:0;height:44%"></div>
+            <div class="ltone2" style="top:46%;height:26%"></div>
+          </div>
+          <div class="sfx fill" style="right:3%;top:4%;font-size:clamp(17px,2.9vw,34px);transform:rotate(-6deg)">TOK TOK TOK</div>
+          <span class="no">07</span>
+        </article>
+
+        <article class="panel" tabindex="0" style="grid-area:4/1/7/4">
+          <div class="art">
+            <svg viewBox="0 0 240 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+              <rect width="240" height="200" fill="#000"/>
+              <path d="M0 0 h240 v200 h-240 z" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="10 8"/>
+              <g fill="#fff" stroke="#000" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M30 200 C30 120 62 78 104 78 C146 78 178 120 178 200 Z"/>
+                <circle cx="104" cy="62" r="16"/>
+                <path d="M104 84 L104 200"/>
+                <path d="M88 108 L58 142"/><path d="M120 108 L152 138"/>
+                <path d="M104 128 q34 6 58 -4"/>
+              </g>
+              <g fill="#fff">
+                <circle cx="96" cy="58" r="3"/><circle cx="112" cy="58" r="3"/>
+                <path d="M96 74 q8 6 16 0" fill="none" stroke="#fff" stroke-width="3"/>
+              </g>
+            </svg>
+            <div class="focus soft" style="opacity:.34"></div>
+            <div class="tone2" style="opacity:.22"></div>
+          </div>
+          <div class="balloon think" style="left:6%;top:5%;max-width:82%">
+            <p>I know that bicycle. I sold it in March.</p>
+          </div>
+          <span class="no">08</span>
+        </article>
+
+        <article class="panel" tabindex="0" style="grid-area:4/4/7/7">
+          <div class="art">
+            <svg viewBox="0 0 240 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+              <rect width="240" height="200" fill="#fff"/>
+              <g fill="#000">
+                <path d="M0 0 L120 0 L120 200 L0 200 Z" opacity=".9"/>
+                <path d="M0 0 L120 0 L96 26 L0 8 Z" fill="#fff" opacity=".12"/>
+                <rect x="120" y="0" width="8" height="200" fill="#000"/>
+              </g>
+              <g stroke="#000" stroke-width="5" fill="none">
+                <path d="M0 44 h112 M0 62 h112 M0 80 h112 M0 98 h112 M0 116 h112 M0 134 h112"/>
+              </g>
+              <g fill="#fff">
+                <rect x="8" y="48" width="10" height="10"/><rect x="26" y="66" width="10" height="10"/>
+                <rect x="44" y="84" width="10" height="10"/><rect x="8" y="102" width="10" height="10"/>
+                <rect x="34" y="120" width="10" height="10"/><rect x="60" y="138" width="10" height="10"/>
+                <rect x="86" y="48" width="10" height="10"/><rect x="92" y="102" width="10" height="10"/>
+              </g>
+              <path d="M120 0 L240 0 L240 200 L120 200 Z" fill="#000" opacity=".12"/>
+            </svg>
+            <div class="tone" style="opacity:.36"></div>
+            <div class="gradT"></div>
+          </div>
+          <div class="sfx red" style="right:6%;bottom:8%;font-size:clamp(16px,2.7vw,32px);transform:rotate(-4deg)">BAM</div>
+          <div class="balloon spk" style="left:6%;top:4%"><p>Chapter Ten &mdash; the buyer</p></div>
+          <span class="no">09</span>
+        </article>
+      </div>
+    </section>
+  </div>
+
+  <!-- controls -->
+  <div class="ui">
+    <div>
+      <h1>SHINJUKU 4:41</h1>
+      <div class="lbl">Chapter Nine &mdash; The Courier's Last Run &nbsp;·&nbsp; <b id="pg">Page 12 of 13</b> &nbsp;·&nbsp; click a panel to enlarge</div>
+    </div>
+    <div class="btns"><span class="pg" id="pgF">P12</span>
+      <button class="ghost" id="prev">&#8592; Previous Page</button>
+      <button id="next">Next Page &#8594;</button>
+    </div>
+  </div>
+  <p class="legend">Ink &middot; screentone &middot; speed lines &middot; radial focus &middot; hand lettering &mdash; all drawn in SVG &amp; CSS, no image files</p>
+</div>
+
+<div id="zoom" role="dialog" aria-modal="true" aria-label="Enlarged panel"><div id="zoomBox"></div></div>
+<button id="zoomClose" type="button">Close &times;</button>
+
+<noscript><p style="color:#ddd;font:12px/1.8 system-ui;text-align:center;max-width:520px;margin:0 auto 10px">Panel enlarging and the page flip need JavaScript. The two pages themselves are complete without it.</p></noscript>
+
+<script>
+(function(){
+  "use strict";
+  /* ── speed lines inside panel 3 ─────────────────────── */
+  var sp3=document.getElementById("sp3");
+  if(sp3){
+    for(var i=0;i<34;i++){
+      var l=document.createElement("i");
+      var y=(Math.sin(i*12.9898)*43758.5453)%1; y=y-Math.floor(y);
+      var x=(Math.cos(i*78.233)*12345.6789)%1; x=x-Math.floor(x);
+      l.style.top=(y*100).toFixed(1)+"%";
+      l.style.left=(-6+x*22).toFixed(1)+"%";
+      l.style.width=(24+x*72).toFixed(0)+"%";
+      l.style.opacity=(.2+x*.75).toFixed(2);
+      l.style.height=(1+x*1.8).toFixed(1)+"px";
+      if(i%3===0) l.className="t";
+      sp3.appendChild(l);
+    }
+  }
+
+  /* ── FLIP panel zoom ───────────────────────────────── */
+  var zoom=document.getElementById("zoom"), zbox=document.getElementById("zoomBox"),
+      zclose=document.getElementById("zoomClose");
+  var panels=[].slice.call(document.querySelectorAll(".panel"));
+  var lastFocus=null;
+
+  function open(panel){
+    if(!panel) return;
+    lastFocus=document.activeElement;
+    var pr=panel.getBoundingClientRect();
+    var clone=panel.cloneNode(true);
+    clone.removeAttribute("tabindex");
+    zbox.innerHTML=""; zbox.appendChild(clone);
+    zoom.classList.add("on"); zclose.classList.add("on");
+    var pad=40;
+    var tr=panel.getBoundingClientRect();
+    var tw=Math.min(window.innerWidth-pad*2, window.innerHeight*1.55-40);
+    var ar=pr.width/pr.height, th=tw/ar;
+    if(th>window.innerHeight-140){ th=window.innerHeight-140; tw=th*ar; }
+    zbox.style.width=tw+"px"; zbox.style.height=th+"px";
+    var s=Math.min(pr.width/tw,pr.height/th);
+    /* position the clone where the panel was, then animate to centre */
+    zbox.style.position="fixed";
+    zbox.style.left=tr.left+"px"; zbox.style.top=tr.top+"px";
+    zbox.style.transformOrigin="0 0";
+    zbox.style.transform="scale("+s+")";
+    zbox.style.transition="none";
+    requestAnimationFrame(function(){
+      var cx=window.innerWidth/2, cy=window.innerHeight/2;
+      zbox.style.transition="transform .5s cubic-bezier(.2,.85,.25,1)";
+      zbox.style.transform="translate("+(cx-(tr.left+tr.width/2))+","+(cy-(tr.top+tr.height/2))+"px) scale("+s+")";
+      requestAnimationFrame(function(){
+        var dx=cx-(tr.left+tr.width/2), dy=cy-(tr.top+tr.height/2);
+        zbox.style.transform="translate("+dx+"px,"+dy+"px) scale(1)";
+      });
+    });
+    zclose.focus();
+  }
+  function close(){
+    if(!zoom.classList.contains("on")) return;
+    zoom.classList.remove("on"); zclose.classList.remove("on");
+    if(lastFocus&&lastFocus.focus) lastFocus.focus();
+    setTimeout(function(){ zbox.innerHTML=""; },320);
+  }
+  panels.forEach(function(p){
+    p.addEventListener("click",function(){ open(p); });
+    p.addEventListener("keydown",function(e){
+      if(e.key==="Enter"||e.key===" "){ e.preventDefault(); open(p); }
+    });
+  });
+  zclose.addEventListener("click",close);
+  zoom.addEventListener("click",function(e){ if(e.target===zoom) close(); });
+  window.addEventListener("keydown",function(e){ if(e.key==="Escape") close(); });
+
+  /* ── page flip ─────────────────────────────────────── */
+  var wrap=document.getElementById("wrap"), facing=0;
+  var next=document.getElementById("next"), prev=document.getElementById("prev");
+  function label(){
+    prev.textContent = facing ? "\u2190 Previous Page" : "\u2190 First Page";
+    var n = facing ? 13 : 12;
+    document.getElementById("pg").textContent = "Page " + n + " of 13";
+    document.getElementById("pgF").textContent = "P" + n;
+  }
+  next.addEventListener("click",function(){
+    facing=1; wrap.classList.add("flip"); label();
+    setTimeout(function(){ window.scrollTo({top:0,behavior:"smooth"}); },60);
+  });
+  prev.addEventListener("click",function(){
+    facing=0; wrap.classList.remove("flip"); label();
+    setTimeout(function(){ window.scrollTo({top:0,behavior:"smooth"}); },60);
+  });
+  label();
+  window.addEventListener("keydown",function(e){
+    if(e.key==="ArrowRight"&&document.activeElement.tagName!=="INPUT") next.click();
+    if(e.key==="ArrowLeft") prev.click();
+  });
+})();
+</script>
+</body>
+</html>

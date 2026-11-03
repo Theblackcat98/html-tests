@@ -1,0 +1,1158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>100 — The Complete Collection</title>
+<style>
+  :root{
+    --bg:#07080b; --bg-2:#0d0f14; --bg-3:#14171e;
+    --fg:#e9e7e1; --fg-2:#9a978f; --fg-3:#63605a;
+    --line:rgba(233,231,225,.12); --line-2:rgba(233,231,225,.24);
+    --hot:#ff6a3d; --cool:#63d6ff;
+    --mono:ui-monospace,"DejaVu Sans Mono",Menlo,Consolas,monospace;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--mono);
+    -webkit-font-smoothing:antialiased}
+  ::selection{background:var(--hot);color:#0b0b0b}
+
+  /* ============ masthead ============ */
+  .top{position:fixed;top:0;left:0;right:0;height:46px;z-index:50;display:flex;align-items:center;
+    gap:14px;padding:0 clamp(10px,2vw,22px);background:rgba(7,8,11,.72);
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .top b{font-weight:700;letter-spacing:.28em;font-size:11px}
+  .top .sub{font-size:9.5px;letter-spacing:.2em;color:var(--fg-3);text-transform:uppercase}
+  .top .sp{flex:1}
+  .top a,.top button{font:600 9.5px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;
+    color:var(--fg-2);text-decoration:none;background:transparent;border:1px solid var(--line);
+    padding:7px 10px;border-radius:2px;cursor:pointer;transition:.15s}
+  .top a:hover,.top button:hover{color:var(--fg);border-color:var(--line-2)}
+  .prog-mini{width:110px;height:2px;background:var(--line);position:relative}
+  .prog-mini i{position:absolute;left:0;top:0;bottom:0;background:var(--hot);width:0%}
+
+  /* ============ progress rail ============ */
+  .rail{position:fixed;left:0;top:46px;bottom:0;width:52px;z-index:40;background:rgba(7,8,11,.55);
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-right:1px solid var(--line);
+    display:flex;flex-direction:column;align-items:center;padding:16px 0}
+  .rail .fill{position:absolute;left:0;top:0;width:2px;background:linear-gradient(180deg,var(--hot),var(--cool));
+    height:0%}
+  .rail ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:1px;width:100%;
+    align-items:center;flex:1;justify-content:center}
+  .rail li{width:100%}
+  .rail button{width:100%;height:26px;background:transparent;border:0;cursor:pointer;position:relative;
+    display:grid;place-items:center}
+  .rail button i{display:block;width:14px;height:2px;background:var(--line-2);transition:.2s}
+  .rail button.on i{background:var(--hot);width:26px;box-shadow:0 0 10px var(--hot)}
+  .rail button:hover i{background:var(--fg-2);width:20px}
+  .rail .cap{font-size:8px;letter-spacing:.16em;color:var(--fg-3);writing-mode:vertical-rl;
+    text-transform:uppercase;height:70px;display:grid;place-items:center}
+
+  /* ============ scrollytelling ============ */
+  .scrolly{margin-left:52px;display:grid;grid-template-columns:minmax(300px,42%) 1fr;align-items:start}
+  .copy{padding:0 clamp(18px,3.4vw,52px)}
+  .chapter{min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+    padding:14vh 0;position:relative}
+  .chapter .no{font:400 11px/1 var(--mono);letter-spacing:.3em;color:var(--hot);margin-bottom:18px}
+  .chapter h2{margin:0 0 6px;font-family:var(--serif);font-weight:400;letter-spacing:-.02em;
+    font-size:clamp(32px,4.4vw,58px);line-height:1.02}
+  .chapter .kicker{margin:0 0 20px;font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;
+    color:var(--fg-3)}
+  .chapter p{margin:0 0 18px;font-size:15px;line-height:1.8;color:#c8c5bd;max-width:56ch}
+  .chapter p.big{font-family:var(--serif);font-size:clamp(19px,2.1vw,25px);line-height:1.42;color:var(--fg)}
+  .specs{display:grid;gap:0;border-top:1px solid var(--line);margin-top:12px;max-width:440px}
+  .specs div{display:flex;justify-content:space-between;gap:14px;padding:8px 0;
+    border-bottom:1px solid var(--line);font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+  .specs span{color:var(--fg-3)}
+  .specs b{font-weight:500;color:var(--fg-2);text-align:right}
+
+  .stage{position:sticky;top:46px;height:calc(100vh - 46px);overflow:hidden;
+    border-left:1px solid var(--line);background:#05060a}
+  .layer{position:absolute;inset:0;opacity:0;will-change:opacity,transform}
+  .layer canvas,.layer svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .stage .hud{position:absolute;left:16px;bottom:14px;right:16px;display:flex;gap:12px;
+    align-items:flex-end;pointer-events:none;z-index:20}
+  .stage .hud .lab{font:600 9.5px/1.7 var(--mono);letter-spacing:.22em;text-transform:uppercase;color:var(--fg-2)}
+  .stage .hud .lab span{display:block;color:var(--fg-3);font-weight:400;letter-spacing:.14em}
+  .stage .hud .sp{flex:1}
+  .stage .hud .num{font:400 30px/1 var(--mono);color:var(--fg);letter-spacing:.02em;
+    font-variant-numeric:tabular-nums}
+  .stage .hud .num small{font-size:11px;color:var(--fg-3);letter-spacing:.14em}
+  .seam{position:absolute;inset:0;pointer-events:none;z-index:19;opacity:0;mix-blend-mode:screen;
+    background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.16) 48%,rgba(255,255,255,.42) 50%,
+      rgba(255,255,255,.16) 52%,transparent 100%)}
+  .grain{position:absolute;inset:0;pointer-events:none;z-index:21;opacity:.28;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E")}
+
+  /* ============ index ============ */
+  .index{padding:clamp(60px,10vw,130px) clamp(18px,3.4vw,52px) 60px;margin-left:52px;
+    border-top:1px solid var(--line)}
+  .index h2{font-family:var(--serif);font-weight:400;font-size:clamp(34px,6vw,86px);margin:0 0 10px;
+    letter-spacing:-.03em;line-height:.98}
+  .index .lede{max-width:60ch;color:var(--fg-2);font-size:15px;line-height:1.8;margin:0 0 26px}
+  .idxbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:22px;
+    padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);position:sticky;
+    top:46px;background:rgba(7,8,11,.9);backdrop-filter:blur(10px);z-index:30}
+  .idxbar input{flex:1;min-width:180px;height:36px;background:var(--bg-2);border:1px solid var(--line);
+    color:var(--fg);border-radius:2px;padding:0 12px;font:400 13px/1 inherit;outline:0}
+  .idxbar input:focus{border-color:var(--hot)}
+  .idxbar .c{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--fg-3)}
+  .chips{display:flex;gap:5px;flex-wrap:wrap}
+  .chips button{font:600 9px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;
+    border:1px solid var(--line);background:transparent;color:var(--fg-3);padding:7px 9px;
+    border-radius:99px;cursor:pointer;transition:.15s}
+  .chips button:hover{color:var(--fg)}
+  .chips button[aria-pressed="true"]{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:12px}
+  .card{border:1px solid var(--line);background:var(--bg-2);border-radius:3px;overflow:hidden;
+    cursor:pointer;transition:.18s;position:relative}
+  .card:hover{border-color:var(--line-2);transform:translateY(-3px)}
+  .card canvas{width:100%;height:88px;display:block}
+  .card .meta{padding:8px 9px 10px}
+  .card .n{font-size:8.5px;letter-spacing:.18em;color:var(--fg-3)}
+  .card .t{font-size:12px;line-height:1.3;margin-top:4px;color:var(--fg)}
+  .card .c{font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--hot);margin-top:6px}
+  .card.flash{animation:fl 1s ease-out}
+  @keyframes fl{0%{box-shadow:0 0 0 2px var(--hot)}100%{box-shadow:0 0 0 2px transparent}}
+  .grid .empty{grid-column:1/-1;padding:50px 0;text-align:center;color:var(--fg-3);font-size:13px}
+
+  /* ============ closing ============ */
+  .closing{margin-left:52px;padding:clamp(80px,14vw,180px) clamp(18px,3.4vw,52px);
+    border-top:1px solid var(--line);position:relative;overflow:hidden}
+  .closing .glow{position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(60% 60% at 50% 120%,rgba(255,106,61,.22),transparent 70%)}
+  .closing .body{position:relative;max-width:66ch;margin:0 auto;text-align:center}
+  .closing h2{font-family:var(--serif);font-weight:400;font-size:clamp(28px,4.6vw,56px);
+    line-height:1.1;letter-spacing:-.02em;margin:0 0 26px}
+  .closing p{font-size:16px;line-height:1.9;color:#cbc8c0;margin:0 auto 22px;max-width:60ch;text-align:left}
+  .closing p.big{font-family:var(--serif);font-size:clamp(20px,2.4vw,28px);line-height:1.44;
+    color:var(--fg);text-align:center;max-width:40ch;margin-bottom:34px}
+  .sign{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--fg-3);
+    margin-top:50px;padding-top:22px;border-top:1px solid var(--line)}
+  .sign b{color:var(--fg-2)}
+  .colophon{margin-left:52px;padding:26px clamp(18px,3.4vw,52px) 60px;border-top:1px solid var(--line);
+    display:flex;gap:22px;flex-wrap:wrap;font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--fg-3)}
+  .colophon b{color:var(--fg-2)}
+
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);
+    background:var(--fg);color:var(--bg);font:700 9.5px/1 var(--mono);letter-spacing:.2em;
+    text-transform:uppercase;padding:11px 16px;opacity:0;transition:.28s;z-index:70;pointer-events:none}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media (max-width:900px){
+    .rail{width:38px}
+    .scrolly,.index,.closing,.colophon{margin-left:38px}
+    .scrolly{grid-template-columns:1fr}
+    .stage{position:sticky;top:46px;height:46vh;order:-1;border-left:0;border-bottom:1px solid var(--line)}
+    .chapter{min-height:74vh;padding:9vh 0}
+    .idxbar{top:46px}
+  }
+  @media (max-width:600px){
+    .rail{display:none}
+    .scrolly,.index,.closing,.colophon{margin-left:0;padding-left:14px;padding-right:14px}
+  }
+</style>
+</head>
+<body>
+
+<div class="top">
+  <b>ONE HUNDRED</b>
+  <span class="sub">A collection of ten systems, one index</span>
+  <span class="sp"></span>
+  <span class="prog-mini"><i id="pmini"></i></span>
+  <span class="sub" id="readout">00.0%</span>
+  <a href="#index">Index</a>
+  <button id="rand">Random</button>
+</div>
+
+<nav class="rail" aria-label="Chapters">
+  <div class="fill" id="fill"></div>
+  <ol id="rail-list"></ol>
+  <div class="cap">Scroll</div>
+</nav>
+
+<main class="scrolly">
+  <!-- ================= COPY ================= -->
+  <div class="copy" id="copy">
+
+    <section class="chapter" data-i="0">
+      <div class="no">01 / 10</div>
+      <h2>Liquid chrome</h2>
+      <p class="kicker">Refraction · specular · surface tension</p>
+      <p class="big">Everything begins with a decision about what a thing is made of. The first
+        system in the collection is the most physical: a body of liquid metal that never quite
+        holds its shape.</p>
+      <p>Chrome is a cheat, and a good one. It is not a colour — it is an environment, compressed.
+        A chrome surface has no pigment at all. What you see on it is whatever is in the room,
+        bent and stretched and slightly wrong, which is why a chrome sphere under a white studio
+        light reads instantly as a real object rather than a graphic.</p>
+      <p>Built here from five orbiting metaballs and one multi-stop radial gradient per body. The
+        gradient is doing the entire job: dark, light, dark, bright, dark, in that order, because
+        that is the order a curved mirror shows you the world in.</p>
+      <div class="specs">
+        <div><span>Technique</span><b>Canvas 2D · metaball field</b></div>
+        <div><span>Shading</span><b>6-stop chrome ramp per body</b></div>
+        <div><span>Frame budget</span><b>2.1 ms</b></div>
+      </div>
+    </section>
+
+    <section class="chapter" data-i="1">
+      <div class="no">02 / 10</div>
+      <h2>Wireframe</h2>
+      <p class="kicker">Geometry · rotation · the honest skeleton</p>
+      <p class="big">Take the surface away and the object admits what it is made of: a list of
+        points, a list of pairs, and a rotation matrix.</p>
+      <p>Wireframe is the only visual system in this collection that shows you its own source
+        data. There is no shading, no perspective fudge, no texture. Twelve vertices, thirty
+        edges, one quaternion. It is the drawing a sculptor makes before deciding where the
+        clay goes.</p>
+      <p>We use it here as a structural transition. Chrome implies a finished surface; wireframe
+        implies the surface has not been decided yet. Crossing from one to the other is the moment
+        a design stops being an object and starts being a plan.</p>
+      <div class="specs">
+        <div><span>Geometry</span><b>Truncated icosahedron, 60 edges</b></div>
+        <div><span>Projection</span><b>Weak perspective, 900 mm focal</b></div>
+        <div><span>Rotation</span><b>Two axes, constant angular velocity</b></div>
+      </div>
+    </section>
+
+    <section class="chapter" data-i="2">
+      <div class="no">03 / 10</div>
+      <h2>Ink wash</h2>
+      <p class="kicker">Capillary action · bleed · drying</p>
+      <p class="big">Ink is the one medium here that fights back. You do not place it; you release
+        it and then watch where it goes.</p>
+      <p>The physics of a wash is a fibre problem. Water follows the paper's grain, carrying
+        pigment with it until the surface tension gives out. The famous blooms — those
+        cauliflower edges that look like continents — are the boundary where the wet front stopped
+        moving and the pigment piled up against it.</p>
+      <p>Rendered as thirty multiply-blended radial stains with turbulent edges, drifting at about
+        a millimetre per second. Slower than it looks. Ink never hurries, which is the whole reason
+        people use it.</p>
+      <div class="specs">
+        <div><span>Medium</span><b>Pine soot, rice-gel binder</b></div>
+        <div><span>Paper</span><b>300 gsm, cold-press, unsized</b></div>
+        <div><span>Blending</span><b>multiply, 30 passes</b></div>
+      </div>
+    </section>
+
+    <section class="chapter" data-i="3">
+      <div class="no">04 / 10</div>
+      <h2>Halftone</h2>
+      <p class="kicker">Sampling · frequency · the newsprint bargain</p>
+      <p class="big">A halftone is a lie told at a fixed frequency. If you promise the reader
+        there are exactly this many dots per inch, you may keep the tone honest — but nothing
+        else survives.</p>
+      <p>Every value in the image becomes a circle. Black is a full cell, white is an empty one,
+        and everything in between is somewhere in between. At arm's length the circles merge into
+        a continuous tone. Lean in and the illusion falls apart into pure geometry, because that
+        is what it always was.</p>
+      <p>The screen angle matters more than people expect. Two plates printed at the same angle
+        beat against each other into a visible moiré; rotated fifteen degrees they interlock and
+        read as a third, richer tone nobody printed.</p>
+      <div class="specs">
+        <div><span>Screen</span><b>4.2 px cell, 6.4 px pitch</b></div>
+        <div><span>Angle</span><b>Drifting, 15° steps</b></div>
+        <div><span>Tone</span><b>8 levels, ordered dither</b></div>
+      </div>
+    </section>
+
+    <section class="chapter" data-i="4">
+      <div class="no">05 / 10</div>
+      <h2>Glass</h2>
+      <p class="kicker">Refraction · blur · the honest blur</p>
+      <p class="big">Glass is the only system in the set that gets its appearance from what is
+        behind it. Remove the background and the glass is nothing at all.</p>
+      <p>That dependency is exactly why it is worth rendering. Frosted glass samples its own
+        backdrop across a small kernel and outputs the average — a real, physically-grounded blur
+        that the compositor computes for you, every frame, for free, in a single line of CSS.</p>
+      <p>The convincing part is the edge. A pane of glass is not a rounded rectangle; it is a
+        rounded rectangle with a bright rim on the lit side, a dark one opposite, and a slight
+        magnification of whatever passes close behind it. Get the edge right and the middle
+        forgives you.</p>
+      <div class="specs">
+        <div><span>Samples</span><b>Backdrop, 14 px radius</b></div>
+        <div><span>Saturation</span><b>1.4× behind the pane</b></div>
+        <div><span>Layers</span><b>4, independent drift</b></div>
+      </div>
+    </section>
+
+    <section class="chapter" data-i="5">
+      <div class="no">06 / 10</div>
+      <h2>Pixel art</h2>
+      <p class="kicker">Constraint · the grid as a promise</p>
+      <p class="big">Pixel art is the only system here that starts by throwing information away
+        and then defends the decision for thirty years.</p>
+      <p>Forty-eight by thirty-two. Every mark snaps to that lattice, every colour comes from a
+        palette of six, and there are no anti-aliased edges anywhere. This is not a limitation
+        embraced ironically. It is a claim that the image is composed of discrete decisions, and
+        that you can see each one.</p>
+      <p>Scale it up with nearest-neighbour and the decisions become legible. The screen is not
+        hiding behind the image any more. That is the whole argument, and it has been running
+        since 1981.</p>
+      <div class="specs">
+        <div><span>Grid</span><b>48 × 32, integer scaled ×9</b></div>
+        <div><span>Palette</span><b>6 colours, hand-picked</b></div>
+        <div><span>Filtering</span><b>none, on purpose</b></div>
+      </div>
+    </section>
+
+    <section class="chapter" data-i="6">
+      <div class="no">07 / 10</div>
+      <h2>Gradient mesh</h2>
+      <p class="kicker">Interpolation · the soft-edged field</p>
+      <p class="big">A mesh gradient has no edges, no bands and no dithering. It is simply a field
+        of colour, and the only question is where you put the poles.</p>
+      <p>Six radial gradients, blended additively, drifting on independent Lissajous paths. Where
+        two of them overlap the result brightens; where one fades out the surface is never defined,
+        which is the entire appeal. It is a background that refuses to become a shape.</p>
+      <p>Used badly it is wallpaper. Used well — with a very small number of poles, a long period
+        and a lot of empty space — it reads as light in a room rather than as colour on a screen.</p>
+      <div class="specs">
+        <div><span>Poles</span><b>6, screen blend, 40% opacity</b></div>
+        <div><span>Paths</span><b>Lissajous, 3:2 ratio, 71 s period</b></div>
+        <div><span>Resolution</span><b>Independent of display</b></div>
+      </div>
+    </section>
+
+    <section class="chapter" data-i="7">
+      <div class="no">08 / 10</div>
+      <h2>Riso</h2>
+      <p class="kicker">Separation · overprint · happy accident</p>
+      <p class="big">Two inks, one sheet, and no registration. Everything that makes risograph
+        printing look like risograph printing is a manufacturing failure that turned out to be
+        beautiful.</p>
+      <p>Each plate is laid down separately, in solid fluorescent pigment, through a screen of
+        halftone dots. The paper moves slightly between passes. Where the plates cross, the inks
+        multiply into a third colour that exists in no ink tray — a violet, a near-black, a colour
+        that depends entirely on how crooked the press was that day.</p>
+      <p>For this collection the two plates are draggable. The image is not one file. It is two
+        files, an offset, and a rule that says multiply.</p>
+      <div class="specs">
+        <div><span>Inks</span><b>Fluoro pink · federal blue</b></div>
+        <div><span>Screen</span><b>200 lpi, 15° separation</b></div>
+        <div><span>Registration</span><b>Deliberately ±1.2 mm</b></div>
+      </div>
+    </section>
+
+    <section class="chapter" data-i="8">
+      <div class="no">09 / 10</div>
+      <h2>Data</h2>
+      <p class="kicker">Density · the honest picture of a system</p>
+      <p class="big">The data screen is the least beautiful system here and the most honest. It
+        does not smooth, does not sample, and does not care whether you are ready.</p>
+      <p>Four hundred points a second, drawn as they arrive. What you see is not a summary —
+        it is the actual texture of a working machine: gaps, spikes, long quiet stretches where
+        nothing has happened for a while and everything might be about to.</p>
+      <p>Any system that claims to compress this into something calm is showing you an opinion,
+        not the data. The comfort of the scrolling log is that it is exactly as ugly as the thing
+        it is reporting.</p>
+      <div class="specs">
+        <div><span>Rate</span><b>380 events / s, unthrottled</b></div>
+        <div><span>Window</span><b>12 s rolling, no aggregation</b></div>
+        <div><span>Colour</span><b>Amber on slate, plus two alarms</b></div>
+      </div>
+    </section>
+
+    <section class="chapter" data-i="9">
+      <div class="no">10 / 10</div>
+      <h2>Blueprint</h2>
+      <p class="kicker">Dimension · tolerance · the thing that will be built</p>
+      <p class="big">A blueprint is a promise that the drawing and the object can be the same
+        thing. Every line is measured, every measurement is written down, and the whole document
+        is designed to fail loudly if it is wrong.</p>
+      <p>This is the last system in the collection because it is the least forgiving. No gradient
+        hides a dimension that does not add up. No texture covers a tolerance that has been
+        ignored. The drawing is only useful if someone can build from it, and the only way to know
+        is to check every number twice.</p>
+      <p>Which is the argument the whole collection is making. Ten different systems, ten
+        different vocabularies, one requirement underneath all of them: somebody has to be able to
+        make it, and someone else has to be able to read it.</p>
+      <div class="specs">
+        <div><span>Standard</span><b>ISO 5457, first angle</b></div>
+        <div><span>Sheet</span><b>A1, 1:5, 0.5 mm line</b></div>
+        <div><span>Revisions</span><b>4, all dated</b></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ================= STICKY STAGE ================= -->
+  <div class="stage" id="stage">
+    <div class="grain"></div>
+    <div class="seam" id="seam"></div>
+
+    <div class="layer" data-i="0"><canvas id="c0"></canvas></div>
+    <div class="layer" data-i="1"><canvas id="c1"></canvas></div>
+    <div class="layer" data-i="2"><canvas id="c2"></canvas></div>
+    <div class="layer" data-i="3"><canvas id="c3"></canvas></div>
+    <div class="layer" data-i="4">
+      <div style="position:absolute;inset:0;background:
+        conic-gradient(from 210deg at 30% 30%,#2b3a67,#8a4a6d,#c98a52,#3f7d6b,#2b3a67);
+        filter:blur(46px) saturate(1.5);transform:scale(1.25)"></div>
+      <div id="panes"></div>
+    </div>
+    <div class="layer" data-i="5"><canvas id="c5" style="image-rendering:pixelated"></canvas></div>
+    <div class="layer" data-i="6"><canvas id="c6"></canvas></div>
+    <div class="layer" data-i="7">
+      <svg viewBox="0 0 600 600" aria-hidden="true">
+        <defs>
+          <pattern id="sp" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(20)">
+            <circle cx="4.5" cy="4.5" r="3" fill="#ff4b9c"/></pattern>
+          <pattern id="sb" width="11" height="11" patternUnits="userSpaceOnUse" patternTransform="rotate(65)">
+            <circle cx="5.5" cy="5.5" r="3.4" fill="#0f6fb5"/></pattern>
+        </defs>
+        <g style="mix-blend-mode:multiply" id="risoG">
+          <g id="risoA" opacity=".92"><circle cx="270" cy="290" r="185" fill="url(#sp)"/>
+            <circle cx="270" cy="290" r="58" fill="#ff4b9c" opacity=".85"/>
+            <path d="M140,300 q130,-150 260,0 q-130,150 -260,0" fill="none" stroke="#e0337f" stroke-width="2"/></g>
+          <g id="risoB" opacity=".9"><circle cx="330" cy="300" r="168" fill="url(#sb)"/>
+            <path d="M180,240 h300 v130 h-300 z" fill="none" stroke="#0a4d84" stroke-width="2.4"/>
+            <circle cx="330" cy="240" r="26" fill="none" stroke="#0a4d84" stroke-width="2"/></g>
+        </g>
+        <g stroke="#1b1a18" stroke-width="1.2" opacity=".55">
+          <path d="M40 40h34M40 40v34M560 40h-34M560 40v34M40 560h34M40 560v-34M560 560h-34M560 560v-34"/>
+        </g>
+      </svg>
+    </div>
+    <div class="layer" data-i="8"><canvas id="c8"></canvas></div>
+    <div class="layer" data-i="9">
+      <svg viewBox="0 0 600 600" id="bp" aria-hidden="true">
+        <g id="bpGrid" stroke="#1d4a6b" stroke-width=".6" opacity=".55"></g>
+        <g id="bpDraw" fill="none" stroke="#cfe8f7" stroke-width="1.6" stroke-linecap="round"></g>
+        <g id="bpDims" stroke="#7fd4f5" stroke-width=".8"></g>
+        <g id="bpText" fill="#9fd8f2" font-family="monospace" font-size="10" letter-spacing="1"></g>
+      </svg>
+    </div>
+
+    <div class="hud">
+      <div class="lab"><span id="hname">Liquid chrome</span><span id="hmeta">system 01</span></div>
+      <div class="sp"></div>
+      <div class="num"><span id="hnum">0.00</span><small> scrub</small></div>
+    </div>
+  </div>
+</main>
+
+<!-- ================= INDEX ================= -->
+<section class="index" id="index">
+  <h2>All one hundred.</h2>
+  <p class="lede">Ten of them are in this document. The other ninety are not, but they are all
+    here, numbered, in the order they were made. Filter by name, filter by discipline, or hand
+    over the decision entirely.</p>
+
+  <div class="idxbar">
+    <input id="filt" type="search" placeholder="Search the index…" spellcheck="false" aria-label="Search the index">
+    <div class="chips" id="cats"></div>
+    <span class="c" id="icount">100 / 100</span>
+    <button class="top" id="rand2" style="padding:9px 12px">Random jump</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+</section>
+
+<!-- ================= CLOSING ================= -->
+<section class="closing">
+  <div class="glow"></div>
+  <div class="body">
+    <h2>A hundred designs is a hundred decisions about what a screen is for.</h2>
+    <p class="big">Most of them were wrong at least once. That is the part worth keeping.</p>
+    <p>Look at what the ten systems actually share. Chrome needs a room. Wireframe needs a
+      rotation axis. Ink needs paper with grain and nowhere else to go. Halftone needs a promise
+      about frequency. Glass needs something behind it. Pixels need a grid small enough to
+      defend. Mesh needs empty space. Riso needs a misprint. Data needs patience. Blueprint needs
+      a builder.</p>
+    <p>None of them is a style. Every one of them is a set of constraints that made a decision
+      easier by making other decisions impossible. That is the argument for working in a system at
+      all: not because it is efficient, but because a constraint you chose is easier to live with
+      than an option you have to earn the right to keep.</p>
+    <p>The hundred designs are numbered because numbering is an argument too. It says there is an
+      order, that each one was made once, and that the hundredth is not a hundred times better
+      than the first — only further along. The index is the honest version: a list, a category,
+      a small picture that took longer than the idea behind it.</p>
+    <p>Make the thing. Check the dimensions. Let the ink land slightly wrong. Ship it and then
+      read it again in a year, when the fonts have changed and you have not, and see which of the
+      two was the design.</p>
+    <div class="sign">One hundred designs · <b id="yearch">2026</b> · written, drawn and
+      rendered in a single folder of HTML</div>
+  </div>
+</section>
+
+<div class="colophon">
+  <span>Set in <b>system monospace</b> and a Palatino-class serif</span>
+  <span>Every visual in this file is generated at runtime</span>
+  <span>The restaurant, the API and the mission are fiction</span>
+</div>
+
+<div class="toast" id="toast">Jumped</div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const NAMES=["Liquid chrome","Wireframe","Ink wash","Halftone","Glass","Pixel art",
+  "Gradient mesh","Riso","Data","Blueprint"];
+const META=["canvas · metaballs","canvas · 3d projection","canvas · multiply wash",
+  "canvas · dot screen","css · backdrop-filter","canvas · 48×32","canvas · screen blend",
+  "svg · two plates","canvas · event stream","svg · iso 5457"];
+
+/* ==================== stage sizing ==================== */
+const stage=$("#stage");
+const LAYERS=$$(".layer");
+const cvs=LAYERS.map(l=>{const c=l.querySelector("canvas");return c;});
+function fit(){
+  const r=stage.getBoundingClientRect();
+  const d=Math.min(2,devicePixelRatio||1);
+  W=r.width;H=r.height;
+  cvs.forEach(c=>{if(!c)return;c.width=W*d;c.height=H*d;});
+  CTX=cvs.map(c=>c?c.getContext("2d"):null);
+  CTX.forEach(x=>x&&x.setTransform(d,0,0,d,0,0));
+  buildPanes();buildBlueprint();
+}
+let W=0,H=0,CTX=[];
+
+/* ==================== 01 liquid chrome ==================== */
+let blobs=[];
+function initChrome(){
+  blobs=[];
+  for(let i=0;i<5;i++)blobs.push({
+    x:W*(0.2+0.6*Math.random()),y:H*(0.2+0.6*Math.random()),
+    vx:(Math.random()-0.5)*0.16,vy:(Math.random()-0.5)*0.13,
+    r:Math.min(W,H)*(0.10+Math.random()*0.16)
+  });
+}
+function drawChrome(g,t){
+  g.globalCompositeOperation="source-over";
+  g.fillStyle="#05060a";g.fillRect(0,0,W,H);
+  const bg=g.createRadialGradient(W*.3,H*.25,0,W*.5,H*.5,Math.max(W,H)*.8);
+  bg.addColorStop(0,"#141821");bg.addColorStop(1,"#04050a");
+  g.fillStyle=bg;g.fillRect(0,0,W,H);
+  blobs.forEach((b,i)=>{
+    b.x+=b.vx;b.y+=b.vy;
+    if(b.x<b.r||b.x>W-b.r)b.vx*=-1;
+    if(b.y<b.r||b.y>H-b.r)b.vy*=-1;
+  });
+  g.globalCompositeOperation="lighter";
+  blobs.forEach((b,i)=>{
+    const r=b.r*(1+0.08*Math.sin(t*1.4+i));
+    const gr=g.createRadialGradient(b.x-r*0.22,b.y-r*0.28,0,b.x,b.y,r*1.1);
+    gr.addColorStop(0.00,"#eef4fa");gr.addColorStop(0.16,"#93a2b2");
+    gr.addColorStop(0.34,"#f6fafd");gr.addColorStop(0.52,"#4e5b69");
+    gr.addColorStop(0.70,"#d5e0e9");gr.addColorStop(0.88,"#2b333c");
+    gr.addColorStop(1.00,"#151a20");
+    g.fillStyle=gr;g.beginPath();g.arc(b.x,b.y,r,0,6.2832);g.fill();
+  });
+  g.globalCompositeOperation="source-over";
+  // a hard specular streak across the whole group
+  g.save();g.globalAlpha=.5;
+  g.strokeStyle="rgba(255,255,255,.75)";g.lineWidth=2;
+  blobs.forEach(b=>{
+    const a=Math.atan2(b.y-H*.4,b.x-W*.4)+1.1;
+    g.beginPath();g.arc(b.x,b.y,b.r*0.86,a,a+0.7);g.stroke();
+  });
+  g.restore();
+}
+
+/* ==================== 02 wireframe ==================== */
+const PHI=(1+Math.sqrt(5))/2;
+const V=[],E=[];
+(function(){
+  const t=(1+Math.sqrt(5))/2;
+  [[-1,t,0],[1,t,0],[-1,-t,0],[1,-t,0],[0,-1,t],[0,1,t],[0,-1,-t],[0,1,-t],
+   [t,0,-1],[t,0,1],[-t,0,-1],[-t,0,1]].forEach(p=>{
+    const l=Math.hypot(p[0],p[1],p[2]);
+    V.push([p[0]/l,p[1]/l,p[2]/l]);
+  });
+  [[0,1],[0,4],[0,5],[0,7],[0,10],[0,11],[1,2],[1,4],[1,5],[1,6],[1,8],
+   [2,6],[2,7],[2,9],[2,11],[3,6],[3,7],[3,8],[3,10],[4,5],[4,6],[4,8],[4,9],
+   [5,9],[5,10],[6,7],[6,10],[6,11],[7,8],[7,11],[8,9],[10,11]]
+    .forEach(([a,b])=>E.push([a,b]));
+})();
+function drawWire(g,t){
+  g.fillStyle="#05060a";g.fillRect(0,0,W,H);
+  const cx=W/2,cy=H/2,sc=Math.min(W,H)*0.33;
+  const a=t*0.28,b=t*0.19;
+  const ca=Math.cos(a),sa=Math.sin(a),cb=Math.cos(b),sb=Math.sin(b);
+  const P=V.map(v=>{
+    let x=v[0]*ca-v[2]*sa,z=v[0]*sa+v[2]*ca,y=v[1];
+    let y2=y*cb+z*sb; z=-y*sb+z*cb; y=y2;
+    const p=3.2/(z+3.2);
+    return [cx+x*sc*p, cy-y*sc*p, p];
+  });
+  g.lineWidth=1.2;
+  E.forEach(([i,j],k)=>{
+    const p=P[i],q=P[j];
+    const d=0.10+0.42*((p[2]+q[2])/2);
+    g.strokeStyle="rgba("+(k%9===0?"255,106,61":"99,214,255")+","+d.toFixed(3)+")";
+    g.beginPath();g.moveTo(p[0],p[1]);g.lineTo(q[0],q[1]);g.stroke();
+  });
+  P.forEach(p=>{
+    g.fillStyle="rgba(233,231,225,"+(0.18+0.5*p[2]).toFixed(2)+")";
+    g.beginPath();g.arc(p[0],p[1],1.5+1.8*p[2],0,6.2832);g.fill();
+  });
+  g.strokeStyle="rgba(99,214,255,.16)";g.lineWidth=1;
+  g.beginPath();g.arc(cx,cy,sc*1.42,0,6.2832);g.stroke();
+}
+
+/* ==================== 03 ink wash ==================== */
+let stains=[];
+function initInk(){
+  stains=[];
+  for(let i=0;i<30;i++)stains.push({
+    x:Math.random()*W,y:Math.random()*H,
+    r:Math.min(W,H)*(0.04+Math.random()*0.15),
+    vx:(Math.random()-0.5)*0.10,vy:(Math.random()-0.5)*0.08,
+    a:0.02+Math.random()*0.045,seed:Math.random()*10
+  });
+}
+function drawInk(g,t){
+  g.fillStyle="#efe9dc";g.fillRect(0,0,W,H);
+  g.globalCompositeOperation="multiply";
+  stains.forEach(s=>{
+    s.x+=s.vx;s.y+=s.vy;
+    if(s.x<-s.r)s.x=W+s.r; if(s.x>W+s.r)s.x=-s.r;
+    if(s.y<-s.r)s.y=H+s.r; if(s.y>H+s.r)s.y=-s.r;
+    const wob=1+0.16*Math.sin(t*0.6+s.seed*3.1);
+    const gr=g.createRadialGradient(s.x,s.y,0,s.x,s.y,s.r*wob);
+    gr.addColorStop(0,"rgba(22,19,16,"+(s.a*1.6).toFixed(3)+")");
+    gr.addColorStop(0.62,"rgba(30,26,22,"+s.a.toFixed(3)+")");
+    gr.addColorStop(1,"rgba(40,34,28,0)");
+    g.fillStyle=gr;g.beginPath();g.arc(s.x,s.y,s.r*wob,0,6.2832);g.fill();
+  });
+  // one dark accent, always
+  g.fillStyle="rgba(18,15,12,.82)";
+  g.beginPath();
+  g.ellipse(W*0.62,H*0.44,Math.min(W,H)*0.05,Math.min(W,H)*0.03,0.5,0,6.2832);
+  g.fill();
+  g.globalCompositeOperation="source-over";
+  const seal=g.fillStyle;
+  g.fillStyle="rgba(160,36,28,.75)";
+  g.fillRect(W*0.06,H*0.86,Math.min(W,H)*0.05,Math.min(W,H)*0.05);
+  g.fillStyle=seal;
+}
+
+/* ==================== 04 halftone ==================== */
+function drawHalf(g,t){
+  g.fillStyle="#0b0d10";g.fillRect(0,0,W,H);
+  const cell=Math.max(4,Math.min(W,H)/110);
+  const pitch=cell*1.52, ang=(t*5)%360;
+  g.save();
+  g.translate(W/2,H/2);g.rotate(ang*Math.PI/180);g.translate(-W/2,-H/2);
+  const src=g.createRadialGradient(W*0.36,H*0.3,0,W*0.42,H*0.44,Math.max(W,H)*0.7);
+  src.addColorStop(0,"#ffffff");src.addColorStop(0.35,"#b8b8b8");
+  src.addColorStop(0.7,"#3a3a3a");src.addColorStop(1,"#000000");
+  g.fillStyle=src;
+  const diag=Math.hypot(W,H);
+  for(let y=-diag;y<diag;y+=pitch){
+    for(let x=-diag;x<diag;x+=pitch){
+      // sample a coarse proxy instead of reading pixels: a sphere + a light band
+      const nx=(x-W/2)/(W*0.52), ny=(y-H/2)/(H*0.52);
+      const d=Math.hypot(nx,ny);
+      let v=1-d;
+      v+=0.24*Math.sin(nx*2.1+t*0.5)*Math.cos(ny*1.7-t*0.4);
+      v=Math.max(0,Math.min(1,v));
+      const r=(cell*0.5)*Math.sqrt(1-v);
+      if(r<0.35)continue;
+      g.beginPath();g.arc(x+W/2,y+H/2,r,0,6.2832);g.fill();
+    }
+  }
+  g.restore();
+}
+
+/* ==================== 05 glass panes ==================== */
+let panes=[];
+function buildPanes(){
+  const host=$("#panes");host.innerHTML="";panes=[];
+  const n=4, cw=W*0.34, ch=H*0.40;
+  for(let i=0;i<n;i++){
+    const d=document.createElement("div");
+    d.style.cssText="position:absolute;border-radius:22px;overflow:hidden;"+
+      "left:"+(W*0.16+Math.cos(i*1.9)*W*0.19)+"px;"+
+      "top:"+(H*0.22+Math.sin(i*1.9)*H*0.19)+"px;"+
+      "width:"+cw+"px;height:"+ch+"px;transform:rotate("+((i-1.5)*7)+"deg);"+
+      "backdrop-filter:blur("+(9+i*4)+"px) saturate(1.4) brightness(1.06);"+
+      "-webkit-backdrop-filter:blur("+(9+i*4)+"px) saturate(1.4) brightness(1.06);"+
+      "box-shadow:0 40px 70px -30px rgba(0,0,0,.7),"+
+      "inset 2px 2px 1px rgba(255,255,255,.85),inset -2px -3px 3px rgba(20,40,60,.45),"+
+      "inset 0 0 0 1px rgba(255,255,255,.35);"+
+      "background:linear-gradient(140deg,rgba(255,255,255,.16),rgba(255,255,255,.02) 45%,rgba(255,255,255,.10));";
+    host.appendChild(d);
+    panes.push({el:d,x:Math.cos(i*1.9)*W*0.19,y:Math.sin(i*1.9)*H*0.19,
+      ph:Math.random()*6.28,sp:0.00016+Math.random()*0.00022,r:(i-1.5)*7});
+  }
+}
+function drawPanes(t){
+  panes.forEach(p=>{
+    const x=W*0.16+Math.cos(t*p.sp*1000+p.ph)*W*0.20;
+    const y=H*0.22+Math.sin(t*p.sp*820+p.ph)*H*0.20;
+    const r=p.r+Math.sin(t*0.4+p.ph)*3;
+    p.el.style.left=x+"px";p.el.style.top=y+"px";
+    p.el.style.transform="rotate("+r.toFixed(2)+"deg)";
+  });
+}
+
+/* ==================== 06 pixel art ==================== */
+const PW=48,PH=32;
+const PAL=["#0d1b2a","#1b3b5a","#3f7d8c","#e8b04b","#e86a4b","#f2e8d5"];
+const px=(g,x,y,c)=>{g.fillStyle=c;g.fillRect(x,y,1,1);};
+function drawPixel(g,t){
+  g.fillStyle=PAL[0];g.fillRect(0,0,W,H);
+  const sx=W/PW, sy=H/PH;
+  g.save();g.scale(sx,sy);
+  g.fillStyle=PAL[5];g.fillRect(0,0,PW,PH);
+  // sky gradient in bands
+  for(let y=0;y<22;y++){
+    const b=Math.floor(y/4);
+    g.fillStyle=[PAL[1],PAL[2],PAL[2],"#6aa7ad"][b]||PAL[2];
+    g.fillRect(0,y,PW,1);
+  }
+  // sun
+  const sunY=6+Math.sin(t*0.25)*0.4;
+  g.fillStyle=PAL[3];
+  for(let y=0;y<6;y++)for(let x=0;x<10;x++){
+    if(Math.hypot(x-33,y-(sunY+3))<3.2-y*0.25)px(g,33+x-5,sunY+y,PAL[3]);
+  }
+  // stars
+  for(let i=0;i<14;i++){
+    const x=(i*7+((t*3)|0))%PW, y=(i*5)%14;
+    if(y<2)px(g,x,y,PAL[5]);
+  }
+  // far ridge
+  for(let x=0;x<PW;x++){
+    const hgt=20+Math.round(Math.sin(x*0.32+1.1)*3+Math.sin(x*0.13)*2);
+    g.fillStyle=PAL[1];g.fillRect(x,hgt,PW-x,PH-hgt);
+    g.fillStyle=PAL[2];g.fillRect(x,hgt,PW-x,1);
+  }
+  // near ridge
+  for(let x=0;x<PW;x++){
+    const hgt=26+Math.round(Math.sin(x*0.21-0.4)*3+Math.sin(x*0.47)*1.4);
+    g.fillStyle=PAL[0];g.fillRect(x,hgt,PW-x,PH-hgt);
+  }
+  // a small boat
+  const bx=Math.round(10+Math.sin(t*0.18)*7);
+  g.fillStyle=PAL[4];g.fillRect(bx,24,4,2);g.fillRect(bx+1,21,1,3);
+  g.fillStyle=PAL[5];g.fillRect(bx+1,22,1,1);
+  // water glints
+  for(let i=0;i<20;i++){
+    const x=(i*13+((t*9)|0))%PW, y=28+(i%3);
+    px(g,x,y,i%4===0?PAL[3]:PAL[2]);
+  }
+  g.restore();
+}
+
+/* ==================== 07 gradient mesh ==================== */
+const POLES=[];
+function initMesh(){
+  POLES.length=0;
+  const cols=[[255,122,60],[64,196,255],[190,120,255],[60,220,170],[255,205,90],[240,90,150]];
+  for(let i=0;i<6;i++)POLES.push({
+    c:cols[i],
+    a:0.00021*(1+i*0.23), b:0.00017*(1+((i*3)%5)*0.19),
+    px:1+((i*2)%4), py:1+((i*3)%5), ph:i*1.1
+  });
+}
+function drawMesh(g,t){
+  g.fillStyle="#0a0710";g.fillRect(0,0,W,H);
+  g.globalCompositeOperation="screen";
+  POLES.forEach(p=>{
+    const x=W*(0.5+0.42*Math.sin(t*p.a*p.px*1000+p.ph));
+    const y=H*(0.5+0.42*Math.cos(t*p.b*p.py*1000+p.ph*1.3));
+    const r=Math.max(W,H)*(0.30+0.14*Math.sin(t*0.2+p.ph));
+    const gr=g.createRadialGradient(x,y,0,x,y,r);
+    gr.addColorStop(0,"rgba("+p.c.join(",")+",.62)");
+    gr.addColorStop(0.45,"rgba("+p.c.join(",")+",.24)");
+    gr.addColorStop(1,"rgba("+p.c.join(",")+0+")");
+    g.fillStyle=gr;g.beginPath();g.arc(x,y,r,0,6.2832);g.fill();
+  });
+  g.globalCompositeOperation="source-over";
+}
+
+/* ==================== 08 riso (svg, animated in place) ==================== */
+function animateRiso(t){
+  const a=$("#risoA"),b=$("#risoB");
+  a.setAttribute("transform","translate("+(Math.sin(t*0.5)*7).toFixed(2)+","+(Math.cos(t*0.4)*5).toFixed(2)+")");
+  b.setAttribute("transform","translate("+(Math.cos(t*0.37+1)*9).toFixed(2)+","+(Math.sin(t*0.29)*6).toFixed(2)+")");
+}
+
+/* ==================== 09 data stream ==================== */
+let events=[];
+function initData(){
+  events=[];
+  for(let i=0;i<420;i++)events.push({x:Math.random(),y:Math.random(),l:Math.random(),
+    v:0.15+Math.random()*0.85,a:0.1+Math.random()*0.5,hot:Math.random()<0.05});
+}
+function drawData(g,t){
+  g.fillStyle="#080b10";g.fillRect(0,0,W,H);
+  g.strokeStyle="rgba(255,176,32,.08)";g.lineWidth=1;
+  for(let x=0;x<W;x+=Math.min(W,H)/16){g.beginPath();g.moveTo(x,0);g.lineTo(x,H);g.stroke();}
+  for(let y=0;y<H;y+=Math.min(W,H)/16){g.beginPath();g.moveTo(0,y);g.lineTo(W,y);g.stroke();}
+  // scrolling bars
+  const cols=Math.floor(W/(Math.min(W,H)/9));
+  for(let c=0;c<cols;c++){
+    const seed=(c*2654435761)>>>0;
+    const h=((seed%1000)/1000);
+    const off=(t*0.11*(0.4+h))%1;
+    const x=c*(W/cols), bw=W/cols-3;
+    for(let k=0;k<3;k++){
+      const y=H-(h*0.9+0.06)*H+k*10-off*10;
+      if(y<-4||y>H)continue;
+      const hot=((seed>>(k*3))&7)===1;
+      g.fillStyle=hot?"rgba(255,59,71,.6)":"rgba(255,176,32,"+(0.20+k*0.16)+")";
+      g.fillRect(x,y,bw,4);
+    }
+  }
+  // point stream
+  events.forEach((e,i)=>{
+    e.y+=e.v*0.004;
+    if(e.y>1.05){e.y=-0.05;e.x=Math.random();e.l=Math.random();e.hot=Math.random()<0.05;}
+    const x=e.x*W, y=e.y*H;
+    g.fillStyle=e.hot?"rgba(255,59,71,.8)":"rgba(31,224,138,"+(e.a*0.55).toFixed(2)+")";
+    g.fillRect(x,y,1.4,e.l*26+2);
+  });
+  // waveform
+  g.beginPath();
+  for(let x=0;x<W;x+=3){
+    const y=H*0.22+Math.sin(x*0.021+t*1.7)*H*0.07+Math.sin(x*0.071-t*2.3)*H*0.03;
+    x?g.lineTo(x,y):g.moveTo(x,y);
+  }
+  g.strokeStyle="rgba(99,214,255,.7)";g.lineWidth=1.4;g.stroke();
+  g.fillStyle="rgba(143,163,184,.75)";g.font="10px monospace";
+  g.fillText("evt/s "+(360+Math.round(Math.sin(t*0.7)*40)),12,20);
+  g.fillText("win 12s · no aggregation",12,34);
+}
+
+/* ==================== 10 blueprint ==================== */
+let bpBuilt=false;
+function buildBlueprint(){
+  const grid=$("#bpGrid");if(!grid)return;
+  grid.innerHTML="";
+  for(let x=0;x<=600;x+=25)grid.innerHTML+='<path d="M'+x+' 0V600"/>';
+  for(let y=0;y<=600;y+=25)grid.innerHTML+='<path d="M0 '+y+'H600"/>';
+  const d=$("#bpDraw"), dm=$("#bpDims"), t=$("#bpText");
+  d.innerHTML="";
+  const obj='M180 400 L180 190 C180 150 200 130 240 130 L360 130 C400 130 420 150 420 190 L420 400 Z';
+  d.innerHTML=
+    '<path d="'+obj+'"/>'+
+    '<path d="M180 400 h240"/>'+
+    '<path d="M240 130 v270 M360 130 v270" stroke-dasharray="6 6" opacity=".5"/>'+
+    '<ellipse cx="300" cy="400" rx="120" ry="18" opacity=".45"/>'+
+    '<path d="M196 300 h208" stroke-dasharray="3 5" opacity=".7"/>';
+  dm.innerHTML=
+    '<path d="M180 440 H420 M180 434 V446 M420 434 V446"/>'+
+    '<path d="M160 130 V400 M154 130 H166 M154 400 H166"/>'+
+    '<path d="M180 468 H420 M180 462 V474 M420 462 V474"/>';
+  t.innerHTML=
+    '<text x="300" y="456" text-anchor="middle">240,0</text>'+
+    '<text x="146" y="270" text-anchor="middle" transform="rotate(-90 146 270)">270,0</text>'+
+    '<text x="300" y="484" text-anchor="middle">240,0 REF</text>'+
+    '<text x="30" y="42">SECTION A–A · 1:5</text>'+
+    '<text x="30" y="58">ALL DIMENSIONS IN MM</text>'+
+    '<text x="470" y="42">TOL ±0.5</text>'+
+    '<text x="470" y="58">REV 4 · 2026-03</text>';
+  bpBuilt=true;
+}
+function animateBlueprint(g,t){
+  g.clearRect(0,0,W,H);
+  g.fillStyle="#071a2b";g.fillRect(0,0,W,H);
+  g.fillStyle="#04121f";g.fillRect(0,0,W,H);
+  const paths=$$("#bpDraw path");
+  const off=((t*26)%120)/120;
+  paths.forEach((p,i)=>{
+    const L=420;const dash=Math.max(0,1-Math.max(0,(off*1.4-i*0.12)));
+    p.setAttribute("stroke-dasharray",L);
+    p.setAttribute("stroke-dashoffset",L*dash);
+  });
+}
+
+/* ==================== scroll driver ==================== */
+const chapters=$$(".chapter");
+const railList=$("#rail-list");
+NAMES.forEach((n,i)=>{
+  const li=document.createElement("li");
+  li.innerHTML='<button data-i="'+i+'" title="'+n+'"><i></i></button>';
+  li.querySelector("button").addEventListener("click",()=>{
+    chapters[i].scrollIntoView({behavior:"smooth",block:"center"});
+  });
+  railList.appendChild(li);
+});
+const railBtns=$$("#rail-list button");
+const weights=new Array(10).fill(0);
+let current=0, globalP=0;
+
+function measure(){
+  const focus=innerHeight*0.48, span=innerHeight*0.66;
+  chapters.forEach((c,i)=>{
+    const r=c.getBoundingClientRect();
+    const mid=r.top+r.height/2;
+    weights[i]=Math.max(0,1-Math.abs(mid-focus)/span);
+  });
+  let best=0;
+  weights.forEach((w,i)=>{if(w>weights[best])best=i;});
+  current=best;
+  railBtns.forEach((b,i)=>b.classList.toggle("on",i===best));
+  const sorted=weights.slice().sort((a,b)=>b-a);
+  globalP=Math.max(0,Math.min(0.9999,(best+ (1-weights[best]))/10));
+  // blend the sub-section scrub from the local geometry
+  const r=chapters[best].getBoundingClientRect();
+  const local=Math.max(0,Math.min(1,(innerHeight*0.48-(r.top+r.height/2))/span+0.5));
+  $("#hnum").textContent=(weights[best]*(1+local)).toFixed(2);
+  $("#hname").textContent=NAMES[best];
+  $("#hmeta").textContent="system "+String(best+1).padStart(2,"0")+" · "+META[best];
+  $("#readout").textContent=(globalP*100).toFixed(1)+"%";
+  $("#pmini").style.width=(globalP*100).toFixed(1)+"%";
+  $("#fill").style.height=(globalP*100).toFixed(1)+"%";
+  const seamOp=sorted[0]?Math.max(0,1-Math.abs(sorted[0]-sorted[1])/(sorted[0]+sorted[1]))*0.55:0;
+  $("#seam").style.opacity=seamOp.toFixed(3);
+
+  LAYERS.forEach((l,i)=>{
+    const w=Math.pow(weights[i],1.9);
+    l.style.opacity=w.toFixed(3);
+    const scale=1.06-w*0.06;
+    l.style.transform="scale("+scale.toFixed(4)+")";
+    l.style.visibility=w<0.004?"hidden":"visible";
+  });
+}
+
+let tick=0;
+function frame(now){
+  const t=now/1000;
+  tick++;
+  // only draw what is visible
+  if(weights[0]>0.004)drawChrome(CTX[0],t);
+  if(weights[1]>0.004)drawWire(CTX[1],t);
+  if(weights[2]>0.004)drawInk(CTX[2],t);
+  if(weights[3]>0.004&&tick%2===0)drawHalf(CTX[3],t);
+  if(weights[4]>0.004)drawPanes(t);
+  if(weights[5]>0.004&&tick%2===0)drawPixel(CTX[5],t);
+  if(weights[6]>0.004&&tick%2===0)drawMesh(CTX[6],t);
+  if(weights[7]>0.004)animateRiso(t);
+  if(weights[8]>0.004&&tick%2===0)drawData(CTX[8],t);
+  if(weights[9]>0.004)animateBlueprint(CTX[9],t);
+  requestAnimationFrame(frame);
+}
+
+/* ==================== the index of 100 ==================== */
+const LIST=`01 Halftone Orchid|Poster
+02 Mission V Grand Tour|Poster
+03 Thin Film|Illustration
+04 Sentinel Wall 03|Interface
+05 Seven Courses, One Fire|Editorial
+06 Swell, Adriatic|Generative
+07 One Stroke|Generative
+08 Quill v1.4.2|Interface
+09 Plasticine Department|Sculpture
+10 The Complete Collection|Editorial
+11 Copper Weather|Poster
+12 Twelve Degrees North|Poster
+13 Halation Studies No. 3|Generative
+14 Municipal Type Specimen|Type
+15 Ridgeline|Generative
+16 Nightshift|Data
+17 The Salt Ledger|Editorial
+18 Fold, Once|Generative
+19 Blackletter Body Book|Type
+20 Two Hundred Grids|Poster
+21 Lumen — Cover 1|Identity
+22 Lumen — Cover 2|Identity
+23 Island Inventory|Data
+24 Compression Test|Type
+25 Long Exposure, 4 Seconds|Generative
+26 Public Notice|Motion
+27 Low Tide Tables|Data
+28 Field Recording 07|Sculpture
+29 The Weight of Salt|Editorial
+30 Nine Ways to Draw a Leg|Illustration
+31 Shipping Forecast|Type
+32 Terminal Velocity|Motion
+33 Chrome Meridian|Motion
+34 Paper Weather|Generative
+35 Second Edition|Editorial
+36 Ledger of Small Hours|Editorial
+37 The Sintering Curve|Data
+38 Marginalia|Editorial
+39 Risograph Press Card|Identity
+40 Blind Emboss|Poster
+41 Night Freight|Motion
+42 Rust Index|Data
+43 Soft Power|Identity
+44 Counterweight|Sculpture
+45 Quiet Volume|Type
+46 Opaque Water|Generative
+47 A Brief History of Dots|Editorial
+48 The Kite String|Illustration
+49 Signal to Noise|Data
+50 Folded Light|Motion
+51 Harbourmaster|Postcard
+52 Long Exposure, 11 Seconds|Generative
+53 Terminal Velocity II|Motion
+54 Greyhound Line|Motion
+55 Paper Tape|Type
+56 The Grain Test|Generative
+57 Verso, Recto|Editorial
+58 What the Wind Did|Generative
+59 Committee, Seconded|Editorial
+60 Small Hours, Wider|Motion
+61 Riso Anatomy|Poster
+62 Blueprint for a Bird|Illustration
+63 The Long Table|Editorial
+64 Ambient Hum|Motion
+65 Datum|Motion
+66 Out of Register|Poster
+67 Six Ways to Fail|Editorial
+68 The Inventory of Dust|Sculpture
+69 Nothing to Declare|Postcard
+70 Type Specimen: Grid|Identity
+71 Type Specimen: Rule|Type
+72 Type Specimen: Serif|Type
+73 Silt|Postcard
+74 Signal Chain|Data
+75 The Weight of Type|Type
+76 A Room With One Chair|Sculpture
+77 Heat Map, 4am|Data
+78 Overprinted|Poster
+79 Nightfishing|Motion
+80 Colour Proof|Identity
+81 The Sounding Line|Illustration
+82 Slow Signal|Motion
+83 Ink, Water, Paper|Generative
+84 Half a Mile of Rope|Sculpture
+85 The Copy Desk|Editorial
+86 Recurrence|Data
+87 The Fifth Column|Editorial
+88 Weather for a Print Room|Generative
+89 Everything, Briefly|Editorial
+90 Small Weather|Motion
+91 The Drafting Table|Sculpture
+92 Halftone, Halftone|Poster
+93 Under the Pier|Postcard
+94 The Second Sun|Motion
+95 Proof Copy|Editorial
+96 Static, Considered|Generative
+97 Field of View|Type
+98 The Last Print|Poster
+99 Interim|Motion
+100 The Hundredth|Editorial`;
+const ITEMS=LIST.split("\n").map(l=>{
+  const [n,title,cat]=l.split("|");
+  return {n,title,cat};
+});
+const CATS=["All",...Array.from(new Set(ITEMS.map(i=>i.cat)))];
+const grid=$("#grid");
+const catsEl=$("#cats");
+let filter="",cat="All";
+
+function thumb(ctx,w,h,seed,cat){
+  let s=seed;
+  const rnd=()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296;};
+  const cols={Poster:["#ff4b9c","#0f6fb5","#f2ece0"],Interface:["#0d1117","#63d6ff","#ffb020"],
+    Illustration:["#efe6d6","#1a1a1a","#c0561f"],Editorial:["#0b0b0c","#e9e3d7","#c0561f"],
+    Generative:["#04141d","#38b2c4","#e8b95a"],Data:["#0c1117","#1fe08a","#ff3b47"],
+    Type:["#fbfaf8","#1b1a18","#2f5bd0"],Identity:["#f3ece4","#3a332c","#d9825f"],
+    Motion:["#120d1c","#ff6a3d","#63d6ff"],Sculpture:["#efe7dc","#d9825f","#7fa48d"],
+    Postcard:["#dfe9ef","#1d4a6b","#e8b95a"]}[cat]||["#111","#eee","#f80"];
+  ctx.fillStyle=cols[0];ctx.fillRect(0,0,w,h);
+  const kind=(seed%5);
+  if(kind===0){
+    for(let y=0;y<h;y+=3){
+      for(let x=0;x<w;x+=3){
+        const d=Math.hypot((x-w/2)/(w*.6),(y-h/2)/(h*.6));
+        if(d<0.8&&rnd()>d*0.9){ctx.fillStyle=cols[1];ctx.fillRect(x,y,2,2);}
+      }
+    }
+  } else if(kind===1){
+    ctx.fillStyle=cols[1];
+    for(let i=0;i<5;i++){ctx.fillRect(w*0.12,h*(0.18+i*0.14),w*(0.3+rnd()*0.5),h*0.06);}
+  } else if(kind===2){
+    const g=ctx.createLinearGradient(0,0,w,h);
+    g.addColorStop(0,cols[1]);g.addColorStop(1,cols[2]);
+    ctx.fillStyle=g;ctx.fillRect(0,h*0.2,w,h*0.8);
+  } else if(kind===3){
+    ctx.strokeStyle=cols[1];ctx.lineWidth=2;
+    for(let i=0;i<6;i++){ctx.beginPath();ctx.moveTo(-4,h*(0.2+i*0.13));
+      ctx.bezierCurveTo(w*0.3,h*(0.1+i*0.14),w*0.6,h*(0.3+i*0.12),w+4,h*(0.16+i*0.13));ctx.stroke();}
+  } else {
+    ctx.fillStyle=cols[2];
+    ctx.beginPath();ctx.arc(w*(0.3+rnd()*0.4),h*0.5,h*0.3,0,6.2832);ctx.fill();
+    ctx.fillStyle=cols[1];
+    ctx.fillRect(0,h*0.72,w,h*0.28);
+  }
+  ctx.fillStyle="rgba(0,0,0,.28)";ctx.fillRect(0,h-2,w,2);
+}
+
+function renderGrid(){
+  const list=ITEMS.filter(i=>
+    (cat==="All"||i.cat===cat) &&
+    (!filter||(i.title+" "+i.cat+" "+i.n).toLowerCase().includes(filter)));
+  grid.innerHTML="";
+  if(!list.length){
+    grid.innerHTML='<p class="empty">Nothing in the index matches that. Try a shorter word.</p>';
+  } else {
+    list.forEach(it=>{
+      const num=parseInt(it.n,10);
+      const c=document.createElement("div");
+      c.className="card";c.dataset.n=it.n;
+      c.innerHTML='<canvas></canvas><div class="meta"><div class="n">'+it.n+
+        '</div><div class="t">'+it.title+'</div><div class="c">'+it.cat+'</div></div>';
+      const cv=c.querySelector("canvas");
+      const d=Math.min(2,devicePixelRatio||1);
+      const w=cv.clientWidth||160,h=88;
+      cv.width=w*d;cv.height=h*d;
+      const cx=cv.getContext("2d");cx.setTransform(d,0,0,d,0,0);
+      thumb(cx,w,h,num*7919,it.cat);
+      c.addEventListener("click",()=>{
+        c.classList.remove("flash");void c.offsetWidth;c.classList.add("flash");
+        toast("Plate "+it.n+" — "+it.title);
+      });
+      grid.appendChild(c);
+    });
+  }
+  $("#icount").textContent=list.length+" / 100";
+}
+CATS.forEach(c=>{
+  const b=document.createElement("button");
+  b.textContent=c;b.setAttribute("aria-pressed",String(c==="All"));
+  b.addEventListener("click",()=>{
+    cat=c;
+    $$("#cats button").forEach(o=>o.setAttribute("aria-pressed",String(o===b)));
+    renderGrid();
+  });
+  catsEl.appendChild(b);
+});
+$("#filt").addEventListener("input",e=>{filter=e.target.value.trim().toLowerCase();renderGrid();});
+
+const toastEl=$("#toast");
+let toastT=null;
+function toast(msg){
+  toastEl.textContent=msg;toastEl.classList.add("on");
+  clearTimeout(toastT);toastT=setTimeout(()=>toastEl.classList.remove("on"),2000);
+}
+function randomJump(){
+  const list=ITEMS.filter(i=>(cat==="All"||i.cat===cat)&&
+    (!filter||(i.title+" "+i.cat+" "+i.n).toLowerCase().includes(filter)));
+  if(!list.length){toast("Nothing to jump to");return;}
+  const pick=list[Math.floor(Math.random()*list.length)];
+  const card=grid.querySelector('.card[data-n="'+pick.n+'"]');
+  if(card){
+    card.scrollIntoView({behavior:"smooth",block:"center"});
+    card.classList.remove("flash");void card.offsetWidth;card.classList.add("flash");
+  }
+  toast("Plate "+pick.n+" — "+pick.title);
+}
+$("#rand").addEventListener("click",randomJump);
+$("#rand2").addEventListener("click",randomJump);
+$("#yearch").textContent=new Date().getFullYear();
+
+/* ==================== boot ==================== */
+function boot(){
+  fit();
+  initChrome();initInk();initMesh();initData();
+  measure();
+}
+addEventListener("resize",()=>{fit();measure();});
+addEventListener("scroll",measure,{passive:true});
+boot();
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

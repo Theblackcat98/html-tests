@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SIGNAL WALL — Amber LED Dot Matrix, 96 &times; 24 Cells</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --amber:#ffab2e; --amber2:#ffd58a; --red:#ff3a1e; --dim:#3a2410;
+    --bg:#0a0603; --panel:#120a05; --line:#2a1a0c;
+    --mono:"Share Tech Mono",ui-monospace,Menlo,monospace;
+    --cond:"Barlow Condensed",system-ui,sans-serif;
+  }
+  html,body{height:100%}
+  body{background:
+      radial-gradient(120% 80% at 50% -8%,#2a1408 0%,#120a05 40%,#0a0603 100%);
+    color:#e7c9a2;font-family:var(--mono);overflow:hidden}
+  .wallnoise{position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3e")}
+
+  .room{height:100dvh;display:flex;flex-direction:column;padding:16px 20px 14px;gap:12px;max-width:1600px;margin:0 auto}
+
+  /* header strip */
+  .hdr{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;
+    border-bottom:1px solid var(--line);padding-bottom:10px}
+  .hdr .l{display:flex;align-items:baseline;gap:14px}
+  .hdr h1{font-family:var(--cond);font-weight:600;font-size:clamp(20px,2.4vw,30px);letter-spacing:.22em;
+    text-transform:uppercase;color:#ffd9a6;text-shadow:0 0 18px rgba(255,150,40,.45)}
+  .hdr h1 b{font-weight:400;color:var(--amber)}
+  .hdr .s{font-size:9.5px;letter-spacing:.22em;color:#8a5c2e;text-transform:uppercase}
+  .hdr .r{font-size:9.5px;letter-spacing:.16em;color:#8a5c2e;display:flex;gap:18px;flex-wrap:wrap}
+  .hdr .r b{color:var(--amber);font-weight:400}
+
+  /* cabinet */
+  .cabinet{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;
+    background:linear-gradient(180deg,#150c06,#0b0603);
+    border:1px solid var(--line);
+    box-shadow:inset 0 1px 0 rgba(255,180,90,.07),0 40px 80px -40px #000}
+  .rail{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+  .rail button{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;
+    background:linear-gradient(180deg,#1d1108,#120a05);border:1px solid var(--line);color:#b58653;
+    padding:8px 14px;cursor:pointer;transition:all .16s;box-shadow:0 1px 0 rgba(255,180,90,.05)}
+  .rail button:hover{border-color:#5c3a1a;color:var(--amber2)}
+  .rail button[aria-pressed=true]{background:linear-gradient(180deg,#ffb43c,#e07a12);border-color:#ffb43c;
+    color:#1a0d02;font-weight:700;box-shadow:0 0 16px rgba(255,150,40,.4),0 1px 0 rgba(255,255,255,.35) inset}
+  .rail .sp{flex:1}
+  .rail .led{width:8px;height:8px;border-radius:99px;background:#3a1d0a;
+    box-shadow:inset 0 0 2px #000;transition:all .2s}
+  .rail .led.on{background:var(--amber);box-shadow:0 0 10px var(--amber)}
+  .rail .lab{font-size:9px;letter-spacing:.2em;color:#8a5c2e;text-transform:uppercase;margin-right:4px}
+
+  .screenwrap{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;gap:10px}
+  .screen{position:relative;flex:1;min-height:0;background:#050301;border:1px solid #1c1108;overflow:hidden}
+  .screen canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .tickerbox{height:78px;flex:none;position:relative;background:#050301;border:1px solid #1c1108;overflow:hidden}
+  .tickerbox canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .glass{position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(180deg,rgba(255,190,110,.07),transparent 22%,transparent 78%,rgba(255,150,50,.05))}
+  .scan{position:absolute;inset:0;pointer-events:none;opacity:.5;mix-blend-mode:multiply;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,.42) 0 1px,transparent 1px 3px)}
+  .badge{position:absolute;right:8px;bottom:6px;font-size:8px;letter-spacing:.16em;color:#6b451f;
+    text-transform:uppercase;pointer-events:none}
+
+  /* console */
+  .console{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:12px;border-top:1px solid var(--line);padding-top:12px}
+  .fld{display:flex;gap:0;border:1px solid var(--line);background:#0d0704;box-shadow:inset 0 2px 8px rgba(0,0,0,.6)}
+  .fld input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--amber2);
+    font-family:var(--mono);font-size:13px;letter-spacing:.1em;padding:12px 14px;text-transform:uppercase}
+  .fld input::placeholder{color:#5c3a1c}
+  .fld button{background:linear-gradient(180deg,#ffb43c,#e07a12);border:0;border-left:1px solid #6b3d10;
+    color:#1a0d02;font-family:var(--mono);font-size:10px;letter-spacing:.2em;padding:0 20px;cursor:pointer;
+    font-weight:700;box-shadow:0 1px 0 rgba(255,255,255,.3) inset}
+  .fld button:active{transform:translateY(1px);box-shadow:none}
+  .meta{border:1px solid var(--line);background:#0d0704;padding:8px 12px;display:grid;gap:2px;
+    align-content:center}
+  .meta div{display:flex;justify-content:space-between;gap:10px;font-size:9.5px;letter-spacing:.1em;
+    color:#8a5c2e;text-transform:uppercase;padding:2px 0}
+  .meta div b{color:var(--amber);font-weight:400}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;align-content:flex-start;padding-top:2px}
+  .chips button{font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;
+    background:transparent;border:1px solid #33200f;color:#9c6a36;padding:5px 8px;cursor:pointer;transition:.15s}
+  .chips button:hover{border-color:var(--amber);color:var(--amber2);background:#1a0e05}
+
+  .legend{margin-top:8px;font-size:8.5px;letter-spacing:.2em;color:#5c3a1c;text-transform:uppercase;
+    text-align:center;line-height:1.9}
+  .legend b{color:#9c6a36;font-weight:400}
+
+  @media (max-width:900px){
+    body{overflow:auto}
+    .room{height:auto;min-height:100dvh}
+    .screen{min-height:44vh}
+    .console{grid-template-columns:1fr}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wallnoise" aria-hidden="true"></div>
+
+<div class="room">
+  <header class="hdr">
+    <div class="l">
+      <h1>Signal <b>Wall</b></h1>
+      <span class="s">Amber phosphor array &middot; 96 &times; 24 &middot; 0.9 mm pitch</span>
+    </div>
+    <div class="r">
+      <span>Frame <b id="fFps">0</b> fps</span>
+      <span>Lit <b id="fLit">0</b> cells</span>
+      <span>Colour <b>Amber 590 nm</b></span>
+      <span>Local <b id="fClock">--:--</b></span>
+    </div>
+  </header>
+
+  <section class="cabinet">
+    <div class="rail">
+      <span class="lab">Source</span>
+      <button id="mText" aria-pressed="true">Message Board</button>
+      <button id="mClock" aria-pressed="false">Analogue Clock</button>
+      <button id="mChart" aria-pressed="false">Skyline Spectrum</button>
+      <span class="sp"></span>
+      <span class="lab">Module</span>
+      <span class="led on" title="Driver OK"></span>
+      <span class="led on" title="Power OK"></span>
+      <span class="led" id="ledFlick" title="Ambient"></span>
+    </div>
+
+    <div class="screenwrap">
+      <div class="screen">
+        <canvas id="main"></canvas>
+        <div class="glass" aria-hidden="true"></div>
+        <div class="scan" aria-hidden="true"></div>
+        <div class="badge" id="badge">MSG</div>
+      </div>
+      <div class="tickerbox">
+        <canvas id="ticker"></canvas>
+        <div class="scan" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <div class="console">
+      <form class="fld" id="form">
+        <input id="msg" type="text" maxlength="180" value="SIGNAL WALL ONLINE"
+               placeholder="TYPE A MESSAGE AND PRESS ENTER" aria-label="Message to render on the matrix"
+               autocomplete="off" spellcheck="false">
+        <button type="submit">SEND</button>
+      </form>
+      <div class="meta">
+        <div><span>Matrix</span><b>96 &times; 24</b></div>
+        <div><span>Glyph</span><b>5 &times; 7 / 6 advance</b></div>
+        <div><span>Refresh</span><b id="fHz">30 Hz</b></div>
+        <div><span>Power draw</span><b id="fAmp">4.8 A</b></div>
+      </div>
+      <div class="chips" id="chips"></div>
+    </div>
+  </section>
+
+  <p class="legend">Every glyph is a hand-cut 5&times;7 bitmap, sampled one cell at a time into a 2,304-cell lattice &mdash; <b>no font files, no images, one canvas</b></p>
+</div>
+
+<noscript><p style="position:fixed;left:0;right:0;bottom:0;z-index:99;background:#0a0603;color:#e7c9a2;padding:12px 20px;font:12px/1.7 var(--mono);border-top:1px solid #2a1a0c">The matrix renders in a canvas and needs JavaScript. The cabinet layout, the module status LEDs and the control rails are already in place.</p></noscript>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ── 5 × 7 bitmap font (column bytes, bit 0 = top row) ── */
+  var FONT={
+    " ":[0,0,0,0,0], "!":[0,0,95,0,0], "\"":[0,7,0,7,0], "#":[20,127,20,127,20],
+    "$":[36,42,127,42,18], "%":[35,19,8,100,98], "&":[54,73,85,34,80], "'":[0,5,3,0,0],
+    "(":[0,28,34,65,0], ")":[0,65,34,28,0], "*":[20,8,62,8,20], "+":[8,8,62,8,8],
+    ",":[0,80,48,0,0], "-":[8,8,8,8,8], ".":[0,96,96,0,0], "/":[32,16,8,4,2],
+    "0":[62,81,73,69,62], "1":[0,66,127,64,0], "2":[66,97,81,73,70], "3":[33,65,69,75,49],
+    "4":[24,20,18,127,16], "5":[39,69,69,69,57], "6":[60,74,73,73,48], "7":[1,113,9,5,3],
+    "8":[54,73,73,73,54], "9":[6,73,73,41,30], ":":[0,54,54,0,0], ";":[0,86,54,0,0],
+    "<":[8,20,34,65,0], "=":[20,20,20,20,20], ">":[0,65,34,20,8], "?":[2,1,81,9,6],
+    "@":[70,69,73,73,78], "A":[126,17,17,17,126], "B":[127,73,73,73,54], "C":[62,65,65,65,34],
+    "D":[127,65,65,34,28], "E":[127,73,73,73,65], "F":[127,9,9,9,1], "G":[62,65,73,73,50],
+    "H":[127,8,8,8,127], "I":[0,65,127,65,0], "J":[32,64,65,63,1], "K":[127,8,20,34,65],
+    "L":[127,64,64,64,64], "M":[127,2,12,2,127], "N":[127,4,8,16,127], "O":[62,65,65,65,62],
+    "P":[127,9,9,9,6], "Q":[62,65,81,33,94], "R":[127,9,25,41,70], "S":[70,73,73,73,49],
+    "T":[1,1,127,1,1], "U":[63,64,64,64,63], "V":[31,32,64,32,31], "W":[127,32,24,32,127],
+    "X":[99,20,8,20,99], "Y":[3,4,120,4,3], "Z":[97,81,73,69,67], "[":[0,127,65,65,0],
+    "\\":[2,4,8,16,32], "]":[0,65,65,127,0], "^":[4,2,1,2,4], "_":[64,64,64,64,64],
+    "|":[0,0,127,0,0], "~":[8,4,8,16,8]
+  };
+  var ADV=6, GH=7;
+
+  /* ── lattice ───────────────────────────────────────── */
+  var COLS=96, ROWS=24;
+  var grid=new Uint8Array(COLS*ROWS), target=new Uint8Array(COLS*ROWS),
+      fade=new Float32Array(COLS*ROWS);
+  function clear(){ target.fill(0); }
+  function set(x,y,v){ if(x>=0&&x<COLS&&y>=0&&y<ROWS) target[y*COLS+x]=v; }
+  function get(x,y){ if(x<0||x>=COLS||y<0||y>=ROWS) return 0; return target[y*COLS+x]; }
+  function text(str,ox,oy){
+    str=String(str).toUpperCase();
+    for(var i=0;i<str.length;i++){
+      var g=FONT[str[i]]||FONT["?"];
+      for(var c=0;c<5;c++){
+        var bits=g[c];
+        for(var r=0;r<GH;r++) if(bits&(1<<r)) set(ox+i*ADV+c, oy+r, 1);
+      }
+    }
+    return str.length*ADV;
+  }
+  function textW(s){ return String(s).length*ADV; }
+  function center(s,oy){ text(s, Math.max(0,Math.floor((COLS-textW(s))/2)), oy); }
+  function frameRect(x,y,w,h,v){
+    for(var i=0;i<w;i++){ set(x+i,y,v); set(x+i,y+h-1,v); }
+    for(var j=0;j<h;j++){ set(x,y+j,v); set(x+w-1,y+j,v); }
+  }
+  function disc(cx,cy,r,v){
+    for(var y=Math.floor(cy-r);y<=cy+r;y++)
+      for(var x=Math.floor(cx-r);x<=cx+r;x++){
+        var d=Math.hypot(x-cx,y-cy);
+        if(d<=r) set(x,y,v);
+      }
+  }
+  function line(x0,y0,x1,y1,v){
+    var n=Math.max(Math.abs(x1-x0),Math.abs(y1-y0));
+    for(var i=0;i<=n;i++) set(Math.round(x0+(x1-x0)*i/(n||1)), Math.round(y0+(y1-y0)*i/(n||1)), v);
+  }
+
+  /* ── canvases ──────────────────────────────────────── */
+  var main=document.getElementById("main"), mctx=main.getContext("2d");
+  var tick=document.getElementById("ticker"), tctx=tick.getContext("2d");
+  var bloom=document.createElement("canvas"), bctx=bloom.getContext("2d");
+  var tgrid=new Uint8Array(COLS*8), ttext=[];
+  var DPR=Math.min(2,window.devicePixelRatio||1), cell=8, tw=8, th=8;
+  function fit(){
+    var r=main.getBoundingClientRect();
+    main.width=Math.max(320,Math.round(r.width*DPR));
+    main.height=Math.max(120,Math.round(r.height*DPR));
+    cell=main.width/COLS; th=main.height/ROWS;
+    var r2=tick.getBoundingClientRect();
+    tick.width=Math.max(320,Math.round(r2.width*DPR));
+    tick.height=Math.max(40,Math.round(r2.height*DPR));
+    tw=tick.width/COLS; th=tick.height/8;
+    bloom.width=main.width; bloom.height=main.height;
+    mkSprites();
+  }
+  /* pre-rendered LED sprites: unlit + two lit intensities */
+  var sOff, sOn, sHot;
+  function mkSprites(){
+    var S=Math.max(4,Math.ceil(Math.max(cell,tw)*1.3));
+    function make(color,glow,blur){
+      var c=document.createElement("canvas"); c.width=c.height=S;
+      var x=c.getContext("2d"), h=S/2;
+      var g=x.createRadialGradient(h,h,0,h,h,h*0.42);
+      g.addColorStop(0,color); g.addColorStop(1,"rgba(0,0,0,0)");
+      x.fillStyle=g; x.beginPath(); x.arc(h,h,h*0.42,0,6.283); x.fill();
+      if(glow>0){
+        x.globalCompositeOperation="lighter";
+        var g2=x.createRadialGradient(h,h,0,h,h,h);
+        g2.addColorStop(0,color.replace(/[\d.]+\)$/,"0.55)"));
+        g2.addColorStop(.4,"rgba(255,120,20,.16)");
+        g2.addColorStop(1,"rgba(255,90,10,0)");
+        x.fillStyle=g2; x.beginPath(); x.arc(h,h,h,0,6.283); x.fill();
+      }
+      return c;
+    }
+    sOff=make("rgba(90,44,14,.85)",0,0);
+    sOn=make("rgba(255,186,86,.98)",1,0);
+    sHot=make("rgba(255,244,214,1)",1,0);
+  }
+  fit(); window.addEventListener("resize",function(){fit();});
+
+  /* ── message store ─────────────────────────────────── */
+  var PRESETS=[
+    "SIGNAL WALL ONLINE",
+    "AMBER PHOSPHOR / 0.9 MM PITCH",
+    "ALL SYSTEMS NOMINAL",
+    "2,304 CELLS / 1 CANVAS / 0 IMAGES",
+    "NIGHT SERVICE BEGINS 22:40",
+    "THE TIDE IS COMING IN",
+    "DO NOT TOUCH THE GLASS"
+  ];
+  var message="SIGNAL WALL ONLINE\nTYPE BELOW AND PRESS ENTER\nTHE GLYPHS ARE CUT ONE CELL AT A TIME";
+  var mode="text";
+  var inp=document.getElementById("msg"), badge=document.getElementById("badge");
+
+  var chips=document.getElementById("chips");
+  PRESETS.forEach(function(p){
+    var b=document.createElement("button"); b.type="button"; b.textContent=p;
+    b.addEventListener("click",function(){ message=p; inp.value=p; setMode("text"); });
+    chips.appendChild(b);
+  });
+  document.getElementById("form").addEventListener("submit",function(e){
+    e.preventDefault(); message=inp.value.toUpperCase()||" "; setMode("text");
+  });
+
+  function setMode(m){
+    mode=m;
+    document.getElementById("mText").setAttribute("aria-pressed",m==="text");
+    document.getElementById("mClock").setAttribute("aria-pressed",m==="clock");
+    document.getElementById("mChart").setAttribute("aria-pressed",m==="chart");
+    badge.textContent = m==="text"?"MSG":m==="clock"?"RTC":"EQ 32-BAND";
+  }
+  document.getElementById("mText").addEventListener("click",function(){setMode("text");});
+  document.getElementById("mClock").addEventListener("click",function(){setMode("clock");});
+  document.getElementById("mChart").addEventListener("click",function(){setMode("chart");});
+
+  /* ── ticker ────────────────────────────────────────── */
+  var TICKER="   SIGNAL WALL // 96 X 24 CELLS // 5X7 GLYPH SET // 30 HZ REFRESH // "+
+    "AMBER 590 NM // DRIVER TEMP 41 C // "+
+    "NOW PLAYING: LOW CEILING RADIO, HOUR TWO // ";
+  var tOff=0, tAcc=0;
+  function renderTicker(dt){
+    /* build ticker lattice by shifting */
+    var step=Math.max(1,Math.round(26*dt));
+    if(tAcc>0.055){ tAcc=0; for(var y=0;y<8;y++){
+      for(var x=0;x<COLS-step;x++) tgrid[y*COLS+x]=tgrid[y*COLS+x+step];
+      for(var k=0;k<step;k++) tgrid[y*COLS+COLS-step+k]=0;
+    }}
+    else tAcc+=dt;
+    for(var i=0;i<COLS;i++){
+      var ci=Math.floor((tOff+i)/ADV);
+      var ch=TICKER[ci%TICKER.length];
+      var g=FONT[ch]||FONT[" "];
+      var col=Math.floor((tOff+i)%ADV);
+      for(var r=0;r<GH;r++){
+        if(col<5 && (g[col]&(1<<r))) tgrid[(r+1)*COLS+i]=1;
+      }
+    }
+    tOff+=dt*30;
+    tctx.clearRect(0,0,tick.width,tick.height);
+    tctx.fillStyle="#050301"; tctx.fillRect(0,0,tick.width,tick.height);
+    for(var yy=0;yy<8;yy++) for(var xx=0;xx<COLS;xx++){
+      var on=tgrid[yy*COLS+xx];
+      tctx.drawImage(on?sOn:sOff, xx*tw, yy*th, tw, th);
+    }
+  }
+
+  /* ── chart: SKYLINE spectrum ───────────────────────── */
+  var bands=28, smooth=new Float32Array(bands), vel=new Float32Array(bands), t0=performance.now();
+  function renderChart(now){
+    var t=now/1000;
+    for(var i=0;i<bands;i++){
+      var drive=Math.sin(t*3.1+i*0.4)*0.5+Math.sin(t*1.7+i*0.9)*0.32+Math.sin(t*5.3+i*0.15)*0.18;
+      vel[i]+= (drive*0.5+0.42 - smooth[i])*0.14;
+      vel[i]*=0.92; smooth[i]+=vel[i];
+      smooth[i]=Math.max(0.04,Math.min(1,smooth[i]));
+    }
+    clear();
+    var base=ROWS-5;
+    for(var b=0;b<bands;b++){
+      var h=Math.round(smooth[b]*(ROWS-9));
+      var x=1+b*3;
+      for(var y=base-h;y<base;y++) for(var k=0;k<2;k++) set(x+k,y,1);
+    }
+    /* skyline silhouette */
+    var sk=[0,3,3,7,7,4,9,9,12,12,8,6,6,10,10,14,14,11,9,13,13,8,8,12,12,6,6,9,9];
+    for(var s=0;s<bands;s++){
+      var hh=sk[s%sk.length];
+      for(var y2=base+1;y2<base+1+Math.min(4,hh*0.4);y2++)
+        for(var x2=1+s*3;x2<1+s*3+2;x2++) set(x2,y2,1);
+    }
+    for(var x3=0;x3<COLS;x3++) set(x3,ROWS-1,1);
+    center("SKYLINE",0);
+  }
+
+  /* ── clock ─────────────────────────────────────────── */
+  function renderClock(now){
+    clear();
+    var d=new Date(), cx=38, cy=12, R=10.5;
+    for(var i=0;i<60;i++){
+      var a=i*6*Math.PI/180, rr=(i%5===0)?R-1.4:R-0.6;
+      set(Math.round(cx+Math.cos(a)*rr), Math.round(cy-Math.sin(a)*rr), 1);
+    }
+    var hrs=d.getHours()%12, mins=d.getMinutes(), secs=d.getSeconds();
+    function drawHand(frac,len,thick){
+      var a=frac*2*Math.PI-Math.PI/2;
+      for(var i=0;i<len;i++){
+        var x=Math.round(cx+Math.cos(a)*i*0.5), y=Math.round(cy-Math.sin(a)*i*0.5);
+        for(var t2=0;t2<thick;t2++) set(x, y-t2, 1);
+      }
+    }
+    drawHand((hrs+mins/60)/12, R, 1);
+    drawHand((mins+secs/60)/60, R*0.82, 1);
+    drawHand(secs/60, R*0.94, 1);
+    set(cx,cy,1); set(cx+1,cy,1);
+    var t=String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")+":"+
+      String(d.getSeconds()).padStart(2,"0");
+    text(t,56,2);
+    var days=["SUN","MON","TUE","WED","THU","FRI","SAT"];
+    text(days[d.getDay()]+" "+d.getDate(),56,11);
+    text(d.getFullYear()+"",56,19);
+    frameRect(52,0,44,ROWS,0);
+    for(var yy=0;yy<ROWS;yy++){ set(52,yy,1); set(95,yy,yy%3===0?1:0); }
+  }
+
+  /* ── text mode ─────────────────────────────────────── */
+  function renderText(){
+    clear();
+    frameRect(0,0,COLS,ROWS,0);
+    frameRect(1,1,COLS-2,ROWS-2,0);
+    var lines=message.split("\n").slice(0,3);
+    var y0=Math.max(2,Math.floor((ROWS-lines.length*9)/2));
+    for(var i=0;i<lines.length;i++){
+      var s=lines[i];
+      if(textW(s)>COLS-6) s=s.slice(0,Math.floor((COLS-6)/ADV));
+      center(s,y0+i*9);
+    }
+    /* corner ticks + a blinking cursor on the last line */
+    set(2,ROWS-2,1); set(COLS-3,ROWS-2,1);
+    if(blinkOn) center("_",y0+lines.length*9+1);
+  }
+
+  /* ── main loop ─────────────────────────────────────── */
+  var blinkOn=true, last=performance.now(), fps=0, fAcc=0, fN=0;
+  var ledFlick=document.getElementById("ledFlick");
+  function loop(now){
+    var dt=Math.min(.05,(now-last)/1000); last=now;
+    blinkOn=Math.floor(now/520)%2===0;
+
+    if(mode==="text") renderText();
+    else if(mode==="clock") renderClock(now);
+    else renderChart(now);
+
+    /* ease grid toward target so dots breathe */
+    var lit=0;
+    for(var i=0;i<grid.length;i++){
+      var tv=target[i]?1:0;
+      if(tv!==fade[i]){
+        fade[i]+= (tv-fade[i])*0.28;
+        if(Math.abs(tv-fade[i])<0.06) fade[i]=tv;
+      }
+      if(fade[i]>0.5) lit++;
+    }
+    mctx.clearRect(0,0,main.width,main.height);
+    mctx.fillStyle="#050301"; mctx.fillRect(0,0,main.width,main.height);
+    for(var y=0;y<ROWS;y++) for(var x=0;x<COLS;x++){
+      var f=fade[y*COLS+x];
+      if(f>0.04) mctx.drawImage(f>0.82?sHot:sOn, x*cell, y*th, cell, th);
+      else mctx.drawImage(sOff, x*cell, y*th, cell, th);
+    }
+    /* bloom pass */
+    bctx.clearRect(0,0,bloom.width,bloom.height);
+    bctx.drawImage(main,0,0);
+    mctx.save();
+    mctx.globalCompositeOperation="lighter";
+    mctx.filter="blur(6px)"; mctx.globalAlpha=0.5; mctx.drawImage(bloom,0,0);
+    mctx.filter="blur(16px)"; mctx.globalAlpha=0.32; mctx.drawImage(bloom,0,0);
+    mctx.restore();
+    /* rolling refresh bar */
+    var by=((now/26)%(main.height+160))-160;
+    mctx.globalCompositeOperation="lighter";
+    var bg=mctx.createLinearGradient(0,by,0,by+160);
+    bg.addColorStop(0,"rgba(255,150,40,0)"); bg.addColorStop(.5,"rgba(255,160,50,.045)");
+    bg.addColorStop(1,"rgba(255,150,40,0)");
+    mctx.fillStyle=bg; mctx.fillRect(0,by,main.width,160);
+    mctx.globalCompositeOperation="source-over";
+
+    renderTicker(dt);
+
+    fAcc+=dt; fN++;
+    if(fAcc>0.5){ fps=Math.round(fN/fAcc); fAcc=0; fN=0;
+      document.getElementById("fFps").textContent=fps;
+      document.getElementById("fLit").textContent=lit.toLocaleString();
+      document.getElementById("fAmp").textContent=(3.1+lit*0.0042).toFixed(1)+" A";
+      document.getElementById("fHz").textContent=(fps<30?30:fps)+" Hz";
+      ledFlick.classList.toggle("on",Math.random()>0.25);
+    }
+    var d=new Date();
+    document.getElementById("fClock").textContent=
+      String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0")+
+      ":"+String(d.getSeconds()).padStart(2,"0");
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  document.addEventListener("keydown",function(e){
+    if(e.key==="Tab"){ e.preventDefault();
+      var i=PRESETS.indexOf(inp.value);
+      message=PRESETS[(i+1)%PRESETS.length]; inp.value=message; setMode("text");
+    }
+    if(e.key==="F2"||e.key==="1"){e.preventDefault();setMode("text");}
+    if(e.key==="F3"||e.key==="2"){e.preventDefault();setMode("clock");}
+    if(e.key==="F4"||e.key==="3"){e.preventDefault();setMode("chart");}
+  });
+})();
+</script>
+</body>
+</html>

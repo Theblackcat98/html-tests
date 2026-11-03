@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AURORA-7 REV C — 8-Layer HDI Backplane Survey</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --mask:#06301f;
+    --mask-2:#0a4029;
+    --mask-hi:#115a39;
+    --gold:#d4a04a;
+    --gold-hi:#f0c477;
+    --silk:#dff0e4;
+    --silk-dim:rgba(223,240,228,.55);
+    --sig:#7ef9d0;
+    --sig2:#5ec8ff;
+    --warn:#ff6a4d;
+    --sans:"Barlow Condensed",-apple-system,"Helvetica Neue",Arial,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  }
+  html,body{height:100%}
+  body{
+    font-family:var(--sans);
+    background:var(--mask);
+    color:var(--silk);
+    min-height:100dvh;
+    overflow-x:hidden;
+  }
+
+  .wash{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(80% 60% at 26% 18%, rgba(24,110,72,.55), transparent 62%),
+      radial-gradient(70% 70% at 78% 84%, rgba(8,52,34,.9), transparent 66%),
+      linear-gradient(150deg, #0a3a26 0%, #062c1d 46%, #032016 100%);
+  }
+  .weave{
+    position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.5;
+    background-image:
+      repeating-linear-gradient(45deg, rgba(255,255,255,.014) 0 2px, transparent 2px 5px),
+      repeating-linear-gradient(-45deg, rgba(0,0,0,.06) 0 3px, transparent 3px 7px);
+  }
+  .sheen{
+    position:fixed;inset:0;z-index:6;pointer-events:none;mix-blend-mode:screen;opacity:.35;
+    background:linear-gradient(128deg, rgba(255,255,255,.1) 0%, transparent 34%, transparent 62%, rgba(255,255,255,.06) 100%);
+  }
+  .grain{
+    position:fixed;inset:-25%;z-index:7;pointer-events:none;opacity:.06;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* ---------- perspective rig ---------- */
+  .rig{
+    position:fixed;inset:0;z-index:2;perspective:1500px;perspective-origin:50% 46%;
+    display:grid;place-items:center;
+  }
+  .board{
+    width:min(1700px,132vw);height:auto;display:block;
+    transform-style:preserve-3d;
+    transition:filter .45s;
+    filter:drop-shadow(0 40px 60px rgba(0,0,0,.6));
+    animation:drift 26s ease-in-out infinite alternate;
+  }
+  @keyframes drift{
+    0%{transform:rotateX(2.2deg) rotateY(-1.6deg) translate3d(0,0,0) scale(1.03)}
+    100%{transform:rotateX(-1.4deg) rotateY(2deg) translate3d(0,-14px,0) scale(1.05)}
+  }
+  @media (prefers-reduced-motion:reduce){ .board{animation:none} }
+
+  /* net states */
+  .net{fill:none;stroke:var(--gold);stroke-linecap:round;stroke-linejoin:round;
+    transition:opacity .35s, stroke .35s, filter .35s}
+  .board.focusing .net{opacity:.16}
+  .board.focusing .net.lit{opacity:1;stroke-width:3.4;filter:url(#sigGlow)}
+  .trace-fill{fill:rgba(212,160,74,.16);stroke:none}
+  .pad{fill:var(--gold);stroke:#0a3a26;stroke-width:1}
+  .via{fill:none;stroke:var(--gold);stroke-width:1.6;opacity:.75}
+  .via-core{fill:#052b1c;stroke:none}
+  .silk{fill:var(--silk);font-family:"Barlow Condensed",sans-serif;letter-spacing:.14em;opacity:.72}
+  .silk-sm{fill:var(--silk-dim);font-family:"JetBrains Mono",monospace;font-size:13px;letter-spacing:.08em}
+  .comp{cursor:pointer;transition:opacity .35s}
+  .board.focusing .comp{opacity:.28}
+  .board.focusing .comp.lit{opacity:1}
+  .comp:hover{filter:url(#sigGlow)}
+
+  #pulses circle{filter:url(#sigGlow)}
+
+  /* ---------- HUD ---------- */
+  .hud{position:fixed;z-index:8;pointer-events:none}
+  .hud *{pointer-events:auto}
+
+  .topbar{
+    top:0;left:0;right:0;
+    display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap;
+    padding:clamp(14px,2.4vw,30px) clamp(14px,2.6vw,38px);
+    background:linear-gradient(180deg, rgba(3,26,17,.92), rgba(3,26,17,0));
+  }
+  .mark{display:flex;align-items:center;gap:14px}
+  .mark__chip{
+    width:44px;height:44px;flex:none;border-radius:3px;
+    background:linear-gradient(150deg,#0d4a2f,#052418);
+    box-shadow:0 0 0 1px var(--gold), 0 0 0 4px rgba(212,160,74,.16), 0 10px 22px rgba(0,0,0,.55);
+    display:grid;place-items:center;
+    font-family:var(--mono);font-size:9px;font-weight:700;color:var(--gold-hi);letter-spacing:.06em;text-align:center;line-height:1.15
+  }
+  h1{
+    font-size:clamp(22px,3.2vw,42px);font-weight:600;letter-spacing:.02em;line-height:.96;text-transform:uppercase;
+  }
+  h1 span{color:var(--gold-hi)}
+  .sub{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;color:rgba(223,240,228,.6);margin-top:6px;text-transform:uppercase}
+  .stats{display:flex;gap:clamp(10px,1.6vw,26px);text-align:right;flex-wrap:wrap}
+  .stat{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:rgba(223,240,228,.5);text-transform:uppercase}
+  .stat b{display:block;font-size:clamp(14px,1.7vw,20px);font-weight:700;color:var(--sig);letter-spacing:.04em;margin-top:4px;
+    text-shadow:0 0 12px rgba(126,249,208,.5)}
+
+  .side{
+    right:clamp(12px,2.2vw,30px);top:50%;transform:translateY(-50%);
+    width:min(300px,44vw);
+    border-radius:4px;padding:16px 18px;
+    background:linear-gradient(160deg, rgba(4,32,22,.94), rgba(2,18,12,.88));
+    box-shadow:0 0 0 1px rgba(212,160,74,.4), 0 26px 50px -22px rgba(0,0,0,.9);
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  }
+  .side h2{font-family:var(--mono);font-size:9.5px;letter-spacing:.26em;color:var(--gold-hi);text-transform:uppercase;
+    padding-bottom:9px;border-bottom:1px solid rgba(212,160,74,.28);margin-bottom:12px}
+  #specName{font-size:clamp(17px,1.9vw,22px);font-weight:600;letter-spacing:.03em;text-transform:uppercase;line-height:1.1}
+  #specRef{font-family:var(--mono);font-size:10px;color:rgba(223,240,228,.55);letter-spacing:.12em;margin-top:5px}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:7px 12px;margin-top:14px;font-family:var(--mono);font-size:10.5px}
+  .kv dt{color:rgba(223,240,228,.45);letter-spacing:.1em;text-transform:uppercase;font-size:9px;align-self:center}
+  .kv dd{color:var(--silk);letter-spacing:.03em;text-align:right}
+  .netbar{margin-top:16px}
+  .netbar__row{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;letter-spacing:.16em;
+    color:rgba(223,240,228,.5);text-transform:uppercase;margin-bottom:6px}
+  .netbar__track{height:5px;border-radius:2px;background:rgba(212,160,74,.16);overflow:hidden}
+  .netbar__track i{display:block;height:100%;width:0%;border-radius:2px;
+    background:linear-gradient(90deg,var(--sig2),var(--sig));box-shadow:0 0 12px rgba(126,249,208,.8);
+    transition:width .3s linear}
+  .idle{font-family:var(--mono);font-size:10px;line-height:1.8;color:rgba(223,240,228,.5);letter-spacing:.05em}
+  .idle kbd{background:rgba(212,160,74,.2);color:var(--gold-hi);padding:2px 6px;border-radius:2px;font-size:9px;letter-spacing:.1em}
+
+  .footbar{
+    left:0;right:0;bottom:0;
+    display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
+    padding:clamp(12px,2vw,24px) clamp(14px,2.6vw,38px);
+    background:linear-gradient(0deg, rgba(3,26,17,.9), rgba(3,26,17,0));
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;color:rgba(223,240,228,.45);text-transform:uppercase;
+  }
+  .legend{display:flex;gap:clamp(10px,1.6vw,22px);flex-wrap:wrap}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:-1px}
+  .tally{color:var(--gold-hi)}
+
+  .tip{
+    position:fixed;z-index:9;pointer-events:none;opacity:0;transform:translate(-50%,-140%);
+    font-family:var(--mono);font-size:10px;letter-spacing:.1em;white-space:nowrap;
+    padding:7px 11px;border-radius:3px;background:rgba(2,18,12,.95);color:var(--silk);
+    box-shadow:0 0 0 1px rgba(212,160,74,.5);transition:opacity .2s;text-transform:uppercase
+  }
+  .tip.on{opacity:1}
+
+  noscript{
+    position:fixed;z-index:20;left:50%;top:50%;transform:translate(-50%,-50%);
+    max-width:52ch;padding:20px 24px;border-radius:4px;background:rgba(2,18,12,.96);
+    box-shadow:0 0 0 1px rgba(212,160,74,.5);font-size:15px;line-height:1.6;color:var(--silk)
+  }
+  @media (max-width:980px){
+    .side{position:fixed;right:auto;left:12px;right:12px;top:auto;bottom:64px;transform:none;width:auto}
+    .footbar{font-size:8.5px;letter-spacing:.12em}
+  }
+</style>
+</head>
+<body>
+
+<div class="wash" aria-hidden="true"></div>
+<div class="weave" aria-hidden="true"></div>
+
+<div class="rig">
+  <svg class="board" id="board" viewBox="0 0 1600 1000" role="img"
+       aria-label="Interactive printed circuit board. Hover a component to highlight its net and read its specification.">
+    <defs>
+      <filter id="sigGlow" x="-60%" y="-60%" width="220%" height="220%">
+        <feGaussianBlur stdDeviation="6" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+      <filter id="softShadow" x="-40%" y="-40%" width="180%" height="180%">
+        <feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#00170e" flood-opacity=".75"/>
+      </filter>
+      <linearGradient id="bgaTop" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#1b1f22"/><stop offset=".4" stop-color="#0d1013"/>
+        <stop offset=".62" stop-color="#232a2c"/><stop offset="1" stop-color="#0a0d0f"/>
+      </linearGradient>
+      <linearGradient id="bgaBall" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#f6dda4"/><stop offset=".5" stop-color="#c99a45"/><stop offset="1" stop-color="#7a5c22"/>
+      </linearGradient>
+      <linearGradient id="capBody" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#123a2c"/><stop offset=".18" stop-color="#2b7f5f"/>
+        <stop offset=".42" stop-color="#8fd9bd"/><stop offset=".5" stop-color="#d6f4e6"/>
+        <stop offset=".6" stop-color="#63b697"/><stop offset=".84" stop-color="#14402f"/><stop offset="1" stop-color="#0a2a1e"/>
+      </linearGradient>
+      <linearGradient id="capTop" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#e8f7f0"/><stop offset="1" stop-color="#7db9a3"/>
+      </linearGradient>
+      <linearGradient id="resBody" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#e6dcc6"/><stop offset=".5" stop-color="#bfae8c"/><stop offset="1" stop-color="#7d6f54"/>
+      </linearGradient>
+    </defs>
+
+    <!-- ground pour hatch -->
+    <g opacity=".3">
+      <rect x="20" y="20" width="1560" height="960" fill="none" stroke="rgba(126,249,208,.14)" stroke-width="2" rx="8"/>
+      <rect x="34" y="34" width="1532" height="932" fill="none" stroke="rgba(126,249,208,.09)" stroke-width="1" rx="6"/>
+    </g>
+
+    <!-- GROUND NET -->
+    <g id="netGround" fill="none" stroke="var(--gold)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" opacity=".5">
+      <path d="M60 120 H280 V60 H640 V120 H980 V60 H1540"/>
+      <path d="M60 880 H240 V940 H700 V880 H1180 V940 H1540"/>
+      <path d="M60 500 H180 V420 H60"/>
+      <path d="M1540 300 H1440 V420 H1540"/>
+      <path d="M120 120 V300 H200 V500"/>
+      <path d="M1480 120 V300 H1400 V500"/>
+    </g>
+
+    <!-- NET A : power rail -->
+    <g data-net="N12V">
+      <path class="net" data-net="N12V" d="M300 200 H700 V280 H1140 V200 H1420" stroke-width="4.2"/>
+      <path class="net" data-net="N12V" d="M300 200 V700 H420 V820" stroke-width="3"/>
+      <path class="net" data-net="N12V" d="M1420 200 V720 H1300 V840" stroke-width="3"/>
+      <path class="net" data-net="N12V" d="M700 280 V380" stroke-width="2.4"/>
+    </g>
+
+    <!-- NET B : differential pair -->
+    <g data-net="MGT_TX">
+      <path class="net" data-net="MGT_TX" d="M300 620 H420 V540 H700 V460 H980" stroke-width="2.6"/>
+      <path class="net" data-net="MGT_TX" d="M300 660 H440 V580 H700 V500 H980" stroke-width="2.6"/>
+      <path class="net" data-net="MGT_TX" d="M980 460 H1200 V380 H1400" stroke-width="2.2"/>
+    </g>
+
+    <!-- NET C : clock -->
+    <g data-net="CLK_125">
+      <path class="net" data-net="CLK_125" d="M180 780 H560 V740 H860 V780 H1180 V700 H1440" stroke-width="2.8"/>
+      <path class="net" data-net="CLK_125" d="M860 780 V860 H1080" stroke-width="2"/>
+    </g>
+
+    <!-- NET D : sensor bus -->
+    <g data-net="SENSOR_A">
+      <path class="net" data-net="SENSOR_A" d="M120 420 H260 V360 H520 V300 H760" stroke-width="2"/>
+      <path class="net" data-net="SENSOR_A" d="M120 460 H280 V420 H520 V360 H760" stroke-width="2"/>
+      <path class="net" data-net="SENSOR_A" d="M240 900 V840 H480 V800 H700" stroke-width="2.2"/>
+      <path class="net" data-net="SENSOR_A" d="M1000 820 H1180 V880 H1400" stroke-width="2.2"/>
+    </g>
+
+    <!-- NET E : aux -->
+    <g data-net="AUX_PD">
+      <path class="net" data-net="AUX_PD" d="M1080 200 V120 H1300 V180 H1500" stroke-width="2.4"/>
+      <path class="net" data-net="AUX_PD" d="M900 880 V940 H1120" stroke-width="2.4"/>
+      <path class="net" data-net="AUX_PD" d="M1300 840 V760 H1460 V640" stroke-width="2"/>
+    </g>
+
+    <!-- VIA FIELD -->
+    <g id="vias" class="via">
+      <circle cx="300" cy="200" r="7"/><circle class="via-core" cx="300" cy="200" r="2.6"/>
+      <circle cx="700" cy="280" r="7"/><circle class="via-core" cx="700" cy="280" r="2.6"/>
+      <circle cx="1140" cy="200" r="7"/><circle class="via-core" cx="1140" cy="200" r="2.6"/>
+      <circle cx="420" cy="820" r="7"/><circle class="via-core" cx="420" cy="820" r="2.6"/>
+      <circle cx="1300" cy="840" r="7"/><circle class="via-core" cx="1300" cy="840" r="2.6"/>
+      <circle cx="420" cy="540" r="7"/><circle class="via-core" cx="420" cy="540" r="2.6"/>
+      <circle cx="420" cy="580" r="7"/><circle class="via-core" cx="420" cy="580" r="2.6"/>
+      <circle cx="980" cy="460" r="7"/><circle class="via-core" cx="980" cy="460" r="2.6"/>
+      <circle cx="560" cy="780" r="7"/><circle class="via-core" cx="560" cy="780" r="2.6"/>
+      <circle cx="1080" cy="780" r="7"/><circle class="via-core" cx="1080" cy="780" r="2.6"/>
+      <circle cx="480" cy="840" r="7"/><circle class="via-core" cx="480" cy="840" r="2.6"/>
+      <circle cx="1180" cy="880" r="7"/><circle class="via-core" cx="1180" cy="880" r="2.6"/>
+      <circle cx="1300" cy="760" r="7"/><circle class="via-core" cx="1300" cy="760" r="2.6"/>
+      <circle cx="1080" cy="120" r="7"/><circle class="via-core" cx="1080" cy="120" r="2.6"/>
+      <circle cx="1120" cy="940" r="7"/><circle class="via-core" cx="1120" cy="940" r="2.6"/>
+      <circle cx="520" cy="300" r="7"/><circle class="via-core" cx="520" cy="300" r="2.6"/>
+      <circle cx="1300" cy="180" r="7"/><circle class="via-core" cx="1300" cy="180" r="2.6"/>
+    </g>
+
+    <!-- QFP on the left -->
+    <g class="comp" data-ref="U12" data-net="CLK_125"
+       data-name="U12 — STM32H743 MCU" data-val="480 MHz / 2 MB Flash / 1 MB RAM"
+       data-pkg="LQFP-144, 20×20 mm" data-tol="±0.35 mm" data-temp="−40…85 °C">
+      <g filter="url(#softShadow)">
+        <rect x="150" y="520" width="250" height="250" rx="10" fill="url(#bgaTop)" stroke="#000" stroke-width="1.5"/>
+        <circle cx="180" cy="550" r="6" fill="#0a0d0f" stroke="#2b3436"/>
+        <rect x="185" y="560" width="80" height="86" rx="3" fill="#171d1f" stroke="#39464a"/>
+        <text x="196" y="600" class="silk-sm" font-size="15" fill="#9fb4ad" stroke="none">H743</text>
+        <text x="196" y="620" class="silk-sm" font-size="10" fill="#6d817c" stroke="none">AUR7-0</text>
+        <circle cx="186" cy="756" r="4" fill="#3a2a10"/>
+      </g>
+      <g id="u12pins"></g>
+    </g>
+
+    <!-- BGA -->
+    <g class="comp" data-ref="U4" data-net="MGT_TX"
+       data-name="U4 — AURORA-7 BGA" data-val="256-bit fabric, 4.2 Gb/s per lane"
+       data-pkg="BGA-484, 17×17 mm, 0.8 mm pitch" data-tol="±0.10 mm" data-temp="0…70 °C">
+      <g filter="url(#softShadow)">
+        <rect x="800" y="420" width="420" height="300" rx="8" fill="url(#bgaTop)" stroke="#000" stroke-width="1.5"/>
+        <rect x="818" y="438" width="384" height="264" rx="4" fill="#080b0c" stroke="#252f31"/>
+        <text x="962" y="512" class="silk" font-size="26" text-anchor="middle" fill="#8fa8a0" stroke="none">AURORA&#8209;7</text>
+        <text x="962" y="536" class="silk-sm" font-size="12" text-anchor="middle" fill="#5f726d" stroke="none">4F4B2C1D / 0731 BUM</text>
+        <circle cx="828" cy="452" r="7" fill="#04080a" stroke="#2b3436"/>
+      </g>
+      <g id="bgaPins"></g>
+    </g>
+
+    <!-- Electrolytic capacitors (3D cylinders) -->
+    <g class="comp" data-ref="C14" data-net="N12V"
+       data-name="C14 — Bulk electrolytic" data-val="220 µF, 25 V, 105 °C"
+       data-pkg="Ø10 × 25 mm radial" data-tol="−20 / +80 %" data-temp="105 °C, 2000 h">
+      <ellipse cx="1300" cy="300" rx="62" ry="20" fill="url(#capTop)" stroke="#0a2a1e"/>
+      <rect x="1238" y="300" width="124" height="120" fill="url(#capBody)"/>
+      <ellipse cx="1300" cy="420" rx="62" ry="20" fill="#0a2a1e" stroke="#04160f"/>
+      <ellipse cx="1300" cy="416" rx="62" ry="19" fill="url(#capTop)" opacity=".22"/>
+      <rect x="1238" y="300" width="20" height="120" fill="rgba(255,255,255,.14)"/>
+      <text x="1300" y="376" class="silk-sm" font-size="13" text-anchor="middle" fill="#0b2b1f" stroke="none" transform="rotate(-90 1300 376)">220&#181;F 25V</text>
+      <rect x="1256" y="440" width="8" height="22" fill="url(#bgaBall)"/>
+      <rect x="1336" y="440" width="8" height="22" fill="url(#bgaBall)"/>
+    </g>
+
+    <g class="comp" data-ref="C21" data-net="N12V"
+       data-name="C21 — Bulk electrolytic" data-val="470 µF, 16 V, 105 °C"
+       data-pkg="Ø12 × 30 mm radial" data-tol="−20 / +80 %" data-temp="105 °C, 2000 h">
+      <ellipse cx="1440" cy="260" rx="70" ry="22" fill="url(#capTop)" stroke="#0a2a1e"/>
+      <rect x="1370" y="260" width="140" height="150" fill="url(#capBody)"/>
+      <ellipse cx="1440" cy="410" rx="70" ry="22" fill="#0a2a1e" stroke="#04160f"/>
+      <rect x="1370" y="260" width="22" height="150" fill="rgba(255,255,255,.14)"/>
+      <text x="1440" y="350" class="silk-sm" font-size="13" text-anchor="middle" fill="#0b2b1f" stroke="none" transform="rotate(-90 1440 350)">470&#181;F 16V</text>
+      <rect x="1392" y="432" width="9" height="24" fill="url(#bgaBall)"/>
+      <rect x="1480" y="432" width="9" height="24" fill="url(#bgaBall)"/>
+    </g>
+
+    <!-- Resistor banks -->
+    <g class="comp" data-ref="RN2" data-net="MGT_TX"
+       data-name="RN2 — Termination array" data-val="8 × 49.9 &#8486; ±1 %, 0603"
+       data-pkg="SOIC-16, AEC-Q200" data-tol="±1 %, 25 ppm/°C" data-temp="125 °C">
+      <g filter="url(#softShadow)">
+        <rect x="1000" y="560" width="240" height="86" rx="6" fill="url(#bgaTop)" stroke="#000" stroke-width="1.4"/>
+        <g id="rn2pads"></g>
+        <text x="1120" y="612" class="silk-sm" font-size="12" text-anchor="middle" fill="#8fa8a0" stroke="none">49.9&#8486; &#215;8</text>
+      </g>
+    </g>
+
+    <g class="comp" data-ref="RN5" data-net="AUX_PD"
+       data-name="RN5 — Pull-up array" data-val="8 × 10 k&#8486; ±1 %, 0603"
+       data-pkg="SOIC-16, AEC-Q200" data-tol="±1 %, 25 ppm/°C" data-temp="125 °C">
+      <g filter="url(#softShadow)">
+        <rect x="1000" y="700" width="240" height="86" rx="6" fill="url(#bgaTop)" stroke="#000" stroke-width="1.4"/>
+        <g id="rn5pads"></g>
+        <text x="1120" y="752" class="silk-sm" font-size="12" text-anchor="middle" fill="#8fa8a0" stroke="none">10k &#215;8</text>
+      </g>
+    </g>
+
+    <!-- Discrete resistors -->
+    <g class="comp" data-ref="R31" data-net="CLK_125"
+       data-name="R31 — Clock series" data-val="33 &#8486; ±1 %, 0402"
+       data-pkg="0402, thick film" data-tol="±1 %, 100 ppm/°C" data-temp="−55…155 °C">
+      <g filter="url(#softShadow)">
+        <rect x="600" y="762" width="86" height="38" rx="7" fill="url(#resBody)" stroke="#4a3f2c"/>
+        <rect x="612" y="762" width="12" height="38" fill="#3a2a16"/>
+        <rect x="632" y="762" width="11" height="38" fill="#a8321f"/>
+        <rect x="676" y="762" width="10" height="38" fill="#7a2a3c"/>
+        <rect x="596" y="772" width="14" height="8" fill="url(#bgaBall)"/>
+        <rect x="676" y="772" width="14" height="8" fill="url(#bgaBall)"/>
+      </g>
+    </g>
+
+    <g class="comp" data-ref="R44" data-net="SENSOR_A"
+       data-name="R44 — Sensor divider" data-val="4.7 k&#8486; ±1 %, 0603"
+       data-pkg="0603, thick film" data-tol="±1 %, 100 ppm/°C" data-temp="−55…155 °C">
+      <g filter="url(#softShadow)">
+        <rect x="380" y="392" width="80" height="34" rx="6" fill="url(#resBody)" stroke="#4a3f2c"/>
+        <rect x="392" y="392" width="11" height="34" fill="#8a6a1c"/>
+        <rect x="410" y="392" width="10" height="34" fill="#2a3a7a"/>
+        <rect x="376" y="401" width="13" height="8" fill="url(#bgaBall)"/>
+        <rect x="448" y="401" width="13" height="8" fill="url(#bgaBall)"/>
+      </g>
+    </g>
+
+    <!-- Crystal -->
+    <g class="comp" data-ref="Y1" data-net="CLK_125"
+       data-name="Y1 — 25 MHz crystal" data-val="±10 ppm, CL 12 pF, 3.2 V"
+       data-pkg="HC-49 SMD, 11 × 4.5 mm" data-tol="±10 ppm" data-temp="−40…85 °C">
+      <g filter="url(#softShadow)">
+        <rect x="130" y="700" width="190" height="86" rx="14" fill="url(#capBody)" stroke="#0a2a1e" stroke-width="1.4"/>
+        <ellipse cx="225" cy="700" rx="95" ry="20" fill="url(#capTop)" stroke="#0a2a1e"/>
+        <text x="225" y="752" class="silk-sm" font-size="14" text-anchor="middle" fill="#0b2b1f" stroke="none">25.000 MHz</text>
+        <rect x="176" y="786" width="16" height="12" fill="url(#bgaBall)"/>
+        <rect x="258" y="786" width="16" height="12" fill="url(#bgaBall)"/>
+      </g>
+    </g>
+
+    <!-- Connectors -->
+    <g class="comp" data-ref="J4" data-net="SENSOR_A"
+       data-name="J4 — Industrial header" data-val="2 × 20 pos, 2.54 mm, 3 A / pin"
+       data-pkg="HDR-TH, tin" data-tol="±0.1 mm" data-temp="−40…105 °C">
+      <rect x="1240" y="800" width="280" height="140" rx="6" fill="#0d1416" stroke="#000" stroke-width="1.4"/>
+      <g id="j4pads"></g>
+      <text x="1380" y="790" class="silk" font-size="16" text-anchor="middle" stroke="none">J4 &middot; GPIO</text>
+      <text x="1380" y="958" class="silk-sm" font-size="11" text-anchor="middle" stroke="none">1 &nbsp;&nbsp; 2 &#8230; 39 &nbsp;&nbsp; 40</text>
+    </g>
+
+    <g class="comp" data-ref="J9" data-net="AUX_PD"
+       data-name="J9 — Power terminal" data-val="2 pos, 30 A, screw type"
+       data-pkg="5.08 mm pitch, green" data-tol="±0.2 mm" data-temp="−40…110 °C">
+      <rect x="60" y="200" width="150" height="130" rx="6" fill="#0a1a12" stroke="#000" stroke-width="1.4"/>
+      <circle cx="105" cy="248" r="17" fill="url(#bgaBall)" stroke="#6d5a22"/>
+      <circle cx="166" cy="248" r="17" fill="#8a939a" stroke="#3d4448"/>
+      <circle cx="105" cy="300" r="6" fill="#0a0a0a"/><circle cx="166" cy="300" r="6" fill="#0a0a0a"/>
+      <text x="135" y="188" class="silk" font-size="15" text-anchor="middle" stroke="none">J9 &middot; 12 V</text>
+    </g>
+
+    <!-- TEST POINTS + silkscreen labels -->
+    <g fill="none" stroke="var(--silk)" stroke-width="2" opacity=".55">
+      <circle cx="200" cy="360" r="11"/><circle cx="200" cy="360" r="4" fill="var(--silk)" stroke="none"/>
+      <circle cx="780" cy="260" r="11"/><circle cx="780" cy="260" r="4" fill="var(--silk)" stroke="none"/>
+      <circle cx="1500" cy="700" r="11"/><circle cx="1500" cy="700" r="4" fill="var(--silk)" stroke="none"/>
+      <circle cx="700" cy="960" r="11"/><circle cx="700" cy="960" r="4" fill="var(--silk)" stroke="none"/>
+    </g>
+    <g class="silk" stroke="none">
+      <text x="214" y="356" font-size="16">TP1 &middot; 3V3_REF</text>
+      <text x="794" y="256" font-size="16">TP2 &middot; 1V8</text>
+      <text x="1400" y="706" font-size="16" text-anchor="end">TP3 &middot; PGOOD</text>
+      <text x="640" y="984" font-size="16">TP4 &middot; CLK_IN</text>
+      <text x="60" y="970" font-size="15">AURORA&#8209;7 REV C &middot; 8L HDI &middot; 0.8 mm PITCH</text>
+      <text x="1540" y="60" font-size="15" text-anchor="end">FAB &mdash; HALM &middot; LOT 2024&#8209;C118</text>
+      <text x="620" y="120" font-size="17">CPU CLOCK DOMAIN</text>
+      <text x="120" y="500" font-size="17" transform="rotate(-90 120 500)">CONTROL</text>
+      <text x="1520" y="560" font-size="17" transform="rotate(90 1520 560)">AUXILIARY</text>
+    </g>
+
+    <!-- SIGNAL PULSES -->
+    <g id="pulses"></g>
+  </svg>
+</div>
+
+<div class="sheen" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+
+<div class="hud topbar">
+  <div class="mark">
+    <div class="mark__chip" aria-hidden="true">A7<br>REV C</div>
+    <div>
+      <h1>Aurora&#8209;7 <span>Backplane</span></h1>
+      <div class="sub">Signal integrity survey &middot; layer stack L1&ndash;L8 &middot; 0.8 mm BGA pitch</div>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat">Nets<b id="s1">21</b></div>
+    <div class="stat">Vias<b id="s2">18</b></div>
+    <div class="stat">Components<b id="s3">12</b></div>
+    <div class="stat">Pulses live<b id="s4">14</b></div>
+  </div>
+</div>
+
+<div class="hud side">
+  <h2>Component inspector</h2>
+  <div id="specIdle" class="idle">
+    Point at any component to isolate its net and read the datasheet extract.<br><br>
+    <kbd>Drag</kbd> the board to shift the camera &middot; <kbd>Scroll</kbd> to change drill scale
+  </div>
+  <div id="specBody" style="display:none">
+    <div id="specName">—</div>
+    <div id="specRef">—</div>
+    <dl class="kv" id="specKv"></dl>
+    <div class="netbar">
+      <div class="netbar__row"><span>Net activity</span><span id="netName">—</span></div>
+      <div class="netbar__track"><i id="netBar"></i></div>
+    </div>
+  </div>
+</div>
+
+<div class="hud footbar">
+  <div class="legend">
+    <span><i style="background:var(--gold)"></i>Signal trace</span>
+    <span><i style="background:var(--sig)"></i>Live pulse</span>
+    <span><i style="background:var(--silk)"></i>Silkscreen</span>
+  </div>
+  <div class="tally" id="tally">Inspecting 0 components &middot; all nets nominal</div>
+</div>
+
+<div class="tip" id="tip" role="status" aria-live="polite"></div>
+<noscript>The board illustration is static without JavaScript. Net highlighting and live signal pulses need it enabled.</noscript>
+
+<script>
+(function(){
+  "use strict";
+  var SVGNS = "http://www.w3.org/2000/svg";
+  var board = document.getElementById("board");
+
+  function el(tag, attrs){
+    var e = document.createElementNS(SVGNS, tag);
+    for(var k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+
+  /* ---------- generated pad grids ---------- */
+  (function bga(){
+    var host = document.getElementById("bgaPins");
+    for(var row=0; row<16; row++){
+      for(var col=0; col<16; col++){
+        var cx = 840 + col*22, cy = 452 + row*17;
+        var h = el("circle", {cx:cx, cy:cy, r:6.4, fill:"url(#bgaBall)"});
+        host.appendChild(h);
+        host.appendChild(el("circle", {cx:cx, cy:cy, r:3, fill:"#5a4415", opacity:".7"}));
+      }
+    }
+  })();
+  (function lqfp(){
+    var host = document.getElementById("u12pins");
+    var n = 17, gap = 13.6;
+    function pin(x, y, w, h){
+      host.appendChild(el("rect", {x:x, y:y, width:w, height:h, rx:1.6, fill:"#cbb884", opacity:".92"}));
+    }
+    for(var i=0;i<n;i++){
+      var o = 154 + i*gap;
+      pin(o, 504, 7, 17); pin(o, 769, 7, 17);
+      pin(134, o, 17, 7); pin(399, o, 17, 7);
+    }
+  })();
+  function resistorPads(id, x, y, w, count){
+    var host = document.getElementById(id);
+    for(var i=0;i<count;i++){
+      var px = x + 16 + i*26;
+      host.appendChild(el("rect", {x:px, y:y, width:12, height:86, rx:3, fill:"#cbb884", opacity:".92"}));
+    }
+  }
+  resistorPads("rn2pads", 1000, 560, 240, 8);
+  resistorPads("rn5pads", 1000, 700, 240, 8);
+  (function header(){
+    var host = document.getElementById("j4pads");
+    for(var r=0;r<2;r++) for(var c=0;c<20;c++){
+      host.appendChild(el("rect", {x:1256 + c*13, y:816 + r*56, width:7, height:26, rx:3, fill:"#cbb884", opacity:".9"}));
+    }
+  })();
+
+  /* ---------- signal pulses along paths ---------- */
+  var paths = [].slice.call(board.querySelectorAll(".net"));
+  var pulseHost = document.getElementById("pulses");
+  var PULSES = 14;
+  var pulses = [];
+  for(var i=0;i<PULSES;i++){
+    var c = el("circle", {r: 3 + Math.random()*2.4, fill: i%3===0 ? "#5ec8ff" : "#7ef9d0", opacity:0});
+    pulseHost.appendChild(c);
+    pulses.push({el:c, path: paths[i % paths.length], t: Math.random(), sp: 0.1 + Math.random()*0.16, w: 0});
+  }
+  paths.forEach(function(p){ p.__len = p.getTotalLength(); });
+  var cursor = 0;
+  function pickPath(){
+    if(paths.length === 0) return null;
+    return paths[cursor++ % paths.length];
+  }
+
+  /* ---------- interaction ---------- */
+  var comps = [].slice.call(board.querySelectorAll(".comp"));
+  var specIdle = document.getElementById("specIdle");
+  var specBody = document.getElementById("specBody");
+  var specName = document.getElementById("specName");
+  var specRef  = document.getElementById("specRef");
+  var specKv   = document.getElementById("specKv");
+  var netName  = document.getElementById("netName");
+  var netBar   = document.getElementById("netBar");
+  var tally    = document.getElementById("tally");
+  var tip      = document.getElementById("tip");
+
+  var FIELDS = [["VALUE","val"],["PACKAGE","pkg"],["TOLERANCE","tol"],["RANGE","temp"]];
+  var inspected = 0;
+
+  function clearAll(){
+    board.classList.remove("focusing");
+    [].forEach.call(board.querySelectorAll(".lit"), function(n){ n.classList.remove("lit"); });
+  }
+  function inspect(comp){
+    clearAll();
+    board.classList.add("focusing");
+    comp.classList.add("lit");
+    var net = comp.getAttribute("data-net");
+    var lit = 0;
+    [].forEach.call(board.querySelectorAll('.net[data-net="' + net + '"]'), function(n){ n.classList.add("lit"); lit++; });
+    [].forEach.call(board.querySelectorAll('.comp[data-net="' + net + '"]'), function(n){ n.classList.add("lit"); });
+
+    specIdle.style.display = "none";
+    specBody.style.display = "";
+    specName.textContent = comp.getAttribute("data-name");
+    specRef.textContent = comp.getAttribute("data-ref") + "  ·  NET " + net + "  ·  " + lit + " segment" + (lit>1?"s":"");
+    specKv.innerHTML = "";
+    FIELDS.forEach(function(f){
+      var v = comp.getAttribute("data-" + f[1]) || "—";
+      specKv.insertAdjacentHTML("beforeend", "<dt>" + f[0] + "</dt><dd>" + v + "</dd>");
+    });
+    netName.textContent = net;
+    inspected++;
+    tally.textContent = "Inspecting " + comp.getAttribute("data-ref") + " · net " + net + " isolated";
+    document.getElementById("s3").textContent = comps.length;
+  }
+  function resetInspect(){
+    clearAll();
+    specIdle.style.display = "";
+    specBody.style.display = "none";
+    tally.textContent = "Inspecting 0 components · all nets nominal";
+  }
+
+  comps.forEach(function(c){
+    c.addEventListener("pointerenter", function(){
+      inspect(c);
+      var r = c.getBoundingClientRect();
+      tip.textContent = c.getAttribute("data-ref") + " · " + c.getAttribute("data-net");
+      tip.style.left = (r.left + r.width/2) + "px";
+      tip.style.top = r.top + "px";
+      tip.classList.add("on");
+    });
+    c.addEventListener("pointerleave", function(){
+      tip.classList.remove("on");
+      resetInspect();
+    });
+  });
+  board.addEventListener("pointerleave", resetInspect);
+
+  /* ---------- camera drift / drag parallax ---------- */
+  var px = 0, py = 0, tx = 0, ty = 0, zoom = 1, tz = 1, dragging = false, lastX = 0, lastY = 0;
+  var rig = document.querySelector(".rig");
+  function applyTransform(){
+    board.style.transform = "rotateX(" + (-1 + py*2.4).toFixed(2) + "deg) rotateY(" +
+      (1 + px*4).toFixed(2) + "deg) translate3d(" + (px*26).toFixed(1) + "px," + (py*20).toFixed(1) +
+      "px,0) scale(" + (1.03*zoom).toFixed(3) + ")";
+  }
+  rig.addEventListener("pointermove", function(e){
+    if(dragging){
+      tx = Math.max(-1, Math.min(1, tx + (e.clientX - lastX)/260));
+      ty = Math.max(-1, Math.min(1, ty + (e.clientY - lastY)/260));
+      lastX = e.clientX; lastY = e.clientY;
+    } else {
+      var r = rig.getBoundingClientRect();
+      tx = (e.clientX - r.left)/r.width*2 - 1;
+      ty = (e.clientY - r.top)/r.height*2 - 1;
+    }
+  });
+  rig.addEventListener("pointerdown", function(e){
+    dragging = true; lastX = e.clientX; lastY = e.clientY;
+    rig.setPointerCapture && rig.setPointerCapture(e.pointerId);
+    board.style.animationPlayState = "paused";
+  });
+  window.addEventListener("pointerup", function(){ dragging = false; board.style.animationPlayState = ""; });
+  rig.addEventListener("wheel", function(e){
+    tz = Math.max(0.82, Math.min(1.3, tz - e.deltaY*0.0008));
+    e.preventDefault();
+  }, {passive:false});
+
+  /* ---------- loop ---------- */
+  var t = 0, liveCount = 0;
+  function frame(){
+    t += 0.016;
+    px += (tx - px)*0.055;
+    py += (ty - py)*0.055;
+    zoom += (tz - zoom)*0.09;
+    applyTransform();
+
+    var focusing = board.classList.contains("focusing");
+    for(var i=0;i<pulses.length;i++){
+      var p = pulses[i];
+      if(!focusing && i % 4 === 0){ p.path = pickPath(); }
+      else if(focusing && i < 6){ p.path = paths[0]; }
+      if(!p.path) continue;
+      p.t += p.sp*0.016;
+      if(p.t > 1.25){ p.t = -0.1; if(!focusing) p.path = pickPath(); }
+      if(p.t < 0 || p.t > 1){ p.el.setAttribute("opacity", 0); continue; }
+      var len = p.path.__len || 1000;
+      var pt = p.path.getPointAtLength(Math.max(0, Math.min(len, p.t*len)));
+      p.el.setAttribute("cx", pt.x);
+      p.el.setAttribute("cy", pt.y);
+      var fade = Math.min(1, Math.min(p.t, 1-p.t)*8);
+      p.el.setAttribute("opacity", (0.85*fade).toFixed(3));
+      liveCount++;
+    }
+    if(focusing){
+      netBar.style.width = (34 + 46*Math.abs(Math.sin(t*2.2))).toFixed(1) + "%";
+    } else {
+      netBar.style.width = "0%";
+    }
+    document.getElementById("s4").textContent = liveCount;
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

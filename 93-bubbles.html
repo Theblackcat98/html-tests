@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Thin Film — Soap Bubbles &amp; Candy</title>
+<style>
+  :root{
+    --ink:#0e1420;
+    --glass:rgba(255,255,255,.62);
+    --mono:ui-monospace,"DejaVu Sans Mono",Menlo,Consolas,monospace;
+    --serif:"Iowan Old Style",Palatino,Georgia,serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden}
+  body{font-family:var(--mono);color:var(--ink);background:#0e1420}
+  .view{position:fixed;inset:0}
+  canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+
+  /* ---- floating UI: glass chips ---- */
+  .ui{position:absolute;inset:0;pointer-events:none;padding:clamp(14px,2.4vw,30px);
+      display:grid;grid-template-rows:auto 1fr auto;grid-template-columns:1fr auto}
+  .brand{grid-row:1;grid-column:1/3;display:flex;align-items:flex-start;gap:16px}
+  .brand h1{margin:0;font-family:var(--serif);font-style:italic;font-weight:400;
+    font-size:clamp(26px,3.6vw,46px);line-height:.95;letter-spacing:-.01em;
+    text-shadow:0 2px 18px rgba(255,255,255,.55),0 1px 2px rgba(0,0,0,.18)}
+  .brand h1 span{display:block;font:400 9px/1.4 var(--mono);font-style:normal;
+    letter-spacing:.28em;text-transform:uppercase;opacity:.62;margin-top:8px;text-shadow:none;color:#16203a}
+  .badge{align-self:start;justify-self:end;text-align:right;font-size:9.5px;letter-spacing:.18em;
+    text-transform:uppercase;line-height:1.9;padding:9px 12px;border-radius:3px;
+    background:var(--glass);backdrop-filter:blur(14px) saturate(1.4);
+    -webkit-backdrop-filter:blur(14px) saturate(1.4);
+    box-shadow:0 6px 22px -10px rgba(10,20,40,.5),0 0 0 1px rgba(255,255,255,.5) inset}
+  .badge b{font-weight:700}
+  .foot{grid-row:3;grid-column:1/3;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .chip{pointer-events:auto;font:600 9.5px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;
+    padding:9px 12px;border-radius:2px;cursor:pointer;color:#0e1420;
+    background:var(--glass);backdrop-filter:blur(14px) saturate(1.4);-webkit-backdrop-filter:blur(14px) saturate(1.4);
+    box-shadow:0 6px 22px -12px rgba(10,20,40,.55),0 0 0 1px rgba(255,255,255,.55) inset;
+    transition:transform .15s,box-shadow .15s,background .15s}
+  .chip:hover{transform:translateY(-1px)}
+  .chip[aria-pressed="true"]{background:#0e1420;color:#f4f7ff;box-shadow:0 6px 22px -12px rgba(10,20,40,.7)}
+  .spacer{flex:1}
+  .readout{pointer-events:none;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;
+    padding:9px 12px;border-radius:2px;background:var(--glass);backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);box-shadow:0 0 0 1px rgba(255,255,255,.55) inset;color:#16203a}
+  .readout b{color:#0e1420}
+  .grain{position:absolute;inset:0;pointer-events:none;opacity:.32;mix-blend-mode:soft-light;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1' numOctaves='3'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='.45'/%3E%3C/svg%3E")}
+  .vig{position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(130% 110% at 50% 40%,transparent 55%,rgba(8,14,28,.28) 100%)}
+  @media (max-width:640px){.badge{display:none}}
+</style>
+</head>
+<body>
+<div class="view">
+  <canvas id="c"></canvas>
+  <div class="grain"></div><div class="vig"></div>
+  <div class="ui">
+    <div class="brand">
+      <h1>Thin&nbsp;Film<span>Iridescence from nanometre thickness</span></h1>
+    </div>
+    <div class="badge">
+      <b id="vname">Soap</b> · n = 1.33<br>
+      mean thickness <b id="vth">320</b> nm<br>
+      popped <b id="vpop">0</b>
+    </div>
+    <div class="foot">
+      <button class="chip" id="variant" aria-pressed="false">Candy shop</button>
+      <button class="chip" id="blow">Release</button>
+      <button class="chip" id="anti" aria-pressed="true">Anti-gravity</button>
+      <button class="chip" id="trail" aria-pressed="false">Soap trail</button>
+      <span class="spacer"></span>
+      <span class="readout">Bubbles <b id="cnt">0</b> · Merges <b id="mrg">0</b> · Wind <b id="wind">0.00</b></span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+const c=document.getElementById("c"),x=c.getContext("2d",{alpha:false});
+let W=0,H=0,DPR=Math.min(2,devicePixelRatio||1);
+let candy=false, anti=true, trail=false, popped=0, merges=0;
+
+const bg=document.createElement("canvas"), bx=bg.getContext("2d");
+let blobs=[];
+
+function resize(){
+  W=innerWidth;H=innerHeight;
+  c.width=W*DPR;c.height=H*DPR;c.style.width=W+"px";c.style.height=H+"px";
+  x.setTransform(DPR,0,0,DPR,0,0);
+  bg.width=W;bg.height=H;
+  paintBackground();
+}
+
+/* ---------------- background: blurred bokeh so refraction has something to bend ---------------- */
+function paintBackground(){
+  const g=bx.createLinearGradient(0,0,W*.3,H);
+  if(candy){
+    g.addColorStop(0,"#ffd9e8");g.addColorStop(.42,"#e7d4ff");g.addColorStop(.72,"#c9ecff");g.addColorStop(1,"#fff0d6");
+  }else{
+    g.addColorStop(0,"#0d1a2e");g.addColorStop(.34,"#1d3b57");g.addColorStop(.66,"#2f6a7a");g.addColorStop(1,"#12303f");
+  }
+  bx.fillStyle=g;bx.fillRect(0,0,W,H);
+  // a light source
+  const sg=bx.createRadialGradient(W*.24,H*.16,0,W*.24,H*.16,Math.max(W,H)*.75);
+  sg.addColorStop(0,candy?"rgba(255,255,255,.95)":"rgba(226,240,255,.80)");
+  sg.addColorStop(.35,candy?"rgba(255,255,255,.30)":"rgba(180,215,240,.22)");
+  sg.addColorStop(1,"rgba(0,0,0,0)");
+  bx.fillStyle=sg;bx.fillRect(0,0,W,H);
+  // bokeh discs (deliberately out of focus — the "photo" behind the bubbles)
+  bx.save();bx.filter="blur(18px)";
+  const cols=candy?["#ff8fb8","#8ad6ff","#ffd66e","#b79bff","#8affc1"]
+                 :["#2a6f8a","#4fb3a0","#e8a15c","#7a5cc4","#c95c7a"];
+  for(let i=0;i<26;i++){
+    const px=Math.random()*W,py=Math.random()*H,r=26+Math.random()*130;
+    bx.globalAlpha=0.16+Math.random()*0.3;
+    bx.fillStyle=cols[(Math.random()*cols.length)|0];
+    bx.beginPath();bx.arc(px,py,r,0,6.2832);bx.fill();
+  }
+  bx.restore();
+  // horizon band / shelf for the candy variant
+  if(candy){
+    bx.fillStyle="rgba(255,255,255,.5)";bx.fillRect(0,H*.72,W,H*.28);
+    bx.fillStyle="rgba(120,80,140,.12)";
+    for(let i=0;i<40;i++)bx.fillRect(Math.random()*W,H*.72+Math.random()*H*.28,30+Math.random()*90,1+Math.random()*3);
+  }
+}
+
+/* ---------------- thin-film interference ---------------- */
+const LAM=[612,549,464]; // nm
+function thinFilm(nm,phase){
+  const out=[0,0,0];
+  for(let i=0;i<3;i++){
+    const opd=2*1.33*nm+phase*40;
+    out[i]=Math.pow(0.5+0.5*Math.cos(2*Math.PI*opd/LAM[i]+Math.PI),1.35);
+  }
+  // reflectance envelope: thin films are brighter at the top of the stack
+  const m=(out[0]+out[1]+out[2])/3;
+  const k=0.72+0.5*m;
+  return [Math.min(255,out[0]*255*k),Math.min(255,out[1]*255*k),Math.min(255,out[2]*255*k)];
+}
+function css(c,a){return "rgba("+(c[0]|0)+","+(c[1]|0)+","+(c[2]|0)+","+a+")";}
+
+/* ---------------- bubbles ---------------- */
+let uid=1;
+function spawn(px,py,r){
+  const ang=Math.random()*6.2832, sp=0.4+Math.random()*1.5;
+  blobs.push({
+    id:uid++, x:px,y:py, vx:Math.cos(ang)*sp, vy:Math.sin(ang)*sp-0.2,
+    r:r, R:r, ph:Math.random()*6.2832,
+    wob:0.10+Math.random()*0.16, wobF:1.2+Math.random()*1.6,
+    th:candy? 180+Math.random()*260 : 240+Math.random()*520,
+    band:Math.random(),
+    born:0, life:0, pop:0
+  });
+}
+function cluster(n,cx,cy){
+  for(let i=0;i<n;i++){
+    const a=Math.random()*6.2832,d=Math.random()*Math.min(W,H)*0.16;
+    spawn(cx+Math.cos(a)*d,cy+Math.sin(a)*d, 22+Math.random()*70);
+  }
+}
+for(let i=0;i<9;i++)spawn(Math.random()*W,Math.random()*H,26+Math.random()*74);
+
+/* ---------------- pointer breeze ---------------- */
+const wind={x:0,y:0,px:W/2,py:H/2,has:false};
+addEventListener("pointermove",e=>{
+  if(wind.has){
+    wind.x+=(e.clientX-wind.px)*0.55;wind.y+=(e.clientY-wind.py)*0.55;
+  }
+  wind.px=e.clientX;wind.py=e.clientY;wind.has=true;
+},{passive:true});
+addEventListener("pointerleave",()=>wind.has=false);
+
+function popAt(px,py){
+  let best=null,bd=1e9;
+  for(const b of blobs){const d=Math.hypot(b.x-px,b.y-py);if(d<b.r*1.15&&d<bd){bd=d;best=b;}}
+  if(!best)return;
+  shards(best);best.pop=1;popped++;
+  document.getElementById("vpop").textContent=popped;
+}
+function shards(b){
+  for(let i=0;i<22;i++){
+    const a=Math.random()*6.2832,sp=60+Math.random()*340;
+    shardsArr.push({x:b.x,y:b.y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,
+      r:1+Math.random()*3.4,life:0,max:.35+Math.random()*.5,
+      c:thinFilm(b.th*(0.6+Math.random()*0.8),Math.random()*3)});
+  }
+  ring.push({x:b.x,y:b.y,r:b.R,life:0});
+}
+const shardsArr=[], ring=[];
+
+c.addEventListener("pointerdown",e=>{
+  // blowing: drag = breathe on the film
+  const hit=blobs.find(b=>Math.hypot(b.x-e.clientX,b.y-e.clientY)<b.r);
+  if(hit){hit.th*=0.86;hit.squeeze=1;}
+  popAt(e.clientX,e.clientY);
+});
+
+/* ---------------- UI ---------------- */
+document.getElementById("variant").addEventListener("click",function(){
+  candy=!candy;this.setAttribute("aria-pressed",String(candy));
+  this.textContent=candy?"Soap studio":"Candy shop";
+  document.getElementById("vname").textContent=candy?"Candy":"Soap";
+  document.getElementById("vth").textContent=candy?"280":"320";
+  paintBackground();
+  blobs.forEach(b=>b.th=candy?180+Math.random()*260:240+Math.random()*520);
+});
+document.getElementById("blow").addEventListener("click",()=>cluster(4,Math.random()*W,H*1.02));
+document.getElementById("anti").addEventListener("click",function(){
+  anti=!anti;this.setAttribute("aria-pressed",String(anti));
+});
+document.getElementById("trail").addEventListener("click",function(){
+  trail=!trail;this.setAttribute("aria-pressed",String(trail));
+});
+
+/* ---------------- simulation ---------------- */
+let last=performance.now();
+function step(now){
+  const dt=Math.min(.033,(now-last)/1000);last=now;
+  const t=now/1000;
+  // wind decays like air
+  wind.x*=0.90;wind.y*=0.90;
+
+  for(let i=blobs.length-1;i>=0;i--){
+    const b=blobs[i];
+    if(b.pop){ b.pop+=dt*7; if(b.pop>1)blobs.splice(i,1); continue; }
+    b.life+=dt;
+
+    // buoyancy, breeze, and a local swirl around the pointer
+    b.vy += (anti? -0.052 : 0.19)*dt*60/60 * (b.r/50);
+    b.vx += wind.x*0.0022*dt*60;
+    b.vy += wind.y*0.0022*dt*60;
+    const dpx=b.x-wind.px, dpy=b.y-wind.py, dp=Math.hypot(dpx,dpy);
+    if(wind.has && dp<Math.min(W,H)*0.42 && dp>0.1){
+      const f=(1-dp/(Math.min(W,H)*0.42))*0.6;
+      b.vx+=(-dpy/dp)*f*dt*0.9; b.vy+=(dpx/dp)*f*dt*0.9;
+    }
+    // breathing
+    const wob=1+Math.sin(t*b.wobF+b.ph)*b.wob*0.035+(b.squeeze||0)*0.12;
+    b.squeeze=(b.squeeze||0)*0.88;
+    b.r=b.R*wob;
+    b.vx+=(Math.random()-0.5)*0.012;b.vy+=(Math.random()-0.5)*0.012;
+
+    b.x+=b.vx*(b.r/50);b.y+=b.vy*(b.r/50);
+    b.vx*=0.992;b.vy*=0.992;
+
+    // walls
+    if(b.x<b.r){b.x=b.r;b.vx*=-0.7;} if(b.x>W-b.r){b.x=W-b.r;b.vx*=-0.7;}
+    if(b.y<b.r){b.y=b.r;b.vy*=-0.7;} if(b.y>H-b.r){b.y=H-b.r;b.vy*=-0.7;}
+
+    if(trail && Math.random()<0.14 && b.y>H*0.2){
+      shardsArr.push({x:b.x+Math.random()*6-3,y:b.y,vx:(Math.random()-0.5)*8,vy:6+Math.random()*22,
+        r:.7+Math.random()*1.6,life:0,max:.9+Math.random(),c:thinFilm(b.th*0.8,1.2)});
+    }
+  }
+
+  // ---- merge pass: smooth union of the distance fields ----
+  for(let i=0;i<blobs.length;i++){
+    for(let j=i+1;j<blobs.length;j++){
+      const a=blobs[i],b=blobs[j];
+      if(a.pop||b.pop)continue;
+      const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);
+      if(d < a.r+b.r-1){
+        const wa=b.r*b.r, wb=a.r*a.r, tw=wa+wb;
+        const nx=a.x+dx*wa/tw, ny=a.y+dy*wa/tw;
+        // metaball union radius (huge smooth-min of two circles)
+        const un=(a.r+b.r+d)/2;
+        const nr=Math.sqrt(Math.max(1,un*un-Math.max(0,(a.r*a.r+b.r*b.r)/2)))*0.94;
+        a.x=nx;a.y=ny;a.R=Math.min(Math.max(nr,20),Math.min(W,H)*0.42);a.r=a.R;
+        a.th=(a.th*(wa/(wa+wb))+b.th*(wb/(wa+wb)))*1.03;
+        a.vx=(a.vx*wa+b.vx*wb)/(wa+wb);a.vy=(a.vy*wa+b.vy*wb)/(wa+wb);
+        b.pop=0.0001;b.x=a.x+Math.cos(a.ph)*9999;b.y=a.y+Math.sin(a.ph)*9999;
+        merges++;document.getElementById("mrg").textContent=merges;
+      }
+    }
+  }
+  for(let i=blobs.length-1;i>=0;i--){
+    const b=blobs[i];
+    if(b.x<-200||b.x>W+200||b.y<-200||b.y>H+400){ if(!b.pop){popped++;document.getElementById("vpop").textContent=popped;} blobs.splice(i,1); }
+  }
+
+  // shards
+  for(let i=shardsArr.length-1;i>=0;i--){
+    const s=shardsArr[i];s.life+=dt;
+    s.vy+=180*dt;s.vx*=0.985;s.x+=s.vx*dt;s.y+=s.vy*dt;
+    if(s.life>s.max)shardsArr.splice(i,1);
+  }
+  for(let i=ring.length-1;i>=0;i--){ring[i].life+=dt;ring[i].r+=dt*420;if(ring[i].life>.45)ring.splice(i,1);}
+
+  draw(t);
+  document.getElementById("cnt").textContent=blobs.length;
+  document.getElementById("wind").textContent=(Math.hypot(wind.x,wind.y)/100).toFixed(2);
+  requestAnimationFrame(step);
+}
+
+/* ---------------- render one bubble ---------------- */
+function drawBubble(b,t){
+  if(b.pop>0)return;
+  const r=b.r, cx=b.x, cy=b.y;
+  const k=r/100;
+
+  // cast shadow / contact darkening on the background
+  x.save();
+  const sh=x.createRadialGradient(cx+r*0.16,cy+r*0.22,r*0.6,cx+r*0.16,cy+r*0.22,r*1.35);
+  sh.addColorStop(0,"rgba(4,10,20,"+(0.20*k+0.05)+")");sh.addColorStop(1,"rgba(4,10,20,0)");
+  x.fillStyle=sh;x.beginPath();x.ellipse(cx+r*0.16,cy+r*0.22,r*1.3,r*1.1,0,0,6.2832);x.fill();
+  x.restore();
+
+  // ---- refraction: the background, magnified and pulled toward the centre ----
+  x.save();
+  x.beginPath();x.arc(cx,cy,r,0,6.2832);x.clip();
+  const m=1+0.20*k, ox=(cx-W/2)*0.20*k, oy=(cy-H/2)*0.20*k;
+  x.globalAlpha=0.92;
+  x.drawImage(bg, W/2-(cx-ox)*m, H/2-(cy-oy)*m, W*m, H*m);
+  // chromatic split at the rim
+  x.globalAlpha=0.30;x.globalCompositeOperation="screen";
+  x.drawImage(bg, W/2-(cx-ox*1.06)*m*1.02, H/2-(cy-oy*1.06)*m*1.02, W*m*1.02, H*m*1.02);
+  x.globalCompositeOperation="source-over";
+
+  // ---- thin film wash: thickness thins toward the top of the bubble ----
+  const fg=x.createRadialGradient(cx-r*0.3,cy-r*0.34,r*0.05,cx,cy,r*1.02);
+  const c0=thinFilm(b.th*0.72,0), c1=thinFilm(b.th*1.30,1.4), c2=thinFilm(b.th*0.95,2.8);
+  fg.addColorStop(0,css(c0,0.10*k+0.04));fg.addColorStop(.55,css(c1,0.20*k+0.05));fg.addColorStop(1,css(c2,0.42*k+0.08));
+  x.fillStyle=fg;x.fillRect(cx-r,cy-r,r*2,r*2);
+
+  // dark edge: total internal reflection at the silhouette
+  const eg=x.createRadialGradient(cx,cy,r*0.82,cx,cy,r);
+  eg.addColorStop(0,"rgba(255,255,255,0)");eg.addColorStop(1,"rgba(18,28,46,"+(0.30*k+0.06)+")");
+  x.fillStyle=eg;x.fillRect(cx-r,cy-r,r*2,r*2);
+
+  // ---- interference rim: hue rotates with the local film thickness ----
+  const N=30;
+  for(let i=0;i<N;i++){
+    if(b.r<16)break;
+    const a0=(i/N)*6.2832+b.ph*0.2, a1=((i+1)/N)*6.2832+b.ph*0.2;
+    const nt=b.th*(0.78+0.55*Math.pow(0.5+0.5*Math.sin(a0+Math.PI*(0.6+0.8*Math.sin(b.ph))),1.6));
+    const cc=thinFilm(nt,(a0/6.2832)*3);
+    x.strokeStyle=css(cc,Math.min(.95,(0.34+0.5*k))*(0.65+0.35*Math.sin(a0+b.ph*3)));
+    x.lineWidth=Math.max(1.1,r*0.085);
+    x.beginPath();x.arc(cx,cy,r*0.965,a0,a1+0.03);x.stroke();
+  }
+  // rim shadow under the film
+  x.strokeStyle="rgba(8,14,26,"+(0.30*k+0.06)+")";x.lineWidth=Math.max(1,r*0.045);
+  x.beginPath();x.arc(cx,cy,r*0.995,0,6.2832);x.stroke();
+  x.restore();
+
+  // ---- specular highlights ----
+  x.save();
+  x.translate(cx,cy);
+  // big soft key from upper-left
+  const hx1=-r*0.42, hy1=-r*0.50, hr1=r*0.34;
+  const g1=x.createRadialGradient(hx1,hy1,0,hx1,hy1,hr1);
+  g1.addColorStop(0,"rgba(255,255,255,.92)");g1.addColorStop(.4,"rgba(255,255,255,.30)");
+  g1.addColorStop(1,"rgba(255,255,255,0)");
+  x.fillStyle=g1;x.beginPath();x.ellipse(hx1,hy1,hr1,hr1*.82,0,0,6.2832);x.fill();
+  // hard little glint
+  if(r>22){
+    x.fillStyle="rgba(255,255,255,.98)";
+    x.beginPath();x.ellipse(-r*0.30,-r*0.60,r*0.10,r*0.055,-0.7,0,6.2832);x.fill();
+  }
+  // bounced fill light, lower-right, tinted by the film
+  const g2=x.createRadialGradient(r*0.44,r*0.5,0,r*0.44,r*0.5,r*0.42);
+  const bc=thinFilm(b.th*1.5,1.9);
+  g2.addColorStop(0,css(bc,0.42*k+0.08));g2.addColorStop(1,css(bc,0));
+  x.fillStyle=g2;x.beginPath();x.ellipse(r*0.44,r*0.5,r*0.42,r*0.34,0,0,6.2832);x.fill();
+  // two small surface glints travelling around the shell
+  for(let i=0;i<2;i++){
+    const a=t*(0.5+i*0.22)+b.ph*2+i*2.4;
+    const gx=Math.cos(a)*r*0.78, gy=Math.sin(a)*r*0.78;
+    const g3=x.createRadialGradient(gx,gy,0,gx,gy,r*0.13);
+    g3.addColorStop(0,"rgba(255,255,255,.75)");g3.addColorStop(1,"rgba(255,255,255,0)");
+    x.fillStyle=g3;x.beginPath();x.arc(gx,gy,r*0.13,0,6.2832);x.fill();
+  }
+  x.restore();
+}
+
+function draw(t){
+  x.drawImage(bg,0,0,W,H);
+  // soft ground reflection gradient at the bottom
+  const gg=x.createLinearGradient(0,H*0.86,0,H);
+  gg.addColorStop(0,candy?"rgba(255,255,255,0)":"rgba(6,16,26,0)");
+  gg.addColorStop(1,candy?"rgba(255,240,214,.55)":"rgba(6,16,26,.55)");
+  x.fillStyle=gg;x.fillRect(0,H*0.86,W,H*0.14);
+
+  const list=blobs.slice().sort((a,b)=>b.r-a.r);
+  for(const b of list) drawBubble(b,t);
+
+  for(const s of shardsArr){
+    const a=1-s.life/s.max;
+    x.fillStyle=css(s.c,a*0.8);
+    x.beginPath();x.arc(s.x,s.y,s.r*a,0,6.2832);x.fill();
+  }
+  for(const rg of ring){
+    const a=1-rg.life/0.45;
+    x.strokeStyle="rgba(255,255,255,"+a*0.6+")";x.lineWidth=2.4*a;
+    x.beginPath();x.arc(rg.x,rg.y,rg.r,0,6.2832);x.stroke();
+  }
+}
+
+resize();
+addEventListener("resize",()=>{const ow=W||1,oh=H||1;resize();
+  blobs.forEach(b=>{b.x*=W/ow;b.y*=H/oh;});});
+requestAnimationFrame(step);
+})();
+</script>
+</body>
+</html>

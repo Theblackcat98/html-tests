@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Riso Botanical — Dahlia pinnata · Two-Ink Plate Study</title>
+<style>
+  :root{
+    --paper:#f2ece0;
+    --paper-2:#e9e1d1;
+    --ink-p:#ff4b9c;      /* fluoro pink */
+    --ink-b:#0f6fb5;      /* federal blue */
+    --ink-p-deep:#e0337f;
+    --ink-b-deep:#0a4d84;
+    --rule:#1b1a18;
+    --mono:"SFMono-Regular",ui-monospace,"DejaVu Sans Mono",Menlo,Consolas,monospace;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:
+      radial-gradient(120% 90% at 50% 0%,#faf6ec 0%,var(--paper) 55%,var(--paper-2) 100%);
+    color:var(--rule);
+    font-family:var(--mono);
+    display:grid;
+    grid-template-rows:auto 1fr auto;
+    min-height:100%;
+  }
+  /* ---------- masthead ---------- */
+  header{
+    border-bottom:1px solid rgba(27,26,24,.28);
+    padding:10px 16px;
+    display:flex;gap:18px;align-items:baseline;flex-wrap:wrap;
+    font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+  }
+  header b{font-weight:700;letter-spacing:.28em}
+  header span{opacity:.62}
+  header .right{margin-left:auto;display:flex;gap:14px}
+
+  /* ---------- press bed ---------- */
+  main{display:grid;place-items:center;padding:26px 16px 10px;min-height:0}
+  .bed{position:relative;width:min(94vw,600px)}
+  .sheet{
+    position:relative;width:100%;aspect-ratio:8/10;
+    background:#fbf7ee;
+    box-shadow:0 1px 0 #fff inset,0 18px 40px -22px rgba(40,30,20,.55),0 2px 6px rgba(40,30,20,.12);
+    overflow:hidden;cursor:grab;touch-action:none;user-select:none;
+  }
+  .sheet.dragging{cursor:grabbing}
+  .plate{position:absolute;inset:0;mix-blend-mode:multiply;will-change:transform}
+  .plate svg{width:100%;height:100%;display:block;overflow:visible}
+  .marks{position:absolute;inset:0;pointer-events:none}
+  .grain{
+    position:absolute;inset:0;pointer-events:none;opacity:.5;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.86' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='.42'/%3E%3C/svg%3E");
+  }
+  /* registration bullseye, corner */
+  .reg{position:absolute;width:26px;height:26px;opacity:.5}
+  .reg svg{width:100%;height:100%}
+
+  /* plate tags ride with their plate */
+  .tag{
+    position:absolute;left:10px;top:10px;
+    font:700 9px/1 var(--mono);letter-spacing:.16em;
+    padding:4px 7px;border:1px solid currentColor;background:rgba(251,247,238,.82);
+    transform:translate(var(--tx,0px),var(--ty,0px));
+    pointer-events:none;white-space:nowrap;
+  }
+  .tag.p{color:var(--ink-p-deep)}
+  .tag.b{color:var(--ink-b-deep)}
+  .tag i{font-style:normal;opacity:.6}
+
+  /* ---------- caption ---------- */
+  .caption{
+    margin-top:16px;display:grid;
+    grid-template-columns:1fr auto;gap:12px 20px;align-items:end;
+    border-top:1px solid rgba(27,26,24,.3);padding-top:10px;
+  }
+  .latin{font-family:var(--serif);font-style:italic;font-size:19px;line-height:1.05;letter-spacing:.005em}
+  .latin small{display:block;font:400 9px/1.4 var(--mono);letter-spacing:.18em;text-transform:uppercase;font-style:normal;opacity:.6;margin-top:5px}
+  .plate-no{text-align:right;font-size:10px;letter-spacing:.16em;text-transform:uppercase;opacity:.72;line-height:1.7}
+  .swatches{display:flex;gap:10px;align-items:center}
+  .sw{display:flex;align-items:center;gap:6px;font-size:9px;letter-spacing:.13em;text-transform:uppercase}
+  .sw i{width:22px;height:14px;display:block;border:1px solid rgba(0,0,0,.25)}
+  .sw.o i{background:linear-gradient(90deg,var(--ink-p) 0 50%,var(--ink-b) 50% 100%)}
+  .sw.o2 i{background:linear-gradient(90deg,var(--ink-p) 0 50%,var(--ink-b) 50% 100%);background-blend-mode:multiply;filter:saturate(1.2)}
+
+  /* ---------- control bar ---------- */
+  footer{border-top:1px solid rgba(27,26,24,.28);padding:11px 16px 14px}
+  .bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;max-width:1100px;margin:0 auto}
+  button,.chip{
+    font:600 10px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;
+    border:1px solid rgba(27,26,24,.4);background:transparent;color:var(--rule);
+    padding:8px 11px;cursor:pointer;border-radius:2px;transition:background .15s,color .15s,border-color .15s;
+  }
+  button:hover{background:rgba(27,26,24,.07)}
+  .chip[data-on="1"]{background:var(--rule);color:#fbf7ee;border-color:var(--rule)}
+  .chip[data-plate="p"][data-on="1"]{background:var(--ink-p);border-color:var(--ink-p-deep);color:#fff}
+  .chip[data-plate="b"][data-on="1"]{background:var(--ink-b);border-color:var(--ink-b-deep);color:#fff}
+  .readout{margin-left:auto;font-size:10px;letter-spacing:.1em;opacity:.7;text-align:right;line-height:1.6}
+  .readout b{font-weight:700;opacity:1}
+  .hint{font-size:9.5px;letter-spacing:.1em;opacity:.5;max-width:1100px;margin:9px auto 0;text-transform:uppercase}
+  @media (max-width:560px){.caption{grid-template-columns:1fr}.plate-no{text-align:left}}
+</style>
+</head>
+<body>
+
+<header>
+  <b>Riso Botanical</b>
+  <span>Two-ink plate separation · overprint study</span>
+  <span class="right"><span>Stock: Munken Lynx 120gsm</span><span>Run: 1/40</span></span>
+</header>
+
+<main>
+  <div class="bed">
+    <div class="sheet" id="sheet">
+      <div class="plate" id="plateB"></div>
+      <div class="plate" id="plateA"></div>
+      <div class="grain"></div>
+      <div class="marks" id="marks"></div>
+      <div class="tag p" id="tagP">PLATE 01 <i id="offP">0.0 / 0.0</i></div>
+      <div class="tag b" id="tagB">PLATE 02 <i id="offB">0.0 / 0.0</i></div>
+    </div>
+
+    <div class="caption">
+      <div>
+        <div class="latin">Dahlia pinnata
+          <small>Compositae · cultivated form “Café au Lait” · grown at Kew, 1974</small>
+        </div>
+      </div>
+      <div class="plate-no">
+        Plate XXXVII<br>
+        Two inks · 200 lpi screen<br>
+        <div class="swatches">
+          <span class="sw"><i style="background:var(--ink-p)"></i>Fluoro Pink</span>
+          <span class="sw"><i style="background:var(--ink-b)"></i>Federal Blue</span>
+          <span class="sw o"><i></i>Overprint</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="bar">
+    <button class="chip" data-plate="p" data-on="1">Grab Plate 01 · Pink</button>
+    <button class="chip" data-plate="b" data-on="0">Grab Plate 02 · Blue</button>
+    <button id="swap">Swap inks</button>
+    <button id="register">Snap to register</button>
+    <button id="wave">Halftone angle</button>
+    <div class="readout">
+      ΔX <b id="rx">0.00</b> · ΔY <b id="ry">0.00</b><br>
+      overprint coverage <b id="cov">0%</b>
+    </div>
+  </div>
+  <p class="hint">Drag the sheet to slide the grabbed plate · arrow keys nudge ±0.5 mm · shift+arrow = ±2 mm</p>
+</footer>
+
+<script>
+(function(){
+const NS="http://www.w3.org/2000/svg";
+const PINK="#ff4b9c", PINK_D="#e0337f", BLUE="#0f6fb5", BLUE_D="#0a4d84";
+const sheet=document.getElementById("sheet");
+const plateA=document.getElementById("plateA");
+const plateB=document.getElementById("plateB");
+
+/* ---------- deterministic PRNG so the plate is identical every load ---------- */
+let seed=19740917;
+const rnd=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
+const rrange=(a,b)=>a+(b-a)*rnd();
+function E(name,attrs){const n=document.createElementNS(NS,name);for(const k in attrs)n.setAttribute(k,attrs[k]);return n;}
+function P(d,attrs){const n=E("path",attrs);n.setAttribute("d",d);return n;}
+
+/* ---------- halftone screens: two angles, like real ink separations ---------- */
+let angleOffset=0;
+function screenDefs(color,id,a,scale){
+  const f=E("filter",{id:id+"blur",x:"-10%",y:"-10%",width:"120%",height:"120%"});
+  f.appendChild(E("feGaussianBlur",{stdDeviation:"0.35"}));
+  const p=E("pattern",{id:id,width:8*scale,height:8*scale,patternUnits:"userSpaceOnUse",patternTransform:"rotate("+(a+angleOffset)+")"});
+  p.appendChild(E("circle",{cx:4*scale,cy:4*scale,r:2.5*scale,fill:color}));
+  return [f,p];
+}
+
+/* ---------- a petal, base at origin, tip up ---------- */
+function petal(L,W,teeth){
+  let d=`M0,0 C${-W},${-L*0.30} ${-W*0.86},${-L*0.66} ${-W*0.62},${-L*0.86} `;
+  const n=teeth||3;
+  for(let i=0;i<n;i++){
+    const t0=0.30+ (0.68)*(i/n), t1=0.30+(0.68)*((i+1)/n);
+    const x0=lerpW(i),x1=lerpW(i+1);
+    d+=`Q ${x0*0.72},${-L*(t0+0.055)} ${(x0+x1)/2},${-L*((t0+t1)/2)} Q ${x1*0.72},${-L*(t1+0.03)} ${x1},${-L*t1} `;
+  }
+  d+=`C ${W*0.86},${-L*0.66} ${W},${-L*0.30} 0,0 Z`;
+  return d;
+  function lerpW(i){const u=i/n;return -W*0.62+ (2*W*0.62)*Math.pow(u,0.82);}
+}
+
+/* ---------- build one plate ---------- */
+function buildPlate(which,ink,inkD,idA,idB,pattern,isFlower){
+  const svg=E("svg",{viewBox:"0 0 800 1000"});
+  const defs=E("defs");
+  const [,p1]=screenDefs(ink,idA,idA==="scr-p"?18:72,1);
+  const [,p2]=screenDefs(ink,idB,idA==="scr-p"?18:72,0.62);
+  defs.appendChild(p1);defs.appendChild(p2);
+  svg.appendChild(defs);
+
+  const g=E("g",{filter:"url(#"+idA+"blur)"});
+
+  if(isFlower){
+    /* stem + calyx + leaves in the same ink, under the bloom */
+    const stem=P(`M392,980 C388,880 402,790 396,700`,{fill:"none",stroke:inkD,"stroke-width":"7","stroke-linecap":"round"});
+    g.appendChild(stem);
+    for(let i=0;i<5;i++){
+      const y=905-i*46, dir=i%2?1:-1, L=rrange(150,205), W=rrange(38,56);
+      const lg=E("g",{transform:`translate(${396+rrange(-8,8)},${y}) rotate(${dir*rrange(48,64)})`});
+      lg.appendChild(P(leafPath(L,W),{fill:"url(#"+idA+")",stroke:inkD,"stroke-width":"2.6","stroke-linejoin":"round"}));
+      for(let v=1;v<5;v++){
+        const t=v/5;
+        lg.appendChild(P(`M0,0 Q ${-W*0.4*t},${-L*t} 0,${-L*t*0.97}`,{fill:"none",stroke:ink,"stroke-width":"1.5",opacity:".55"}));
+      }
+      g.appendChild(lg);
+    }
+    /* bloom: 8 rings of petals, outer rings dotted, inner rings solid */
+    const CX=396, CY=392;
+    const rings=[
+      {n:11,L:352,W:96,r:0.0,fill:"dot1",op:1},
+      {n:13,L:316,W:88,r:11,fill:"dot1",op:1},
+      {n:15,L:272,W:78,r:23,fill:"dot1",op:1},
+      {n:17,L:228,W:66,r:34,fill:"dot2",op:1},
+      {n:19,L:186,W:56,r:45,fill:"dot2",op:1},
+      {n:21,L:146,W:46,r:56,fill:"solid",op:.92},
+      {n:23,L:110,W:37,r:66,fill:"solid",op:1},
+      {n:25,L:74,W:28,r:75,fill:"solid",op:1}
+    ];
+    rings.forEach((ring,ri)=>{
+      const grp=E("g",{transform:`translate(${CX},${CY})`});
+      for(let i=0;i<ring.n;i++){
+        const a=(360/ring.n)*i+ring.r*3.4+rrange(-3,3);
+        const L=ring.L*rrange(.94,1.05), W=ring.W*rrange(.9,1.08);
+        const p=E("g",{transform:`rotate(${a}) translate(0,${-ring.r})`});
+        p.appendChild(P(petal(L,W,ri<4?3:4),{
+          fill:ring.fill==="solid"?ink:"url(#"+(ring.fill==="dot1"?idA:idB)+")",
+          stroke:inkD,"stroke-width":ri<3?"2.2":"1.6","stroke-linejoin":"round",opacity:ring.op
+        }));
+        if(ri<6){
+          for(let v=1;v<=3;v++){
+            p.appendChild(P(`M0,0 Q ${-W*0.22*v/3},${-L*0.5} 0,${-L*0.93}`,{fill:"none",stroke:inkD,"stroke-width":"0.9",opacity:".5"}));
+          }
+        }
+        grp.appendChild(p);
+      }
+      g.appendChild(grp);
+    });
+    /* seed head: fine stipple, the heart of the plate */
+    const hd=E("g",{transform:`translate(${CX},${CY})`});
+    for(let i=0;i<340;i++){
+      const a=rnd()*Math.PI*2, r=Math.pow(rnd(),0.62)*54;
+      hd.appendChild(E("circle",{cx:Math.cos(a)*r,cy:Math.sin(a)*r,r:rrange(.7,1.9),fill:inkD,opacity:rrange(.35,1)}));
+    }
+    for(let i=0;i<9;i++){
+      const a=rnd()*Math.PI*2, r=rrange(6,26);
+      hd.appendChild(E("circle",{cx:Math.cos(a)*r,cy:Math.sin(a)*r,r:rrange(4,7),fill:"none",stroke:inkD,"stroke-width":"1.1",opacity:".7"}));
+    }
+    g.appendChild(hd);
+  } else {
+    /* secondary ink: the drawn line work + structural shadow that rides under the bloom */
+    g.appendChild(P("M392,980 C388,880 402,790 396,700",{fill:"none",stroke:inkD,"stroke-width":"3.4"}));
+    for(let i=0;i<5;i++){
+      const y=905-i*46, dir=i%2?1:-1, L=rrange(150,205), W=rrange(38,56);
+      const lg=E("g",{transform:`translate(${396+rrange(-8,8)},${y}) rotate(${dir*rrange(48,64)})`});
+      lg.appendChild(P(leafPath(L,W),{fill:"url(#"+idA+")",stroke:inkD,"stroke-width":"2.2","stroke-linejoin":"round"}));
+      for(let v=1;v<=6;v++){
+        const t=v/6;
+        lg.appendChild(P(`M0,0 Q ${-W*0.5*t},${-L*t} 0,${-L*t*0.99}`,{fill:"none",stroke:ink,"stroke-width":"1.1",opacity:".65"}));
+        lg.appendChild(P(`M0,0 Q ${W*0.5*t},${-L*t*0.94} 0,${-L*t*0.99}`,{fill:"none",stroke:ink,"stroke-width":"1.1",opacity:".65"}));
+      }
+      g.appendChild(lg);
+    }
+    /* ghost line-work of the bloom: contour + radial hatching */
+    const CX=396, CY=392;
+    for(let i=0;i<11;i++){
+      const a=(360/11)*i, L=352*rrange(.94,1.05), W=96*rrange(.92,1.06);
+      const p=E("g",{transform:`translate(${CX},${CY}) rotate(${a})`});
+      p.appendChild(P(petal(L,W,3),{fill:"none",stroke:inkD,"stroke-width":"1.5",opacity:".55"}));
+      for(let v=1;v<=7;v++){
+        const t=v/7;
+        p.appendChild(P(`M0,0 Q ${-W*0.3*t},${-L*0.52} 0,${-L*0.95}`,{fill:"none",stroke:ink,"stroke-width":"0.8",opacity:".45"}));
+      }
+      g.appendChild(p);
+    }
+    for(let i=0;i<16;i++){
+      const a=(360/16)*i;
+      g.appendChild(P(`M396,392 Q ${Math.cos(a*Math.PI/180)*180},${392+Math.sin(a*Math.PI/180)*180} ${Math.cos(a*Math.PI/180)*348},${392+Math.sin(a*Math.PI/180)*348}`,
+        {fill:"none",stroke:ink,"stroke-width":"0.7",opacity:".35"}));
+    }
+  }
+  svg.appendChild(g);
+  return svg;
+}
+function leafPath(L,W){
+  return `M0,0 C ${-W},${-L*0.28} ${-W*0.94},${-L*0.6} ${-W*0.54},${-L*0.78}
+   C ${-W*0.46},${-L*0.88} ${-W*0.54},${-L*0.97} ${-W*0.32},${-L*0.985}
+   C ${-W*0.1},${-L*1.02} ${W*0.1},${-L*1.02} ${W*0.32},${-L*0.985}
+   C ${W*0.54},${-L*0.97} ${W*0.46},${-L*0.88} ${W*0.54},${-L*0.78}
+   C ${W*0.94},${-L*0.6} ${W},${-L*0.28} 0,0 Z`;
+}
+
+/* ---------- crop marks + registration targets ---------- */
+(function(){
+  const s=E("svg",{viewBox:"0 0 800 1000"});
+  s.setAttribute("preserveAspectRatio","none");
+  const m=E("g",{stroke:"#1b1a18","stroke-width":"1.4",opacity:".62"});
+  const L=26, P0=14;
+  [[P0,P0,1,1],[800-P0,P0,-1,1],[P0,1000-P0,1,-1],[800-P0,1000-P0,-1,-1]].forEach(c=>{
+    m.appendChild(P(`M${c[0]},${c[1]} L${c[0]+c[2]*L},${c[1]}`));
+    m.appendChild(P(`M${c[0]},${c[1]} L${c[0]},${c[1]+c[3]*L}`));
+  });
+  s.appendChild(m);
+  document.getElementById("marks").appendChild(s);
+  [[24,24],[776,24],[24,976],[776,976]].forEach(([x,y])=>{
+    const d=document.createElement("div");
+    d.className="reg";d.style.left=(x/800*100-1.6)+"%";d.style.top=(y/1000*100-1.3)+"%";
+    d.innerHTML='<svg viewBox="0 0 26 26"><g fill="none" stroke="#1b1a18" stroke-width="1.1" opacity=".55"><circle cx="13" cy="13" r="7"/><circle cx="13" cy="13" r="3.2"/><path d="M13 0v8M13 18v8M0 13h8M18 13h8"/></g></svg>';
+    document.getElementById("marks").appendChild(d);
+  });
+})();
+
+/* ---------- plate state + drag ---------- */
+const state={p:{x:0,y:0},b:{x:0,y:0},active:"p"};
+const els={p:plateA,b:plateB};
+const chA=document.getElementById("plateA"), chB=document.getElementById("plateB");
+
+let inkSwap=false;
+function render(){
+  plateA.innerHTML="";plateB.innerHTML="";
+  plateA.appendChild(buildPlate("p",PINK,PINK_D,"scr-p","scr-p2",null,true));
+  plateB.appendChild(buildPlate("b",BLUE,BLUE_D,"scr-b","scr-b2",null,false));
+  sync();
+}
+function sync(){
+  els.p.style.transform=`translate3d(${state.p.x}px,${state.p.y}px,0)`;
+  els.b.style.transform=`translate3d(${state.b.x}px,${state.b.y}px,0)`;
+  const tagP=document.getElementById("tagP"),tagB=document.getElementById("tagB");
+  tagP.style.setProperty("--tx",state.p.x+"px");tagP.style.setProperty("--ty",state.p.y+"px");
+  tagB.style.setProperty("--tx",state.b.x+"px");tagB.style.setProperty("--ty",state.b.y+"px");
+  document.getElementById("offP").textContent=`${(state.p.x/6).toFixed(1)} / ${(state.p.y/6).toFixed(1)}`;
+  document.getElementById("offB").textContent=`${(state.b.x/6).toFixed(1)} / ${(state.b.y/6).toFixed(1)}`;
+  document.getElementById("rx").textContent=(state.p.x-state.b.x).toFixed(2);
+  document.getElementById("ry").textContent=(state.p.y-state.b.y).toFixed(2);
+  const d=Math.hypot(state.p.x-state.b.x,state.p.y-state.b.y);
+  document.getElementById("cov").textContent=Math.min(99,Math.round(d*0.9+14))+"%";
+}
+render();
+
+let drag=null;
+sheet.addEventListener("pointerdown",e=>{
+  sheet.classList.add("dragging");
+  sheet.setPointerCapture(e.pointerId);
+  drag={sx:e.clientX,sy:e.clientY,ox:state[state.active].x,oy:state[state.active].y};
+});
+sheet.addEventListener("pointermove",e=>{
+  if(!drag)return;
+  state[state.active].x=drag.ox+(e.clientX-drag.sx);
+  state[state.active].y=drag.oy+(e.clientY-drag.sy);
+  sync();
+});
+["pointerup","pointercancel"].forEach(t=>sheet.addEventListener(t,()=>{drag=null;sheet.classList.remove("dragging");}));
+
+document.querySelectorAll(".chip[data-plate]").forEach(c=>{
+  c.addEventListener("click",()=>{
+    document.querySelectorAll(".chip[data-plate]").forEach(x=>x.dataset.on="0");
+    c.dataset.on="1";state.active=c.dataset.plate;
+  });
+});
+document.getElementById("register").addEventListener("click",()=>{
+  state.p={x:0,y:0};state.b={x:0,y:0};sync();
+});
+document.getElementById("swap").addEventListener("click",()=>{
+  const t=state.p;state.p=state.b;state.b=t;
+  // physically re-print the two inks, then re-run the overprint
+  inkSwap=!inkSwap;
+  reprint();
+});
+document.getElementById("wave").addEventListener("click",()=>{
+  angleOffset=(angleOffset+15)%180;
+  reprint();
+});
+function reprint(){
+  plateA.innerHTML="";plateB.innerHTML="";
+  const first=inkSwap?BLUE:PINK, second=inkSwap?PINK:BLUE;
+  const firstD=inkSwap?BLUE_D:PINK_D, secondD=inkSwap?PINK_D:BLUE_D;
+  plateA.appendChild(buildPlate("a",first,firstD,inkSwap?"scr-b":"scr-p",inkSwap?"scr-b2":"scr-p2",null,true));
+  plateB.appendChild(buildPlate("b",second,secondD,inkSwap?"scr-p":"scr-b",inkSwap?"scr-p2":"scr-b2",null,false));
+}
+addEventListener("keydown",e=>{
+  const step=e.shiftKey?12:3, k=e.key;
+  if(!["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(k))return;
+  e.preventDefault();
+  const s=state[state.active];
+  if(k==="ArrowLeft")s.x-=step; if(k==="ArrowRight")s.x+=step;
+  if(k==="ArrowUp")s.y-=step;   if(k==="ArrowDown")s.y+=step;
+  sync();
+});
+
+/* idle: a slow, imperfect feed — the press never registers perfectly twice */
+let t0=performance.now();
+(function drift(){
+  const t=(performance.now()-t0)/1000;
+  if(!drag){
+    state.p.x+=Math.sin(t*0.37)*0.045; state.p.y+=Math.cos(t*0.29)*0.035;
+    state.b.x+=Math.cos(t*0.31+1.1)*0.05; state.b.y+=Math.sin(t*0.23+0.4)*0.04;
+    sync();
+  }
+  requestAnimationFrame(drift);
+})();
+})();
+</script>
+</body>
+</html>

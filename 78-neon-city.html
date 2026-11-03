@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Harbour Reach — Sector 9, Alderton, 02:10</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   HARBOUR REACH — SECTOR 9, ALDERTON
+   Technique: Canvas 2D. Per-building offscreen sprite atlases,
+   animated window subsets, strip-blitted wet reflection,
+   scroll-driven camera across four parallax planes.
+   Skeleton: sticky full-bleed viewport + horizontal travel.
+   ============================================================ */
+:root{
+  --ink:#f2ecff;
+  --dim:#a99ecb;
+  --indigo:#0b0a1f;
+  --mag:#ff3d8b;
+  --cyan:#5fe0ff;
+  --amber:#ffc46b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--indigo);color:var(--ink);overflow-x:hidden;
+  font-family:"Barlow Condensed","Barlow Condensed",Impact,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- fixed chrome ---------- */
+.bar{
+  position:fixed;top:0;left:0;right:0;z-index:30;
+  display:flex;justify-content:space-between;align-items:center;gap:1rem;
+  padding:.55rem clamp(.8rem,2.5vw,1.8rem);
+  background:linear-gradient(180deg,rgba(8,7,22,.9),rgba(8,7,22,0));
+  font-family:"IBM Plex Mono",monospace;font-size:.6rem;letter-spacing:.2em;
+  text-transform:uppercase;pointer-events:none;
+}
+.bar b{color:var(--mag);font-weight:500}
+.bar .r{color:var(--dim)}
+
+.title{
+  position:fixed;z-index:20;left:clamp(1rem,5vw,4rem);top:clamp(3.4rem,11vh,7rem);
+  pointer-events:none;max-width:min(52ch,72vw);
+  transition:opacity .4s,transform .4s;
+}
+.title .k{font-family:"IBM Plex Mono",monospace;font-size:.6rem;letter-spacing:.34em;
+  text-transform:uppercase;color:var(--mag);display:flex;align-items:center;gap:.6rem}
+.title .k::before{content:"";width:30px;height:1px;background:var(--mag)}
+.title h1{
+  font-weight:500;font-size:clamp(2.6rem,8.4vw,6.4rem);line-height:.86;
+  letter-spacing:-.005em;margin:.55rem 0 0;text-transform:uppercase;
+  text-shadow:0 0 40px rgba(255,61,139,.35);
+}
+.title h1 em{font-style:normal;color:var(--cyan)}
+.title p{
+  margin-top:.9rem;font-weight:300;font-size:clamp(.92rem,1.25vw,1.1rem);line-height:1.55;
+  color:#cfc6ea;max-width:40ch;text-shadow:0 2px 22px rgba(6,5,18,.9);
+}
+
+/* ---------- building card ---------- */
+.card{
+  position:fixed;z-index:24;right:clamp(.8rem,2.5vw,1.8rem);bottom:clamp(3.6rem,8vh,5.2rem);
+  width:min(300px,42vw);
+  background:rgba(10,9,26,.74);backdrop-filter:blur(12px) saturate(130%);
+  border:1px solid rgba(255,61,139,.32);border-left:2px solid var(--mag);
+  padding:.85rem 1rem 1rem;border-radius:2px;
+  box-shadow:0 22px 50px -22px rgba(0,0,0,.9);
+  opacity:0;transform:translateY(10px);pointer-events:none;
+  transition:opacity .22s,transform .22s;
+}
+.card.on{opacity:1;transform:translateY(0);pointer-events:auto}
+.card .nm{font-size:1.4rem;font-weight:500;line-height:1;letter-spacing:.01em}
+.card .sg{
+  margin-top:.3rem;font-family:"IBM Plex Mono",monospace;font-size:.58rem;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--amber);
+  text-shadow:0 0 12px rgba(255,196,107,.7);
+}
+.card dl{display:grid;grid-template-columns:auto 1fr;gap:.22rem .9rem;margin-top:.7rem;
+  font-family:"IBM Plex Mono",monospace;font-size:.6rem}
+.card dt{color:var(--dim);text-transform:uppercase;letter-spacing:.12em;font-size:.52rem;padding-top:1px}
+.card dd{text-align:right;color:var(--ink);font-variant-numeric:tabular-nums}
+.card .occ{margin-top:.7rem;height:3px;background:rgba(255,255,255,.1);position:relative}
+.card .occ i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,var(--mag),var(--cyan))}
+.card .occ u{position:absolute;top:-2px;width:1px;height:7px;background:var(--amber)}
+
+/* ---------- controls ---------- */
+.ctrl{
+  position:fixed;z-index:26;left:clamp(1rem,5vw,4rem);bottom:clamp(1.2rem,4vh,2.2rem);
+  display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;
+}
+.btn{
+  all:unset;cursor:pointer;font-family:"IBM Plex Mono",monospace;font-size:.58rem;
+  letter-spacing:.2em;text-transform:uppercase;padding:.55em .9em;
+  border:1px solid rgba(95,224,255,.34);color:var(--cyan);border-radius:2px;
+  background:rgba(10,9,26,.5);backdrop-filter:blur(6px);
+  transition:background .2s,color .2s,border-color .2s;display:inline-flex;gap:.5em;align-items:center;
+}
+.btn:hover{background:rgba(95,224,255,.14);color:#fff}
+.btn[aria-pressed="true"]{background:var(--cyan);color:#06121a;border-color:var(--cyan)}
+.btn .dot{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.6}
+
+.depth{
+  position:fixed;z-index:22;right:clamp(.6rem,2vw,1.4rem);top:50%;transform:translateY(-50%);
+  writing-mode:vertical-rl;
+  font-family:"IBM Plex Mono",monospace;font-size:.56rem;letter-spacing:.3em;
+  text-transform:uppercase;color:var(--dim);display:flex;align-items:center;gap:1rem;
+}
+.depth s{width:1px;height:120px;background:linear-gradient(180deg,transparent,var(--mag),transparent);
+  text-decoration:none;position:relative}
+.depth s::after{content:"";position:absolute;left:-3px;width:7px;height:7px;border-radius:50%;
+  background:var(--mag);box-shadow:0 0 10px var(--mag);top:var(--p,0%)}
+
+.cue{
+  position:fixed;z-index:22;left:50%;bottom:clamp(1.1rem,3.5vh,2rem);transform:translateX(-50%);
+  font-family:"IBM Plex Mono",monospace;font-size:.56rem;letter-spacing:.3em;
+  text-transform:uppercase;color:#8f86b8;text-align:center;transition:opacity .4s;
+}
+.cue s{display:block;width:1px;height:26px;margin:.5rem auto 0;
+  background:linear-gradient(180deg,var(--mag),transparent);text-decoration:none}
+
+canvas#sky{position:fixed;inset:0;width:100%;height:100dvh;z-index:0;display:block}
+.runway{height:420vh;position:relative;z-index:1;pointer-events:none}
+
+footer{
+  position:relative;z-index:10;background:#07061a;
+  border-top:1px solid rgba(255,61,139,.2);
+  padding:clamp(2rem,4vw,3.4rem) clamp(1rem,5vw,4rem);
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1px;
+  background-image:linear-gradient(rgba(255,61,139,.16),rgba(255,61,139,.16));
+}
+footer section{background:#07061a;padding:1.1rem 1.2rem 1.3rem}
+footer h3{font-family:"IBM Plex Mono",monospace;font-size:.56rem;letter-spacing:.24em;
+  text-transform:uppercase;color:var(--mag);font-weight:500;margin-bottom:.6rem}
+footer p{font-size:.86rem;line-height:1.7;color:#a79dc6;font-weight:300}
+footer .k{font-family:"IBM Plex Mono",monospace;font-size:1.5rem;color:var(--cyan);
+  display:block;margin-bottom:.35rem}
+@media (max-width:700px){
+  .depth{display:none}
+  .title{max-width:none;right:1rem}
+}
+@media (prefers-reduced-motion:reduce){ *{transition-duration:.01ms !important} }
+</style>
+</head>
+<body>
+
+<noscript>
+  <p style="padding:1.4rem;font-family:monospace;line-height:1.7;max-width:64ch">
+    The cityscape is drawn on a canvas at run time: four parallax planes, generated
+    window grids and a reflected water surface. Without JavaScript none of it appears
+    — the field notes below are static and complete, and describe what the scene is.
+  </p>
+</noscript>
+
+<canvas id="sky" aria-hidden="true"></canvas>
+<div class="runway" id="runway"></div>
+
+<div class="bar">
+  <b>Alderton Port Authority</b>
+  <span class="r">Sector 9 · Harbour Reach · camera travelling east</span>
+  <span class="r" id="clock">02:10</span>
+</div>
+
+<div class="title" id="title">
+  <div class="k">Night survey · plate 09 of 12</div>
+  <h1>Harbour<br><em>Reach</em></h1>
+  <p>
+    Eleven hundred metres of quay, four deep, built out of other people's money between
+    1908 and the year it stopped. Occupancy is ninety-four per cent and the lights
+    never all go out. Scroll to travel east. Hover a block for its record.
+  </p>
+</div>
+
+<aside class="card" id="card" aria-live="polite">
+  <div class="nm" id="cNm">—</div>
+  <div class="sg" id="cSg">—</div>
+  <dl>
+    <dt>Height</dt><dd id="cHt">—</dd>
+    <dt>Floors</dt><dd id="cFl">—</dd>
+    <dt>Built</dt><dd id="cYr">—</dd>
+    <dt>Use</dt><dd id="cUs">—</dd>
+  </dl>
+  <div class="occ"><i id="cBar" style="width:0%"></i><u id="cMark" style="left:0%"></u></div>
+</aside>
+
+<div class="ctrl">
+  <button class="btn" id="rainBtn" type="button" aria-pressed="false">
+    <span class="dot"></span>Rain <span id="rainState">off</span>
+  </button>
+  <button class="btn" id="fogBtn" type="button" aria-pressed="true">
+    <span class="dot"></span>Harbour fog
+  </button>
+  <button class="btn" id="tourBtn" type="button">Auto travel</button>
+</div>
+
+<div class="depth" aria-hidden="true">
+  <span id="depthTxt">Deep water</span><s id="depthBar"></s><span>Meridian</span>
+</div>
+
+<div class="cue" id="cue">Scroll to travel east<s></s></div>
+
+<footer>
+  <section>
+    <span class="k">94 %</span>
+    <h3>Occupancy</h3>
+    <p>Across the eleven hundred metres of Sector 9, counting lit windows on a
+      February night. The estate is one holding company and has been since 1971.</p>
+  </section>
+  <section>
+    <span class="k">1 148 m</span>
+    <h3>Quay length</h3>
+    <p>Two cold stores, one ferry terminal, a casino that closed in 1994 and a
+      chapel that has never closed. The water in front of it is not moving much.</p>
+  </section>
+  <section>
+    <span class="k">03:40</span>
+    <h3>Last ferry</h3>
+    <p>Terminal Two, southbound. The sign above the doors has said LAST 01:40 since
+      1998 and the 01:40 boat stopped running in 2004.</p>
+  </section>
+  <section>
+    <span class="k">4</span>
+    <h3>Searchlights</h3>
+    <p>Two on the cold store roofs, one on the Vantablack tower, and one at the
+      casino that has been fixed on the same angle of sky since it was decommissioned.</p>
+  </section>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var cv = document.getElementById('sky');
+  var ctx = cv.getContext('2d');
+  var runway = document.getElementById('runway');
+  var card = document.getElementById('card');
+  var root = document.documentElement;
+  var W = 0, H = 0, DPR = 1, horizon = 0;
+
+  /* ---------- deterministic city generation ---------- */
+  function mulberry32(a){
+    return function(){
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  var NAMES = [
+    ['Kestrel House','128 m','40','1927','Residential'],['The Bellhouse','96 m','31','1911','Hotel'],
+    ['Pier 9 Cold Store','44 m','9','1968','Cold store'],['Anselm Court','71 m','22','1954','Flats'],
+    ['Vantablack Tower','210 m','62','2009','Offices'],['The Drowned Casino','58 m','12','1938','Derelict'],
+    ['Halcyon Hotel','155 m','48','1976','Hotel'],['Tin Chapel','22 m','1','1889','Worship'],
+    ['Ferry Terminal Two','34 m','5','1998','Transport'],['Crane Row','66 m','14','1931','Self storage'],
+    ['Sundowner Flats','88 m','28','1962','Residential'],['The Long Chimney','74 m','—','1899','Boiler house'],
+    ['Meridian North','176 m','54','2015','Offices'],['Union Stores','37 m','7','1919','Retail'],
+    ['Signal House','52 m','16','1948','Offices'],['The Wardrobe','29 m','6','1935','Costume store'],
+    ['Gasworks Annexe','61 m','11','1908','Lightworks'],['Halyard House','143 m','45','1984','Offices']
+  ];
+  var SIGNS = ['NO VACANCY','OPEN 24 H','FISH · ICE · SALT','LAUNDRY 3rd FL','MERIDIAN',
+    'CLOSED','ROOMS FREE','OPEN ALL NIGHT','LAST 01:40','STORE 1–40','BAR · 4AM','STEAM','BUREAU',
+    'SALE','LOW TIDE','COSTUME HIRE','ELECTRIC','GODFREY'];
+  var USES = ['Residential','Hotel','Cold store','Flats','Offices','Derelict','Hotel',
+    'Worship','Transport','Self storage','Residential','Boiler house','Offices','Retail',
+    'Offices','Costume store','Lightworks','Offices'];
+
+  var LAYERS = [
+    {name:'far',    par:.10, tint:'#151338', win:'#8f86d8', density:.30, wmin:40, wmax:96, hmin:70,  hmax:210, count:34, y:0.98},
+    {name:'mid',    par:.34, tint:'#0f0d28', win:'#ffd08a', density:.40, wmin:52, wmax:130,hmin:110, hmax:330, count:30, y:1.02},
+    {name:'near',   par:.72, tint:'#07061a', win:'#ffc46b', density:.46, wmin:70, wmax:170,hmin:150, hmax:460, count:24, y:1.06}
+  ];
+
+  var world = {width:0, layers:[]};
+
+  function buildLayer(cfg, seed, w, h){
+    var rnd = mulberry32(seed);
+    var out = []; var x = -260;
+    var origin = mulberry32(seed ^ 0x9e37);
+    for (var i=0;i<cfg.count;i++){
+      var bw = cfg.wmin + origin() * (cfg.wmax - cfg.wmin);
+      var bh = cfg.hmin + Math.pow(origin(), 1.7) * (cfg.hmax - cfg.hmin);
+      var b = {
+        x: x, w: bw, h: bh,
+        layer: cfg.name,
+        tint: cfg.tint, win: cfg.win,
+        seed: rnd, cells: [],
+        name: NAMES[i % NAMES.length][0],
+        sign: SIGNS[(i * 3 + seed) % SIGNS.length],
+        height: NAMES[i % NAMES.length][1],
+        floors: NAMES[i % NAMES.length][2],
+        year: NAMES[i % NAMES.length][3],
+        use: USES[i % USES.length],
+        occ: 0.34 + origin() * 0.62,
+        cells: [],
+        sprite: null,
+        crown: origin() < .34,
+        antenna: origin() < .4
+      };
+      /* window grid */
+      var gw = 7, gh = 9, pad = 4;
+      for (var wy = pad + 6; wy < bh - 8; wy += gh){
+        for (var wx = pad; wx < bw - pad; wx += gw){
+          var on = origin() < cfg.density;
+          var r = origin();
+          var kind = 'w';
+          if (on && r > .965) kind = 'tv';
+          else if (on && r > .93) kind = 'fl';
+          b.cells.push({x:wx, y:wy, on:on, k:kind,
+            ph:origin()*6.28, sp:.4 + origin()*2.2, warm:0.66 + origin()*0.34});
+        }
+      }
+      /* searchlight + billboard on the near layer */
+      b.beam = (cfg.name === 'near' && origin() < .3) ? origin() * 6.28 : null;
+      b.billboard = (cfg.name === 'near' && origin() < .34) ? {
+        w: bw * .78, h: 26 + origin() * 34, y: 12 + origin() * (bh * .4), hue: origin()
+      } : null;
+      b.occupancy = b.occ;
+      out.push(b);
+      x += bw + 3 + origin() * 16;
+    }
+    return {cfg: cfg, list: out, width: x + 300};
+  }
+
+  /* ---------- pre-render each building into a sprite ---------- */
+  function sprite(b, h){
+    var dpr = Math.min(2, window.devicePixelRatio || 1);
+    var c = document.createElement('canvas');
+    c.width = Math.max(1, Math.ceil((b.w + 8) * dpr));
+    c.height = Math.max(1, Math.ceil((b.h + 30) * dpr));
+    var g = c.getContext('2d');
+    g.scale(dpr, dpr);
+    g.translate(4, 30);
+    /* body */
+    g.fillStyle = b.tint;
+    g.fillRect(0, 0, b.w, b.h);
+    /* vertical shading */
+    var grd = g.createLinearGradient(0, 0, b.w, 0);
+    grd.addColorStop(0, 'rgba(255,255,255,.07)');
+    grd.addColorStop(.35, 'rgba(255,255,255,0)');
+    grd.addColorStop(1, 'rgba(0,0,0,.42)');
+    g.fillStyle = grd; g.fillRect(0, 0, b.w, b.h);
+    /* edge light from the left */
+    g.fillStyle = 'rgba(120,140,255,.16)';
+    g.fillRect(0, 0, 2, b.h);
+    /* crown / parapet */
+    if (b.crown){ g.fillStyle = 'rgba(255,61,139,.4)'; g.fillRect(0, -3, b.w, 3); }
+    if (b.antenna){
+      g.strokeStyle = 'rgba(255,61,139,.55)'; g.lineWidth = 1;
+      g.beginPath(); g.moveTo(b.w * .5, -3); g.lineTo(b.w * .5, -22); g.stroke();
+      g.fillStyle = '#ff3d8b'; g.beginPath(); g.arc(b.w * .5, -24, 2, 0, 6.284); g.fill();
+    }
+    /* static windows */
+    var gw = 7, gh = 9, pad = 4;
+    for (var wy = pad + 6; wy < b.h - 8; wy += gh){
+      for (var wx = pad; wx < b.w - pad; wx += gw){
+        var on = b.seed() < b.occupancy;
+        var r = b.seed();
+        if (!on || r > .93) continue;
+        var warm = 0.72 + b.seed() * 0.28;
+        g.fillStyle = 'rgba(' + Math.round(255 * warm) + ',' + Math.round(206 * warm) +
+          ',' + Math.round(120 * warm) + ',' + (0.5 + b.seed() * 0.5).toFixed(2) + ')';
+        g.fillRect(wx, wy, 3, 4);
+      }
+    }
+    /* parapet shadow */
+    g.fillStyle = 'rgba(0,0,0,.5)'; g.fillRect(0, b.h - 3, b.w, 3);
+    return {canvas: c, dpr: dpr, ox: 4, oy: 30};
+  }
+
+  /* ---------- setup ---------- */
+  function resize(){
+    DPR = Math.min(2, window.devicePixelRatio || 1);
+    W = window.innerWidth; H = window.innerHeight;
+    cv.width = Math.floor(W * DPR); cv.height = Math.floor(H * DPR);
+    cv.style.width = W + 'px'; cv.style.height = H + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    horizon = Math.floor(H * 0.74);
+    build();
+  }
+
+  function build(){
+    world.layers = [];
+    for (var i=0;i<LAYERS.length;i++){
+      var L = buildLayer(LAYERS[i], 1013 + i * 7331, W, H);
+      for (var j=0;j<L.list.length;j++) L.list[j].sprite = sprite(L.list[j], H);
+      world.layers.push(L);
+    }
+    world.width = Math.max.apply(null, world.layers.map(function(l){ return l.width; }));
+  }
+
+  /* ---------- state ---------- */
+  var scrollP = 0, tNow = 0, rain = false, fog = true, auto = false;
+  var hover = null, mouse = {x:-1, y:-1};
+
+  /* ---------- draw helpers ---------- */
+  function skyGradient(){
+    var g = ctx.createLinearGradient(0, 0, 0, horizon);
+    g.addColorStop(0, '#05040f');
+    g.addColorStop(.34, '#0d0a26');
+    g.addColorStop(.66, '#2a1140');
+    g.addColorStop(.88, '#6b1a4e');
+    g.addColorStop(1, '#c62f66');
+    return g;
+  }
+
+  function drawSky(t){
+    ctx.fillStyle = skyGradient();
+    ctx.fillRect(0, 0, W, H);
+    /* stars */
+    var sr = mulberry32(7);
+    for (var i=0;i<130;i++){
+      var sx = sr() * W, sy = sr() * (horizon * .62);
+      var a = (1 - sy / (horizon * .62)) * (.28 + sr() * .5);
+      ctx.fillStyle = 'rgba(220,225,255,' + a.toFixed(3) + ')';
+      ctx.fillRect(sx, sy, 1.2, 1.2);
+    }
+    /* the low moon */
+    var mx = W * .74 - scrollP * W * .04, my = horizon - H * .30, mr = Math.min(W, H) * .105;
+    var mg = ctx.createRadialGradient(mx, my, mr * .3, mx, my, mr * 4.2);
+    mg.addColorStop(0, 'rgba(255,236,214,.30)');
+    mg.addColorStop(.35, 'rgba(255,150,190,.10)');
+    mg.addColorStop(1, 'rgba(255,61,139,0)');
+    ctx.fillStyle = mg; ctx.beginPath(); ctx.arc(mx, my, mr * 4.2, 0, 6.284); ctx.fill();
+    ctx.fillStyle = '#f6e6d8';
+    ctx.beginPath(); ctx.arc(mx, my, mr, 0, 6.284); ctx.fill();
+    var cr = mulberry32(99);
+    ctx.fillStyle = 'rgba(180,150,150,.20)';
+    for (var c=0;c<9;c++){
+      var a2 = cr() * 6.284, d2 = cr() * mr * .72;
+      ctx.beginPath();
+      ctx.arc(mx + Math.cos(a2)*d2, my + Math.sin(a2)*d2, mr * (.05 + cr() * .12), 0, 6.284);
+      ctx.fill();
+    }
+    /* a cloud bar crossing the moon */
+    ctx.fillStyle = 'rgba(20,10,34,.55)';
+    ctx.beginPath();
+    ctx.ellipse(mx, my + mr * .2, mr * 2.1, mr * .16, 0, 0, 6.284);
+    ctx.fill();
+  }
+
+  function drawBeam(b, t, ox, baseY){
+    if (b.beam === null) return;
+    var sweep = Math.sin(t * 0.16 + b.beam);
+    var ang = -Math.PI/2 + sweep * 0.52;
+    var len = H * 0.72;
+    var sx = b.x - ox + b.w * .5, sy = baseY;
+    var x1 = sx + Math.cos(ang) * len, y1 = sy + Math.sin(ang) * len;
+    var g = ctx.createLinearGradient(sx, sy, x1, y1);
+    g.addColorStop(0, 'rgba(210,240,255,.26)');
+    g.addColorStop(1, 'rgba(210,240,255,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(sx - 3, sy);
+    ctx.lineTo(x1 - 34, y1);
+    ctx.lineTo(x1 + 34, y1);
+    ctx.lineTo(sx + 3, sy);
+    ctx.closePath(); ctx.fill();
+  }
+
+  function drawLayer(L, t, yBase){
+    var off = scrollP * (world.width - W) * L.cfg.par;
+    for (var i=0;i<L.list.length;i++){
+      var b = L.list[i];
+      var x = b.x - off;
+      if (x > W + 60 || x + b.w < -60) continue;
+      var top = yBase - b.h * (L.cfg.name === 'far' ? .42 : L.cfg.name === 'mid' ? .62 : .96);
+      var s = b.sprite;
+      ctx.globalAlpha = 1;
+      ctx.drawImage(s.canvas, 0, 0, s.canvas.width, s.canvas.height,
+        x - s.ox, top - s.oy, s.canvas.width / s.dpr, s.canvas.height / s.dpr);
+      /* animated windows: flickerers and television rooms */
+      for (var w=0;w<b.cells.length;w++){
+        var f = b.cells[w];
+        if (!f.on || f.k === 'w') continue;
+        if (f.k === 'tv'){
+          var tv = 0.35 + 0.65 * Math.abs(Math.sin(t * f.sp * 2.2 + f.ph));
+          ctx.fillStyle = 'rgba(120,190,255,' + (tv * .9).toFixed(2) + ')';
+        } else {
+          var fl = Math.sin(t * f.sp * 5.5 + f.ph) > -.72 ? 1 : .18;
+          ctx.fillStyle = 'rgba(255,206,140,' + (fl * .85).toFixed(2) + ')';
+        }
+        ctx.fillRect(x + f.x, top + f.y, 3, 4);
+      }
+      /* billboard */
+      if (b.billboard && L.cfg.name === 'near'){
+        var bb = b.billboard;
+        var hue = 190 + bb.hue * 160;
+        var bx = x + b.w * .11, by = top + bb.y;
+        var pulse = .55 + .45 * Math.sin(t * (1.1 + bb.hue) + bb.hue * 6);
+        ctx.fillStyle = 'hsla(' + hue.toFixed(0) + ',90%,62%,' + (0.5 + pulse * .4).toFixed(2) + ')';
+        ctx.fillRect(bx, by, bb.w, bb.h);
+        ctx.fillStyle = 'rgba(6,4,20,' + (0.3 + pulse * .4).toFixed(2) + ')';
+        for (var sl=0; sl<bb.h; sl += 3) ctx.fillRect(bx, by + sl, bb.w, 1.4);
+        ctx.strokeStyle = 'hsla(' + hue.toFixed(0) + ',100%,78%,.9)';
+        ctx.lineWidth = 1; ctx.strokeRect(bx + .5, by + .5, bb.w - 1, bb.h - 1);
+        ctx.fillStyle = 'rgba(255,255,255,.85)';
+        ctx.font = '600 ' + Math.max(7, bb.h * .34).toFixed(0) + 'px "Barlow Condensed", Impact, sans-serif';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('ALDERTON', bx + 5, by + bb.h * .34);
+        ctx.fillText('REACH · 9', bx + 5, by + bb.h * .72);
+      }
+      /* searchlight */
+      if (b.beam !== null) drawBeam(b, t, off, top);
+    }
+    return off;
+  }
+
+  function drawFog(t){
+    if (!fog) return;
+    for (var i=0;i<3;i++){
+      var y = horizon - H * (.34 - i * .10) + Math.sin(t * .18 + i) * 8;
+      var h = H * (.14 - i * .02);
+      var drift = (t * (8 + i * 9) - scrollP * 260) % (W + 400);
+      var g = ctx.createLinearGradient(0, y - h, 0, y + h);
+      g.addColorStop(0, 'rgba(150,150,220,0)');
+      g.addColorStop(.5, 'rgba(150,150,220,' + (0.16 - i * .04).toFixed(3) + ')');
+      g.addColorStop(1, 'rgba(150,150,220,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(drift - 200, y - h, W + 400, h * 2);
+    }
+  }
+
+  function drawWater(t){
+    var top = horizon + 2, bot = H;
+    var g = ctx.createLinearGradient(0, top, 0, bot);
+    g.addColorStop(0, 'rgba(30,10,44,.96)');
+    g.addColorStop(.4, 'rgba(12,7,28,.98)');
+    g.addColorStop(1, 'rgba(4,3,12,1)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, top, W, bot - top);
+    /* wet reflection: the city above, flipped, wobbled, dimmed */
+    if (!refl) refl = document.createElement('canvas');
+    var rw = Math.ceil(W), rh = Math.ceil(H - top);
+    if (refl.width !== rw || refl.height !== rh){ refl.width = rw; refl.height = rh; }
+    var rg = refl.getContext('2d');
+    rg.clearRect(0, 0, rw, rh);
+    /* the source region is the band just above the waterline */
+    var srcH = Math.min(H - top, H);
+    rg.drawImage(cv, 0, 0, Math.floor(W * DPR), Math.floor(srcH * DPR),
+                 0, 0, rw, Math.ceil(rh * 1.4));
+    /* strip-blit with a horizontal wobble */
+    var strips = 46;
+    for (var s=0;s<strips;s++){
+      var sy = (s / strips) * rh;
+      var sh = rh / strips + 1;
+      var depth = s / strips;
+      var wob = Math.sin(t * 2.1 + s * .7) * (2 + depth * 12) +
+                Math.sin(t * .9 + s * 1.9) * (1 + depth * 5);
+      ctx.globalAlpha = 0.34 * (1 - depth * 0.75);
+      ctx.drawImage(refl, 0, Math.min(rg.canvas.height - 1, sy * 1.4), rw, sh,
+                    wob, top + sy, rw, sh);
+    }
+    ctx.globalAlpha = 1;
+    /* horizontal ripple lines */
+    ctx.fillStyle = 'rgba(255,180,220,.05)';
+    for (var r2=0;r2<30;r2++){
+      var yy = top + r2 * ((H - top) / 30) + Math.sin(t + r2) * 1.4;
+      ctx.fillRect(0, yy, W, 1);
+    }
+  }
+
+  function drawRain(t){
+    if (!rain) return;
+    var n = 260;
+    for (var i=0;i<n;i++){
+      var seed = i * 12.9898;
+      var rx = ((Math.sin(seed) * 43758.5453) % 1 + 1) % 1;
+      var ry = ((Math.sin(seed * 1.7) * 22578.1459) % 1 + 1) % 1;
+      var len = 12 + ry * 26;
+      var x = (rx * W + t * 40) % (W + 60) - 30;
+      var y = (ry * H + t * (620 + ry * 700)) % (H + 60) - 30;
+      ctx.strokeStyle = 'rgba(190,215,255,' + (0.10 + ry * 0.22).toFixed(3) + ')';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - 5, y + len); ctx.stroke();
+    }
+  }
+
+  var refl = null;
+
+  function vignette(){
+    var g = ctx.createRadialGradient(W/2, H*.46, Math.min(W,H)*.28, W/2, H*.5, Math.max(W,H)*.78);
+    g.addColorStop(0, 'rgba(0,0,0,0)');
+    g.addColorStop(1, 'rgba(2,1,10,.78)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  }
+
+  /* ---------- hit test ---------- */
+  function hitTest(mx, my){
+    for (var li=world.layers.length-1; li>=0; li--){
+      var L = world.layers[li];
+      var off = scrollP * (world.width - W) * L.cfg.par;
+      var yBase = horizon;
+      for (var i=0;i<L.list.length;i++){
+        var b = L.list[i];
+        var x = b.x - off;
+        if (mx < x || mx > x + b.w) continue;
+        var top = yBase - b.h * (L.cfg.name === 'far' ? .42 : L.cfg.name === 'mid' ? .62 : .96);
+        if (my < top || my > yBase + 4) continue;
+        return b;
+      }
+    }
+    return null;
+  }
+
+  function showCard(b){
+    if (!b){ card.classList.remove('on'); return; }
+    card.classList.add('on');
+    document.getElementById('cNm').textContent = b.name;
+    document.getElementById('cSg').textContent = b.sign;
+    document.getElementById('cHt').textContent = b.height;
+    document.getElementById('cFl').textContent = b.floors;
+    document.getElementById('cYr').textContent = b.year;
+    document.getElementById('cUs').textContent = b.use;
+    document.getElementById('cBar').style.width = (b.occ*100).toFixed(0) + '%';
+    document.getElementById('cMark').style.left = (b.occ*100).toFixed(0) + '%';
+  }
+
+  /* ---------- loop ---------- */
+  function frame(ts){
+    if (!tNow) tNow = ts;
+    var t = (ts - tNow) / 1000;
+    if (auto){
+      scrollP += 0.00012;
+      if (scrollP > 1) scrollP = 0;
+      window.scrollTo(0, scrollP * (runway.offsetHeight - window.innerHeight));
+    }
+    ctx.clearRect(0, 0, W, H);
+    drawSky(t);
+    drawLayer(world.layers[0], t, horizon);
+    drawFog(t);
+    drawLayer(world.layers[1], t, horizon);
+    drawFog(t);
+    drawLayer(world.layers[2], t, horizon);
+    drawWater(t);
+    drawRain(t);
+    vignette();
+
+    /* live hover */
+    if (mouse.x >= 0 && mouse.y > horizon * 0.2 && mouse.y < horizon + 6){
+      var b = hitTest(mouse.x, mouse.y);
+      if (b !== hover){ hover = b; showCard(b); cv.style.cursor = b ? 'pointer' : 'default'; }
+    } else if (hover){ hover = null; showCard(null); }
+
+    /* HUD */
+    var dEl = document.getElementById('depthBar');
+    dEl.style.setProperty('--p', (scrollP * 100).toFixed(1) + '%');
+    document.getElementById('depthTxt').textContent =
+      scrollP < .3 ? 'Deep water' : scrollP < .55 ? 'Cold store' :
+      scrollP < .78 ? 'Crane Row' : 'Meridian North';
+    var mins = 130 + Math.floor(scrollP * 118);
+    document.getElementById('clock').textContent =
+      String(Math.floor(mins / 60) % 24).padStart(2,'0') + ':' + String(mins % 60).padStart(2,'0');
+    document.getElementById('title').style.opacity = String(Math.max(0, 1 - scrollP * 2.6));
+    document.getElementById('cue').style.opacity = scrollP > .04 ? '0' : '1';
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- events ---------- */
+  window.addEventListener('resize', function(){ resize(); });
+  window.addEventListener('pointermove', function(e){
+    mouse.x = e.clientX; mouse.y = e.clientY;
+  }, {passive:true});
+  window.addEventListener('pointerleave', function(){ mouse.x = -1; });
+
+  function onScroll(){
+    var total = runway.offsetHeight - window.innerHeight;
+    scrollP = total > 0 ? Math.min(1, Math.max(0, window.scrollY / total)) : 0;
+  }
+  window.addEventListener('scroll', function(){
+    if (auto){ auto = false; document.getElementById('tourBtn').textContent = 'Auto travel'; }
+    onScroll();
+  }, {passive:true});
+
+  document.getElementById('rainBtn').addEventListener('click', function(){
+    rain = !rain;
+    this.setAttribute('aria-pressed', String(rain));
+    document.getElementById('rainState').textContent = rain ? 'on' : 'off';
+  });
+  document.getElementById('fogBtn').addEventListener('click', function(){
+    fog = !fog;
+    this.setAttribute('aria-pressed', String(fog));
+  });
+  document.getElementById('tourBtn').addEventListener('click', function(){
+    auto = !auto;
+    this.textContent = auto ? 'Stop travel' : 'Auto travel';
+  });
+
+  resize();
+  onScroll();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

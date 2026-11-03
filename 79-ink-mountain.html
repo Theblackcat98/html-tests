@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>空山不語 — Nine Ridges, One Sound · A shan-shui scroll</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   空山不語 — NINE RIDGES, ONE SOUND
+   Technique: layered SVG ink washes with turbulence bleed filters,
+   drifting mask bands for mist, a scroll-painting reel scrubbed
+   by scroll position. Skeleton: centred single column, hanging scroll.
+   ============================================================ */
+:root{
+  --silk:#e7ddc4;
+  --silk2:#d8cbab;
+  --silk3:#c4b58f;
+  --ink:#1b1a1c;
+  --ink2:#4a4750;
+  --cinnabar:#9d2f22;
+  --reveal:.10;
+  --m1:150,160,168; --m2:120,132,142; --m3:86,100,112;
+  --m4:52,64,76;     --m5:22,22,26;  --m6:10,10,13;
+  --w1:rgba(150,160,168,.42); --w2:rgba(120,132,142,.52);
+  --w3:rgba(86,100,112,.62);  --w4:rgba(52,64,76,.78);
+  --w5:rgba(22,22,26,.92);    --w6:rgba(10,10,13,1);
+  --mist:1;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:
+    radial-gradient(120% 90% at 50% 0%, #efe7d2 0%, #ddd2b6 50%, #c9bd9e 100%);
+  color:var(--ink);font-family:"Inter","Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- header ---------- */
+.hd{
+  position:fixed;top:0;left:0;right:0;z-index:40;
+  display:flex;justify-content:space-between;align-items:center;gap:1rem;
+  padding:.6rem clamp(.9rem,3vw,2rem);
+  font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:#5f5a4e;
+  background:linear-gradient(180deg,rgba(231,221,196,.94),rgba(231,221,196,0));
+  pointer-events:none;
+}
+.hd b{font-weight:500;color:var(--ink)}
+
+/* ---------- the hanging scroll ---------- */
+.runway{height:400vh;position:relative}
+.hang{
+  position:sticky;top:0;height:100dvh;display:grid;
+  place-items:center;overflow:hidden;padding:3.2rem 1rem 4.6rem;
+}
+.hang::before{ /* wall behind the scroll */
+  content:"";position:absolute;inset:0;
+  background:
+    repeating-linear-gradient(90deg, rgba(90,78,52,.05) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(0deg, rgba(90,78,52,.04) 0 1px, transparent 1px 3px);
+}
+
+/* cord and the fixed top bar */
+.cord{position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:2px;height:clamp(1rem,4vh,2.4rem);background:linear-gradient(180deg,#6a5c44,#8d7a58)}
+.rod{
+  position:absolute;left:50%;transform:translateX(-50%);
+  top:calc(2.4rem + (100dvh - 6.8rem) * var(--reveal) * 0);
+  width:min(94vw,600px);height:15px;z-index:12;border-radius:3px;
+  background:linear-gradient(180deg,#6b543a,#3f3122 62%,#241b12);
+  box-shadow:0 6px 14px -6px rgba(60,44,24,.7), inset 0 1px 0 rgba(226,196,140,.5);
+  transition:none;
+}
+.rod::before,.rod::after{
+  content:"";position:absolute;top:50%;width:9px;height:9px;margin-top:-4.5px;
+  border-radius:50%;background:radial-gradient(circle at 35% 30%,#f0d79a,#7a5f2c);
+}
+.rod::before{left:-11px} .rod::after{right:-11px}
+
+.scroll{
+  position:relative;width:min(94vw,600px);
+  height:calc(100dvh - 6.8rem);max-height:82vh;
+  min-height:340px;overflow:hidden;
+  box-shadow:0 26px 50px -24px rgba(70,52,26,.55),
+             0 2px 0 rgba(120,96,58,.25);
+}
+.paper{position:absolute;inset:0;overflow:hidden;
+  clip-path:inset(0 0 calc((1 - var(--reveal)) * 100%) 0);
+}
+/* aged silk: weave + fibre + foxing */
+.silk{position:absolute;inset:0;
+  background:
+    repeating-linear-gradient(90deg, rgba(120,104,70,.07) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(0deg,  rgba(120,104,70,.06) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(255,250,232,.35) 0 1px, transparent 1px 7px),
+    repeating-linear-gradient(0deg,  rgba(255,250,232,.3) 0 1px, transparent 1px 7px),
+    linear-gradient(178deg, #ece2c9 0%, #e5d9be 40%, #d9cbaa 100%);
+}
+.silk::after{content:"";position:absolute;inset:0;
+  background:
+    radial-gradient(6px 6px at 18% 12%, rgba(150,120,70,.14), transparent 60%),
+    radial-gradient(9px 9px at 78% 30%, rgba(150,120,70,.12), transparent 60%),
+    radial-gradient(5px 5px at 42% 74%, rgba(140,110,64,.13), transparent 60%),
+    radial-gradient(12px 12px at 88% 88%, rgba(150,120,70,.10), transparent 60%),
+    linear-gradient(90deg, rgba(120,98,60,.16), transparent 12%, transparent 88%, rgba(120,98,60,.16));
+}
+.scene{position:absolute;inset:0;width:100%;height:100%}
+.mist{opacity:var(--mist);transition:opacity .35s ease}
+.ridge{transition:opacity .3s}
+
+/* ---------- the side panel ---------- */
+.panel{
+  position:fixed;right:clamp(1rem,3vw,2.4rem);top:50%;transform:translateY(-50%);
+  z-index:30;width:min(300px,34vw);
+}
+.eyebrow{font-size:.58rem;letter-spacing:.32em;text-transform:uppercase;color:#7a7161;margin-bottom:.5rem}
+h1{font-family:"Noto Serif SC",serif;font-weight:400;font-size:clamp(1.7rem,3vw,2.3rem);
+  line-height:1.16;letter-spacing:.08em;margin-bottom:.15rem}
+.sub{font-family:"EB Garamond",Georgia,serif;font-style:italic;font-size:1rem;color:#6d6353;margin-bottom:1rem}
+.body{font-size:.82rem;line-height:1.7;color:#4d483e}
+.body b{font-weight:500;color:var(--ink)}
+.body p + p{margin-top:.6rem}
+.poem{
+  margin:1rem 0 .9rem;padding:.85rem 0 .85rem 1rem;border-left:1px solid rgba(60,50,32,.24);
+  font-family:"Noto Serif SC",serif;font-size:.96rem;line-height:2;letter-spacing:.14em;color:#2c2a26;
+}
+.poem i{font-style:normal;display:block;color:#6a6253;font-size:.8rem;letter-spacing:.02em;
+  font-family:"EB Garamond",Georgia,serif;line-height:1.7}
+.ctl{margin-top:1rem}
+.ctl label{display:flex;justify-content:space-between;font-size:.58rem;letter-spacing:.22em;
+  text-transform:uppercase;color:#7a7161;margin-bottom:.5rem}
+.ctl output{color:var(--cinnabar)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;
+  background:linear-gradient(90deg,#cfc3a3,#2b2a2c);outline:none;cursor:ew-resize}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+  background:#efe7d2;border:1px solid #7a7161;box-shadow:0 2px 6px rgba(60,44,24,.4)}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border:0;border-radius:50%;background:#efe7d2;
+  border:1px solid #7a7161}
+.seal{
+  width:52px;height:52px;margin-top:1.1rem;background:var(--cinnabar);color:#f3ecd8;
+  display:grid;place-items:center;font-family:"Noto Serif SC",serif;font-size:.78rem;
+  line-height:1.05;letter-spacing:.02em;text-align:center;line-height:1;
+  padding:5px;box-shadow:0 3px 10px -4px rgba(90,30,20,.7);
+  transform:rotate(-2deg);position:relative;overflow:hidden;
+}
+.seal::after{content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(64deg, rgba(0,0,0,.14) 0 1px, transparent 1px 3px)}
+.colophon{
+  margin-top:1.2rem;padding-top:.9rem;border-top:1px solid rgba(60,50,32,.2);
+  font-size:.62rem;line-height:1.9;letter-spacing:.1em;text-transform:uppercase;color:#8a8271;
+}
+
+/* the vertical calligraphy column on the silk */
+.calli{
+  position:absolute;right:4.5%;top:5%;z-index:6;
+  writing-mode:vertical-rl;text-orientation:upright;
+  font-family:"Noto Serif SC",serif;font-weight:400;
+  font-size:clamp(15px,2.4vh,22px);letter-spacing:.3em;line-height:1.5;
+  color:#232225;text-shadow:0 0 1px rgba(35,34,37,.6);
+}
+.calli b{font-weight:500}
+.sign{
+  position:absolute;right:4.5%;top:calc(5% + clamp(15px,2.4vh,22px) * 9 * 1.5 + 14px);
+  width:26px;height:26px;background:var(--cinnabar);color:#f3ecd8;
+  display:grid;place-items:center;font-size:.52rem;letter-spacing:0;line-height:1;
+  box-shadow:0 2px 6px -2px rgba(90,30,20,.6);z-index:6;
+}
+
+.cue{position:fixed;left:clamp(1rem,3vw,2rem);bottom:clamp(1.2rem,4vh,2rem);z-index:30;
+  font-size:.58rem;letter-spacing:.3em;text-transform:uppercase;color:#7a7161;
+  display:flex;align-items:center;gap:.7rem;transition:opacity .4s}
+.cue s{display:block;width:34px;height:1px;background:#7a7161;text-decoration:none;
+  animation:slide 2.6s ease-in-out infinite}
+@keyframes slide{0%,100%{transform:scaleX(.3);transform-origin:0}50%{transform:scaleX(1);transform-origin:0}}
+
+/* ---------- colophon below the reel ---------- */
+.after{
+  position:relative;background:#0f0e0d;color:#d9d2c0;
+  padding:clamp(2.4rem,5vw,4.4rem) clamp(1rem,5vw,4rem);
+  border-top:1px solid rgba(0,0,0,.4);
+}
+.after h2{font-family:"Noto Serif SC",serif;font-weight:400;font-size:clamp(1.4rem,3vw,2.2rem);
+  letter-spacing:.1em;margin-bottom:1.2rem;max-width:24ch;line-height:1.3}
+.after .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:1px;background:rgba(217,210,192,.16);border:1px solid rgba(217,210,192,.16)}
+.after .cols section{background:#0f0e0d;padding:1.2rem 1.3rem 1.4rem}
+.after .cols h3{font-size:.58rem;letter-spacing:.28em;text-transform:uppercase;
+  color:#a4906a;font-weight:500;margin-bottom:.6rem}
+.after .cols p{font-size:.84rem;line-height:1.72;color:#b3ac9b}
+.after .cols .k{font-family:"Noto Serif SC",serif;font-size:1.7rem;display:block;
+  color:#e6dcc4;margin-bottom:.4rem;letter-spacing:.1em}
+.after .foot{margin-top:1.6rem;padding-top:1rem;border-top:1px solid rgba(217,210,192,.16);
+  display:flex;flex-wrap:wrap;gap:.4rem 2rem;justify-content:space-between;
+  font-size:.56rem;letter-spacing:.2em;text-transform:uppercase;color:#7d7666}
+@media (max-width:900px){
+  body{display:flex;flex-direction:column}
+  .panel{order:1;position:relative;right:auto;top:auto;transform:none;width:auto;
+    padding:clamp(1.6rem,5vw,2.4rem) clamp(1rem,5vw,2rem) 1.6rem;max-width:640px;margin:0 auto}
+  .runway{order:2;height:280vh}
+  .after{order:3}
+  .hang{height:100dvh;padding:2.6rem 1rem 1.2rem;align-items:end}
+  .scroll{height:min(66dvh,560px);max-height:none}
+  .rod{display:none}
+  .cue{display:none}
+  .hd{position:absolute}
+}
+@media (prefers-reduced-motion:reduce){
+  .mist,.birds,.fog,.cue s{animation:none !important}
+}
+</style>
+</head>
+<body>
+
+<noscript>
+  <p style="padding:1.2rem;line-height:1.7;max-width:60ch">
+    The painting is one inline SVG that unrolls as you scroll, and the mist drifts
+    on a continuous loop. Without JavaScript the reel stays closed; the poem, its
+    translation and the notes below are static and complete.
+  </p>
+</noscript>
+
+<header class="hd">
+  <b>Nine Ridges, One Sound</b>
+  <span>Shan-shui · ink on silk</span>
+  <span id="reelOut">Reel 6 %</span>
+</header>
+
+<div class="runway" id="runway">
+  <div class="hang" id="hang">
+    <div class="cord" aria-hidden="true"></div>
+
+    <div class="scroll" id="scrollBox">
+      <div class="paper" id="paper">
+        <div class="silk" aria-hidden="true"></div>
+
+        <svg class="scene" viewBox="0 0 600 900" preserveAspectRatio="xMidYMid slice"
+             role="img" aria-labelledby="pTitle pDesc">
+          <title id="pTitle">空山不語 — Empty mountains, without speech</title>
+          <desc id="pDesc">A Chinese landscape in ink wash: four receding ridges,
+            drifting mist, a waterfall, pines on a near cliff, a moored boat with a
+            lantern, a pavilion, and four birds.</desc>
+          <defs>
+            <!-- the ink bleeds: turbulence then blur -->
+            <filter id="bleed" x="-14%" y="-14%" width="128%" height="128%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.018 0.05" numOctaves="4"
+                            seed="3" result="n"/>
+              <feDisplacementMap in="SourceGraphic" in2="n" scale="10"
+                                 xChannelSelector="R" yChannelSelector="G"/>
+              <feGaussianBlur stdDeviation="0.7"/>
+            </filter>
+            <filter id="bleed2" x="-20%" y="-20%" width="140%" height="140%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.03 0.09" numOctaves="3"
+                            seed="11" result="n"/>
+              <feDisplacementMap in="SourceGraphic" in2="n" scale="5"
+                                 xChannelSelector="R" yChannelSelector="G"/>
+            </filter>
+            <filter id="softwash" x="-30%" y="-30%" width="160%" height="160%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3"
+                            seed="21" result="n"/>
+              <feDisplacementMap in="SourceGraphic" in2="n" scale="16"
+                                 xChannelSelector="R" yChannelSelector="G"/>
+              <feGaussianBlur stdDeviation="3.4"/>
+            </filter>
+            <filter id="spray" x="-40%" y="-40%" width="180%" height="180%">
+              <feGaussianBlur stdDeviation="4"/>
+            </filter>
+            <!-- a soft-edged wash: fades to nothing on three sides -->
+            <radialGradient id="fade" cx=".5" cy=".5" r=".62">
+              <stop offset=".45" stop-color="#fff" stop-opacity=".92"/>
+              <stop offset="1" stop-color="#000" stop-opacity="0"/>
+            </radialGradient>
+            <mask id="softmask">
+              <rect width="600" height="900" fill="#000"/>
+              <ellipse cx="300" cy="430" rx="420" ry="300" fill="url(#fade)"/>
+            </mask>
+
+            <!-- a pine, drawn once -->
+            <g id="pine">
+              <path d="M0 0 C -3 -22 4 -44 0 -66" stroke="var(--w5)" stroke-width="3.2"
+                    fill="none" stroke-linecap="round"/>
+              <path d="M0 -18 C -12 -22 -20 -30 -22 -38" stroke="var(--w5)" stroke-width="1.8"
+                    fill="none"/>
+              <g stroke="var(--w5)" stroke-width="1.3" stroke-linecap="round">
+                <path d="M-16 -26 l-11 -5 M-16 -26 l-12 2 M-16 -26 l-7 -9 M-16 -26 l-3 5"/>
+                <path d="M6 -44 l12 -4 M6 -44 l13 3 M6 -44 l9 -8 M6 -44 l4 6"/>
+                <path d="M-2 -60 l-13 -4 M-2 -60 l-14 3 M-2 -60 l-8 -8 M-2 -60 l-2 5"/>
+                <path d="M2 -68 l14 -3 M2 -68 l15 4 M2 -68 l10 -7"/>
+              </g>
+            </g>
+          </defs>
+
+          <!-- mist base: the paper showing through, painted as light -->
+          <rect width="600" height="900" fill="none"/>
+
+          <!-- ===== I. farthest ridge ===== -->
+          <g class="ridge" data-ink=".5" filter="url(#softwash)">
+            <path fill="var(--w1)" d="M-20 470 L 60 396 L 118 436 L 186 352 L 244 424
+              L 306 380 L 372 452 L 430 404 L 500 462 L 560 420 L 620 470 L 620 900
+              L -20 900 Z"/>
+          </g>
+          <g class="ridge" data-ink=".5" filter="url(#bleed)">
+            <path fill="var(--w1)" d="M-20 500 L 74 452 L 148 486 L 226 434 L 300 480
+              L 380 438 L 452 488 L 530 448 L 620 496 L 620 620 L -20 620 Z" opacity=".7"/>
+          </g>
+
+          <!-- mist band 1 -->
+          <g class="mist" mask="url(#softmask)">
+            <rect class="drift a" x="-260" y="452" width="1120" height="96" fill="#efe7d0"
+                  opacity=".9"/>
+          </g>
+
+          <!-- ===== II. second ridge ===== -->
+          <g class="ridge" data-ink=".72" filter="url(#bleed)">
+            <path fill="var(--w2)" d="M-20 600 L 56 528 L 128 574 L 210 506 L 286 566
+              L 356 522 L 436 578 L 512 536 L 620 590 L 620 900 L -20 900 Z"/>
+          </g>
+          <!-- the waterfall falls from this ridge -->
+          <g filter="url(#spray)">
+            <path d="M436 528 C 442 590 438 640 444 700 C 448 740 442 762 448 782"
+                  stroke="#f6efd9" stroke-width="13" fill="none" stroke-linecap="round"/>
+            <path d="M432 534 C 438 594 434 640 440 698" stroke="#ffffff"
+                  stroke-width="5" fill="none" opacity=".8"/>
+            <ellipse cx="450" cy="792" rx="34" ry="10" fill="#f6efd9" opacity=".75"/>
+          </g>
+
+          <!-- the pavilion on the second ridge -->
+          <g transform="translate(268,540)" filter="url(#bleed2)">
+            <path d="M-26 0 C -14 -6 14 -6 26 0 L 20 4 L -20 4 Z" fill="var(--w4)"/>
+            <path d="M-30 -1 C -18 -14 18 -14 30 -1 L 24 -4 L -24 -4 Z" fill="var(--w4)"/>
+            <rect x="-14" y="4" width="3" height="12" fill="var(--w5)"/>
+            <rect x="11" y="4" width="3" height="12" fill="var(--w5)"/>
+            <rect x="-16" y="16" width="32" height="2" fill="var(--w4)" opacity=".6"/>
+          </g>
+
+          <!-- mist band 2 -->
+          <g class="mist" mask="url(#softmask)">
+            <rect class="drift b" x="-260" y="596" width="1120" height="86" fill="#f2ead4"
+                  opacity=".92"/>
+          </g>
+
+          <!-- ===== III. third ridge ===== -->
+          <g class="ridge" data-ink=".88" filter="url(#bleed)">
+            <path fill="var(--w3)" d="M-20 690 L 70 606 L 148 664 L 232 588 L 316 656
+              L 396 606 L 470 668 L 548 620 L 620 682 L 620 900 L -20 900 Z"/>
+          </g>
+          <g filter="url(#bleed2)" opacity=".55">
+            <g stroke="var(--w4)" stroke-width="1.4" fill="none">
+              <path d="M60 640 L 92 596 M92 596 L 118 626 M118 626 L 148 664"/>
+              <path d="M232 600 L 258 588 M258 588 L 288 622 M288 622 L 316 656"/>
+              <path d="M396 610 L 424 606 M424 606 L 452 646 M452 646 L 470 668"/>
+            </g>
+          </g>
+
+          <!-- mist band 3 -->
+          <g class="mist" mask="url(#softmask)">
+            <rect class="drift c" x="-260" y="690" width="1120" height="72" fill="#f5eeda"
+                  opacity=".9"/>
+          </g>
+
+          <!-- ===== IV. the near cliff ===== -->
+          <g class="ridge" data-ink="1" filter="url(#bleed)">
+            <path fill="var(--w5)" d="M-20 900 L -20 806 L 62 762 L 120 800 L 168 776
+              L 232 812 L 300 792 L 356 830 L 420 806 L 470 842 L 540 820 L 620 858
+              L 620 900 Z"/>
+          </g>
+          <g filter="url(#bleed2)">
+            <path fill="var(--w6)" d="M-20 900 L -20 848 L 48 812 L 96 848 L 150 828
+              L 210 866 L 268 846 L 330 882 L 392 858 L 450 892 L 620 878 L 620 900 Z"
+              opacity=".5"/>
+          </g>
+
+          <!-- pines on the near cliff -->
+          <g filter="url(#bleed2)">
+            <use href="#pine" transform="translate(88,800) scale(1.05)"/>
+            <use href="#pine" transform="translate(140,816) scale(.78)"/>
+            <use href="#pine" transform="translate(46,790) scale(.62)"/>
+            <use href="#pine" transform="translate(206,838) scale(.9)"/>
+            <use href="#pine" transform="translate(252,846) scale(.6)"/>
+          </g>
+
+          <!-- the water -->
+          <g class="ridge" filter="url(#bleed)">
+            <path fill="var(--w3)" opacity=".28" d="M-20 826 L 620 826 L 620 900 L -20 900 Z"/>
+          </g>
+          <g stroke="var(--w4)" stroke-width="1" fill="none" opacity=".42" filter="url(#bleed2)">
+            <path d="M120 852 L 220 852"/><path d="M260 866 L 380 866"/>
+            <path d="M150 880 L 300 880"/><path d="M340 858 L 460 858"/>
+            <path d="M400 884 L 520 884"/>
+          </g>
+
+          <!-- the boat, its pole, its lantern and its reflection -->
+          <g id="boat" transform="translate(330,846)" filter="url(#bleed2)">
+            <path d="M-40 0 C -24 12 24 12 40 0 C 24 4 -24 4 -40 0 Z" fill="var(--w5)"/>
+            <path d="M-40 0 C -24 4 24 4 40 0" stroke="var(--w5)" stroke-width="1.6" fill="none"/>
+            <path d="M-6 -2 L -2 -26 L 4 -26 L 6 -2 Z" fill="var(--w5)"/>
+            <circle cx="1" cy="-30" r="3.6" fill="var(--w6)"/>
+            <path d="M6 -18 L 26 -40" stroke="var(--w5)" stroke-width="1.6" fill="none"/>
+            <g class="lamp"><circle cx="24" cy="-6" r="4.2" fill="#c8471f" opacity=".9"/>
+              <circle cx="24" cy="-6" r="9" fill="#c8471f" opacity=".22"/></g>
+            <g opacity=".4" transform="scale(1,-1) translate(0,10)">
+              <path d="M-40 0 C -24 12 24 12 40 0 C 24 4 -24 4 -40 0 Z" fill="var(--w5)"/>
+              <circle cx="24" cy="-6" r="3" fill="#c8471f"/>
+            </g>
+          </g>
+
+          <!-- birds -->
+          <g class="birds" stroke="var(--w5)" stroke-width="1.5" fill="none" stroke-linecap="round">
+            <path class="bd b1" d="M404 300 q 7 -7 14 0 q 7 -7 14 0"/>
+            <path class="bd b2" d="M444 274 q 6 -6 12 0 q 6 -6 12 0"/>
+            <path class="bd b3" d="M470 316 q 5 -5 10 0 q 5 -5 10 0"/>
+            <path class="bd b4" d="M382 336 q 5 -5 10 0 q 5 -5 10 0"/>
+          </g>
+        </svg>
+
+        <div class="calli" aria-hidden="true">
+          空山不語　雪落無聲<br>孤舟一縷　燈如豆明<br>松下問客　山不應我<br>我亦不語　但見白雲<br>漸滿空江
+        </div>
+        <div class="sign" aria-hidden="true">空山</div>
+      </div>
+    </div>
+
+    <div class="rod" id="rod" aria-hidden="true"></div>
+
+    <div class="cue" id="cue">Unroll the reel<s></s></div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="eyebrow">Nine Ridges, One Sound</div>
+  <h1 lang="zh">空山不語</h1>
+  <div class="sub">Kōzan fu go — empty mountains, without speech</div>
+
+  <div class="poem" lang="zh">
+    空山不語　雪落無聲
+    孤舟一縷　燈如豆明
+    松下問客　山不應我
+    我亦不語　但見白雲
+    漸滿空江
+    <i lang="en">Empty mountains do not speak. Snow falls without sound.<br>
+      One thread of boat, a lamp bright as a bean.<br>
+      I ask a guest beneath the pines; the mountain does not answer me.<br>
+      I do not answer either — only white cloud, filling the empty river.</i>
+  </div>
+
+  <p class="body">
+    Six ridges, and the painter is careful never to draw the sixth completely. The
+    <b>emptiness is the subject</b>; the black is only what is left when you take the
+    mist away. Every wash here is one colour, laid once, and never worked back.
+  </p>
+  <p class="body">
+    The lamp on the boat is the only warm mark on the silk. It is two millimetres
+    across and it is the reason the whole composition is read from the bottom up.
+  </p>
+
+  <div class="ctl">
+    <label for="ink">Ink density <output id="inkOut">52 %</output></label>
+    <input type="range" id="ink" min="0" max="100" step="1" value="52">
+  </div>
+  <p class="body" style="margin-top:.7rem;font-size:.72rem;color:#6d6353">
+    At the left of the slider the ridges are a dilute grey wash, five minutes old.
+    At the right the near cliff is standing black, laid in one stroke and left to
+    dry on the mounting. Nothing in between is allowed to sit.
+  </p>
+
+  <div class="seal" aria-hidden="true">空山<br>印</div>
+
+  <div class="colophon">
+    Ink on sized silk, mounted on paper<br>
+    Reel 88 × 44 cm, one leaf<br>
+    Six ridges, one boat, four birds<br>
+    Painted in a single sitting, 41 minutes
+  </div>
+</div>
+
+<section class="after">
+  <h2 lang="zh">松下問客 — <span style="font-size:.6em;letter-spacing:.04em">notes on what the
+    painter left out</span></h2>
+  <div class="cols">
+    <section>
+      <span class="k">六</span>
+      <h3>Six ridges, four drawn</h3>
+      <p>The sixth is below the frame. In this manner two ridges are painted fully,
+        two are cut by the mist, and the last is implied by the shape of the mist
+        itself. A viewer who has been taught anything will supply the rest, and will
+        believe they saw it.</p>
+    </section>
+    <section>
+      <span class="k">留白</span>
+      <h3>Leaving white</h3>
+      <p>About sixty per cent of the silk is untouched. This is not modesty or lack
+        of time. The unpainted field is water, air and distance, and it is the only
+        place the eye can rest, so the painter spends the ink everywhere else.</p>
+    </section>
+    <section>
+      <span class="k">一舟</span>
+      <h3>One boat, one lamp</h3>
+      <p>A single boat gives the river a scale. Two would give it a fleet, and a
+        fleet is a story. The lantern is the only pigment warmer than grey in the
+        whole leaf, laid last, over dry silk, in one touch.</p>
+    </section>
+    <section>
+      <span class="k">四</span>
+      <h3>Four birds, not nine</h3>
+      <p>Birds are counted by the painter's breath, not by the eye. Four strokes
+        are enough to place the air between them and the ridge. More would start a
+        conversation about the birds themselves.</p>
+    </section>
+  </div>
+  <div class="foot">
+    <span>Reel unrolled by scroll position</span>
+    <span>All washes, bleed and mist generated in CSS and SVG</span>
+    <span>Translation: the painter's own, 1994</span>
+  </div>
+</section>
+
+<script>
+(function(){
+  "use strict";
+  var root = document.documentElement;
+  var runway = document.getElementById('runway');
+  var paper = document.getElementById('paper');
+  var rod = document.getElementById('rod');
+  var reelOut = document.getElementById('reelOut');
+  var cue = document.getElementById('cue');
+
+  /* ================= the reel ================= */
+  function reel(){
+    var total = runway.offsetHeight - window.innerHeight;
+    var p = total > 0 ? Math.min(1, Math.max(0, window.scrollY / total)) : 0;
+    var r = 0.06 + p * 0.94;
+    root.style.setProperty('--reveal', r.toFixed(4));
+    var hang = document.getElementById('hang');
+    var box = document.getElementById('scrollBox');
+    var top = box.offsetTop + (box.offsetHeight * r) - 7;
+    rod.style.top = top + 'px';
+    reelOut.textContent = 'Reel ' + Math.round(r * 100) + ' %';
+    cue.style.opacity = p > .05 ? '0' : '1';
+    return r;
+  }
+  var ticking = false;
+  function onScroll(){
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function(){ reel(); ticking = false; });
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('resize', onScroll, {passive:true});
+
+  /* ================= ink density ================= */
+  /* each ridge has its own bias: the far ones can never reach black */
+  var WASH = [
+    {v:'--w1', pale:[176,186,192], deep:[126,138,148], cap:.62},
+    {v:'--w2', pale:[150,162,170], deep:[ 88,104,118], cap:.74},
+    {v:'--w3', pale:[122,134,142], deep:[ 46, 60, 76], cap:.84},
+    {v:'--w4', pale:[ 92,100,108], deep:[ 18, 22, 32], cap:.92},
+    {v:'--w5', pale:[ 58, 58, 62], deep:[  8,  8, 10], cap:1.0},
+    {v:'--w6', pale:[ 36, 36, 40], deep:[  2,  2,  3], cap:1.0}
+  ];
+  var ink = document.getElementById('ink');
+  var inkOut = document.getElementById('inkOut');
+  function applyInk(){
+    var v = +ink.value / 100;
+    for (var i=0;i<WASH.length;i++){
+      var w = WASH[i];
+      var t = v * w.cap;
+      var r = Math.round(w.pale[0] + (w.deep[0] - w.pale[0]) * t);
+      var g = Math.round(w.pale[1] + (w.deep[1] - w.pale[1]) * t);
+      var b = Math.round(w.pale[2] + (w.deep[2] - w.pale[2]) * t);
+      var a = (0.34 + v * 0.66).toFixed(2);
+      root.style.setProperty(w.v, 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')');
+    }
+    /* the mist thickens as the ink thins */
+    root.style.setProperty('--mist', (0.55 + (1 - v) * 0.85).toFixed(2));
+    inkOut.textContent = Math.round(v * 100) + ' %';
+  }
+  ink.addEventListener('input', applyInk);
+  applyInk();
+
+  /* ================= idle loops: mist and birds ================= */
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    var drifts = [
+      document.querySelector('.drift.a'),
+      document.querySelector('.drift.b'),
+      document.querySelector('.drift.c')
+    ];
+    var bds = [
+      document.querySelector('.bd.b1'), document.querySelector('.bd.b2'),
+      document.querySelector('.bd.b3'), document.querySelector('.bd.b4')
+    ];
+    var t0 = null;
+    function loop(ts){
+      if (t0 === null) t0 = ts;
+      var t = (ts - t0) / 1000;
+      for (var i=0;i<drifts.length;i++){
+        if (!drifts[i]) continue;
+        var amp = 40 + i * 26;
+        drifts[i].setAttribute('transform',
+          'translate(' + (Math.sin(t * (0.08 + i*0.035)) * amp).toFixed(1) + ' ' +
+          (Math.sin(t * (0.11 + i*0.04) + i) * 8).toFixed(1) + ')');
+        drifts[i].setAttribute('opacity',
+          (0.62 + 0.32 * Math.sin(t * 0.13 + i * 1.7)).toFixed(3));
+      }
+      for (var k=0;k<bds.length;k++){
+        if (!bds[k]) continue;
+        var fl = Math.sin(t * (3.1 + k * 0.4) + k);
+        bds[k].setAttribute('transform',
+          'translate(' + (t * (5 + k * 2.4)).toFixed(1) + ' ' +
+          (Math.sin(t * 0.7 + k) * 5).toFixed(1) + ') scale(1,' +
+          (1 + Math.max(0, fl) * 0.5).toFixed(2) + ')');
+      }
+      var lamp = document.querySelector('#boat .lamp');
+      if (lamp) lamp.setAttribute('opacity', (0.7 + 0.3 * Math.sin(t * 2.3)).toFixed(2));
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+  }
+
+  reel();
+})();
+</script>
+</body>
+</html>

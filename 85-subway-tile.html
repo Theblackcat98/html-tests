@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ardleigh Pattern — a subway tile repeat system, swatch board and applied mockups</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   ARDLEIGH PATTERN — TILE SYSTEM SHEET
+   Technique: a procedurally generated SVG data-URI repeat, re-tiled
+   into a field, three mockups and a swatch board.
+   Skeleton: 12-column spec sheet.
+   ============================================================ */
+:root{
+  --paper:#efe9df; --paper2:#e4dcd0; --ink:#16181b; --dim:#6d6a63;
+  --rule:rgba(22,24,27,.16); --g:3; --ox:0px; --oy:0px;
+  --c1:#e9e2d4; --c2:#2b4a6b; --c3:#c9622f; --c4:#12304a; --grout:#cfc6b4;
+  --serif:"Fraunces",Georgia,"Times New Roman",serif;
+  --sans:"Inter","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(140% 90% at 50% -10%,#f7f3ec,transparent 60%);
+  min-height:100dvh;
+}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.tint{position:fixed;inset:0;pointer-events:none;z-index:99;opacity:.045;mix-blend-mode:multiply}
+.tint svg{width:100%;height:100%}
+
+/* ---------- masthead ---------- */
+.mast{border-bottom:1px solid var(--rule);padding:clamp(1rem,2.6vw,1.9rem) clamp(1rem,4vw,3rem);
+  display:flex;justify-content:space-between;align-items:flex-end;gap:1.5rem;flex-wrap:wrap}
+.mast h1{font-family:var(--serif);font-size:clamp(1.5rem,3.4vw,2.5rem);font-weight:600;letter-spacing:-.01em;line-height:1}
+.mast h1 em{font-style:italic;font-weight:400;color:var(--c2)}
+.mast .k{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);line-height:1.9}
+.mast .k b{color:var(--ink);font-weight:500}
+
+/* ---------- toolbar ---------- */
+.bar{border-bottom:1px solid var(--rule);padding:.7rem clamp(1rem,4vw,3rem);
+  display:flex;gap:1.4rem;align-items:center;flex-wrap:wrap;position:sticky;top:0;z-index:40;
+  background:rgba(239,233,223,.88);backdrop-filter:blur(12px)}
+.seg{display:flex;border:1px solid var(--rule);border-radius:99px;overflow:hidden;background:#fff}
+.seg button{background:none;border:0;padding:.5rem .95rem;font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;cursor:pointer;color:var(--dim);font-family:var(--mono);transition:.2s;white-space:nowrap}
+.seg button+button{border-left:1px solid var(--rule)}
+.seg button.on{background:var(--ink);color:var(--paper)}
+.bar label{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);
+  display:flex;align-items:center;gap:.6rem}
+.bar input[type=range]{-webkit-appearance:none;appearance:none;width:120px;height:14px;background:transparent}
+.bar input[type=range]::-webkit-slider-runnable-track{height:1px;background:var(--rule)}
+.bar input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;margin-top:-5.5px;
+  background:var(--ink);border-radius:50%}
+.bar input[type=range]::-moz-range-track{height:1px;background:var(--rule)}
+.bar input[type=range]::-moz-range-thumb{width:12px;height:12px;background:var(--ink);border:0;border-radius:50%}
+.bar .sp{margin-left:auto}
+.hint{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--dim)}
+@media (max-width:640px){.hint{display:none}}
+
+/* ---------- grid ---------- */
+.wrap{display:grid;grid-template-columns:repeat(12,1fr);gap:clamp(1rem,2.2vw,1.8rem);
+  padding:clamp(1.2rem,3vw,2.4rem) clamp(1rem,4vw,3rem) 4rem;align-items:start}
+.card{background:#fbf8f3;border:1px solid var(--rule);border-radius:4px;overflow:hidden;
+  box-shadow:0 1px 0 #fff inset,0 14px 30px -26px rgba(30,24,14,.5)}
+.card>header{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;
+  padding:.75rem .9rem;border-bottom:1px solid var(--rule);font-family:var(--mono);
+  font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.card>header b{color:var(--ink);font-weight:500}
+.span8{grid-column:span 8}.span7{grid-column:span 7}.span5{grid-column:span 5}
+.span4{grid-column:span 4}.span12{grid-column:span 12}
+@media (max-width:1000px){.span8,.span7,.span5,.span4{grid-column:span 12}}
+
+/* ---------- the field ---------- */
+.field{position:relative;height:min(60dvh,520px);background-repeat:repeat;cursor:grab;
+  background-color:var(--grout);touch-action:none;background-blend-mode:normal}
+.field.drag{cursor:grabbing}
+.field .repeat{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .3s}
+.field .repeat.on{opacity:1}
+.field .repeat i{position:absolute;width:400px;height:400px;border:1px solid var(--c3);
+  outline:1px dashed rgba(255,255,255,.5);outline-offset:-2px}
+.field .repeat b{position:absolute;left:400px;top:0;bottom:0;width:1px;background:var(--c3);opacity:.4}
+.field .corner{position:absolute;left:12px;bottom:12px;z-index:3;font-family:var(--mono);font-size:10px;
+  letter-spacing:.14em;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.7);text-transform:uppercase}
+
+/* ---------- swatch board ---------- */
+.swatches{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--rule)}
+.sw{background:#fbf8f3;padding:.7rem .75rem .8rem}
+.sw .chip{aspect-ratio:1;background-repeat:repeat;background-color:var(--grout);border:1px solid var(--rule)}
+.sw h4{font-family:var(--serif);font-size:.95rem;font-weight:600;margin:.55rem 0 .1rem}
+.sw p{font-family:var(--mono);font-size:9.5px;line-height:1.7;color:var(--dim);letter-spacing:.02em}
+
+/* ---------- spec ---------- */
+.spec{padding:.3rem .95rem 1rem}
+.spec dl{display:grid;grid-template-columns:1fr auto;gap:.1rem .8rem;font-family:var(--mono);font-size:11px}
+.spec dt{color:var(--dim);padding:.5rem 0;border-bottom:1px dotted var(--rule);letter-spacing:.04em}
+.spec dd{text-align:right;padding:.5rem 0;border-bottom:1px dotted var(--rule);font-variant-numeric:tabular-nums}
+.spec dd b{font-weight:500}
+.chips{display:flex;gap:.4rem;flex-wrap:wrap;padding:.7rem 0 .2rem}
+.chips span{width:34px;height:34px;border-radius:3px;border:1px solid rgba(0,0,0,.15);
+  position:relative;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.chips span::after{content:attr(data-h);position:absolute;left:0;right:0;bottom:-14px;text-align:center;
+  font-family:var(--mono);font-size:8px;color:var(--dim)}
+.note{padding:0 .95rem 1rem;font-size:12.5px;line-height:1.75;color:#4b4842}
+.note b{color:var(--ink);font-weight:600}
+
+/* ---------- mockups ---------- */
+.mocks{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(1rem,2.2vw,1.8rem)}
+@media (max-width:1000px){.mocks{grid-template-columns:1fr}}
+.mock{position:relative;background:#fbf8f3;border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.mock .cap{padding:.6rem .8rem .7rem;font-family:var(--mono);font-size:9.5px;color:var(--dim);
+  letter-spacing:.1em;border-top:1px solid var(--rule)}
+.mock .cap b{display:block;color:var(--ink);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:.25rem;font-weight:500}
+/* station wall */
+.wall{height:190px;position:relative;background-repeat:repeat;
+  background-image:none;box-shadow:inset 0 -30px 40px -20px rgba(0,0,0,.35)}
+.wall .dado{position:absolute;left:0;right:0;top:56%;height:9px;background:linear-gradient(#0000,#00000022)}
+.wall .bench{position:absolute;left:8%;right:8%;bottom:14%;height:16px;border-radius:3px;
+  background:linear-gradient(#4a3a2a,#2c2018);box-shadow:0 8px 14px -6px rgba(0,0,0,.6)}
+.wall .bench::after{content:"";position:absolute;left:6%;right:6%;top:16px;height:40px;
+  background:repeating-linear-gradient(90deg,#2a1e14 0 8px,transparent 8px 40px)}
+.wall .sign{position:absolute;left:10%;top:14%;font-family:var(--mono);font-size:9px;letter-spacing:.22em;
+  color:#fff;opacity:.55;text-transform:uppercase}
+/* platform floor */
+.floor{height:190px;position:relative;overflow:hidden;background:#14161a;perspective:420px}
+.floor .plane{position:absolute;inset:-30% -20%;background-repeat:repeat;transform:rotateX(68deg);
+  transform-origin:50% 0;background-color:var(--grout)}
+.floor .tactile{position:absolute;left:0;right:0;bottom:8%;height:20px;
+  background:repeating-linear-gradient(90deg,#d8c66a 0 6px,transparent 6px 14px);opacity:.85}
+.floor .line{position:absolute;left:0;right:0;bottom:30%;height:5px;background:#e0c04a;opacity:.9}
+.floor .vanish{position:absolute;inset:0;background:linear-gradient(#0d0f12 8%,transparent 46%)}
+/* tray */
+.traywrap{height:190px;display:grid;place-items:center;background:linear-gradient(#e8e1d6,#d8d0c2);position:relative}
+.tray{width:72%;aspect-ratio:1.7;border-radius:14px;background-repeat:repeat;position:relative;
+  transform:rotate(-7deg) translateY(6px);box-shadow:0 22px 26px -14px rgba(40,30,16,.7),0 2px 0 rgba(255,255,255,.5) inset}
+.tray::after{content:"";position:absolute;inset:9px;border-radius:9px;border:2px solid rgba(255,255,255,.35);
+  box-shadow:0 0 0 1px rgba(0,0,0,.12) inset}
+.traywrap::after{content:"";position:absolute;inset:auto 0 0 0;height:40%;
+  background:linear-gradient(transparent,rgba(60,48,32,.16))}
+</style>
+</head>
+<body>
+<svg class="tint" aria-hidden="true"><filter id="t"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="100%" height="100%" filter="url(#t)"/></svg>
+
+<header class="mast">
+  <h1>Ardleigh <em>Pattern</em></h1>
+  <div class="k">
+    Hallam Tile Co. · Uttoxeter · <b>Pattern 07</b><br>
+    Sheet 2 of 4 · Repeat 200 × 200 mm · submitted for the 2026 Range Review
+  </div>
+</header>
+
+<div class="bar">
+  <div class="seg" id="colorway" role="group" aria-label="Colourway">
+    <button data-c="kiln" class="on">Kiln Blue</button>
+    <button data-c="ox">Oxblood</button>
+    <button data-c="verd">Verdigris</button>
+    <button data-c="bone">Bone</button>
+  </div>
+  <label>Grout <input id="grout" type="range" min="1" max="14" step="0.5" value="3"><b id="vg">3.0 mm</b></label>
+  <label>Scale <input id="scale" type="range" min="40" max="150" step="1" value="100"><b id="vs">100%</b></label>
+  <div class="seg">
+    <button id="tRep">Show repeat</button>
+    <button id="tGrid">Grout grid</button>
+  </div>
+  <span class="hint sp">Drag the field to move the repeat · offset 0, 0</span>
+</div>
+
+<main class="wrap">
+  <section class="card span8">
+    <header><span>Repeat field · drag to offset</span><b id="offRead">0, 0</b></header>
+    <div class="field" id="field">
+      <div class="repeat" id="repeat">
+        <i style="left:0;top:0"></i>
+        <b style="left:400px"></b><b style="left:0;top:400px;width:auto;height:1px"></b>
+      </div>
+      <span class="corner">Kiln Blue · 4 tiles / repeat</span>
+    </div>
+  </section>
+
+  <aside class="card span4">
+    <header><span>Swatch board</span><b>4 motifs</b></header>
+    <div class="swatches" id="swatches"></div>
+  </aside>
+
+  <section class="card span5">
+    <header><span>Pattern spec</span><b>2026</b></header>
+    <div class="spec">
+      <dl>
+        <dt>Repeat unit</dt><dd><b>200 × 200 mm</b></dd>
+        <dt>Motifs per repeat</dt><dd>4</dd>
+        <dt>Tile format</dt><dd>100 × 100 mm</dd>
+        <dt>Grout joint</dt><dd id="specGrout">3.0 mm, warm grey</dd>
+        <dt>Body</dt><dd>Red-firing earthenware</dd>
+        <dt>Glaze</dt><dd>Lead-free, satin</dd>
+        <dt>Slip rating</dt><dd>R10</dd>
+        <dt>Coverage</dt><dd>9 tiles / m²</dd>
+        <dt>Order quantity</dt><dd>Box of 11 repeats</dd>
+        <dt>Lead time</dt><dd>6 weeks</dd>
+      </dl>
+      <div class="chips" id="chips"></div>
+    </div>
+    <p class="note">
+      <b>Drawn from the Uttoxeter station.</b> The compass motif came off a 1903 platform
+      dado we pulled during the signalling works; the trellis is the fence panel from the
+      booking hall. Everything is drawn on a 200&nbsp;mm square so the four tiles can be
+      rotated freely around the centre without breaking the joint.
+    </p>
+  </section>
+
+  <section class="card span7">
+    <header><span>Applied mockups</span><b>1 : 8</b></header>
+    <div style="padding:clamp(.8rem,1.6vw,1.1rem)">
+      <div class="mocks">
+        <div class="mock">
+          <div class="wall" id="m1"></div>
+          <div class="cap"><b>Platform wall</b>2.4 m wainscot, bullnose cap, dado at 900 mm</div>
+        </div>
+        <div class="mock">
+          <div class="floor">
+            <div class="vanish"></div>
+            <div class="plane" id="m2"></div>
+            <div class="line"></div>
+            <div class="tactile"></div>
+          </div>
+          <div class="cap"><b>Platform floor</b>Plain-bond field, 450 mm from the yellow line</div>
+        </div>
+        <div class="mock">
+          <div class="traywrap"><div class="tray" id="m3"></div></div>
+          <div class="cap"><b>Tea tray</b>Same field, scaled to 78 mm, gloss liner</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card span12">
+    <header><span>Drawing notes</span><b>Scale 1 : 1</b></header>
+    <div style="padding:clamp(1rem,2vw,1.6rem);display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1.6rem">
+      <div>
+        <h4 style="font-family:var(--serif);font-size:1.05rem;margin-bottom:.4rem">Compass</h4>
+        <p style="font-size:12.5px;line-height:1.75;color:#4b4842">Four quarter fans struck from the tile
+        corners, meeting on a 22 mm centre square. The fan is the platform's original hand-drawn
+        terminal mark, redrawn as a ruled arc.</p>
+      </div>
+      <div>
+        <h4 style="font-family:var(--serif);font-size:1.05rem;margin-bottom:.4rem">Ferrule</h4>
+        <p style="font-size:12.5px;line-height:1.75;color:#4b4842">A rotated square with a punched centre
+        and four pin dots on the diagonal. It is the field tile: everything else is set out against it.</p>
+      </div>
+      <div>
+        <h4 style="font-family:var(--serif);font-size:1.05rem;margin-bottom:.4rem">Trellis</h4>
+        <p style="font-size:12.5px;line-height:1.75;color:#4b4842">Four clipped circles on a 100 mm pitch
+        with a three-leaf sprig in each quadrant. The curve breaks at the joint, so grout width matters.</p>
+      </div>
+      <div>
+        <h4 style="font-family:var(--serif);font-size:1.05rem;margin-bottom:.4rem">Cove boss</h4>
+        <p style="font-size:12.5px;line-height:1.75;color:#4b4842">A twelve-ray rosette over two rings —
+        the shelf-back tile. Rotate the repeat a quarter turn and this one lands on the diagonal.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<noscript><p style="padding:3rem 2rem;font-family:var(--mono);font-size:13px;line-height:1.8">
+This sheet tiles its pattern with a generated SVG data URI. Enable JavaScript to build the repeat,
+switch colourways and drag the field.</p></noscript>
+
+<script>
+(function(){
+"use strict";
+var WAY={
+  kiln:{name:'Kiln Blue',c1:'#e9e2d4',c2:'#2b4a6b',c3:'#c9622f',c4:'#123049',g:'#cfc6b4'},
+  ox:  {name:'Oxblood',   c1:'#f0e7dc',c2:'#7b2230',c3:'#2f4a3c',c4:'#3d1219',g:'#cfc3ae'},
+  verd:{name:'Verdigris', c1:'#e6e5da',c2:'#2f5c50',c3:'#b8873a',c4:'#1d3b34',g:'#c8c6b4'},
+  bone:{name:'Bone',      c1:'#f3efe6',c2:'#3a3730',c3:'#9a8f7c',c4:'#211f1b',g:'#bdb4a2'}
+};
+var S={cw:'kiln',grout:3,scale:100,ox:0,oy:0};
+var CELL=200,TILES=[
+  {n:'Compass',fn:'compass'},{n:'Ferrule',fn:'ferrule'},{n:'Trellis',fn:'trellis'},{n:'Cove boss',fn:'boss'}
+];
+
+/* ---- one motif, drawn on a 200x200 tile with a grout margin ---- */
+function motif(fn,g,C){
+  var m=g/2,p=CELL-m,a=m,b=CELL-m,c=CELL-m,d=m,k=100;
+  var s='<rect width="200" height="200" fill="'+C.c1+'"/>';
+  s+='<rect x="'+m+'" y="'+m+'" width="'+p+'" height="'+p+'" fill="none" stroke="'+C.c2+'" stroke-width="1" opacity=".35"/>';
+  if(fn==='compass'){
+    /* four quarter fans struck from the tile corners, meeting on the centre square */
+    s+='<g fill="'+C.c2+'">';
+    s+='<path d="M'+d+' '+d+' l34 0 a34 34 0 0 1 -34 34 z"/>';
+    s+='<path d="M'+a+' '+d+' l-34 0 a34 34 0 0 0 34 34 z"/>';
+    s+='<path d="M'+d+' '+b+' l0 -34 a34 34 0 0 1 34 34 z"/>';
+    s+='<path d="M'+a+' '+b+' l-34 0 a34 34 0 0 1 0 -34 z"/>';
+    s+='</g>';
+    s+='<g fill="none" stroke="'+C.c4+'" stroke-width="1" opacity=".5">';
+    s+='<path d="M'+(d+46)+' '+d+' a46 46 0 0 1 -46 46"/>';
+    s+='<path d="M'+(a-46)+' '+d+' a46 46 0 0 0 46 46"/>';
+    s+='</g>';
+    s+='<circle cx="100" cy="100" r="11" fill="'+C.c3+'"/>';
+    s+='<circle cx="100" cy="100" r="22" fill="none" stroke="'+C.c4+'" stroke-width="1.2" opacity=".55"/>';
+    s+='<path d="M100 78v44M78 100h44" stroke="'+C.c4+'" stroke-width="1" opacity=".5"/>';
+  }
+  if(fn==='ferrule'){
+    s+='<path d="M100 '+d+'+22 L'+a+' 100 100 '+b+'-22 100 '+a+' Z" fill="none" stroke="'+C.c2+'" stroke-width="2.4"/>';
+    s+='<path d="M100 '+d+'+34 L'+a+' 100 100 '+b+'-34 100 '+a+' Z" fill="none" stroke="'+C.c3+'" stroke-width="1" opacity=".7"/>';
+    s+='<circle cx="100" cy="100" r="10" fill="'+C.c3+'"/>';
+    [[100,d+14],[a-14,100],[100,b-14],[a+14,100]].forEach(function(p){
+      s+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="3.4" fill="'+C.c4+'"/>';});
+    s+='<circle cx="100" cy="100" r="42" fill="none" stroke="'+C.c2+'" stroke-width=".8" opacity=".4"/>';
+  }
+  if(fn==='trellis'){
+    s+='<g fill="none" stroke="'+C.c2+'" stroke-width="3">';
+    [[100,d+36],[a+36,100],[100,b-36],[b-36,100]].forEach(function(p){
+      s+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="34"/>';});
+    s+='</g>';
+    s+='<g fill="'+C.c3+'" opacity=".92">';
+    for(var i=0;i<4;i++){
+      var x=100+(i%2?1:-1)*22,y=100+((i/2|0)?1:-1)*22,sg=(i%2?1:-1)*((i/2|0)?1:-1);
+      s+='<path d="M'+x+' '+y+' q'+sg*10+' -6 '+sg*14+' -16 q-'+(sg*8)+' 10 -'+sg*14+' 16 z"/>';
+    }
+    s+='</g>';
+    s+='<circle cx="100" cy="100" r="7" fill="'+C.c4+'"/>';
+  }
+  if(fn==='boss'){
+    s+='<g stroke="'+C.c2+'" stroke-width="2" opacity=".9">';
+    for(var i2=0;i2<12;i2++){
+      var A=i2*Math.PI/6;
+      s+='<line x1="'+(100+Math.cos(A)*24).toFixed(1)+'" y1="'+(100+Math.sin(A)*24).toFixed(1)+
+         '" x2="'+(100+Math.cos(A)*52).toFixed(1)+'" y2="'+(100+Math.sin(A)*52).toFixed(1)+'"/>';
+    }
+    s+='</g>';
+    s+='<circle cx="100" cy="100" r="52" fill="none" stroke="'+C.c2+'" stroke-width="1.6"/>';
+    s+='<circle cx="100" cy="100" r="40" fill="none" stroke="'+C.c3+'" stroke-width="1.2" opacity=".85"/>';
+    s+='<circle cx="100" cy="100" r="18" fill="'+C.c3+'"/>';
+    s+='<circle cx="100" cy="100" r="7" fill="'+C.c1+'"/>';
+  }
+  s+='<path d="M'+m+' '+m+' h'+p+' v'+p+' h-'+p+' z" fill="none" stroke="'+C.c4+'" stroke-width="1.4" opacity=".28"/>';
+  return s;
+}
+function buildURI(){
+  var C=WAY[S.cw],g=S.grout,m=g/2,one='';
+  TILES.forEach(function(t,i){
+    var x=(i%2)*CELL,y=((i/2)|0)*CELL;
+    one+='<g transform="translate('+x+' '+y+')">'+motif(t.fn,g,C)+'</g>';
+  });
+  var svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+(CELL*2)+'" height="'+(CELL*2)+
+    '" viewBox="0 0 400 400"><rect width="400" height="400" fill="'+C.g+'"/>'+one+'</svg>';
+  return 'url("data:image/svg+xml,'+encodeURIComponent(svg)+'")';
+}
+var sheetURI=buildURI();
+
+var gridOn=false;
+function apply(){
+  var C=WAY[S.cw],sz=(CELL*2)*S.scale/100;
+  ['field','m1','m2','m3'].forEach(function(id){
+    var el=document.getElementById(id);
+    el.style.backgroundImage=gridOn&&id==='field'
+      ?('repeating-linear-gradient(90deg,rgba(0,0,0,.28) 0 '+(S.grout*2*S.scale/100)+'px,transparent '+
+        (S.grout*2*S.scale/100)+'px '+(S.grout*4*S.scale/100)+'px),'+sheetURI)
+      :sheetURI;
+    el.style.backgroundSize=sz+'px '+sz+'px';
+    el.style.backgroundColor=C.g;
+    el.style.backgroundPosition=(id==='field'?S.ox+'px '+S.oy+'px':(id==='m1'?'0 0':id==='m2'?'0 0':'-8% 30%'));
+  });
+  /* swatch chips: one motif each, at tile scale */
+  var host=document.getElementById('swatches');
+  if(host.children.length!==TILES.length){
+    host.innerHTML=TILES.map(function(t){
+      return '<div class="sw"><div class="chip" data-f="'+t.fn+'"></div><h4>'+t.n+'</h4><p>'+
+        (t.fn==='compass'?'100 × 100 · field A':t.fn==='ferrule'?'100 × 100 · field B':
+         t.fn==='trellis'?'100 × 100 · feature':'100 × 100 · shelf back')+'</p></div>';}).join('');
+  }
+  [].forEach.call(host.querySelectorAll('.chip'),function(ch){
+    var C2=WAY[S.cw],svg='<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200">'+
+      motif(ch.dataset.f,S.grout,C2)+'</svg>';
+    ch.style.backgroundImage='url("data:image/svg+xml,'+encodeURIComponent(svg)+'")';
+    ch.style.backgroundSize='100% 100%';
+    ch.style.backgroundColor=C2.g;
+  });
+  var chips=[[C.c1,'ground'],[C.c2,'motif'],[C.c3,'accent'],[C.c4,'line'],[C.g,'grout']];
+  document.getElementById('chips').innerHTML=chips.map(function(c){
+    return '<span style="background:'+c[0]+'" data-h="'+c[1]+'" title="'+c[0]+'"></span>';}).join('');
+  document.querySelector('.corner').textContent=C.name+' · 4 tiles / repeat';
+  document.getElementById('specGrout').textContent=S.grout.toFixed(1)+' mm, warm grey';
+  document.getElementById('offRead').textContent=Math.round(S.ox)+', '+Math.round(S.oy);
+  document.querySelector('.hint').textContent='Drag the field to move the repeat · offset '+Math.round(S.ox)+', '+Math.round(S.oy);
+}
+
+/* ---------- controls ---------- */
+[].forEach.call(document.querySelectorAll('#colorway button'),function(b){
+  b.onclick=function(){
+    [].forEach.call(document.querySelectorAll('#colorway button'),function(x){x.classList.remove('on');});
+    b.classList.add('on');S.cw=b.dataset.c;sheetURI=buildURI();
+    document.documentElement.style.setProperty('--c1',WAY[S.cw].c1);
+    document.documentElement.style.setProperty('--c2',WAY[S.cw].c2);
+    document.documentElement.style.setProperty('--c3',WAY[S.cw].c3);
+    document.documentElement.style.setProperty('--c4',WAY[S.cw].c4);
+    document.documentElement.style.setProperty('--grout',WAY[S.cw].g);
+    apply();
+  };
+});
+document.getElementById('grout').oninput=function(){
+  S.grout=parseFloat(this.value);
+  document.getElementById('vg').textContent=S.grout.toFixed(1)+' mm';
+  document.documentElement.style.setProperty('--g',S.grout);
+  sheetURI=buildURI();apply();
+};
+document.getElementById('scale').oninput=function(){
+  S.scale=parseInt(this.value,10);
+  document.getElementById('vs').textContent=S.scale+'%';
+  apply();
+};
+function tog(id,fn){
+  var b=document.getElementById(id);
+  b.onclick=function(){b.classList.toggle('on');fn(b.classList.contains('on'));};
+}
+tog('tRep',function(on){document.getElementById('repeat').classList.toggle('on',on);moveRepeat();});
+tog('tGrid',function(on){gridOn=on;apply();});
+function moveRepeat(){
+  var r=document.getElementById('repeat'),sz=(CELL*2)*S.scale/100;
+  var i=r.querySelector('i');
+  i.style.width=sz+'px';i.style.height=sz+'px';
+  i.style.left=(((S.ox%sz)+sz)%sz)+'px';i.style.top=(((S.oy%sz)+sz)%sz)+'px';
+  [].forEach.call(r.querySelectorAll('b'),function(b,k){
+    var v=(((k?S.oy:S.ox)%sz)+sz)%sz;
+    if(k){b.style.left=i.style.left;b.style.top=((parseFloat(i.style.top)+v)%sz)+'px';}
+    else{b.style.left=((parseFloat(i.style.left)+v)%sz)+'px';b.style.top=i.style.top;}
+  });
+}
+
+/* ---------- drag the field ---------- */
+var field=document.getElementById('field'),dragging=false,lx=0,ly=0;
+field.addEventListener('pointerdown',function(e){
+  dragging=true;lx=e.clientX;ly=e.clientY;field.classList.add('drag');field.setPointerCapture(e.pointerId);
+});
+field.addEventListener('pointermove',function(e){
+  if(!dragging)return;
+  var sz=(CELL*2)*S.scale/100;
+  S.ox=((S.ox+(e.clientX-lx))%sz+sz)%sz;
+  S.oy=((S.oy+(e.clientY-ly))%sz+sz)%sz;
+  lx=e.clientX;ly=e.clientY;
+  field.style.backgroundPosition=S.ox+'px '+S.oy+'px';
+  moveRepeat();
+  document.getElementById('offRead').textContent=Math.round(S.ox)+', '+Math.round(S.oy);
+  document.querySelector('.hint').textContent='Drag the field to move the repeat · offset '+Math.round(S.ox)+', '+Math.round(S.oy);
+});
+addEventListener('pointerup',function(){dragging=false;field.classList.remove('drag');});
+apply();moveRepeat();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NINE SHEETS — A Paper-Cut Sunrise, Cut by Hand</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,300&family=Karla:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* NINE SHEETS — nine sheets of dyed cardstock, cut with a No. 11 blade and
+   stacked 4 mm apart. Every layer is one CSS clip-path polygon; the
+   drop-shadow pair fakes the cut edge catching the light plus the shadow it
+   throws on the sheet behind. Skeleton: vertical editorial — masthead, sticky
+   diorama, cut list, colophon. */
+:root{
+  --lift:-1px;                       /* light direction: -1 = from the left */
+  --d1:5px; --d2:9px; --d3:7px;      /* cast-shadow offsets            */
+  --edge:rgba(255,240,218,.62);      /* bright cut edge                */
+  --shade:rgba(74,30,16,.30);        /* cast shadow on the sheet below */
+  --display:"Fraunces","Playfair Display",Georgia,"Times New Roman",serif;
+  --body:"Karla","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+body.light-r{--lift:1px;--d1:-5px;--d2:9px;--edge:rgba(255,232,196,.55)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:#f4e6d6;color:#2b1a12;font-family:var(--body);font-weight:300;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden}
+/* ---------- paper grain over the whole document ---------- */
+.grain{position:fixed;inset:0;z-index:60;pointer-events:none;opacity:.42;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.92' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23p)'/%3E%3C/svg%3E");
+  background-size:240px 240px}
+.fibre{position:fixed;inset:0;z-index:59;pointer-events:none;opacity:.5;mix-blend-mode:soft-light;
+  background:repeating-linear-gradient(92deg,rgba(255,255,255,.5) 0 1px,transparent 1px 3px),
+             repeating-linear-gradient(2deg,rgba(120,70,40,.16) 0 1px,transparent 1px 7px)}
+
+/* ---------- masthead ---------- */
+.mast{position:relative;z-index:5;min-height:100dvh;display:grid;align-content:center;
+  padding:clamp(40px,7vh,90px) clamp(22px,7vw,120px);max-width:1500px}
+.kick{font-family:var(--mono);font-size:10px;letter-spacing:.36em;text-transform:uppercase;
+  color:#a8563a;display:flex;gap:12px;align-items:center}
+.kick::after{content:"";height:1px;flex:1;max-width:220px;background:currentColor;opacity:.5}
+h1{font-family:var(--display);font-variation-settings:"SOFT" 20,"WONK" 1;
+  font-weight:500;font-size:clamp(58px,13.5vw,208px);line-height:.82;letter-spacing:-.035em;
+  margin:clamp(18px,3vh,34px) 0 0;color:#3a1d10}
+h1 span{display:block;margin-left:clamp(0px,9vw,150px);font-style:italic;font-weight:300;
+  color:#c0563a;font-size:.52em;letter-spacing:-.02em}
+.deck{max-width:60ch;margin-top:clamp(22px,4vh,44px);font-size:clamp(15px,1.24vw,19px);
+  line-height:1.68;color:#5b382a;margin-left:clamp(0px,9vw,150px)}
+.deck em{font-style:italic;color:#3a1d10}
+.byline{margin-top:clamp(26px,4vh,48px);margin-left:clamp(0px,9vw,150px);display:flex;flex-wrap:wrap;
+  gap:8px 28px;font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;
+  color:#8a5a44;border-top:1px solid rgba(120,60,35,.28);padding-top:16px;max-width:720px}
+.byline b{font-weight:400;color:#3a1d10}
+.cue{margin-top:clamp(30px,5vh,60px);font-family:var(--mono);font-size:10px;letter-spacing:.3em;
+  text-transform:uppercase;color:#a8563a;display:flex;align-items:center;gap:10px}
+.cue::after{content:"";width:1px;height:44px;background:linear-gradient(#a8563a,transparent)}
+
+/* ---------- the diorama ---------- */
+.holder{position:relative;height:210dvh}
+.stage{position:sticky;top:0;height:100dvh;overflow:hidden;isolation:isolate;
+  background:linear-gradient(180deg,#f7d9b4 0%,#f2b98c 42%,#e79a76 100%);cursor:none}
+.layer{position:absolute;inset:-6%;will-change:transform}
+.layer::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(
+  88deg,rgba(255,255,255,.16) 0 2px,transparent 2px 9px);mix-blend-mode:overlay;opacity:.7}
+.sun{inset:auto;left:58%;top:0;width:clamp(150px,20vw,300px);aspect-ratio:1;border-radius:50%;
+  margin-left:calc(clamp(150px,20vw,300px)/-2);
+  filter:drop-shadow(var(--d1) var(--d2) 10px var(--shade))}
+.halo{position:absolute;left:58%;top:0;width:clamp(430px,62vw,900px);aspect-ratio:1;
+  margin-left:calc(clamp(430px,62vw,900px)/-2);border-radius:50%;pointer-events:none;mix-blend-mode:screen;
+  background:radial-gradient(circle,rgba(255,240,196,.85) 0%,rgba(255,196,132,.32) 34%,transparent 68%);
+  filter:blur(14px)}
+.bird{position:absolute;width:clamp(16px,2vw,30px);height:clamp(5px,.6vw,9px);background:#7d3b2c;
+  clip-path:polygon(0 50%,30% 0,50% 62%,70% 0,100% 50%,50% 100%)}
+.tag{position:absolute;left:clamp(20px,3vw,44px);bottom:clamp(20px,3.4vh,40px);z-index:20;
+  font-family:var(--mono);font-size:10px;letter-spacing:.26em;text-transform:uppercase;
+  color:#5b2a1c;background:rgba(255,244,228,.62);border:1px solid rgba(120,60,35,.3);
+  padding:9px 14px;backdrop-filter:blur(3px)}
+.flip{position:absolute;right:clamp(20px,3vw,44px);top:clamp(20px,3.4vh,40px);z-index:20;
+  font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;
+  color:#5b2a1c;background:rgba(255,244,228,.62);border:1px solid rgba(120,60,35,.3);
+  padding:10px 15px;cursor:pointer;transition:background .3s ease,color .3s ease}
+.flip:hover{background:#3a1d10;color:#fbe9d4}
+.flip b{font-weight:400;color:#c0563a}
+#cur{position:absolute;z-index:30;width:34px;height:34px;margin:-17px 0 0 -17px;pointer-events:none;
+  opacity:0;transition:opacity .3s ease}
+#cur.on{opacity:1}
+#cur::before,#cur::after{content:"";position:absolute;inset:0;border:1px solid rgba(58,29,16,.75)}
+#cur::before{transform:rotate(45deg) scale(.72)}
+#cur::after{border-radius:50%;border-style:dashed;border-color:rgba(58,29,16,.4)}
+
+/* ---------- cut list ---------- */
+.cut{max-width:1500px;margin:0 auto;padding:clamp(60px,11vh,130px) clamp(22px,7vw,120px)}
+.cut h2{font-family:var(--display);font-variation-settings:"SOFT" 20; font-weight:500;
+  font-size:clamp(30px,4.6vw,62px);line-height:1;letter-spacing:-.02em;max-width:16ch}
+.cut .note{max-width:56ch;margin-top:20px;color:#6b4433;line-height:1.7;font-size:clamp(14px,1.05vw,16.5px)}
+.tbl{margin-top:clamp(30px,5vh,58px);border-top:1px solid rgba(120,60,35,.3);width:100%;
+  border-collapse:collapse;font-size:14px}
+.tbl th{font-family:var(--mono);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;
+  color:#a8563a;text-align:left;padding:14px 12px 12px;font-weight:400;border-bottom:1px solid rgba(120,60,35,.18)}
+.tbl td{padding:15px 12px;border-bottom:1px solid rgba(120,60,35,.14);vertical-align:baseline}
+.tbl tr{transition:background .35s ease}
+.tbl tr:hover{background:rgba(255,246,232,.6)}
+.tbl .n{font-family:var(--mono);font-size:11px;color:#c0563a;width:44px}
+.tbl .nm{font-family:var(--display);font-weight:500;font-size:17px;letter-spacing:-.01em;width:26%}
+.tbl .stock{color:#6b4433}
+.tbl .num{font-family:var(--mono);font-size:11.5px;color:#7d5138;white-space:nowrap}
+.tbl .sw{display:inline-block;width:13px;height:13px;margin-right:9px;vertical-align:-2px;
+  box-shadow:0 1px 3px rgba(74,30,16,.4),inset 0 0 0 1px rgba(0,0,0,.08)}
+.colo{max-width:1500px;margin:0 auto;padding:0 clamp(22px,7vw,120px) clamp(70px,12vh,140px);
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:clamp(24px,3vw,54px)}
+.colo div{border-top:1px solid rgba(120,60,35,.3);padding-top:18px}
+.colo h3{font-family:var(--mono);font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;
+  color:#a8563a;font-weight:400;margin-bottom:12px}
+.colo p{color:#5b382a;line-height:1.7;font-size:14.5px}
+.rv{opacity:0;transform:translateY(26px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+.rv.in{opacity:1;transform:none}
+.foot{padding:26px clamp(22px,7vw,120px) 46px;border-top:1px solid rgba(120,60,35,.22);
+  font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#8a5a44;
+  display:flex;flex-wrap:wrap;gap:10px 30px;justify-content:space-between}
+.foot b{color:#c0563a;font-weight:400}
+@media (max-width:760px){
+  .stage{cursor:auto}
+  .holder{height:150dvh}
+  .tbl thead{display:none}
+  .tbl tr{display:grid;grid-template-columns:40px 1fr;gap:0 10px;padding:14px 0}
+  .tbl td{border:0;padding:2px 0}
+  .tbl .n{grid-row:1/5;padding-top:3px}
+  .tbl .nm{width:auto} .tbl .num{white-space:normal}
+}
+</style>
+</head>
+<body class="">
+<div class="grain" aria-hidden="true"></div><div class="fibre" aria-hidden="true"></div>
+
+<header class="mast">
+  <div class="kick">Paper-cut study &nbsp;·&nbsp; No. 03 &nbsp;·&nbsp; Nine sheets of 300 gsm</div>
+  <h1>Nine<span>Sheets</span></h1>
+  <p class="deck">A sunrise made the slow way: nine sheets of dyed cardstock, one blade,
+  and about forty minutes of cutting that cannot be hurried. Each layer sits a few
+  millimetres above the last, so the low morning light rakes across the cut edges and
+  every ridge throws its own small shadow onto the hill behind it. <em>That stack of
+  shadows is the whole trick.</em></p>
+  <div class="byline">
+    <span>Place <b>Kelder valley, 05:52</b></span>
+    <span>Dye <b>warm wash, two baths</b></span>
+    <span>Blade <b>No. 11 &amp; No. 7</b></span>
+    <span>Finish <b>matte, unvarnished</b></span>
+  </div>
+  <div class="cue">Scroll to raise the sun</div>
+</header>
+
+<section class="holder" id="holder">
+  <div class="stage" id="stage">
+    <div class="halo" data-d="6" data-s="30" aria-hidden="true"></div>
+
+    <div class="layer sky" data-d="0" aria-hidden="true"></div>
+
+    <div class="layer sun" data-d="14" data-s="150" aria-hidden="true"></div>
+
+    <div class="layer cloud cloudA" data-d="10" aria-hidden="true"></div>
+    <div class="layer cloud cloudB" data-d="17" aria-hidden="true"></div>
+
+    <div class="layer ridgeFar" data-d="26" aria-hidden="true"></div>
+    <div class="layer ridgeMid" data-d="42" aria-hidden="true"></div>
+    <div class="layer lake" data-d="56" aria-hidden="true"></div>
+    <div class="layer trees" data-d="70" aria-hidden="true"></div>
+    <div class="layer hill" data-d="88" aria-hidden="true"></div>
+    <div class="layer fore" data-d="112" aria-hidden="true"></div>
+
+    <div class="bird" style="left:22%;top:30%" data-d="20" aria-hidden="true"></div>
+    <div class="bird" style="left:30%;top:25.5%;transform:scale(.72) rotate(8deg)" data-d="24" aria-hidden="true"></div>
+    <div class="bird" style="left:41%;top:33%;transform:scale(.55) rotate(-6deg)" data-d="18" aria-hidden="true"></div>
+
+    <div class="tag">Sheet 9 of 9 &nbsp;·&nbsp; foreground, deckle edge</div>
+    <button class="flip" id="flip">Light from the <b id="dir">left</b></button>
+    <div id="cur" aria-hidden="true"></div>
+  </div>
+</section>
+
+<section class="cut">
+  <h2>The cut list, in the order the sheets were laid down</h2>
+  <p class="note">Every silhouette below is a single polygon — no drawing, no brushes,
+  no printing. The paper was dyed in a tray, dried flat under weight, and cut against a
+  green mat with a fresh blade. Rough edges were left on purpose: a clean machine cut
+  looks like plastic, and plastic has no weight.</p>
+  <table class="tbl rv">
+    <thead><tr><th>#</th><th>Layer</th><th>Stock &amp; dye</th><th>Height in frame</th><th>Lift</th></tr></thead>
+    <tbody>
+      <tr><td class="n">01</td><td class="nm">Sky wash</td><td class="stock"><i class="sw" style="background:#f7d9b4"></i>Warm white, tea-dipped</td><td class="num">full bleed</td><td class="num">flush</td></tr>
+      <tr><td class="n">02</td><td class="nm">Sun disc</td><td class="stock"><i class="sw" style="background:#f7c976"></i>Ochre, punched as a circle</td><td class="num">centre 58%</td><td class="num">14 mm</td></tr>
+      <tr><td class="n">03</td><td class="nm">Cloud slips</td><td class="stock"><i class="sw" style="background:#fbe4c8"></i>Two torn pieces, untrimmed</td><td class="num">18 / 24%</td><td class="num">10–17 mm</td></tr>
+      <tr><td class="n">04</td><td class="nm">Far ridge</td><td class="stock"><i class="sw" style="background:#e9a882"></i>Dusty apricot</td><td class="num">38%</td><td class="num">26 mm</td></tr>
+      <tr><td class="n">05</td><td class="nm">Mid ridge</td><td class="stock"><i class="sw" style="background:#d77f66"></i>Burnt coral</td><td class="num">56%</td><td class="num">42 mm</td></tr>
+      <tr><td class="n">06</td><td class="nm">Still water</td><td class="stock"><i class="sw" style="background:#b8705f"></i>Rose madder, waxed</td><td class="num">70%</td><td class="num">56 mm</td></tr>
+      <tr><td class="n">07</td><td class="nm">Conifer belt</td><td class="stock"><i class="sw" style="background:#8a4636"></i>Iron oxide, 140 teeth</td><td class="num">80%</td><td class="num">70 mm</td></tr>
+      <tr><td class="n">08</td><td class="nm">Near hill</td><td class="stock"><i class="sw" style="background:#5c2b22"></i>Umber over red</td><td class="num">89%</td><td class="num">88 mm</td></tr>
+      <tr><td class="n">09</td><td class="nm">Foreground</td><td class="stock"><i class="sw" style="background:#2e1512"></i>Raw board, edge left torn</td><td class="num">96%</td><td class="num">112 mm</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="colo">
+  <div class="rv"><h3>Adhesive</h3><p>Sections only. A thin PVA run on the back of each sheet,
+  pressed under a book for twenty minutes. Glue stick only on the two cloud slips — they are
+  the first thing to yellow, and they sit far enough forward that it does not matter.</p></div>
+  <div class="rv"><h3>Light logic</h3><p>One low sun, off the right shoulder of the valley, so
+  every cut edge throws its shadow down and to the left. Flip the light and the whole
+  diorama re-reads: the hills start to climb out of the frame instead of settling into it.</p></div>
+  <div class="rv"><h3>Colour</h3><p>Five baths, one recipe: madder root for the reds, ochre for
+  the sky, iron for the darks, all cut with a trace of indigo so the shadows stay warm
+  instead of going grey. Nothing here is mixed on the palette — the tint comes from the bath.</p></div>
+  <div class="rv"><h3>Care</h3><p>Keep it out of sunlight and away from radiators. Brush the dust
+  off with a dry pastry brush along the grain, never across it. The torn foreground edge is
+  meant to fray a little more with age. That is not damage; that is the paper remembering.</p></div>
+</section>
+
+<footer class="foot">
+  <span>Cut by hand &nbsp;·&nbsp; <b>no two are alike</b></span>
+  <span>Move the pointer across the diorama &nbsp;·&nbsp; the sheets lean with it</span>
+</footer>
+
+<style>
+/* ---- layer surfaces, back to front ---- */
+.sky{background:linear-gradient(180deg,#fbe6c4 0%,#f8d3a6 38%,#f0ae83 74%,#e08e6c 100%)}
+.sun{background:radial-gradient(circle at 42% 38%,#fff3cf 0%,#f9d488 44%,#f2b562 100%)}
+.cloudA{background:#fbe7cd;clip-path:polygon(0 26%,14% 18%,26% 24%,38% 12%,54% 20%,66% 14%,80% 22%,92% 20%,100% 28%,100% 40%,0 40%);
+ filter:drop-shadow(var(--d1) var(--d2) 8px var(--shade)) drop-shadow(var(--lift) -2px 0 var(--edge))}
+.cloudB{background:#f2d3b1;clip-path:polygon(0 30%,10% 24%,20% 30%,32% 20%,46% 27%,58% 22%,70% 30%,84% 26%,100% 32%,100% 42%,0 42%);
+ filter:drop-shadow(var(--d1) var(--d2) 7px var(--shade)) drop-shadow(var(--lift) -2px 0 var(--edge))}
+.ridgeFar{background:linear-gradient(180deg,#eeb28c,#e29a7c);
+ clip-path:polygon(0 44%,6% 40%,12% 43%,19% 34%,26% 41%,33% 30%,39% 37%,46% 27%,53% 35%,60% 29%,67% 38%,74% 31%,81% 39%,88% 33%,95% 40%,100% 36%,100% 100%,0 100%);
+ filter:drop-shadow(var(--d1) var(--d2) 9px var(--shade)) drop-shadow(var(--lift) -2px 0 var(--edge))}
+.ridgeMid{background:linear-gradient(180deg,#db8a6d,#cd7458);
+ clip-path:polygon(0 58%,7% 53%,13% 57%,20% 49%,27% 55%,34% 47%,41% 54%,48% 45%,55% 52%,62% 47%,69% 55%,76% 50%,83% 56%,90% 52%,100% 58%,100% 100%,0 100%);
+ filter:drop-shadow(var(--d1) var(--d2) 10px var(--shade)) drop-shadow(var(--lift) -3px 0 var(--edge))}
+.lake{background:linear-gradient(180deg,#c47a66 0%,#b06a5b 34%,#8f5347 100%);
+ clip-path:polygon(0 70%,9% 68.4%,18% 70.6%,28% 68.8%,38% 70.8%,48% 68.6%,58% 70.4%,68% 68.8%,78% 70.6%,88% 68.9%,100% 70.4%,100% 100%,0 100%)}
+.lake::before{content:"";position:absolute;left:52%;top:0;width:16%;height:34%;
+  background:linear-gradient(180deg,rgba(255,226,180,.7),rgba(255,226,180,0));filter:blur(3px)}
+.trees{background:#8e4a37;
+ clip-path:polygon(0 79%,2% 76%,4% 80%,6% 75%,8% 79%,10% 74%,12% 79%,14% 75%,16% 80%,18% 74%,20% 79%,22% 73%,24% 79%,26% 74%,28% 80%,30% 74%,32% 79%,34% 73%,36% 79%,38% 74%,40% 80%,42% 74%,44% 79%,46% 73%,48% 80%,50% 74%,52% 79%,54% 73%,56% 79%,58% 74%,60% 80%,62% 74%,64% 79%,66% 73%,68% 79%,70% 74%,72% 80%,74% 74%,76% 79%,78% 73%,80% 79%,82% 74%,84% 80%,86% 74%,88% 79%,90% 73%,92% 79%,94% 75%,96% 80%,98% 76%,100% 80%,100% 100%,0 100%);
+ filter:drop-shadow(var(--d1) var(--d2) 8px var(--shade)) drop-shadow(var(--lift) -2px 0 var(--edge))}
+.hill{background:linear-gradient(180deg,#6a3427 0%,#552a20 60%,#48221b 100%);
+ clip-path:polygon(0 92%,8% 88%,16% 90%,25% 84%,34% 88%,43% 83%,52% 87%,61% 84%,70% 88%,79% 85%,88% 89%,100% 86%,100% 100%,0 100%);
+ filter:drop-shadow(var(--d1) var(--d2) 12px rgba(50,18,10,.36)) drop-shadow(var(--lift) -3px 0 rgba(255,214,180,.4))}
+.fore{background:linear-gradient(180deg,#331813,#25100d);
+ clip-path:polygon(0 100%,0 97%,3% 93%,5% 98%,8% 92%,10% 97%,13% 91%,15% 97%,18% 93%,20% 98%,23% 92%,25% 97%,28% 90%,30% 96%,33% 91%,35% 97%,38% 92%,40% 98%,43% 91%,45% 96%,48% 90%,50% 96%,53% 92%,55% 97%,58% 90%,60% 96%,63% 91%,65% 97%,68% 92%,70% 97%,73% 90%,75% 96%,78% 91%,80% 97%,83% 92%,85% 98%,88% 92%,90% 97%,93% 91%,95% 97%,98% 93%,100% 98%,100% 100%);
+ filter:drop-shadow(var(--d1) var(--d2) 16px rgba(30,10,6,.45))}
+</style>
+
+<noscript><p style="padding:24px;font-family:var(--mono);font-size:12px;letter-spacing:.1em">
+The nine sheets are stacked with CSS clip-paths and will still assemble without JavaScript —
+only the parallax, the light flip and the scroll reveals need it.</p></noscript>
+
+<script>
+const stage=document.getElementById('stage'), holder=document.getElementById('holder'),
+      cur=document.getElementById('cur'), flip=document.getElementById('flip'), dir=document.getElementById('dir');
+const moving=[...document.querySelectorAll('[data-d]')];
+let mx=0,my=0,tmx=0,tmy=0,scrollP=0;
+
+addEventListener('pointermove',e=>{
+  tmx=(e.clientX/innerWidth-0.5)*2; tmy=(e.clientY/innerHeight-0.5)*2;
+  if(cur.classList.contains('on')){cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';}
+},{passive:true});
+stage.addEventListener('pointerenter',()=>cur.classList.add('on'));
+stage.addEventListener('pointerleave',()=>cur.classList.remove('on'));
+flip.addEventListener('click',()=>{
+  const right=document.body.classList.toggle('light-r');
+  dir.textContent=right?'right':'left';
+  flip.firstChild.nodeValue='Light from the ';
+});
+function tick(){
+  mx+=(tmx-mx)*0.075; my+=(tmy-my)*0.075;
+  for(const el of moving){
+    const d=+el.dataset.d, sd=el.dataset.s?+el.dataset.s:d;   // pointer depth vs. scroll depth
+    el.style.transform='translate3d('+(-mx*d*0.55)+'px,'+(-my*d*0.34+sd*scrollP*0.9)+'px,0)';
+  }
+  requestAnimationFrame(tick);
+}
+function onScroll(){
+  const top=holder.offsetTop, h=holder.offsetHeight-innerHeight;
+  scrollP=Math.max(0,Math.min(1,(scrollY-top)/(h||1)));
+  const halo=document.querySelector('.halo');
+  halo.style.filter='blur('+(14+scrollP*26)+'px) saturate('+(1+scrollP*0.4)+')';
+}
+addEventListener('scroll',onScroll,{passive:true});
+addEventListener('resize',onScroll);
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}}),
+  {threshold:0.18});
+document.querySelectorAll('.rv').forEach((el,i)=>{el.style.transitionDelay=(i*90)+'ms';io.observe(el);});
+onScroll(); tick();
+</script>
+</body>
+</html>

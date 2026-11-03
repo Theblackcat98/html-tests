@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bai — Sumi-e Ink Wash on Kozo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f2ece0; --paper-2:#e7dfd0; --paper-3:#d8cfbd;
+    --ink:#1a1714; --ink-2:#4a423a; --ink-3:#8c8377;
+    --seal:#b0342a; --gold:#9a7b3c;
+    --jp:"Shippori Mincho","Yu Mincho","Hiragino Mincho ProN",serif;
+    --serif:"Cormorant Garamond",Georgia,serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:#e9e2d5;color:var(--ink)}
+  body{-webkit-font-smoothing:antialiased}
+
+  /* ---------- washi ---------- */
+  .washi{position:fixed;inset:0;
+    background:
+      radial-gradient(90% 70% at 22% 24%,#faf6ee 0%,var(--paper) 42%,var(--paper-2) 74%,var(--paper-3) 100%)}
+  .washi::before{content:"";position:absolute;inset:0;opacity:.5;mix-blend-mode:multiply;
+    background:
+      radial-gradient(30% 22% at 68% 78%,rgba(150,130,104,.16),transparent 70%),
+      radial-gradient(24% 30% at 12% 58%,rgba(150,130,104,.13),transparent 70%),
+      repeating-linear-gradient(92deg,rgba(255,255,255,.35) 0 1px,transparent 1px 6px)}
+  .washi::after{content:"";position:absolute;inset:0;opacity:.42;mix-blend-mode:multiply;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.72' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23w)' opacity='.42'/%3E%3C/svg%3E")}
+
+  /* ---------- plates ---------- */
+  .plate{position:fixed;inset:0;z-index:2;pointer-events:none;
+    display:grid;grid-template-columns:1fr auto;grid-template-rows:auto 1fr auto}
+  .idx{grid-column:1;grid-row:1;padding:clamp(16px,2.4vw,32px);
+    font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--ink-3)}
+  .idx b{font-weight:400;color:var(--ink-2)}
+  .edge{grid-column:2;grid-row:1/4;width:clamp(14px,2vw,30px);
+    background:linear-gradient(90deg,rgba(90,78,62,0),rgba(90,78,62,.14));
+    box-shadow:inset 1px 0 0 rgba(255,255,255,.5)}
+
+  /* ---------- the painting ---------- */
+  .art{position:fixed;inset:0;z-index:1;display:grid;place-items:center;pointer-events:none}
+  .art svg{width:min(92vw,760px);height:min(88dvh,1020px);display:block;overflow:visible}
+  @media (max-width:900px){ .art svg{height:min(74dvh,760px);margin-bottom:6dvh} }
+
+  /* ---------- vertical text column ---------- */
+  .col{position:fixed;top:clamp(22px,5.6vh,80px);right:clamp(30px,4.6vw,78px);z-index:4;
+    display:flex;flex-direction:row-reverse;align-items:flex-start;
+    gap:clamp(10px,1.5vw,22px);pointer-events:none}
+  .poem{margin:0;writing-mode:vertical-rl;font-family:var(--jp);font-weight:400;
+    font-size:clamp(19px,2.4vw,34px);line-height:2.1;letter-spacing:.22em;color:#241f1a;
+    text-shadow:0 1px 0 rgba(255,255,255,.5)}
+  .poem .l{display:block}
+  .poem .dim{color:#6b6257}
+  .poem ruby{ruby-position:over}
+  .poem rt{font-size:.32em;letter-spacing:.04em;color:var(--ink-3);font-weight:400}
+  .insc{margin:clamp(56px,8vw,150px) 0 0 0;writing-mode:vertical-rl;font-family:var(--jp);
+    font-size:clamp(10px,.95vw,13px);letter-spacing:.3em;color:var(--ink-2);opacity:.78}
+  .seal{width:52px;height:52px;margin:clamp(120px,20vw,330px) 0 0 0;background:var(--seal);
+    border-radius:3px;display:grid;place-items:center;line-height:1.02;
+    font-family:var(--jp);font-size:20px;font-weight:600;color:#f6efe2;
+    box-shadow:0 1px 4px rgba(140,40,30,.35),inset 0 0 0 1.4px rgba(246,239,226,.22);
+    transform:rotate(-2deg);position:relative;overflow:hidden}
+  .seal::after{content:"";position:absolute;inset:0;border-radius:3px;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.28' numOctaves='3'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='3'/%3E%3C/filter%3E%3Crect width='60' height='60' fill='none'/%3E%3C/svg%3E");
+    mix-blend-mode:screen;opacity:.5}
+
+  /* ---------- caption ---------- */
+  .cap{position:fixed;left:clamp(16px,2.4vw,32px);bottom:clamp(18px,3vh,34px);z-index:4;
+    max-width:min(38ch,44vw);border-top:1px solid rgba(60,50,40,.22);padding-top:12px}
+  .cap .en{font-family:var(--serif);font-style:italic;font-size:clamp(15px,1.4vw,21px);
+    line-height:1.5;margin:0;color:#332d26}
+  .cap .src{margin:10px 0 0;font-family:var(--mono);font-size:9px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--ink-3);line-height:1.9}
+
+  /* ---------- tools ---------- */
+  .tools{position:fixed;right:clamp(38px,5.4vw,86px);bottom:clamp(18px,3vh,34px);z-index:5;
+    display:flex;gap:8px;align-items:center}
+  .tools button{font-family:var(--mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;
+    color:#5b5349;background:rgba(255,252,246,.5);border:1px solid rgba(60,50,40,.24);
+    padding:8px 13px;cursor:pointer;transition:all .22s ease;backdrop-filter:blur(4px)}
+  .tools button:hover{background:rgba(26,23,20,.9);color:var(--paper);border-color:transparent}
+  .tools .live{font-size:9px;letter-spacing:.16em;color:var(--ink-3);text-transform:uppercase}
+  .tools .live i{font-style:normal;color:var(--seal);animation:blink 2.4s steps(1) infinite}
+  @keyframes blink{0%,60%{opacity:1}61%,100%{opacity:.25}}
+
+  #ink{position:fixed;inset:0;z-index:3;pointer-events:none;mix-blend-mode:multiply}
+  .rinse{position:fixed;inset:0;z-index:6;pointer-events:none;opacity:0;
+    background:radial-gradient(60% 60% at 50% 50%,rgba(242,236,224,.98),rgba(236,229,216,.9) 70%,transparent)}
+  .rinse.go{animation:wash .9s cubic-bezier(.4,0,.2,1) both}
+  @keyframes wash{0%{opacity:0;transform:scale(.2)}22%{opacity:1;transform:scale(1.1)}100%{opacity:0;transform:scale(2.2)}}
+
+  @media (max-width:900px){
+    .poem{font-size:clamp(15px,4.2vw,22px);letter-spacing:.18em;right:22px;top:18px;line-height:1.9}
+    .insc{right:22px;font-size:10px}
+    .col{right:22px;top:16px;gap:8px}
+  .poem{font-size:clamp(14px,4vw,20px);letter-spacing:.16em;line-height:1.85}
+  .insc{margin-top:40px;font-size:9px}
+  .seal{width:38px;height:38px;font-size:14px;margin-top:110px}
+  .edge{display:none}
+    .cap{max-width:76vw;bottom:64px}
+    .tools{right:auto;left:16px;bottom:16px}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<div class="washi" aria-hidden="true"></div>
+
+<svg class="art" viewBox="0 0 900 1180" role="img" aria-label="Ink wash painting of a plum branch in blossom">
+  <defs>
+    <filter id="bleed" x="-14%" y="-14%" width="128%" height="128%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.028" numOctaves="4" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="7" xChannelSelector="R" yChannelSelector="G"/>
+      <feGaussianBlur stdDeviation="0.5"/>
+    </filter>
+    <filter id="bleed-soft" x="-18%" y="-18%" width="136%" height="136%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="3" seed="21" result="n2"/>
+      <feDisplacementMap in="SourceGraphic" in2="n2" scale="11"/>
+      <feGaussianBlur stdDeviation="1.6"/>
+    </filter>
+    <filter id="drybrush" x="-10%" y="-10%" width="120%" height="120%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9 0.03" numOctaves="4" seed="3" result="d"/>
+      <feColorMatrix in="d" type="matrix" result="dm"
+        values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 -1.5 1.05"/>
+      <feComposite in="SourceGraphic" in2="dm" operator="in"/>
+    </filter>
+    <filter id="rough" x="-8%" y="-8%" width="116%" height="116%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.07" numOctaves="3" seed="11" result="r"/>
+      <feDisplacementMap in="SourceGraphic" in2="r" scale="5.5"/>
+    </filter>
+
+    <linearGradient id="inkFade" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#1a1714" stop-opacity=".94"/>
+      <stop offset=".55" stop-color="#211d19" stop-opacity=".82"/>
+      <stop offset="1" stop-color="#2c2721" stop-opacity=".5"/>
+    </linearGradient>
+    <linearGradient id="tipFade" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#181512" stop-opacity=".2"/>
+      <stop offset="1" stop-color="#181512" stop-opacity="1"/>
+    </linearGradient>
+    <radialGradient id="petal" cx="38%" cy="28%" r="80%">
+      <stop offset="0" stop-color="#fffdf9" stop-opacity=".95"/>
+      <stop offset=".38" stop-color="#f3e2da" stop-opacity=".45"/>
+      <stop offset="1" stop-color="#d8a99e" stop-opacity=".3"/>
+    </radialGradient>
+  </defs>
+
+  <style>
+    @keyframes bloom{from{transform:scale(.12) rotate(-22deg);opacity:0}to{transform:none;opacity:1}}
+    .bl{transform-box:fill-box;transform-origin:center}
+  </style>
+
+  <g id="branch" filter="url(#rough)">
+    <path d="M 30 1178 C 86 1046 152 944 206 838 C 258 736 312 646 372 552
+             C 414 486 452 424 482 352 C 502 304 512 268 520 236
+             L 536 242 C 528 288 516 330 496 380
+             C 466 456 426 522 386 590 C 322 686 268 780 216 884
+             C 162 992 100 1080 62 1180 Z" fill="url(#inkFade)"/>
+    <path d="M 296 690 C 366 626 434 566 502 496 C 560 436 616 378 668 320
+             L 684 330 C 630 392 572 452 514 514 C 442 590 372 656 312 716 Z"
+          fill="url(#inkFade)" opacity=".94"/>
+    <path d="M 216 812 C 176 726 126 652 84 560 L 100 548
+             C 146 644 198 722 240 806 Z" fill="url(#inkFade)" opacity=".9"/>
+    <path d="M 494 512 C 562 424 642 322 718 232 L 730 242
+             C 656 336 578 440 512 536 Z" fill="url(#inkFade)" opacity=".82"/>
+    <path d="M 664 324 C 726 288 790 258 856 244 L 860 256
+             C 794 270 730 300 672 336 Z" fill="url(#inkFade)" opacity=".7"/>
+    <path d="M 96 556 C 66 486 44 418 32 352 L 44 350
+             C 56 416 78 484 108 552 Z" fill="url(#inkFade)" opacity=".66"/>
+    <path d="M 380 566 C 356 508 342 452 336 396 L 348 394
+             C 354 450 368 506 392 562 Z" fill="url(#inkFade)" opacity=".7"/>
+  </g>
+
+  <g id="knots" filter="url(#bleed-soft)" fill="#1a1714" opacity=".5">
+    <ellipse cx="212" cy="830" rx="13" ry="7" transform="rotate(-52 212 830)"/>
+    <ellipse cx="374" cy="556" rx="10" ry="6" transform="rotate(-40 374 556)"/>
+    <ellipse cx="300" cy="690" rx="9" ry="5.5" transform="rotate(-38 300 690)"/>
+    <ellipse cx="496" cy="502" rx="8" ry="5" transform="rotate(-40 496 502)"/>
+    <ellipse cx="668" cy="322" rx="7" ry="4.5" transform="rotate(-34 668 322)"/>
+    <ellipse cx="88" cy="560" rx="7" ry="4.5" transform="rotate(-64 88 560)"/>
+  </g>
+
+  <g id="wash" aria-hidden="true">
+    <ellipse cx="300" cy="700" rx="150" ry="240" fill="#5a4f42" opacity=".055" filter="url(#bleed-soft)"/>
+    <ellipse cx="700" cy="330" rx="130" ry="110" fill="#5a4f42" opacity=".05" filter="url(#bleed-soft)"/>
+  </g>
+
+  <g id="flowers"></g>
+</svg>
+
+<canvas id="ink" aria-hidden="true"></canvas>
+
+<div class="plate">
+  <div class="idx">Plate <b>05</b> &middot; Sumi on kozo &middot; 340 &times; 470 mm</div>
+  <div class="edge" aria-hidden="true"></div>
+</div>
+
+<div class="col">
+  <p class="poem" lang="ja" aria-label="Wang Anshi, On Plum Blossoms">
+    <span class="l"><ruby>凌<rt>りょう</rt></ruby><ruby>寒<rt>かん</rt></ruby><ruby>獨<rt>どく</rt></ruby><ruby>自<rt>じ</rt></ruby><ruby>開<rt>かい</rt></ruby></span>
+    <span class="l dim"><ruby>遙<rt>よう</rt></ruby><ruby>知<rt>ち</rt></ruby><ruby>不<rt>ぶ</rt></ruby><ruby>是<rt>ぜ</rt></ruby><ruby>雪<rt>せつ</rt></ruby></span>
+    <span class="l dim"><ruby>為<rt>ため</rt></ruby><ruby>有<rt>ゆう</rt></ruby><ruby>暗<rt>あん</rt></ruby><ruby>香<rt>こう</rt></ruby><ruby>來<rt>らい</rt></ruby></span>
+  </p>
+  <p class="insc" lang="ja">雪未消　香先至<br>壬寅之冬</p>
+  <div class="seal" lang="ja" aria-label="Seal: dark fragrance">暗<br>香</div>
+</div>
+
+<div class="cap">
+  <p class="en">It opens alone against the cold.<br>Not snow &mdash; I know, because a scent arrives.</p>
+  <p class="src">Wang Anshi, <i>On Plum Blossoms</i>, 1021&ndash;1086 &middot; translation ours</p>
+</div>
+
+<div class="tools">
+  <span class="live"><i>&#9679;</i> ink wet</span>
+  <button type="button" id="rinse">Rinse the paper</button>
+</div>
+
+<div class="rinse" id="washfx" aria-hidden="true"></div>
+
+<noscript><p style="position:fixed;left:0;right:0;bottom:0;margin:0;padding:12px;background:#1a1714;color:#f2ece0;font:12px monospace;text-align:center">The painting is finished. Only the wet ink needs JavaScript, and it is already drying.</p></noscript>
+
+<script>
+(function(){
+  "use strict";
+  var NS = "http://www.w3.org/2000/svg";
+  function el(n, a){
+    var e = document.createElementNS(NS, n);
+    for (var k in a) e.setAttribute(k, a[k]);
+    return e;
+  }
+
+  /* ---------------- blossoms ---------------- */
+  var BLOOMS = [
+    [522, 238, 1.00, 0], [686, 324, 0.86, 1], [728, 236, 0.72, 2],
+    [856, 248, 0.92, 3], [98, 550, 0.80, 4], [40, 350, 0.66, 5],
+    [470, 388, 0.74, 6], [392, 556, 0.86, 7], [302, 690, 0.68, 8],
+    [150, 660, 0.60, 9], [346, 400, 0.56, 10], [560, 440, 0.54, 11]
+  ];
+  var BUDS = [
+    [812, 268, -0.5, 1], [122, 610, 0.6, .9], [430, 480, -0.2, 1.05],
+    [596, 372, 0.4, .85], [250, 760, -0.7, .8], [764, 214, 0.2, .7]
+  ];
+
+  var flowers = document.getElementById("flowers");
+  var rnd = function(seed){ var s = seed * 9301 + 49297; return (s % 233280) / 233280; };
+
+  BLOOMS.forEach(function(b, i){
+    var g = el("g", { class: "bl", filter: "url(#bleed)" });
+    var r = 30 * b[2];
+    var rot = rnd(i + 1) * 72;
+    for (var p = 0; p < 5; p++){
+      var a = rot + p * 72 + (rnd(i * 9 + p) - 0.5) * 9;
+      var rad = a * Math.PI / 180;
+      var px = Math.cos(rad) * r * 0.62, py = Math.sin(rad) * r * 0.62;
+      g.appendChild(el("ellipse", {
+        cx: px.toFixed(2), cy: py.toFixed(2),
+        rx: (r * 0.56).toFixed(2), ry: (r * 0.46).toFixed(2),
+        fill: "url(#petal)", stroke: "#2b241d",
+        "stroke-width": (0.9 + b[2] * 0.5).toFixed(2), "stroke-opacity": ".5",
+        transform: "rotate(" + (a + 90).toFixed(1) + " " + px.toFixed(2) + " " + py.toFixed(2) + ")"
+      }));
+    }
+    g.appendChild(el("circle", { cx: 0, cy: 0, r: (r * 0.2).toFixed(2), fill: "#241d17", "fill-opacity": ".82" }));
+    for (var s = 0; s < 9; s++){
+      var sa = (s / 9) * 360 + rnd(i + s) * 22;
+      var sr = r * (0.3 + rnd(s + i * 3) * 0.26);
+      var rad2 = sa * Math.PI / 180;
+      var ex = Math.cos(rad2) * sr, ey = Math.sin(rad2) * sr;
+      g.appendChild(el("line", {
+        x1: 0, y1: 0, x2: ex.toFixed(2), y2: ey.toFixed(2),
+        stroke: "#3a3128", "stroke-width": ".7", "stroke-opacity": ".45"
+      }));
+      g.appendChild(el("circle", { cx: ex.toFixed(2), cy: ey.toFixed(2), r: (1.5 + b[2]).toFixed(2), fill: "#7d5a1e", "fill-opacity": ".7" }));
+    }
+    g.setAttribute("transform", "translate(" + b[0] + "," + b[1] + ")");
+    g.style.animation = "bloom 1.1s cubic-bezier(.2,.9,.2,1) " + (0.15 + i * 0.11) + "s both";
+    flowers.appendChild(g);
+  });
+
+  BUDS.forEach(function(b, i){
+    var g = el("g", { class: "bl", filter: "url(#bleed)" });
+    var h = 15 * b[3], w = 7 * b[3];
+    g.appendChild(el("path", {
+      d: "M0 0 C " + w + " " + (-h * .4) + " " + (w * .8) + " " + (-h * .8) + " 0 " + (-h) +
+        " C " + (-w * .8) + " " + (-h * .8) + " " + (-w) + " " + (-h * .4) + " 0 0 Z",
+      fill: "#d8a99e", "fill-opacity": ".34", stroke: "#33291f", "stroke-width": "1", "stroke-opacity": ".55"
+    }));
+    g.setAttribute("transform", "translate(" + b[0] + "," + b[1] + ") rotate(" + (b[2] * 57.3) + ")");
+    g.style.animation = "bloom .9s cubic-bezier(.2,.9,.2,1) " + (0.9 + i * 0.09) + "s both";
+    flowers.appendChild(g);
+  });
+
+  /* ---------------- live ink ---------------- */
+  var cv = document.getElementById("ink");
+  var ctx = cv.getContext("2d");
+  var W = 0, H = 0, DPR = 1;
+  function size(){
+    DPR = Math.min(devicePixelRatio || 1, 2);
+    W = innerWidth; H = innerHeight;
+    cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+    cv.style.width = W + "px"; cv.style.height = H + "px";
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  size();
+  addEventListener("resize", size);
+
+  var DRY = 9000, strokes = [], live = null;
+  var lastX = 0, lastY = 0, lastT = 0, downX = 0, downY = 0, downT = 0, drawing = false;
+
+  function point(e){
+    return { x: e.clientX, y: e.clientY, t: performance.now() };
+  }
+
+  function addPoint(p){
+    if (!live) return;
+    var prev = live.pts[live.pts.length - 1];
+    if (prev){
+      var dt = Math.max(8, p.t - prev.t);
+      var d = Math.hypot(p.x - prev.x, p.y - prev.y);
+      if (d < 1.1) return;
+      var sp = d / dt;                             /* px per ms */
+      var w = 34 * (1 - Math.min(1, sp / 2.1)) + 3.5;
+      p.w = Math.max(2.4, Math.min(34, w));
+    } else {
+      p.w = 5;
+    }
+    live.pts.push(p);
+    if (live.pts.length > 1400){ strokes.shift(); }
+  }
+
+  function outline(pts, grow){
+    var n = pts.length;
+    if (n < 2) return null;
+    var left = [], right = [];
+    for (var i = 0; i < n; i++){
+      var a = pts[Math.max(0, i - 1)], b = pts[Math.min(n - 1, i + 1)];
+      var tx = b.x - a.x, ty = b.y - a.y;
+      var m = Math.hypot(tx, ty) || 1;
+      var nx = -ty / m, ny = tx / m;
+      var k = i / (n - 1);
+      var taper = Math.min(1, k * 14) * Math.min(1, (1 - k) * 22 + .18);
+      var hw = (pts[i].w * 0.5) * (0.2 + 0.8 * taper) + grow;
+      left.push([pts[i].x + nx * hw, pts[i].y + ny * hw]);
+      right.push([pts[i].x - nx * hw, pts[i].y - ny * hw]);
+    }
+    return left.concat(right.reverse());
+  }
+
+  function tracePath(pts){
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    for (var i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+    ctx.closePath();
+  }
+
+  function paint(now){
+    ctx.clearRect(0, 0, W, H);
+    for (var s = 0; s < strokes.length; s++){
+      var st = strokes[s];
+      var age = (now - st.born) / DRY;
+      if (age >= 1){ strokes.splice(s, 1); s--; continue; }
+      var a = Math.pow(1 - age, 1.5) * 0.9;
+      var poly = outline(st.pts, 0);
+      if (!poly) continue;
+      /* wet halo: ink creeping into the fibre */
+      ctx.save();
+      ctx.globalAlpha = a * 0.2;
+      ctx.shadowColor = "rgba(26,23,20," + (a * .5) + ")";
+      ctx.shadowBlur = 9;
+      tracePath(poly); ctx.fillStyle = "#1a1714"; ctx.fill();
+      ctx.restore();
+      /* wet edge: pigment stranded at the rim as the water leaves */
+      ctx.save();
+      ctx.globalAlpha = a * 0.34;
+      tracePath(outline(st.pts, 2.4)); ctx.fillStyle = "#100e0c"; ctx.fill();
+      ctx.restore();
+      /* body */
+      ctx.save();
+      ctx.globalAlpha = a;
+      ctx.fillStyle = "#1a1714";
+      tracePath(poly); ctx.fill();
+      ctx.globalAlpha = a * 0.5;
+      ctx.fillStyle = "#0f0d0b";
+      tracePath(outline(st.pts, 0.9)); ctx.fill();
+      ctx.restore();
+    }
+    requestAnimationFrame(paint);
+  }
+  requestAnimationFrame(paint);
+
+  addEventListener("pointerdown", function(e){
+    if (e.target.closest && e.target.closest("button")) return;
+    drawing = true;
+    downX = e.clientX; downY = e.clientY; downT = performance.now();
+    live = { pts: [], born: performance.now() };
+    lastX = e.clientX; lastY = e.clientY; lastT = performance.now();
+    addPoint(point(e));
+  }, {passive:true});
+
+  addEventListener("pointermove", function(e){
+    if (!drawing) return;
+    if (e.pointerType === "mouse" && e.buttons === 0) return;
+    var p = point(e);
+    if (Math.hypot(p.x - lastX, p.y - lastY) < 1.4) return;
+    lastX = p.x; lastY = p.y; lastT = p.t;
+    addPoint(p);
+  }, {passive:true});
+
+  function finish(e){
+    if (!drawing) return;
+    drawing = false;
+    var still = Math.hypot(e.clientX - downX, e.clientY - downY) < 9 && performance.now() - downT < 420;
+    if (still){ rinse(); live = null; return; }
+    if (live && live.pts.length > 1){
+      strokes.push(live);
+      if (strokes.length > 9) strokes.shift();
+    }
+    live = null;
+  }
+  addEventListener("pointerup", finish, {passive:true});
+  addEventListener("pointercancel", function(){ drawing = false; live = null; }, {passive:true});
+
+  var washfx = document.getElementById("washfx");
+  function rinse(){
+    strokes.length = 0; live = null;
+    washfx.classList.remove("go"); void washfx.offsetWidth;
+    washfx.classList.add("go");
+  }
+  document.getElementById("rinse").addEventListener("click", rinse);
+  addEventListener("keydown", function(e){ if (e.key === "r" || e.key === "R") rinse(); });
+})();
+</script>
+</body>
+</html>

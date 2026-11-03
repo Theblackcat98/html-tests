@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEUE GRAFIK — International Typographic Style, 1958–1964</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+  :root{
+    --black:#0a0a0a;
+    --white:#f7f7f5;
+    --red:#e01b12;
+    --grey:#8b8b8b;
+    --gutter:clamp(18px, 2.4vw, 40px);
+    --grid-show:0;
+  }
+
+  html,body{height:100%}
+  body{
+    font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;
+    background:var(--white);
+    color:var(--black);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+
+  /* ── 12-column field ─────────────────────────────────────────── */
+  .sheet{
+    position:relative; z-index:2;
+    min-height:100dvh;
+    display:grid;
+    grid-template-columns:repeat(12, 1fr);
+    column-gap:var(--gutter);
+    padding:var(--gutter) var(--gutter) clamp(20px,2.4vw,34px);
+    align-content:start;
+  }
+
+  .gridlines{
+    position:fixed; inset:0; z-index:1; pointer-events:none;
+    opacity:var(--grid-show);
+    transition:opacity .28s ease;
+    background-image:
+      repeating-linear-gradient(to right, rgba(224,27,18,.34) 0 1px, transparent 1px calc((100% - (var(--gutter) * 11)) / 12));
+    background-position:0 0;
+    background-size:calc((100% - (var(--gutter) * 11)) / 12) 100%;
+    background-repeat:repeat-x;
+  }
+  .gridlines::before{
+    content:""; position:absolute; inset:0;
+    background-image:repeating-linear-gradient(to bottom, rgba(10,10,10,.22) 0 1px, transparent 1px 24px);
+  }
+  .gridlines::after{
+    content:""; position:absolute; inset:0;
+    background-image:repeating-linear-gradient(to right, rgba(10,10,10,.22) 0 1px, transparent 1px 24px);
+  }
+
+  /* ── masthead ────────────────────────────────────────────────── */
+  .masthead{ grid-column:1 / 13; display:flex; justify-content:space-between; align-items:flex-start; gap:24px; border-bottom:3px solid var(--black); padding-bottom:10px; }
+  .masthead__mark{
+    font-family:"Archivo",Helvetica,Arial,sans-serif;
+    font-weight:900; font-size:clamp(1.05rem,1.5vw,1.5rem);
+    letter-spacing:-.03em; text-transform:uppercase; line-height:.9;
+  }
+  .masthead__mark i{font-style:normal;color:var(--red)}
+  .masthead__meta{
+    display:flex; gap:clamp(14px,2vw,38px);
+    font-size:clamp(.55rem,.68vw,.66rem); letter-spacing:.2em; text-transform:uppercase;
+    color:var(--grey);
+  }
+  .masthead__meta span:last-child{color:var(--black)}
+
+  /* ── giant headline ──────────────────────────────────────────── */
+  .headline{ grid-column:1 / 10; margin-top:clamp(20px,3.4vw,58px); }
+  .headline h1{
+    font-family:"Archivo","Helvetica Neue",Arial,sans-serif;
+    font-weight:900;
+    font-size:clamp(3.1rem, 11.4vw, 12.4rem);
+    line-height:.83;
+    letter-spacing:-.045em;
+    text-transform:uppercase;
+  }
+  .headline h1 span{display:block}
+  .headline h1 .out{ -webkit-text-stroke:2.4px var(--black); color:transparent; }
+  .headline__sub{
+    margin-top:clamp(14px,1.8vw,26px);
+    display:flex; align-items:center; gap:14px;
+    font-size:clamp(.62rem,.8vw,.78rem); letter-spacing:.34em; text-transform:uppercase;
+  }
+  .headline__sub i{font-style:normal; color:var(--red); font-weight:500}
+
+  /* red accent bar */
+  .bar{ grid-column:1 / 13; margin-top:clamp(18px,2.6vw,40px); height:clamp(14px,2.1vw,30px); background:var(--red); position:relative; overflow:hidden; }
+  .bar::after{
+    content:""; position:absolute; inset:0;
+    background:repeating-linear-gradient(90deg, var(--black) 0 2px, transparent 2px 26px);
+    opacity:.9;
+  }
+
+  /* ── index / difference block ─────────────────────────────────── */
+  .index{ grid-column:1 / 4; margin-top:clamp(18px,2.4vw,38px); }
+  .index__num{
+    font-family:"Archivo",sans-serif; font-weight:900;
+    font-size:clamp(4rem, 12vw, 13rem); line-height:.78; letter-spacing:-.06em;
+    color:var(--red);
+  }
+  .index p{ margin-top:14px; font-size:clamp(.72rem,.92vw,.86rem); line-height:1.5; color:#3a3a3a; max-width:30ch; }
+
+  /* the mix-blend-mode:difference element */
+  .blend{
+    grid-column:5 / 10; margin-top:clamp(18px,2.4vw,38px);
+    align-self:start;
+  }
+  .blend__box{
+    position:relative;
+    display:grid; place-items:center;
+    aspect-ratio:1 / 1; max-width:clamp(220px, 26vw, 420px);
+    background:var(--black);
+    color:var(--white);
+    cursor:pointer;
+    isolation:isolate;
+    overflow:hidden;
+  }
+  .blend__box::before{
+    content:""; position:absolute; inset:0;
+    background:var(--red);
+    mix-blend-mode:difference;
+    opacity:0; transform:scale(.6);
+    transition:opacity .38s cubic-bezier(.22,.61,.36,1), transform .5s cubic-bezier(.22,.61,.36,1);
+  }
+  .blend__box:hover::before,.blend__box:focus-visible::before{opacity:1; transform:scale(1)}
+  .blend__box b{
+    position:relative; z-index:2;
+    font-family:"Archivo",sans-serif; font-weight:800;
+    font-size:clamp(1.4rem,3.4vw,3rem); letter-spacing:-.03em; text-transform:uppercase;
+    mix-blend-mode:difference; color:#fff; text-align:center; line-height:.95;
+    pointer-events:none;
+  }
+  .blend__cap{ margin-top:10px; font-size:.56rem; letter-spacing:.28em; text-transform:uppercase; color:var(--grey); }
+
+  /* caption blocks */
+  .col{ grid-column:10 / 13; margin-top:clamp(18px,2.4vw,38px); }
+  .block{ border-top:2px solid var(--black); padding-top:8px; margin-bottom:clamp(14px,1.8vw,26px); }
+  .block h2{ font-size:.56rem; letter-spacing:.28em; text-transform:uppercase; font-weight:500; color:var(--grey); margin-bottom:6px; }
+  .block p{ font-size:clamp(.72rem,.9vw,.85rem); line-height:1.52; }
+  .block p b{font-weight:600}
+  .block ul{ list-style:none; font-size:clamp(.7rem,.86vw,.82rem); line-height:1.85; }
+  .block li span{ color:var(--red); font-weight:500; letter-spacing:.06em; }
+
+  .foot{ grid-column:1 / 13; margin-top:clamp(24px,3.4vw,56px); border-top:3px solid var(--black); padding-top:10px;
+    display:grid; grid-template-columns:repeat(3,1fr); gap:var(--gutter);
+    font-size:.56rem; letter-spacing:.24em; text-transform:uppercase; color:var(--grey);
+  }
+  .foot b{color:var(--black); font-weight:500}
+
+  .toggle{
+    position:fixed; right:clamp(12px,1.6vw,26px); bottom:clamp(12px,1.6vw,26px); z-index:6;
+    display:flex; align-items:center; gap:9px;
+    background:var(--black); color:var(--white); border:0; cursor:pointer;
+    padding:9px 14px;
+    font-family:inherit; font-size:.56rem; letter-spacing:.24em; text-transform:uppercase;
+  }
+  .toggle kbd{
+    font-family:inherit; font-size:.5rem; letter-spacing:.1em;
+    border:1px solid rgba(247,247,245,.45); padding:1px 5px;
+  }
+  .toggle:hover{background:var(--red)}
+  .toggle[aria-pressed="true"]{background:var(--red)}
+
+  @media (max-width:1000px){
+    .headline{grid-column:1 / 13}
+    .blend{grid-column:1 / 6}
+    .col{grid-column:7 / 13}
+    .index{grid-column:1 / 4}
+    .index p{display:none}
+  }
+  @media (max-width:640px){
+    .masthead__meta span:not(:last-child){display:none}
+    .blend{grid-column:1 / 13}
+    .col{grid-column:1 / 13}
+    .index{grid-column:1 / 13}
+    .foot{grid-template-columns:1fr; gap:8px}
+    .blend__box{max-width:none; aspect-ratio:16/9}
+  }
+</style>
+</head>
+<body>
+<noscript>
+  <div style="padding:24px;font-family:Helvetica,Arial,sans-serif;max-width:64ch;margin:0 auto">
+    <h1>Neue Grafik</h1>
+    <p>An exhibition poster for the International Typographic Style, 1958–1964. The grid overlay and the difference-blend hover block require JavaScript; all type and rules are plain CSS.</p>
+  </div>
+</noscript>
+
+<div class="gridlines" id="gridlines" aria-hidden="true"></div>
+
+<main class="sheet">
+  <header class="masthead">
+    <div class="masthead__mark">Kunstgewerbe<i>/</i>museum<br>Zürich</div>
+    <div class="masthead__meta">
+      <span>No. 214</span>
+      <span>Neue Grafik</span>
+      <span>12 Mar — 28 Jun</span>
+    </div>
+  </header>
+
+  <section class="headline">
+    <h1><span>Neue</span><span class="out">Grafik</span></h1>
+    <div class="headline__sub">
+      <i>■</i> International Typographic Style <span aria-hidden="true">—</span> 1958&ndash;1964
+    </div>
+  </section>
+
+  <div class="bar" aria-hidden="true"></div>
+
+  <section class="index">
+    <div class="index__num">214</div>
+    <p>Sixty-one posters, twelve journals and one very long argument about the grid, assembled from the museum flat file.</p>
+  </section>
+
+  <section class="blend">
+    <div class="blend__box" tabindex="0" role="button" aria-label="Invert the field">
+      <b>Grid is<br>not a cage</b>
+    </div>
+    <div class="blend__cap">Hover / focus to invert</div>
+  </section>
+
+  <aside class="col">
+    <div class="block">
+      <h2>Curator</h2>
+      <p><b>Dr. Annika Roth</b>, head of the graphic design collection. Working with the estates of Josef Müller-Brockmann and Karl Gerstner.</p>
+    </div>
+    <div class="block">
+      <h2>Eight essentials</h2>
+      <ul>
+        <li><span>01</span> &nbsp;Akzidenz-Grotesk and Univers, 1957</li>
+        <li><span>02</span> &nbsp;A modular grid, drawn before setting type</li>
+        <li><span>03</span> &nbsp;Photography as information, not decoration</li>
+        <li><span>04</span> &nbsp;One accent colour, used sparingly</li>
+        <li><span>05</span> &nbsp;Flattened perspective, no illusion of depth</li>
+        <li><span>06</span> &nbsp;Journals trimmed flush, square format</li>
+        <li><span>07</span> &nbsp;Type set flush left, ragged right</li>
+        <li><span>08</span> &nbsp;Wholesale as a form of persuasion</li>
+      </ul>
+    </div>
+    <div class="block">
+      <h2>Related</h2>
+      <p><b>Grid Systems in Graphic Design</b>, Müller-Brockmann, 1981 &mdash; in the reading room, open access. Babler &amp; Bächer reprints of the <i>Neue Grafik</i> run available at the desk.</p>
+    </div>
+  </aside>
+
+  <footer class="foot">
+    <span><b>Hall 4</b> &nbsp;—&nbsp; Level 2, West</span>
+    <span>Tue&ndash;Sun 10&ndash;18 &nbsp;·&nbsp; Fri until 21</span>
+    <span>Study 03 &nbsp;—&nbsp; 12-column grid, difference blending</span>
+  </footer>
+</main>
+
+<button class="toggle" id="gridToggle" aria-pressed="false" aria-controls="gridlines">Grid <kbd>G</kbd></button>
+
+<script>
+(function(){
+  var root = document.documentElement;
+  var btn = document.getElementById('gridToggle');
+  var lines = document.getElementById('gridlines');
+  if(!btn || !lines) return;
+
+  function set(show){
+    root.style.setProperty('--grid-show', show ? '1' : '0');
+    btn.setAttribute('aria-pressed', show ? 'true' : 'false');
+  }
+  btn.addEventListener('click', function(){ set(btn.getAttribute('aria-pressed') !== 'true'); });
+  window.addEventListener('keydown', function(e){
+    if(e.key === 'g' || e.key === 'G'){
+      if(e.metaKey || e.ctrlKey || e.altKey) return;
+      set(btn.getAttribute('aria-pressed') !== 'true');
+    }
+  });
+  set(false);
+})();
+</script>
+</body>
+</html>

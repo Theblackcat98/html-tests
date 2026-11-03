@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Long Room — an isometric café that changes from afternoon to midnight</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   THE LONG ROOM — ISOMETRIC CAFÉ
+   Technique: SVG polygons projected in true isometric (30° axes)
+   with CSS custom properties doing the day/night relight.
+   Skeleton: full-bleed scene with floating overlay cards.
+   ============================================================ */
+:root{
+  --ink:#201c18; --ink2:#5c5348;
+  --bg:#d9d2c6; --air:#c9c1b2;
+  --floor:#c69a68; --floorFar:#b98c5c;
+  --w-l:#efe7d8; --w-r:#dcd2c0; --w-sill:#8d7a63;
+  --wd-t:#c08b52; --wd-l:#8e5f34; --wd-r:#a9743f;
+  --mt-t:#dfe3e6; --mt-l:#9aa2a8; --mt-r:#b9c0c5;
+  --sage-t:#8fa287; --sage-l:#5f7359; --sage-r:#77896f;
+  --leaf:#3f6b4e; --leaf2:#335a42;
+  --lamp:#2c2a26; --bulb:.12; --pool:.05;
+  --winSky1:#cfe3ef; --winSky2:#eef3ee; --winLamp:0; --spill:.55; --spillc:#fff6e2;
+  --sh-op:.20; --sh-blur:3; --sh-dx:1.1; --sh-dy:.5;
+  --amb:#ffffff; --ambop:.06; --cardbg:rgba(233,227,216,.72); --cardline:rgba(32,28,24,.16);
+  --serif:"Fraunces",Georgia,serif;
+  --sans:"Inter","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",Menlo,Consolas,monospace;
+}
+body[data-mode="night"]{
+  --bg:#0d1016; --air:#141922; --ink:#e8e3d9; --ink2:#9a938a;
+  --floor:#3a2a20; --floorFar:#2e211a;
+  --w-l:#2a2b33; --w-r:#1d1e25; --w-sill:#4a4038;
+  --wd-t:#6b4527; --wd-l:#3a2415; --wd-r:#4e2f1b;
+  --mt-t:#4b5257; --mt-l:#262b2f; --mt-r:#353c41;
+  --sage-t:#4c5c4a; --sage-l:#26301f; --sage-r:#39452f;
+  --leaf:#2c4c38; --leaf2:#223b2c;
+  --lamp:#15171a; --bulb:1; --pool:.62;
+  --winSky1:#0b1226; --winSky2:#16223c; --winLamp:1; --spill:.20; --spillc:#8fb6e0;
+  --sh-op:.34; --sh-blur:7; --sh-dx:1.9; --sh-dy:.9;
+  --amb:#0a1a2e; --ambop:.22; --cardbg:rgba(18,22,30,.66); --cardline:rgba(232,227,217,.16);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);overflow:hidden;
+  transition:background .9s ease,color .9s ease;-webkit-font-smoothing:antialiased}
+svg#room{position:fixed;inset:0;width:100%;height:100%;display:block}
+#par{transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+.g{transition:opacity .8s ease}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---- head ---- */
+.hd{position:fixed;top:0;left:0;z-index:20;padding:clamp(1.1rem,3vw,2.1rem);pointer-events:none}
+.hd h1{font-family:var(--serif);font-weight:600;font-size:clamp(1.5rem,3.4vw,2.4rem);line-height:.98;letter-spacing:-.01em}
+.hd h1 em{font-style:italic;font-weight:400;color:var(--ink2)}
+.hd p{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink2);margin-top:.5rem}
+@media (max-width:700px){.hd p{display:none}}
+
+/* ---- cards ---- */
+.card{position:fixed;z-index:20;background:color-mix(in srgb,var(--bg) 78%,transparent);
+  border:1px solid color-mix(in srgb,var(--ink) 14%,transparent);border-radius:12px;
+  padding:.85rem .95rem;backdrop-filter:blur(16px) saturate(1.3);
+  box-shadow:0 20px 50px -30px rgba(0,0,0,.7);max-width:calc(100vw - 2rem)}
+.card h2{font-family:var(--mono);font-size:9px;letter-spacing:.26em;text-transform:uppercase;
+  color:var(--ink2);margin-bottom:.6rem;font-weight:500}
+.sw{position:relative;width:100%;height:38px;border-radius:8px;background:var(--ink);cursor:pointer;overflow:hidden}
+.sw .knob{position:absolute;top:4px;left:4px;width:60px;height:30px;border-radius:6px;
+  background:var(--bg);display:grid;place-items:center;font-family:var(--mono);font-size:9px;
+  letter-spacing:.16em;text-transform:uppercase;color:var(--ink);
+  transition:transform .45s cubic-bezier(.3,1.2,.4,1);box-shadow:0 2px 6px rgba(0,0,0,.3)}
+body[data-mode=night] .sw .knob{transform:translateX(calc(100% - 68px))}
+.sw .l,.sw .r{position:absolute;bottom:4px;font-family:var(--mono);font-size:8px;letter-spacing:.16em;
+  text-transform:uppercase;opacity:.5;pointer-events:none}
+.sw .l{left:6px}.sw .r{right:6px}
+.clock{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--ink2);margin-top:.55rem;
+  display:flex;justify-content:space-between;text-transform:uppercase}
+.clock b{color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums}
+
+.seat{position:fixed;right:clamp(1.1rem,3vw,2.1rem);bottom:clamp(1.1rem,3vw,2.1rem);z-index:20;width:238px}
+.seat dl{display:grid;grid-template-columns:auto 1fr;gap:.15rem .8rem;font-family:var(--mono);font-size:10.5px}
+.seat dt{color:var(--ink2);letter-spacing:.1em;text-transform:uppercase;font-size:9px;padding:.2rem 0}
+.seat dd{text-align:right;padding:.2rem 0;font-variant-numeric:tabular-nums}
+.seat .tip{font-size:11.5px;line-height:1.65;color:var(--ink2);margin-top:.6rem;padding-top:.6rem;
+  border-top:1px solid var(--cardline)}
+@media (max-width:760px){.seat{display:none}.hd{top:auto;bottom:6.4rem;left:.9rem;padding:0}}
+</style>
+</head>
+<body data-mode="day">
+<svg id="room" viewBox="0 0 1200 880" preserveAspectRatio="xMidYMid meet" aria-label="An isometric café interior: a counter with an espresso machine, three tables, hanging lamps and a street window">
+  <defs>
+    <radialGradient id="pool" cx="50%" cy="50%"><stop offset="0" stop-color="#ffdca8" stop-opacity=".85"/><stop offset="1" stop-color="#ffdca8" stop-opacity="0"/></radialGradient>
+    <radialGradient id="moon" cx="50%" cy="50%"><stop offset="0" stop-color="#ffe9bd" stop-opacity=".95"/><stop offset=".35" stop-color="#ffcf82" stop-opacity=".35"/><stop offset="1" stop-color="#ffb84d" stop-opacity="0"/></radialGradient>
+    <linearGradient id="floorG" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="var(--floorFar)"/><stop offset="1" stop-color="var(--floor)"/>
+    </linearGradient>
+    <linearGradient id="winSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="var(--winSky1)"/><stop offset="1" stop-color="var(--winSky2)"/>
+    </linearGradient>
+    <filter id="soft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur id="softB" stdDeviation="3"/></filter>
+    <filter id="bulbBlur" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="7"/></filter>
+    <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3"/><feColorMatrix type="saturate" values="0"/></filter>
+    <clipPath id="winClip"></clipPath>
+  </defs>
+  <g id="par"></g>
+  <rect id="amb" width="1200" height="880" fill="var(--amb)" opacity="var(--ambop)" style="pointer-events:none"/>
+  <rect width="1200" height="880" filter="url(#grain)" opacity=".05" style="pointer-events:none;mix-blend-mode:overlay"/>
+</svg>
+
+<header class="hd">
+  <h1>The Long <em>Room</em></h1>
+  <p>Isometric study · 14 × 12 m · one counter, three tables</p>
+</header>
+
+<div class="card" style="left:clamp(1.1rem,3vw,2.1rem);bottom:clamp(1.1rem,3vw,2.1rem);width:212px">
+  <h2>Hour of the day</h2>
+  <div class="sw" id="sw" role="switch" tabindex="0" aria-checked="false" aria-label="Day or night">
+    <div class="knob" id="knob">14:20</div>
+    <span class="l">day</span><span class="r">night</span>
+  </div>
+  <div class="clock"><span>lamps <b id="cl1">off</b></span><span>window <b id="cl2">north light</b></span><span id="cl3">6 covers</span></div>
+</div>
+
+<aside class="card seat">
+  <h2>Floor plan</h2>
+  <dl>
+    <dt>Counter</dt><dd>11.4 m, 1.05 m high</dd>
+    <dt>Machine</dt><dd>2-group lever</dd>
+    <dt>Tables</dt><dd>3 × 4 seats</dd>
+    <dt>Window</dt><dd>4.6 m, north-east</dd>
+    <dt>Shadows</dt><dd id="shRead">short</dd>
+  </dl>
+  <p class="tip">Hover a table to seat someone. Press <b style="color:var(--ink)">D</b> to move the whole room from afternoon to midnight.</p>
+</aside>
+
+<noscript><p style="position:fixed;inset:0;display:grid;place-items:center;padding:2rem;text-align:center;
+font-family:var(--mono);font-size:12px">The café is drawn with JavaScript. Enable scripting to light the room.</p></noscript>
+
+<script>
+(function(){
+"use strict";
+var NS='http://www.w3.org/2000/svg',root=document.getElementById('par');
+var S=48,OX=559,OY=190;
+function iso(x,y,z){return[OX+(x-y)*0.866*S,OY+(x+y)*0.5*S-(z||0)*S];}
+function n(v){return Math.round(v*10)/10;}
+function P(){var a=arguments,p=iso(a[0],a[1],a[2]||0);return n(p[0])+','+n(p[1]);}
+function el(t,at,par){
+  var e=document.createElementNS(NS,t);
+  for(var k in at)e.setAttribute(k,at[k]);
+  (par||root).appendChild(e);return e;
+}
+function poly(pts,fill,par,extra){
+  var p=el('polygon',{points:pts,style:'fill:'+fill},par);
+  if(extra)for(var k in extra)p.setAttribute(k,extra[k]);
+  return p;
+}
+function line(x1,y1,x2,y2,col,w,par,dash){
+  return el('line',{x1:n(x1),y1:n(y1),x2:n(x2),y2:n(y2),
+    style:'stroke:'+col+';stroke-width:'+(w||1)+(dash?';stroke-dasharray:'+dash:'')},par);
+}
+function shadow(x,y,w,d){
+  var g=el('g',{style:'opacity:var(--sh-op);filter:url(#soft)'});
+  g.setAttribute('transform','translate('+(0.62*S)+','+(0.30*S)+') scale(1.18,1.1)');
+  poly(P(x,y,0)+' '+P(x+w,y,0)+' '+P(x+w,y+d,0)+' '+P(x,y+d,0),'#2a1c10',g);
+  return g;
+}
+/* a cuboid: top + the two faces that face the viewer */
+function box(x,y,z,w,d,h,c,o){
+  o=o||{};var g=el('g',{class:'g'});
+  if(o.shadow!==false)shadow(x,y,w,d);
+  poly(P(x,y,z+h)+' '+P(x+w,y,z+h)+' '+P(x+w,y+d,z+h)+' '+P(x,y+d,z+h),c.t,g);
+  poly(P(x+w,y,z+h)+' '+P(x+w,y+d,z+h)+' '+P(x+w,y+d,z)+' '+P(x+w,y,z),c.r,g);
+  poly(P(x,y+d,z+h)+' '+P(x+w,y+d,z+h)+' '+P(x+w,y+d,z)+' '+P(x,y+d,z),c.l,g);
+  return g;
+}
+var WOOD={t:'var(--wd-t)',l:'var(--wd-l)',r:'var(--wd-r)'};
+var METAL={t:'var(--mt-t)',l:'var(--mt-l)',r:'var(--mt-r)'};
+var SAGE={t:'var(--sage-t)',l:'var(--sage-l)',r:'var(--sage-r)'};
+var WALL_L='var(--w-l)',WALL_R='var(--w-r)';
+
+/* ================= room shell ================= */
+(function shell(){
+  var g=el('g',{id:'shell'});
+  /* floor */
+  poly(P(0,0,0)+' '+P(14,0,0)+' '+P(14,12,0)+' '+P(0,12,0),'url(#floorG)',g);
+  /* plank lines */
+  for(var i=1;i<14;i++)line(iso(i,0,0)[0],iso(i,0,0)[1],iso(i,12,0)[0],iso(i,12,0)[1],'rgba(0,0,0,.055)',1,g);
+  for(var j=1;j<12;j++)line(iso(0,j,0)[0],iso(0,j,0)[1],iso(14,j,0)[0],iso(14,j,0)[1],'rgba(0,0,0,.045)',1,g);
+  /* back walls */
+  poly(P(0,12,3.9)+' '+P(0,0,3.9)+' '+P(0,0,0)+' '+P(0,12,0),WALL_L,g);
+  poly(P(0,0,3.9)+' '+P(14,0,3.9)+' '+P(14,0,0)+' '+P(0,0,0),WALL_R,g);
+  /* skirting */
+  poly(P(0,12,.16)+' '+P(0,0,.16)+' '+P(0,0,0)+' '+P(0,12,0),'var(--w-sill)',g);
+  poly(P(0,0,.16)+' '+P(14,0,.16)+' '+P(14,0,0)+' '+P(0,0,0),'var(--w-sill)',g);
+  /* picture rail */
+  poly(P(0,12,3.5)+' '+P(0,0,3.5)+' '+P(0,0,3.42)+' '+P(0,12,3.42),'var(--w-sill)',g);
+  poly(P(0,0,3.5)+' '+P(14,0,3.5)+' '+P(14,0,3.42)+' '+P(0,0,3.42),'var(--w-sill)',g);
+
+  /* ---- window on the right-hand wall (x = 0) ---- */
+  var y0=2.4,y1=7.4,z0=1.15,z1=2.95;
+  var frame=P(0,y0,z0)+' '+P(0,y1,z0)+' '+P(0,y1,z1)+' '+P(0,y0,z1);
+  el('polygon',{points:frame,style:'fill:#000'},document.getElementById('winClip'));
+  var wg=el('g',{'clip-path':'url(#winClip)'});
+  poly(frame,'url(#winSky)',wg);
+  /* rooftops across the street */
+  poly(P(0,2.4,0)+' '+P(0,3.4,0)+' '+P(0,3.4,.95)+' '+P(0,2.9,1.25)+' '+P(0,2.4,1.05),'#1b2430',wg)
+    .setAttribute('style','fill:var(--ink);opacity:.28');
+  poly(P(0,4.3,0)+' '+P(0,6.1,0)+' '+P(0,6.1,1.5)+' '+P(0,4.3,1.5),'#1b2430',wg)
+    .setAttribute('style','fill:var(--ink);opacity:.22');
+  poly(P(0,6.6,0)+' '+P(0,7.4,0)+' '+P(0,7.4,.7)+' '+P(0,6.6,.7),'#1b2430',wg)
+    .setAttribute('style','fill:var(--ink);opacity:.3');
+  /* lit windows across the street */
+  var lit=el('g',{class:'g','style':'opacity:var(--winLamp)'});
+  for(var a=0;a<5;a++)for(var b=0;b<3;b++){
+    var wy=4.55+b*0.52,wz=.55+a*0.3;
+    var p1=iso(0,wy,wz),p2=iso(0,wy+.22,wz+.3);
+    el('rect',{x:n(p1[0]),y:n(p1[1]),width:n(Math.abs(p2[0]-p1[0])),height:n(Math.abs(p2[1]-p1[1])),
+      style:'fill:#ffd894;opacity:'+(0.35+((a+b)%3)*0.22).toFixed(2)},lit);
+  }
+  /* street lamp */
+  var sg=el('g',{class:'g','style':'opacity:var(--winLamp)'});
+  var lp=iso(0,6.9,1.9);
+  el('circle',{cx:n(lp[0]),cy:n(lp[1]),r:66,fill:'url(#moon)'},sg);
+  el('circle',{cx:n(lp[0]),cy:n(lp[1]),r:4.5,style:'fill:#ffe7b8'},sg);
+  /* mullions */
+  for(var k=1;k<3;k++){
+    var t1=iso(0,y0+(y1-y0)*k/3,z0),t2=iso(0,y0+(y1-y0)*k/3,z1);
+    line(t1[0],t1[1],t2[0],t2[1],'var(--w-sill)',3,wg);
+  }
+  var m1=iso(0,y0,(z0+z1)/2),m2=iso(0,y1,(z0+z1)/2);
+  line(m1[0],m1[1],m2[0],m2[1],'var(--w-sill)',3,wg);
+  /* window frame + sill */
+  poly(frame,'none',g).setAttribute('style','fill:none;stroke:var(--w-sill);stroke-width:5');
+  poly(P(0,y0,z0)+' '+P(0,y1,z0)+' '+P(0,y1,z0-.14)+' '+P(0,y0,z0-.14),'var(--w-sill)',g);
+  /* light spilling onto the floor */
+  var sp=poly(P(0,y0,0)+' '+P(0,y1,0)+' '+P(3.4,y1,0)+' '+P(3.4,y0,0),'var(--spillc)',g);
+  sp.setAttribute('style','fill:var(--spillc);opacity:var(--spill);filter:blur(10px);mix-blend-mode:screen');
+})();
+
+/* ================= fittings ================= */
+/* counter along the x = 0 wall */
+(function counter(){
+  var x=0.55,y=6.1,w=1.05,d=5.6;
+  box(x,y,0,w,d,1.02,SAGE,{});
+  box(x-.06,y-.06,1.02,w+.12,d+.12,.09,WOOD,{});
+  /* brass foot rail */
+  var a=iso(x+w,y+d,.16),b=iso(x+w,y,.16);
+  line(a[0],a[1],b[0],b[1],'rgba(190,150,70,.85)',3);
+  /* back gantry */
+  box(0.18,6.2,1.11,.3,5.4,.7,METAL,{});
+})();
+/* espresso machine */
+(function machine(){
+  var x=0.9,y=7.0;
+  box(x,y,1.11,.62,1.5,.62,METAL);
+  box(x+.02,y+.04,1.73,.58,1.42,.16,METAL,{});
+  /* group heads + portafilters */
+  for(var i=0;i<2;i++){
+    var gy=y+0.36+i*0.66,p=iso(x+0.62,gy,1.42);
+    el('rect',{x:n(p[0]-7),y:n(p[1]),width:16,height:9,rx:2,style:'fill:#3a3f43'},null);
+    el('rect',{x:n(p[0]-16),y:n(p[1]+8),width:34,height:5,rx:2,style:'fill:#22262a'},null);
+    /* cup */
+    var c=iso(x+0.62,gy,1.15);
+    el('ellipse',{cx:n(c[0]),cy:n(c[1]),rx:7,ry:3.4,style:'fill:#f2efe8'},null);
+  }
+  /* steam wand */
+  var w0=iso(x+.5,y+1.45,1.5),w1=iso(x+1.15,y+1.5,1.05);
+  line(w0[0],w0[1],w1[0],w1[1],'#c8ced2',3);
+  /* cups stacked */
+  for(var c2=0;c2<3;c2++){
+    var u=iso(0.86,7.6,1.14+c2*0.09);
+    el('ellipse',{cx:n(u[0]),cy:n(u[1]),rx:11,ry:5,style:'fill:#efece5;stroke:rgba(0,0,0,.15);stroke-width:1'},null);
+  }
+  /* grinder */
+  box(0.75,5.75,1.11,.42,.42,.72,METAL,{});
+  var h0=iso(0.96,5.96,1.83);
+  el('rect',{x:n(h0[0]-15),y:n(h0[1]-22),width:30,height:26,rx:4,style:'fill:#2a2f33'},null);
+  /* bean hopper glow */
+  var bg=el('g',{class:'g','style':'opacity:var(--bulb)'});
+  el('circle',{cx:n(h0[0]),cy:n(h0[1]-10),r:26,fill:'url(#pool)',style:'opacity:.5',filter:'url(#bulbBlur)'},bg);
+})();
+/* menu board on the y = 0 wall */
+(function board(){
+  var g=el('g');
+  poly(P(3.0,0,1.9)+' '+P(6.4,0,1.9)+' '+P(6.4,0,3.0)+' '+P(3.0,0,3.0),'#22201d',g);
+  poly(P(3.05,0,1.95)+' '+P(6.35,0,1.95)+' '+P(6.35,0,2.95)+' '+P(3.05,0,2.95),'#171512',g);
+  var items=[['ESPRESSO','2.40'],['MACCHIATO','2.80'],['CORTADO','3.10'],['FLAT WHITE','3.40'],['FILTER','3.60'],['COLD BREW','3.90']];
+  items.forEach(function(it,i){
+    var z=2.78-i*0.16;
+    var t1=iso(0,3.12,z),t2=iso(0,5.4,z),t3=iso(0,5.4,z-0.005),t4=iso(0,3.12,z-0.005);
+    el('text',{x:n(t1[0]),y:n(t1[1]),'font-family':'IBM Plex Mono, monospace','font-size':'9.5',
+      'letter-spacing':'1.4',style:'fill:#d9cdb4;opacity:.9'},g).textContent=it[0];
+    el('text',{x:n(t4[0]),y:n(t4[1]),'font-family':'IBM Plex Mono, monospace','font-size':'9.5',
+      'letter-spacing':'.6',style:'fill:#c9a45c;opacity:.85'},g).textContent=it[1];
+    var dt=iso(0,4.1,z),de=iso(0,5.0,z);
+    line(dt[0],dt[1],de[0],de[1],'rgba(220,210,190,.22)',.8,g,'1.5 3');
+  });
+})();
+/* shelf with bags + a plant */
+(function shelf(){
+  box(8.2,0,1.6,.42,2.2,.07,METAL,{});
+  box(8.2,0,2.1,.42,2.2,.07,METAL,{});
+  for(var i=0;i<4;i++){
+    var p=iso(8.42,0.25+i*0.5,1.67);
+    el('rect',{x:n(p[0]-7),y:n(p[1]-19),width:15,height:20,rx:2,style:'fill:#6d5a45'},null);
+    el('rect',{x:n(p[0]-4),y:n(p[1]-15),width:9,height:5,style:'fill:#c9a45c;opacity:.8'},null);
+  }
+})();
+/* counter stools */
+(function stools(){
+  for(var i=0;i<4;i++){
+    var y=6.6+i*1.25;
+    var p=iso(1.95,y,0);
+    el('ellipse',{cx:n(p[0]),cy:n(p[1]),rx:17,ry:8,style:'fill:rgba(0,0,0,.16)'},null);
+    el('rect',{x:n(p[0]-3),y:n(p[1]-30),width:6,height:30,style:'fill:#4a4038'},null);
+    el('ellipse',{cx:n(p[0]),cy:n(p[1]-30),rx:14,ry:7,style:'fill:#6b4a33'},null);
+  }
+})();
+
+/* ================= tables ================= */
+var TABLES=[
+  {x:4.0,y:2.2,name:'Table 1',seats:4},
+  {x:7.6,y:3.4,name:'Table 2',seats:4},
+  {x:4.6,y:6.6,name:'Table 3',seats:2}
+];
+TABLES.forEach(function(T,idx){
+  var g=el('g',{class:'g',id:'T'+idx,style:'cursor:pointer'});
+  T.g=g;T.idx=idx;
+  /* pool of lamplight on the floor under each table */
+  var p0=iso(T.x-.4,T.y-.4,0),p1=iso(T.x+1.2,T.y+1.2,0);
+  var pool=el('ellipse',{cx:n((p0[0]+p1[0])/2),cy:n((p0[1]+p1[1])/2),rx:74,ry:40,fill:'url(#pool)'},g);
+  pool.setAttribute('class','g');pool.setAttribute('style','opacity:var(--pool)');
+  /* base + top */
+  var b=iso(T.x,T.y,0);
+  el('ellipse',{cx:n(b[0]),cy:n(b[1]),rx:20,ry:10,style:'fill:rgba(0,0,0,.2)'},g);
+  el('rect',{x:n(b[0]-4),y:n(b[1]-40),width:8,height:40,style:'fill:#5a4a3c'},g);
+  var t0=iso(T.x,T.y,.82),t1=iso(T.x+1.6,T.y,.82),t2=iso(T.x+1.6,T.y+1.6,.82),t3=iso(T.x,T.y+1.6,.82);
+  poly(t0+' '+t1+' '+t2+' '+t3,'var(--wd-t)',g);
+  poly(t0+' '+t1+' '+iso(T.x,T.y,.76)+' '+iso(T.x+1.6,T.y,.76),'var(--wd-r)',g);
+  poly(t3+' '+t2+' '+iso(T.x+1.6,T.y+1.6,.76)+' '+iso(T.x,T.y+1.6,.76),'var(--wd-l)',g);
+  /* cup + saucer */
+  var cup=iso(T.x+.8,T.y+.8,.84);
+  el('ellipse',{cx:n(cup[0]),cy:n(cup[1]),rx:8,ry:4,style:'fill:#f3f0e9'},g);
+  el('ellipse',{cx:n(cup[0]),cy:n(cup[1]-2),rx:4,ry:2,style:'fill:#4a2f1c'},g);
+  /* chairs */
+  T.chairs=[];
+  var pos=[[0,0],[1.6,0],[0,1.6],[1.6,1.6]];
+  for(var i=0;i<T.seats;i++){
+    var cx=T.x+pos[i][0],cy=T.y+pos[i][1],cp=iso(cx,cy,0);
+    var ch=el('g',{class:'g'},g);
+    el('ellipse',{cx:n(cp[0]),cy:n(cp[1]),rx:14,ry:7,style:'fill:rgba(0,0,0,.15)'},ch);
+    el('rect',{x:n(cp[0]-11),y:n(cp[1]-24),width:4,height:24,style:'fill:#4d4038'},ch);
+    el('rect',{x:n(cp[0]+7),y:n(cp[1]-24),width:4,height:24,style:'fill:#4d4038'},ch);
+    el('rect',{x:n(cp[0]-13),y:n(cp[1]-46),width:26,height:7,rx:3,style:'fill:#6b4f3a'},ch);
+    el('rect',{x:n(cp[0]-12),y:n(cp[1]-46),width:24,height:26,rx:5,style:'fill:#7a5a41'},ch);
+    T.chairs.push(ch);
+  }
+  /* a character, hidden until the table is hovered */
+  T.person=person(T.x+.8,T.y+.8,0,['#8d5b4a','#4d6a72','#7a6a4a'][idx]);
+  T.person.setAttribute('style','opacity:0');
+  g.appendChild(T.person);
+  g.addEventListener('pointerenter',function(){
+    T.person.setAttribute('style','opacity:1');
+    T.hot=1;
+  });
+  g.addEventListener('pointerleave',function(){
+    if(!T.pinned){T.person.setAttribute('style','opacity:0');T.hot=0;}
+  });
+  g.addEventListener('click',function(){
+    T.pinned=!T.pinned;
+    T.person.setAttribute('style',T.pinned?'opacity:1':'opacity:0');
+    document.getElementById('cl3').textContent=T.pinned?(T.seats+1)+' covers':(T.hot?T.seats+1+' covers':'6 covers');
+  });
+});
+
+/* ================= people ================= */
+function person(x,y,h,coat){
+  var g=el('g'),p=iso(x,y,0),hs=h*S;
+  el('ellipse',{cx:n(p[0]),cy:n(p[1]+2),rx:hs*0.16,ry:hs*0.06,style:'fill:rgba(0,0,0,.22)'},g);
+  el('path',{d:'M'+n(p[0]-hs*.07)+' '+n(p[1])+' l2 -'+n(hs*.22)+' l'+n(hs*.1)+' 0 l2 '+n(hs*.22)+' z',style:'fill:#3c3a38'},g);
+  var tw=n(hs*.12);
+  el('path',{d:'M'+n(p[0]-tw)+' '+n(p[1]-hs*.22)+' q'+n(tw)+' -'+n(hs*.06)+' '+n(tw*2)+' 0 l'+
+    n(-1)+' -'+n(hs*.34)+' q'+n(-tw)+' -'+n(hs*.05)+' '+n(-tw*2)+' 0 z',style:'fill:'+coat},g);
+  el('path',{d:'M'+n(p[0]-tw*.95)+' '+n(p[1]-hs*.24)+' q-'+n(hs*.09)+' '+n(hs*.16)+' '+n(hs*.03)+' '+n(hs*.24),
+    style:'fill:none;stroke:'+coat+';stroke-width:'+n(hs*.05)+';stroke-linecap:round'},g);
+  el('path',{d:'M'+n(p[0]+tw*.95)+' '+n(p[1]-hs*.24)+' q'+n(hs*.09)+' '+n(hs*.16)+' -'+n(hs*.03)+' '+n(hs*.24),
+    style:'fill:none;stroke:'+coat+';stroke-width:'+n(hs*.05)+';stroke-linecap:round'},g);
+  el('circle',{cx:n(p[0]),cy:n(p[1]-hs*.70),r:n(hs*.075),style:'fill:#c99a76'},g);
+  el('path',{d:'M'+n(p[0]-hs*.08)+' '+n(p[1]-hs*.735)+' q'+n(hs*.08)+' -'+n(hs*.07)+' '+n(hs*.16)+' 0 q'+n(-hs*.04)+
+    ' '+n(hs*.05)+' -'+n(hs*.16)+' 0 z',style:'fill:#3a2f28'},g);
+  return g;
+}
+/* staff + a customer at the counter */
+person(2.05,7.5,1.72,'#4a5a52');
+var barista=person(2.0,8.6,1.7,'#e8e2d6');
+(function(){
+  /* apron */
+  var p=iso(2.0,8.6,0);
+  el('path',{d:'M'+n(p[0]-9)+' '+n(p[1]-32)+' l18 0 l-2 32 l-14 0 z',style:'fill:#3d4a44;opacity:.9'},barista);
+})();
+/* two people seated at the bar */
+person(1.85,7.0,1.66,'#5c4a6a');
+person(1.85,8.0,1.62,'#6a5a3a');
+
+/* ================= pendant lamps ================= */
+[[2.6,3.4],[6.2,2.2],[9.2,4.2],[5.0,7.4]].forEach(function(p,idx){
+  var g=el('g'),top=iso(p[0],p[1],3.9),sh=iso(p[0],p[1],2.5);
+  var glow=el('g',{class:'g','style':'opacity:var(--bulb)'},g);
+  var c=iso(p[0],p[1],2.42);
+  el('circle',{cx:n(c[0]),cy:n(c[1]),r:88,fill:'url(#pool)',style:'opacity:.55',filter:'url(#bulbBlur)'},glow);
+  el('line',{x1:n(top[0]),y1:n(top[1]),x2:n(sh[0]),y2:n(sh[1]),style:'stroke:var(--lamp);stroke-width:2.5'},g);
+  /* conical shade */
+  var s1=iso(p[0]-.34,p[1]-.34,2.72),s2=iso(p[0]+.34,p[1]-.34,2.72),
+      s3=iso(p[0]+.34,p[1]+.34,2.72),s4=iso(p[0]-.34,p[1]+.34,2.72),
+      b1=iso(p[0]-.34,p[1]-.34,2.34),b2=iso(p[0]+.34,p[1]-.34,2.34),
+      b3=iso(p[0]+.34,p[1]+.34,2.34),b4=iso(p[0]-.34,p[1]+.34,2.34);
+  poly(s1+' '+s2+' '+b2+' '+b1,'var(--mt-l)',g);
+  poly(s4+' '+s3+' '+b3+' '+b4,'var(--mt-r)',g);
+  poly(b1+' '+b2+' '+b3+' '+b4,'#ffe9c2',g).setAttribute('style','fill:#ffe9c2;opacity:calc(.25 + .6 * var(--bulb))');
+  /* bulb */
+  el('circle',{cx:n(c[0]),cy:n(c[1]+4),r:9,style:'fill:#fff3d4;opacity:calc(.3 + .7 * var(--bulb))'},g);
+});
+
+/* ================= plants ================= */
+[[1.4,1.6,1.0],[12.4,1.4,.86]].forEach(function(p,i){
+  var g=el('g');
+  box(p[0],p[1],0,p[2],p[2],p[2]*.62,{t:'#a9693f',l:'#7c4a2a',r:'#94582f'},{shadow:true});
+  var base=iso(p[0]+p[2]/2,p[1]+p[2]/2,p[2]*.62);
+  for(var k=0;k<7;k++){
+    var a=-1.5+ (k/6)*3.0+ (i?0.4:0);
+    var len=(0.5+((k*7)%5)*0.11)*S*1.15;
+    el('path',{d:'M'+n(base[0])+' '+n(base[1])+' q'+n(Math.cos(a)*len*.5-len*.22)+' '+n(-len*.55)+' '+
+      n(Math.cos(a)*len-Math.sin(a)*len*.2)+' '+n(-len*.9)+' q'+n(-Math.cos(a)*len*.4+len*.2)+' '+
+      n(len*.55)+' -'+n(Math.cos(a)*len)+' '+n(len*.9)+' z',
+      style:'fill:'+(k%2?'var(--leaf)':'var(--leaf2)')+';opacity:.95'},g);
+  }
+});
+
+/* steam from a cup on the counter */
+(function steam(){
+  var g=el('g',{style:'opacity:.35'});
+  var base=iso(1.25,6.9,1.2);
+  for(var i=0;i<3;i++){
+    el('path',{d:'M'+n(base[0]+i*9)+' '+n(base[1]-4)+' q6 -12 0 -24 q-6 -12 0 -22',
+      style:'fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round;opacity:.5',
+      class:'g'},
+      g);
+  }
+  g.setAttribute('id','steam');
+  root.appendChild(g);
+})();
+
+/* ================= interaction ================= */
+var sw=document.getElementById('sw'),knob=document.getElementById('knob');
+function setMode(m){
+  document.body.dataset.mode=m;
+  document.getElementById('softB').setAttribute('stdDeviation',m==='night'?9:3);
+  sw.setAttribute('aria-checked',m==='night');
+  knob.textContent=m==='night'?'23:40':'14:20';
+  document.getElementById('cl1').textContent=m==='night'?'on · 4 lamps':'off';
+  document.getElementById('cl2').textContent=m==='night'?'street lamp':'north light';
+  document.getElementById('shRead').textContent=m==='night'?'long, soft':'short';
+}
+sw.addEventListener('click',function(){setMode(document.body.dataset.mode==='night'?'day':'night');});
+sw.addEventListener('keydown',function(e){if(e.key===' '||e.key==='Enter'){e.preventDefault();sw.click();}});
+addEventListener('keydown',function(e){
+  if(e.key==='d'||e.key==='D')sw.click();
+});
+/* pointer parallax */
+var par=document.getElementById('par'),tx=0,ty=0;
+addEventListener('pointermove',function(e){
+  tx=(e.clientX/innerWidth-.5)*-16;ty=(e.clientY/innerHeight-.5)*-10;
+});
+(function loop(){
+  par.setAttribute('transform','translate('+tx.toFixed(2)+','+ty.toFixed(2)+')');
+  requestAnimationFrame(loop);
+})();
+})();
+</script>
+</body>
+</html>

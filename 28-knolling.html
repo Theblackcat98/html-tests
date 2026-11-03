@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PARTS TRAY A — Knolling, M. Okada Workshop 3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --oak-1:#8a5f34;
+    --oak-2:#a97a45;
+    --oak-3:#c39a63;
+    --oak-dark:#4a3018;
+    --oak-line:rgba(74,48,24,.4);
+    --paper:#efe7d8;
+    --ink:#2b2119;
+    --ink-dim:#6d5c49;
+    --brass:#b08d45;
+    --steel:#9aa3a8;
+    --serif:"Fraunces",Georgia,"Times New Roman",serif;
+    --sans:"Inter",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+    --cols:5;
+    --rows:8;
+  }
+  html,body{height:100%}
+  body{
+    font-family:var(--sans);
+    background:
+      radial-gradient(70% 60% at 22% 12%, #2c2620 0%, transparent 60%),
+      linear-gradient(160deg, #221d18 0%, #17130f 60%, #0f0c0a 100%);
+    color:var(--ink);min-height:100dvh;overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E");
+    opacity:.07;mix-blend-mode:overlay;
+  }
+
+  .page{position:relative;z-index:1;min-height:100dvh;display:grid;
+    grid-template-columns:minmax(220px,300px) auto minmax(200px,260px);
+    gap:clamp(18px,3vw,52px);align-items:center;
+    padding:clamp(18px,3vw,46px) clamp(14px,3vw,44px);
+    justify-content:center}
+  @media (max-width:1120px){ .page{grid-template-columns:1fr;justify-items:center;text-align:center} .side{max-width:520px} }
+  @media (max-width:560px){ .page{gap:22px} .legend{display:none} }
+
+  /* ---------- left copy ---------- */
+  .side{position:relative}
+  .kicker{font-family:var(--mono);font-size:9.5px;letter-spacing:.4em;text-transform:uppercase;color:var(--brass);
+    display:flex;align-items:center;gap:12px}
+  @media(max-width:1120px){ .kicker{justify-content:center} }
+  .kicker::after{content:"";height:1px;flex:1;max-width:100px;background:linear-gradient(90deg,var(--brass),transparent)}
+  h1{font-family:var(--serif);font-weight:300;font-size:clamp(34px,4.6vw,64px);line-height:.95;letter-spacing:-.015em;margin-top:14px;color:#f0e6d4}
+  h1 em{font-style:italic;color:var(--oak-3);display:block}
+  .side p{margin-top:18px;font-size:14px;line-height:1.8;color:rgba(240,230,212,.62);max-width:34ch;font-weight:300}
+  @media(max-width:1120px){ .side p{margin-left:auto;margin-right:auto} }
+  .side p b{color:#f6ecd8;font-weight:400}
+  .dl{margin-top:26px;display:grid;grid-template-columns:auto 1fr;gap:9px 18px;font-family:var(--mono);font-size:10px;
+    letter-spacing:.1em;text-transform:uppercase;color:rgba(240,230,212,.42);
+    border-top:1px solid rgba(240,230,212,.14);padding-top:16px;text-align:left}
+  .dl b{color:#efe3cc;font-weight:500;text-align:right;letter-spacing:.04em}
+  .quote{margin-top:24px;padding-left:16px;border-left:1px solid rgba(176,141,69,.5);
+    font-family:var(--serif);font-style:italic;font-size:15px;line-height:1.6;color:rgba(240,230,212,.55)}
+
+  /* ---------- drawer ---------- */
+  .drawerWrap{display:flex;flex-direction:column;align-items:center;gap:16px}
+  .plate{
+    display:flex;align-items:center;gap:14px;
+    padding:9px 22px;border-radius:2px;
+    background:linear-gradient(170deg,#d9c289,#a8873f 44%,#7d6228);
+    box-shadow:0 10px 22px -10px rgba(0,0,0,.8), inset 0 0 0 1px rgba(255,240,200,.5), inset 0 1px 0 rgba(255,255,255,.4);
+    color:#2b1f08;
+  }
+  .plate b{font-family:var(--mono);font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;font-weight:500}
+  .plate i{width:3px;height:3px;border-radius:50%;background:#4a3708;box-shadow:0 1px 0 rgba(255,255,255,.4)}
+  .plate small{font-family:var(--mono);font-size:9px;letter-spacing:.16em;opacity:.72}
+
+  .drawer{
+    position:relative;
+    width:min(500px,86vw, calc((100dvh - 260px) * 5 / 8));
+    padding:14px;
+    border-radius:6px;
+    background:
+      linear-gradient(178deg, var(--oak-3) 0%, var(--oak-2) 16%, var(--oak-1) 58%, #6f4a26 100%);
+    box-shadow:
+      0 46px 80px -40px rgba(0,0,0,.95),
+      0 2px 0 rgba(255,255,255,.16) inset,
+      0 -2px 0 rgba(0,0,0,.35) inset,
+      0 0 0 1px rgba(50,32,14,.6);
+  }
+  /* oak grain */
+  .drawer::before{
+    content:"";position:absolute;inset:0;border-radius:6px;pointer-events:none;opacity:.55;mix-blend-mode:multiply;
+    background:
+      repeating-linear-gradient(91deg, rgba(74,48,24,.14) 0 1px, transparent 1px 4px, rgba(74,48,24,.08) 4px 5px, transparent 5px 11px),
+      repeating-linear-gradient(88deg, rgba(255,240,210,.1) 0 1px, transparent 1px 7px);
+  }
+  .drawer::after{
+    content:"";position:absolute;inset:0;border-radius:6px;pointer-events:none;opacity:.35;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.012 .42' numOctaves='3' seed='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23g)' opacity='.55'/%3E%3C/svg%3E");
+  }
+  .rack{
+    position:relative;display:grid;
+    grid-template-columns:repeat(var(--cols),1fr);
+    grid-template-rows:repeat(var(--rows),1fr);
+    gap:5px;
+    aspect-ratio:5/8;
+    padding:7px;
+    border-radius:3px;
+    background:linear-gradient(180deg,#3a2510,#55381a 30%,#6a4720);
+    box-shadow:inset 0 0 0 1px rgba(255,225,180,.14), inset 0 6px 18px rgba(0,0,0,.75);
+  }
+  .cell{
+    position:relative;border:0;padding:0;margin:0;cursor:pointer;
+    display:grid;place-items:center;
+    background:linear-gradient(180deg,#7d5527 0%, #9a6c33 40%, #b98a4c 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,235,200,.3),
+      inset 0 -6px 10px rgba(0,0,0,.35),
+      inset 0 0 0 1px rgba(60,38,16,.5);
+    opacity:0;transform:translateX(-26px) scale(.96);
+    transition:opacity .6s cubic-bezier(.2,.8,.2,1), transform .6s cubic-bezier(.2,.8,.2,1), box-shadow .35s, background .35s;
+    overflow:visible;
+  }
+  .cell::before{
+    content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.02 .5' numOctaves='2' seed='9'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23c)' opacity='.4'/%3E%3C/svg%3E");
+  }
+  .cell.in{opacity:1;transform:none}
+  .cell:hover,.cell:focus-visible{
+    background:linear-gradient(180deg,#8f6330 0%, #ac7b3b 40%, #cb9c59 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255,245,215,.5),
+      inset 0 -6px 10px rgba(0,0,0,.28),
+      inset 0 0 0 1px rgba(120,80,34,.7),
+      0 0 0 2px rgba(255,220,160,.5),
+      0 6px 16px -6px rgba(0,0,0,.7);
+    outline:none;z-index:4
+  }
+  .cell svg{width:74%;height:74%;overflow:visible;filter:drop-shadow(0 2px 3px rgba(40,22,6,.6))}
+  .cell:hover svg{transform:translateY(-2px)}
+  .cell svg{transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+  .no{
+    position:absolute;left:4px;top:3px;font-family:var(--mono);font-size:6.5px;letter-spacing:.06em;
+    color:rgba(255,240,210,.42)
+  }
+  .tip{
+    position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%) translateY(6px);
+    background:#231a12;color:#f3e7d2;padding:7px 11px;border-radius:3px;white-space:nowrap;
+    font-family:var(--mono);font-size:9px;letter-spacing:.06em;line-height:1.5;
+    box-shadow:0 10px 22px -8px rgba(0,0,0,.9), 0 0 0 1px rgba(176,141,69,.5);
+    opacity:0;pointer-events:none;transition:opacity .25s, transform .25s;z-index:9
+  }
+  .tip b{display:block;color:var(--oak-3);font-weight:500;letter-spacing:.1em;font-size:8.5px;text-transform:uppercase;margin-bottom:2px}
+  .cell:hover .tip,.cell:focus-visible .tip{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  .caption{font-family:var(--mono);font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:rgba(240,230,212,.34);text-align:center}
+
+  /* ---------- right legend ---------- */
+  .legend h2{font-family:var(--mono);font-size:9.5px;letter-spacing:.34em;text-transform:uppercase;color:var(--brass);margin-bottom:14px;
+    padding-bottom:10px;border-bottom:1px solid rgba(240,230,212,.14)}
+  .legend ul{list-style:none;padding:0;display:flex;flex-direction:column;gap:9px}
+  .legend li{display:flex;align-items:flex-start;gap:11px;font-size:12px;color:rgba(240,230,212,.66);line-height:1.45}
+  .legend li i{width:9px;height:9px;flex:none;margin-top:3px;border-radius:1px;box-shadow:0 0 0 1px rgba(0,0,0,.4)}
+  .legend li b{display:block;color:#f2e7d4;font-weight:500;font-size:12.5px;letter-spacing:.02em}
+  .legend li small{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:rgba(240,230,212,.38);text-transform:uppercase}
+  .count{
+    margin-top:22px;padding-top:16px;border-top:1px solid rgba(240,230,212,.14);
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;color:rgba(240,230,212,.4);line-height:2
+  }
+  .count b{color:var(--oak-3)}
+
+  noscript{grid-column:1/-1;max-width:60ch;padding:16px 20px;border-radius:3px;background:rgba(35,26,18,.9);
+    color:#f0e6d4;font-size:14px;box-shadow:inset 0 0 0 1px rgba(176,141,69,.5)}
+</style>
+</head>
+<body>
+
+<!-- ─────────── object symbols ─────────── -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="gSteel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f2f5f7"/><stop offset=".34" stop-color="#c3cbd0"/>
+      <stop offset=".58" stop-color="#8e979d"/><stop offset=".8" stop-color="#c8d0d4"/><stop offset="1" stop-color="#69727a"/>
+    </linearGradient>
+    <linearGradient id="gBrass" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#7a5c1c"/><stop offset=".3" stop-color="#e0be6c"/>
+      <stop offset=".5" stop-color="#f7e0a4"/><stop offset=".72" stop-color="#b18d3e"/><stop offset="1" stop-color="#6b5018"/>
+    </linearGradient>
+    <linearGradient id="gHandle" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#2c2c30"/><stop offset=".28" stop-color="#7d7d86"/>
+      <stop offset=".46" stop-color="#b9b9c2"/><stop offset=".7" stop-color="#5c5c64"/><stop offset="1" stop-color="#22222a"/>
+    </linearGradient>
+    <linearGradient id="gGlass" x1="0" y1="0" x2="0.6" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".9"/><stop offset=".45" stop-color="#cfe4ef" stop-opacity=".62"/>
+      <stop offset="1" stop-color="#7fa3b8" stop-opacity=".72"/>
+    </linearGradient>
+    <linearGradient id="gWood" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#8a5a2c"/><stop offset=".3" stop-color="#c98f4e"/>
+      <stop offset=".55" stop-color="#e0ad6c"/><stop offset=".8" stop-color="#a56b33"/><stop offset="1" stop-color="#6d421c"/>
+    </linearGradient>
+
+    <!-- camera lens element -->
+    <g id="o-lens">
+      <ellipse cx="50" cy="50" rx="44" ry="44" fill="url(#gGlass)" stroke="#5d7484" stroke-width="1.2"/>
+      <ellipse cx="50" cy="50" rx="34" ry="34" fill="none" stroke="#31424e" stroke-width="2.4"/>
+      <ellipse cx="50" cy="50" rx="22" ry="22" fill="#0b1620" opacity=".88"/>
+      <ellipse cx="41" cy="40" rx="9" ry="6" fill="#ffffff" opacity=".55" transform="rotate(-28 41 40)"/>
+      <ellipse cx="60" cy="62" rx="5" ry="3" fill="#9fe0ff" opacity=".4" transform="rotate(-28 60 62)"/>
+      <path d="M6 50 a44 44 0 0 0 88 0" fill="none" stroke="#e6f3f8" stroke-width="1.4" opacity=".5"/>
+    </g>
+
+    <!-- watch movement: balance wheel -->
+    <g id="o-balance">
+      <circle cx="50" cy="50" r="42" fill="none" stroke="url(#gBrass)" stroke-width="6"/>
+      <circle cx="50" cy="50" r="42" fill="none" stroke="#5c4512" stroke-width="1"/>
+      <circle cx="50" cy="50" r="7" fill="url(#gBrass)" stroke="#4a3708"/>
+      <g stroke="#d9bd78" stroke-width="2.2">
+        <path d="M50 8 L50 92"/><path d="M8 50 L92 50"/>
+        <path d="M20 20 L80 80"/><path d="M80 20 L20 80"/>
+      </g>
+      <circle cx="50" cy="50" r="34" fill="none" stroke="#8c7233" stroke-width="1.2"/>
+      <circle cx="50" cy="8" r="4" fill="#c8a44e" stroke="#4a3708"/>
+      <circle cx="50" cy="92" r="4" fill="#c8a44e" stroke="#4a3708"/>
+    </g>
+    <!-- mainspring barrel -->
+    <g id="o-barrel">
+      <circle cx="50" cy="50" r="43" fill="url(#gBrass)" stroke="#4a3708" stroke-width="1.4"/>
+      <circle cx="50" cy="50" r="36" fill="none" stroke="#5c4512" stroke-width="1.6"/>
+      <path d="M50 14 a36 36 0 0 1 30 12" fill="none" stroke="#3c2d08" stroke-width="2.4"/>
+      <path d="M50 20 a30 30 0 0 1 26 16" fill="none" stroke="#3c2d08" stroke-width="2.4"/>
+      <path d="M50 27 a23 23 0 0 1 20 20" fill="none" stroke="#3c2d08" stroke-width="2.4"/>
+      <circle cx="50" cy="50" r="7" fill="#5c4512"/><circle cx="50" cy="50" r="2.4" fill="#e6cf94"/>
+      <circle cx="86" cy="50" r="3" fill="#4a3708"/>
+    </g>
+    <!-- jewelled bearing -->
+    <g id="o-jewel">
+      <circle cx="50" cy="50" r="34" fill="url(#gSteel)" stroke="#5a636a" stroke-width="1.4"/>
+      <circle cx="50" cy="50" r="22" fill="#1b1e20" stroke="#767f86" stroke-width="1"/>
+      <circle cx="50" cy="50" r="13" fill="#c0243a" stroke="#7a0e20" stroke-width="1.4"/>
+      <circle cx="46" cy="45" r="4.4" fill="#ff8a9c" opacity=".8"/>
+      <circle cx="50" cy="50" r="3.6" fill="#0c0d0e"/>
+      <g stroke="#8d969c" stroke-width="2"><path d="M50 12 L50 22"/><path d="M50 78 L50 88"/><path d="M12 50 L22 50"/><path d="M78 50 L88 50"/></g>
+    </g>
+    <!-- bridge / plate -->
+    <g id="o-bridge">
+      <path d="M10 78 C10 44 26 20 56 16 C82 13 92 30 88 44 C84 56 70 52 64 60 C58 68 66 80 50 86 C32 92 12 90 10 78 Z"
+            fill="url(#gBrass)" stroke="#4a3708" stroke-width="1.4"/>
+      <circle cx="24" cy="72" r="7" fill="#5c4512"/><circle cx="24" cy="72" r="2.6" fill="#e6cf94"/>
+      <circle cx="66" cy="36" r="7" fill="#5c4512"/><circle cx="66" cy="36" r="2.6" fill="#e6cf94"/>
+      <circle cx="44" cy="88" r="7" fill="#5c4512"/><circle cx="44" cy="88" r="2.6" fill="#e6cf94"/>
+      <path d="M20 62 C34 52 48 46 74 40" fill="none" stroke="#6b5018" stroke-width="1.2"/>
+    </g>
+    <!-- click spring -->
+    <g id="o-click">
+      <path d="M12 82 C22 30 52 8 88 20" fill="none" stroke="url(#gSteel)" stroke-width="5" stroke-linecap="round"/>
+      <path d="M12 82 C22 30 52 8 88 20" fill="none" stroke="#6b747a" stroke-width="1"/>
+      <circle cx="88" cy="20" r="7" fill="url(#gBrass)" stroke="#4a3708"/>
+      <circle cx="12" cy="82" r="6" fill="url(#gBrass)" stroke="#4a3708"/>
+      <circle cx="60" cy="12" r="4" fill="#a3acb2"/>
+    </g>
+
+    <!-- die -->
+    <g id="o-die">
+      <rect x="12" y="12" width="76" height="76" rx="14" fill="#f3ece0" stroke="#b9ad98" stroke-width="1.4"/>
+      <rect x="12" y="12" width="76" height="30" rx="14" fill="#ffffff" opacity=".55"/>
+      <g fill="#2c2620">
+        <circle cx="32" cy="32" r="6.5"/><circle cx="68" cy="32" r="6.5"/>
+        <circle cx="50" cy="50" r="6.5"/>
+        <circle cx="32" cy="68" r="6.5"/><circle cx="68" cy="68" r="6.5"/>
+      </g>
+    </g>
+    <g id="o-die-b">
+      <rect x="12" y="12" width="76" height="76" rx="14" fill="#2f3a40" stroke="#11181c" stroke-width="1.4"/>
+      <rect x="12" y="12" width="76" height="30" rx="14" fill="#ffffff" opacity=".12"/>
+      <g fill="#f0e6d2">
+        <circle cx="32" cy="32" r="6.5"/><circle cx="68" cy="68" r="6.5"/>
+        <circle cx="50" cy="50" r="6.5"/>
+      </g>
+    </g>
+    <g id="o-die-c">
+      <rect x="12" y="12" width="76" height="76" rx="14" fill="#2f6a4c" stroke="#12301f" stroke-width="1.4"/>
+      <rect x="12" y="12" width="76" height="30" rx="14" fill="#ffffff" opacity=".14"/>
+      <g fill="#f4efe2">
+        <circle cx="32" cy="32" r="6.5"/><circle cx="68" cy="32" r="6.5"/><circle cx="32" cy="68" r="6.5"/><circle cx="68" cy="68" r="6.5"/>
+      </g>
+    </g>
+    <g id="o-die-d">
+      <rect x="12" y="12" width="76" height="76" rx="14" fill="#b8452f" stroke="#5c1e12" stroke-width="1.4"/>
+      <rect x="12" y="12" width="76" height="30" rx="14" fill="#ffffff" opacity=".14"/>
+      <g fill="#fbf3e6">
+        <circle cx="32" cy="32" r="6.5"/><circle cx="68" cy="32" r="6.5"/><circle cx="50" cy="50" r="6.5"/>
+        <circle cx="32" cy="68" r="6.5"/><circle cx="68" cy="68" r="6.5"/>
+      </g>
+    </g>
+    <g id="o-die-e">
+      <rect x="12" y="12" width="76" height="76" rx="14" fill="#e8ddc6" stroke="#b2a68a" stroke-width="1.4"/>
+      <rect x="12" y="12" width="76" height="30" rx="14" fill="#ffffff" opacity=".5"/>
+      <g fill="#2c2620">
+        <circle cx="32" cy="32" r="6.5"/><circle cx="68" cy="32" r="6.5"/><circle cx="50" cy="50" r="6.5"/>
+        <circle cx="32" cy="68" r="6.5"/><circle cx="68" cy="68" r="6.5"/>
+      </g>
+      <path d="M88 20 L96 12" stroke="#a89a80" stroke-width="2"/>
+    </g>
+
+    <!-- film canister -->
+    <g id="o-film">
+      <rect x="22" y="14" width="56" height="72" rx="8" fill="url(#gSteel)" stroke="#5b646b" stroke-width="1.4"/>
+      <rect x="22" y="14" width="16" height="72" rx="8" fill="#ffffff" opacity=".28"/>
+      <circle cx="50" cy="50" r="20" fill="#2a2f33" stroke="#767f86" stroke-width="1.2"/>
+      <circle cx="50" cy="50" r="13" fill="#4a5257"/>
+      <circle cx="50" cy="50" r="5" fill="#1a1d1f"/>
+      <g fill="#1c2022">
+        <rect x="30" y="22" width="40" height="5" rx="2"/><rect x="30" y="73" width="40" height="5" rx="2"/>
+      </g>
+      <rect x="26" y="30" width="48" height="6" fill="#c0392b" opacity=".85"/>
+    </g>
+
+    <!-- pencil -->
+    <g id="o-pencil-a">
+      <rect x="46" y="6" width="8" height="76" fill="#d8a326"/>
+      <rect x="46" y="6" width="3" height="76" fill="#f0cf72" opacity=".8"/>
+      <path d="M46 82 L50 96 L54 82 Z" fill="#e0c39a"/>
+      <path d="M48.4 90 L50 96 L51.6 90 Z" fill="#2b2620"/>
+      <rect x="44" y="6" width="12" height="8" fill="#c0392b"/>
+      <rect x="44" y="70" width="12" height="5" fill="#8e7a5c" opacity=".6"/>
+    </g>
+    <g id="o-pencil-b">
+      <rect x="46" y="14" width="8" height="68" fill="#3f7a55"/>
+      <rect x="46" y="14" width="3" height="68" fill="#7fc199" opacity=".8"/>
+      <path d="M46 82 L50 96 L54 82 Z" fill="#e0c39a"/>
+      <path d="M48.4 90 L50 96 L51.6 90 Z" fill="#2b2620"/>
+      <rect x="44" y="14" width="12" height="8" fill="#e0b64a"/>
+    </g>
+    <g id="o-pencil-c">
+      <rect x="46" y="2" width="8" height="80" fill="#2f3a44"/>
+      <rect x="46" y="2" width="3" height="80" fill="#6f8290" opacity=".8"/>
+      <path d="M46 82 L50 96 L54 82 Z" fill="#e0c39a"/>
+      <path d="M48.4 90 L50 96 L51.6 90 Z" fill="#2b2620"/>
+      <rect x="44" y="2" width="12" height="8" fill="#c0392b"/>
+    </g>
+    <g id="o-pencil-d">
+      <rect x="46" y="20" width="8" height="62" fill="#b8452f"/>
+      <rect x="46" y="20" width="3" height="62" fill="#e28e7a" opacity=".8"/>
+      <rect x="46" y="20" width="8" height="62" rx="0" fill="none" stroke="#5c1e12"/>
+      <path d="M46 82 L50 96 L54 82 Z" fill="#e0c39a"/>
+      <path d="M48.4 90 L50 96 L51.6 90 Z" fill="#2b2620"/>
+      <rect x="44" y="20" width="12" height="8" fill="#2f3a44"/>
+    </g>
+    <g id="o-pencil-e">
+      <rect x="46" y="10" width="8" height="72" fill="#7a4b9c"/>
+      <rect x="46" y="10" width="3" height="72" fill="#c4a0e0" opacity=".8"/>
+      <path d="M46 82 L50 96 L54 82 Z" fill="#e0c39a"/>
+      <path d="M48.4 90 L50 96 L51.6 90 Z" fill="#2b2620"/>
+      <rect x="44" y="10" width="12" height="8" fill="#e0e0e0"/>
+    </g>
+
+    <!-- brush -->
+    <g id="o-brush-a">
+      <rect x="45" y="34" width="10" height="46" rx="3" fill="url(#gWood)"/>
+      <rect x="45" y="80" width="10" height="8" rx="3" fill="#6d421c"/>
+      <rect x="47.5" y="18" width="5" height="18" fill="#c9bfae"/>
+      <path d="M50 2 C36 8 34 22 36 30 L64 30 C66 22 64 8 50 2 Z" fill="#3d3126"/>
+      <path d="M50 4 C42 10 40 22 41 30" fill="none" stroke="#6a5a48" stroke-width="1.2"/>
+      <path d="M50 4 C58 10 60 22 59 30" fill="none" stroke="#6a5a48" stroke-width="1.2"/>
+      <path d="M50 2 L50 8" stroke="#8c7a64" stroke-width="1.4"/>
+    </g>
+    <g id="o-brush-b">
+      <rect x="45" y="30" width="10" height="50" rx="3" fill="url(#gHandle)"/>
+      <path d="M50 0 C40 4 36 14 37 30 L63 30 C64 14 60 4 50 0 Z" fill="#c98f4e"/>
+      <path d="M50 2 C44 8 42 18 42 30" fill="none" stroke="#e0ad6c" stroke-width="1.2"/>
+      <rect x="43" y="30" width="14" height="5" fill="url(#gBrass)"/>
+    </g>
+    <g id="o-brush-c">
+      <rect x="45" y="38" width="10" height="42" rx="3" fill="url(#gWood)"/>
+      <rect x="45" y="84" width="10" height="7" rx="3" fill="#6d421c"/>
+      <rect x="47" y="24" width="6" height="15" fill="#d8cfc0"/>
+      <path d="M50 6 C38 12 36 24 38 30 L62 30 C64 24 62 12 50 6 Z" fill="#6b4a2c"/>
+      <path d="M50 8 C44 14 42 24 43 30" fill="none" stroke="#8f6a44" stroke-width="1.2"/>
+    </g>
+    <g id="o-brush-d">
+      <rect x="45" y="28" width="10" height="52" rx="3" fill="url(#gHandle)"/>
+      <rect x="45" y="76" width="10" height="6" rx="2" fill="#d8a326"/>
+      <path d="M50 0 C42 6 39 16 40 28 L60 28 C61 16 58 6 50 0 Z" fill="#2f2a26"/>
+      <rect x="42" y="28" width="16" height="5" fill="url(#gBrass)"/>
+      <path d="M50 2 L50 26" stroke="#7a726a" stroke-width="1.2"/>
+    </g>
+    <g id="o-brush-e">
+      <rect x="44" y="40" width="12" height="40" rx="3" fill="url(#gHandle)"/>
+      <rect x="44" y="40" width="12" height="5" fill="url(#gBrass)"/>
+      <rect x="47" y="22" width="6" height="19" fill="#cfc6b6"/>
+      <path d="M50 4 C40 10 39 20 40 27 L60 27 C61 20 60 10 50 4 Z" fill="#8a4a2c"/>
+      <path d="M50 6 C45 12 44 20 45 27" fill="none" stroke="#b06a44" stroke-width="1.2"/>
+    </g>
+
+    <!-- thread spool -->
+    <g id="o-spool">
+      <rect x="20" y="24" width="60" height="6" rx="3" fill="url(#gWood)"/>
+      <rect x="20" y="70" width="60" height="6" rx="3" fill="url(#gWood)"/>
+      <rect x="26" y="30" width="48" height="40" fill="#c0392b"/>
+      <g stroke="#8c2318" stroke-width="1" opacity=".8">
+        <path d="M26 36 h48"/><path d="M26 42 h48"/><path d="M26 48 h48"/><path d="M26 54 h48"/><path d="M26 60 h48"/><path d="M26 66 h48"/>
+      </g>
+      <rect x="26" y="30" width="10" height="40" fill="#ffffff" opacity=".18"/>
+      <path d="M74 40 c14 4 14 22 0 26" fill="none" stroke="#c0392b" stroke-width="2"/>
+    </g>
+    <g id="o-spool-b">
+      <rect x="20" y="24" width="60" height="6" rx="3" fill="#e8e2d4"/>
+      <rect x="20" y="70" width="60" height="6" rx="3" fill="#e8e2d4"/>
+      <rect x="26" y="30" width="48" height="40" fill="#2f6a4c"/>
+      <g stroke="#1b4630" stroke-width="1" opacity=".8">
+        <path d="M26 36 h48"/><path d="M26 42 h48"/><path d="M26 48 h48"/><path d="M26 54 h48"/><path d="M26 60 h48"/><path d="M26 66 h48"/>
+      </g>
+      <rect x="26" y="30" width="10" height="40" fill="#ffffff" opacity=".18"/>
+      <path d="M74 40 c14 4 14 22 0 26" fill="none" stroke="#2f6a4c" stroke-width="2"/>
+    </g>
+    <g id="o-spool-c">
+      <rect x="20" y="24" width="60" height="6" rx="3" fill="url(#gWood)"/>
+      <rect x="20" y="70" width="60" height="6" rx="3" fill="url(#gWood)"/>
+      <rect x="26" y="30" width="48" height="40" fill="#d8a326"/>
+      <g stroke="#a2760f" stroke-width="1" opacity=".85">
+        <path d="M26 36 h48"/><path d="M26 42 h48"/><path d="M26 48 h48"/><path d="M26 54 h48"/><path d="M26 60 h48"/><path d="M26 66 h48"/>
+      </g>
+      <rect x="26" y="30" width="10" height="40" fill="#ffffff" opacity=".22"/>
+      <path d="M74 40 c14 4 14 22 0 26" fill="none" stroke="#d8a326" stroke-width="2"/>
+    </g>
+    <g id="o-spool-d">
+      <rect x="20" y="24" width="60" height="6" rx="3" fill="#d8cfc0"/>
+      <rect x="20" y="70" width="60" height="6" rx="3" fill="#d8cfc0"/>
+      <rect x="26" y="30" width="48" height="40" fill="#2f3a44"/>
+      <g stroke="#1b222a" stroke-width="1" opacity=".8">
+        <path d="M26 36 h48"/><path d="M26 42 h48"/><path d="M26 48 h48"/><path d="M26 54 h48"/><path d="M26 60 h48"/><path d="M26 66 h48"/>
+      </g>
+      <rect x="26" y="30" width="10" height="40" fill="#ffffff" opacity=".14"/>
+      <path d="M74 40 c14 4 14 22 0 26" fill="none" stroke="#2f3a44" stroke-width="2"/>
+    </g>
+    <g id="o-spool-e">
+      <rect x="20" y="24" width="60" height="6" rx="3" fill="url(#gWood)"/>
+      <rect x="20" y="70" width="60" height="6" rx="3" fill="url(#gWood)"/>
+      <rect x="26" y="30" width="48" height="40" fill="#f2ece0"/>
+      <g stroke="#c9bfae" stroke-width="1">
+        <path d="M26 36 h48"/><path d="M26 42 h48"/><path d="M26 48 h48"/><path d="M26 54 h48"/><path d="M26 60 h48"/><path d="M26 66 h48"/>
+      </g>
+      <rect x="26" y="30" width="10" height="40" fill="#000000" opacity=".08"/>
+      <path d="M74 40 c14 4 14 22 0 26" fill="none" stroke="#f2ece0" stroke-width="2"/>
+    </g>
+
+    <!-- screwdriver -->
+    <g id="o-sd-a">
+      <rect x="46" y="4" width="8" height="26" fill="url(#gHandle)"/>
+      <rect x="42" y="4" width="16" height="8" rx="3" fill="#2c2c30"/>
+      <rect x="48" y="30" width="4" height="58" fill="url(#gSteel)"/>
+      <path d="M48 88 L50 98 L52 88 Z" fill="#d6dee2"/>
+      <rect x="45" y="12" width="10" height="2" fill="#c0392b" opacity=".8"/>
+    </g>
+    <g id="o-sd-b">
+      <rect x="44" y="4" width="12" height="34" fill="url(#gHandle)" rx="2"/>
+      <path d="M44 4 a6 6 0 0 1 12 0" fill="#3a3a40"/>
+      <rect x="48.5" y="38" width="3" height="52" fill="url(#gSteel)"/>
+      <path d="M48.5 90 L52 98 L48.5 90 Z" fill="#d6dee2"/>
+      <rect x="46" y="12" width="8" height="2" fill="#e0b64a" opacity=".9"/>
+    </g>
+    <g id="o-sd-c">
+      <rect x="43" y="4" width="14" height="30" fill="#b8452f" rx="4"/>
+      <rect x="45" y="8" width="10" height="22" rx="3" fill="#d9705a" opacity=".7"/>
+      <rect x="47" y="34" width="6" height="56" fill="url(#gSteel)"/>
+      <path d="M47 90 L53 90 L50 98 Z" fill="#d6dee2"/>
+    </g>
+    <g id="o-sd-d">
+      <rect x="45" y="4" width="10" height="30" fill="url(#gHandle)" rx="5"/>
+      <rect x="47" y="34" width="6" height="50" fill="url(#gSteel)"/>
+      <path d="M47 84 h6 l-3 8 Z" fill="#d6dee2"/>
+      <rect x="45" y="10" width="10" height="3" rx="1.5" fill="#7ec8e3" opacity=".9"/>
+    </g>
+    <g id="o-sd-e">
+      <rect x="42" y="4" width="16" height="26" fill="#2f6a4c" rx="3"/>
+      <rect x="44" y="8" width="12" height="18" rx="2" fill="#4f8f6c" opacity=".6"/>
+      <rect x="48" y="30" width="4" height="62" fill="url(#gSteel)"/>
+      <path d="M48 92 L50 98 L52 92 Z" fill="#d6dee2"/>
+    </g>
+  </defs>
+</svg>
+
+<main class="page">
+
+  <section class="side">
+    <p class="kicker">Workshop 3 &middot; Bench two</p>
+    <h1>Parts<em>Tray A</em></h1>
+    <p>
+      Forty compartments, five across and eight down. Every tool sits in the same place it
+      sat yesterday, and the one before that. <b>Order is a kind of memory</b> — you stop looking
+      for the thing and simply reach for the space.
+    </p>
+    <div class="dl">
+      <span>Keeper</span><b>M. Okada</b>
+      <span>Restocked</span><b>14 Mar, 08:40</b>
+      <span>Layout</span><b>5 &times; 8 &middot; 40 wells</b>
+      <span>Drawer</span><b>Solid oak, 18 mm</b>
+      <span>Wells</span><b>Basswood, felt-lined</b>
+    </div>
+    <p class="quote">
+      &ldquo;You can tell what a bench is for by what is missing from it.&rdquo;
+    </p>
+  </section>
+
+  <section class="drawerWrap">
+    <div class="plate" aria-hidden="true">
+      <b>Tray A</b><i></i><small>No. 04 &middot; 40 wells &middot; do not stack</small>
+    </div>
+    <div class="drawer">
+      <div class="rack" id="rack" role="list" aria-label="Knolled parts tray with 40 compartments"></div>
+    </div>
+    <p class="caption">Hover any well for its part number &middot; drawer pulls in on load</p>
+  </section>
+
+  <aside class="legend">
+    <h2>Contents</h2>
+    <ul>
+      <li><i style="background:#cfe4ef"></i><span><b>Lens elements</b> 5 &times; coated glass</span></li>
+      <li><i style="background:linear-gradient(140deg,#e0be6c,#7a5c1c)"></i><span><b>Movement parts</b> 5 &times; brass &amp; steel</span></li>
+      <li><i style="background:#f3ece0"></i><span><b>Dice</b> 5 &times; bone and resin</span></li>
+      <li><i style="background:#9aa3a8"></i><span><b>Film</b> 5 &times; 120, fresh</span></li>
+      <li><i style="background:#d8a326"></i><span><b>Pencils</b> 5 &times; HB to 6B</span></li>
+      <li><i style="background:#3d3126"></i><span><b>Brushes</b> 5 &times; hog and squirrel</span></li>
+      <li><i style="background:#c0392b"></i><span><b>Thread</b> 5 &times; 40 m spools</span></li>
+      <li><i style="background:#2c2c30"></i><span><b>Drivers</b> 5 &times; 1.5&ndash;4 mm</span></li>
+    </ul>
+    <div class="count">
+      Wells filled <b id="cFill">40 / 40</b><br>
+      Divider type <b>basswood, 6 mm</b><br>
+      Drawer runner <b>full extension, 500 mm</b>
+    </div>
+  </aside>
+
+  <noscript>The 40 compartments are drawn with JavaScript. The written notes and contents list remain available.</noscript>
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  /* Row-by-row, grouped by part type — the way a real tray is packed. */
+  var ROWS = [
+    { type:"lens", items:[
+      {n:"A1", s:"Lens element 28 mm", p:"f/1.4 1987", c:"o-lens"},
+      {n:"A2", s:"Lens element 21 mm", p:"f/2.0 coated", c:"o-lens"},
+      {n:"A3", s:"Front doublet",      p:"crown/flint", c:"o-lens"},
+      {n:"A4", s:"Rear group",        p:"aberration kit", c:"o-lens"},
+      {n:"A5", s:"Meniscus, thin",    p:"Miroir 1954", c:"o-lens"}
+    ]},
+    { type:"movement", items:[
+      {n:"B1", s:"Balance wheel",     p:"Glucydur, 4 Hz", c:"o-balance"},
+      {n:"B2", s:"Mainspring barrel", p:"70 h reserve", c:"o-barrel"},
+      {n:"B3", s:"Jewelled bearing",  p:"synthetic ruby", c:"o-jewel"},
+      {n:"B4", s:"Train bridge",      p:"German silver", c:"o-bridge"},
+      {n:"B5", s:"Click and spring",  p:"Swiss lever", c:"o-click"}
+    ]},
+    { type:"dice", items:[
+      {n:"C1", s:"Die — bone",    p:"6 pip, 16 mm", c:"o-die"},
+      {n:"C2", s:"Die — slate",   p:"3 pip, 16 mm", c:"o-die-b"},
+      {n:"C3", s:"Die — resin",   p:"4 pip, 16 mm", c:"o-die-c"},
+      {n:"C4", s:"Die — bakelite",p:"5 pip, 16 mm", c:"o-die-d"},
+      {n:"C5", s:"Die — spare",   p:"5 pip, chipped", c:"o-die-e"}
+    ]},
+    { type:"film", items:[
+      {n:"D1", s:"120 roll, Portra", p:"exp 09/2027", c:"o-film"},
+      {n:"D2", s:"120 roll, tri-X",   p:"exp 11/2027", c:"o-film"},
+      {n:"D3", s:"120 roll, HP5",    p:"push +2", c:"o-film"},
+      {n:"D4", s:"120 roll, Dektol", p:"exp 06/2026", c:"o-film"},
+      {n:"D5", s:"120 roll, spare",  p:"unexposed", c:"o-film"}
+    ]},
+    { type:"pencil", items:[
+      {n:"E1", s:"Pencil, HB",     p:"yellow, 178 mm", c:"o-pencil-a"},
+      {n:"E2", s:"Pencil, 2B",     p:"green, 172 mm", c:"o-pencil-b"},
+      {n:"E3", s:"Pencil, 6B",     p:"black, 184 mm", c:"o-pencil-c"},
+      {n:"E4", s:"Pencil, 4B",     p:"vermilion, 164 mm", c:"o-pencil-d"},
+      {n:"E5", s:"Pencil, 8B",     p:"violet, 170 mm", c:"o-pencil-e"}
+    ]},
+    { type:"brush", items:[
+      {n:"F1", s:"Hog bristle",   p:"No. 8, pointed", c:"o-brush-a"},
+      {n:"F2", s:"Squirrel round", p:"No. 4, weasel", c:"o-brush-b"},
+      {n:"F3", s:"Hog flat",      p:"No. 12, chisel", c:"o-brush-c"},
+      {n:"F4", s:"Badger mop",    p:"No. 6, fulling", c:"o-brush-d"},
+      {n:"F5", s:"Goat liner",    p:"No. 3, lining", c:"o-brush-e"}
+    ]},
+    { type:"thread", items:[
+      {n:"G1", s:"Linen, scarlet", p:"No. 40 &middot; 40 m", c:"o-spool"},
+      {n:"G2", s:"Cotton, moss",   p:"No. 60 &middot; 40 m", c:"o-spool-b"},
+      {n:"G3", s:"Silk, straw",    p:"No. 120 &middot; 25 m", c:"o-spool-c"},
+      {n:"G4", s:"Waxed, graphite",p:"No. 22 &middot; 60 m", c:"o-spool-d"},
+      {n:"G5", s:"Linen, bleached",p:"No. 40 &middot; 40 m", c:"o-spool-e"}
+    ]},
+    { type:"driver", items:[
+      {n:"H1", s:"Driver, flat 4 mm", p:"120 mm, red collar", c:"o-sd-a"},
+      {n:"H2", s:"Driver, 1.5 mm",    p:"60 mm, precision", c:"o-sd-b"},
+      {n:"H3", s:"Driver, flat 2 mm", p:"100 mm, bakelite", c:"o-sd-c"},
+      {n:"H4", s:"Driver, Phillips",  p:"PH0, 90 mm", c:"o-sd-d"},
+      {n:"H5", s:"Driver, flat 3 mm", p:"140 mm, long reach", c:"o-sd-e"}
+    ]}
+  ];
+
+  var rack = document.getElementById("rack");
+  var n = 0;
+  var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 100 100");
+  svg.setAttribute("aria-hidden", "true");
+  svg.setAttribute("focusable", "false");
+
+  ROWS.forEach(function(row, ri){
+    row.items.forEach(function(item, ci){
+      var b = document.createElement("button");
+      b.className = "cell";
+      b.type = "button";
+      b.setAttribute("role", "listitem");
+      b.setAttribute("aria-label", item.n + ": " + item.s + ", " + item.p.replace(/&middot;/g, "·"));
+
+      var use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+      use.setAttribute("href", "#" + item.c);
+      /* tiny, deliberate variation so nothing looks copy-pasted */
+      var rot = ((n * 37) % 11) - 5;
+      var scl = 0.94 + ((n * 13) % 9) / 100;
+      use.setAttribute("transform", "translate(50 50) rotate(" + rot.toFixed(1) + ") scale(" + scl.toFixed(2) + ") translate(-50 -50)");
+      var g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      g.appendChild(use);
+      var s2 = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      s2.setAttribute("viewBox", "0 0 100 100");
+      s2.setAttribute("aria-hidden", "true");
+      s2.setAttribute("focusable", "false");
+      s2.appendChild(g);
+      b.appendChild(s2);
+
+      var no = document.createElement("span");
+      no.className = "no";
+      no.textContent = item.n;
+      b.appendChild(no);
+
+      var tip = document.createElement("span");
+      tip.className = "tip";
+      tip.innerHTML = "<b>" + item.s + "</b>" + item.n + " &middot; " + item.p;
+      b.appendChild(tip);
+
+      b.addEventListener("click", function(){
+        b.animate(
+          [{transform:"translateY(0)"},{transform:"translateY(-3px)"},{transform:"translateY(0)"}],
+          {duration:260, easing:"cubic-bezier(.2,.8,.2,1)"}
+        );
+      });
+
+      rack.appendChild(b);
+      n++;
+    });
+  });
+
+  document.getElementById("cFill").textContent = n + " / " + n;
+
+  /* drawer slides in, well by well */
+  var cells = rack.querySelectorAll(".cell");
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if(reduce){
+    Array.prototype.forEach.call(cells, function(c){ c.classList.add("in"); });
+  } else {
+    var io = ("IntersectionObserver" in window)
+      ? new IntersectionObserver(function(entries){
+          entries.forEach(function(en){
+            if(en.isIntersecting){ en.target.classList.add("in"); io.unobserve(en.target); }
+          });
+        }, {threshold:0.1})
+      : null;
+    Array.prototype.forEach.call(cells, function(c, i){
+      c.style.transitionDelay = Math.min(i*18, 700) + "ms";
+      if(io) io.observe(c); else c.classList.add("in");
+    });
+    setTimeout(function(){
+      Array.prototype.forEach.call(cells, function(c){ c.classList.add("in"); });
+    }, 2200);
+  }
+})();
+</script>
+</body>
+</html>

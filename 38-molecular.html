@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FIG. 1 — Hexagonal Lattice, sp² Network</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500&family=Barlow+Condensed:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-1:#0a1626; --navy-2:#050d18; --navy-3:#02060d;
+    --cy:#57e6ff; --cy-2:#8affe0; --cy-dim:#1b5a72;
+    --warm:#ffb86b; --red:#ff6b6b;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+    --cond:"Barlow Condensed","Arial Narrow",sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:var(--navy-3);color:#bfe6f2}
+  body{font-family:var(--mono);-webkit-font-smoothing:antialiased}
+
+  .deep{position:fixed;inset:0;
+    background:
+      radial-gradient(70% 60% at 46% 42%,#0e1f33 0%,var(--navy-1) 38%,var(--navy-2) 72%,var(--navy-3) 100%)}
+  .deep::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;
+    background-image:
+      linear-gradient(rgba(87,230,255,.045) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(87,230,255,.045) 1px,transparent 1px);
+    background-size:52px 52px;
+    -webkit-mask-image:radial-gradient(70% 70% at 46% 42%,#000 20%,transparent 90%);
+    mask-image:radial-gradient(70% 70% at 46% 42%,#000 20%,transparent 90%)}
+  .scan{position:fixed;inset:0;pointer-events:none;z-index:9;opacity:.3;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,.4) 0 1px,transparent 1px 3px)}
+
+  /* ---------------- layout ---------------- */
+  .rig{position:fixed;inset:0;z-index:3;display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(280px,25vw);
+    grid-template-rows:auto 1fr auto;gap:clamp(10px,1.4vw,20px);
+    padding:clamp(12px,1.8vw,26px);pointer-events:none}
+  .rig > *{pointer-events:auto}
+  .top{grid-column:1/3;display:flex;justify-content:space-between;align-items:flex-end;
+    gap:16px;flex-wrap:wrap;padding-bottom:10px;border-bottom:1px solid rgba(87,230,255,.18)}
+  .top .t{font-family:var(--cond);font-size:clamp(19px,2.2vw,32px);font-weight:600;
+    letter-spacing:.14em;text-transform:uppercase;color:#dff6ff;line-height:1}
+  .top .t em{font-style:normal;color:var(--cy)}
+  .top .m{font-size:9px;letter-spacing:.2em;color:#4b7d94;line-height:2;text-align:right;
+    text-transform:uppercase}
+  .top .m b{font-weight:400;color:#8fc9dc}
+
+  .panel{grid-column:2/3;grid-row:2/4;align-self:end;
+    border-top:1px solid rgba(87,230,255,.28);padding-top:12px}
+  .panel h4{margin:0 0 10px;font-family:var(--cond);font-size:11px;letter-spacing:.32em;
+    text-transform:uppercase;color:var(--cy);font-weight:500;
+    display:flex;align-items:center;gap:8px}
+  .panel h4::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(87,230,255,.4),transparent)}
+  .spec{display:grid;gap:0}
+  .spec div{display:grid;grid-template-columns:6.4em 1fr;gap:8px;padding:6px 0;
+    border-bottom:1px solid rgba(87,230,255,.1);font-size:9.5px;line-height:1.6}
+  .spec .k{color:#4b7d94;text-transform:uppercase;letter-spacing:.18em;font-size:8.5px;padding-top:1px}
+  .spec .v{color:#cdeefb}
+  .spec .v b{font-weight:500;color:var(--warm)}
+  .layers{margin-top:12px;display:grid;gap:4px}
+  .layers button{display:flex;justify-content:space-between;align-items:center;gap:10px;
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:#6fa8bd;background:rgba(87,230,255,.05);border:1px solid rgba(87,230,255,.16);
+    padding:8px 10px;cursor:pointer;transition:all .2s ease;width:100%;text-align:left}
+  .layers button:hover{background:rgba(87,230,255,.12);color:#cdeefb}
+  .layers button[aria-pressed="true"]{background:rgba(87,230,255,.2);color:#eafaff;border-color:rgba(87,230,255,.5)}
+  .layers button span{color:var(--cy);opacity:.7}
+
+  .bot{grid-column:1/3;grid-row:3;display:flex;gap:clamp(10px,1.6vw,26px);align-items:flex-end;
+    flex-wrap:wrap}
+  .note{max-width:44ch;font-size:9.5px;line-height:2;letter-spacing:.08em;color:#5b93a8}
+  .note b{color:#9fd6e8;font-weight:400}
+  .readout{margin-left:auto;text-align:right;font-size:9.5px;letter-spacing:.14em;
+    color:#4b7d94;text-transform:uppercase;line-height:2.1}
+  .readout b{font-weight:400;color:var(--cy);font-variant-numeric:tabular-nums}
+
+  /* ---------------- stage ---------------- */
+  .stage{position:fixed;inset:0;z-index:2;cursor:grab;touch-action:none;user-select:none}
+  .stage.drag{cursor:grabbing}
+  .plate3d{position:absolute;left:50%;top:50%;width:0;height:0;
+    perspective:1200px;perspective-origin:50% 46%;
+    transform-style:preserve-3d}
+  #lattice{position:absolute;left:0;top:0;width:1px;height:1px;transform-style:preserve-3d;
+    transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg))}
+  #lattice.gone{opacity:0;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) scale(.94)}
+  #lattice svg{position:absolute;left:50%;top:50%;overflow:visible;display:block}
+  .honey{position:absolute;left:50%;top:50%;width:0;height:0;transform-style:preserve-3d;
+    transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)) scale(var(--hs,.9))}
+  .honey.gone{opacity:0;pointer-events:none}
+  .sph{position:absolute;left:0;top:0;width:calc(var(--r)*2px);height:calc(var(--r)*2px);
+    margin:calc(var(--r)*-1px) 0 0 calc(var(--r)*-1px);border-radius:50%;
+    background:
+      radial-gradient(circle at 32% 26%,rgba(255,255,255,.9),rgba(255,255,255,.16) 16%,transparent 34%),
+      radial-gradient(circle at 62% 72%,rgba(87,230,255,.28),transparent 46%),
+      radial-gradient(circle at 50% 50%,var(--c1),var(--c2) 62%,var(--c3) 100%);
+    box-shadow:0 0 0 1px rgba(87,230,255,.18),0 0 24px -4px var(--glow);
+  }
+  .sph span{position:absolute;inset:0;display:grid;place-items:center;
+    font-size:calc(var(--r)*.42px);letter-spacing:.06em;color:rgba(230,250,255,.9);
+    text-shadow:0 1px 2px rgba(0,20,30,.9);font-family:var(--mono)}
+  .bond{position:absolute;left:0;top:0;height:2px;transform-origin:0 50%;
+    background:linear-gradient(90deg,rgba(87,230,255,.85),rgba(87,230,255,.3));
+    box-shadow:0 0 6px rgba(87,230,255,.5);border-radius:1px}
+  .bond.two{height:5px;background:transparent;box-shadow:none;
+    border-top:1.5px solid rgba(87,230,255,.7);border-bottom:1.5px solid rgba(87,230,255,.7)}
+
+  /* caption on the plate */
+  .cap{position:fixed;left:clamp(12px,1.8vw,26px);bottom:clamp(66px,9vh,104px);z-index:4;
+    font-size:9px;letter-spacing:.18em;color:#4b7d94;text-transform:uppercase;line-height:2.1;
+    pointer-events:none}
+  .cap b{color:#9fd6e8;font-weight:400}
+  .scale{position:fixed;right:clamp(12px,1.8vw,26px);top:clamp(74px,11vh,120px);z-index:4;
+    width:clamp(80px,9vw,130px);pointer-events:none}
+  .scale i{display:block;height:1px;background:#4b7d94;position:relative}
+  .scale i::before,.scale i::after{content:"";position:absolute;width:1px;height:7px;
+    background:#4b7d94;top:-3px}
+  .scale i::before{left:0} .scale i::after{right:0}
+  .scale em{font-style:normal;font-size:8px;letter-spacing:.18em;color:#3f6d80;
+    display:block;margin-top:5px;text-align:center;text-transform:uppercase}
+
+  @media (max-width:900px){
+    .rig{position:relative;grid-template-columns:1fr;min-height:100dvh;padding:12px}
+    .top{grid-column:1}.panel{grid-column:1;grid-row:auto;padding:12px 0}
+    .bot{grid-column:1;grid-row:auto;padding-bottom:18px}
+    .stage{position:relative;inset:auto;height:52vh}
+    .cap,.scale{display:none}
+    .readout{text-align:left;margin-left:0}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="deep" aria-hidden="true"></div>
+
+<div class="stage" id="stage" aria-label="Lattice. Drag to rotate, click an atom to inspect it.">
+  <div class="plate3d" id="plate">
+    <div id="lattice"></div>
+    <div class="honey gone" id="honey"></div>
+  </div>
+</div>
+
+<div class="scan" aria-hidden="true"></div>
+
+<div class="cap">
+  Fig. 1 &middot; <b>Graphene lattice</b> &middot; sp² network, a = 2.46 Å<br>
+  Draggable &middot; click an atom for its site
+</div>
+
+<div class="scale" aria-hidden="true">
+  <i></i><em>1.0 nm</em>
+</div>
+
+<div class="rig">
+  <div class="top">
+    <div class="t">Structure <em>read-out</em></div>
+    <div class="m">
+      Model <b>two-layer</b> &middot; n = 40 sites<br>
+      Bond order <b>1.5</b> &middot; unit cell <b>4 atoms</b><br>
+      Instrument: nothing, this is a drawing
+    </div>
+  </div>
+
+  <div></div>
+
+  <aside class="panel">
+    <h4>Annotation</h4>
+    <div class="spec">
+      <div><span class="k">Site</span><span class="v" id="pSite">A1</span></div>
+      <div><span class="k">Element</span><span class="v" id="pEl">C</span></div>
+      <div><span class="k">Coord</span><span class="v" id="pXY">0.00, 0.00</span></div>
+      <div><span class="k">Neighbours</span><span class="v" id="pNb">3</span></div>
+      <div><span class="k">Hybrid</span><span class="v"><b>sp²</b>, trigonal planar</span></div>
+      <div><span class="k">Depth</span><span class="v" id="pZ">0.000 Å</span></div>
+      <div><span class="k">Cell</span><span class="v" id="pCell">&mdash;</span></div>
+    </div>
+    <div class="layers">
+      <button type="button" data-layer="lattice" aria-pressed="true">Layer I &middot; Lattice <span>2D</span></button>
+      <button type="button" data-layer="honey" aria-pressed="false">Layer II &middot; Honeycomb <span>3D</span></button>
+      <button type="button" data-layer="both" aria-pressed="false">Overlay <span>2+3D</span></button>
+    </div>
+  </aside>
+
+  <div class="bot">
+    <p class="note">
+      <b>Every line is one bond.</b> The lattice breathes on a seven second cycle, which is not
+      a physical frequency but does look like one. Electrons run along the bonds in one
+      direction only, which is also not physical, and is the nicer of the two.
+    </p>
+    <div class="readout">
+      <div>Rot X <b id="rRx">0</b>&deg; &middot; Rot Y <b id="rRy">0</b>&deg;</div>
+      <div>Sites <b id="rN">31</b> &middot; Bonds <b id="rB">0</b> &middot; Pulses <b id="rP">0</b></div>
+    </div>
+  </div>
+</div>
+
+<noscript><p style="position:fixed;left:0;right:0;bottom:0;margin:0;padding:12px;background:#02060d;color:#bfe6f2;font:12px monospace;text-align:center">The figure is described above in words. Rotating it needs JavaScript and a mouse.</p></noscript>
+
+<script>
+(function(){
+  "use strict";
+  var SVGNS = "http://www.w3.org/2000/svg";
+  function sv(n, a){
+    var e = document.createElementNS(SVGNS, n);
+    for (var k in a) e.setAttribute(k, a[k]);
+    return e;
+  }
+  var stage = document.getElementById("stage");
+  var lat = document.getElementById("lattice");
+  var honey = document.getElementById("honey");
+  var plate = document.getElementById("plate");
+
+  /* ------------------------------------------------ the lattice */
+  var A0 = 52, NX = 4, NY = 3;
+  var a1 = [A0, 0], a2 = [A0 / 2, A0 * Math.sqrt(3) / 2];
+  var bas = [A0 / 2, A0 * Math.sqrt(3) / 6];
+  var nodes = [], index = {};
+  function place(m, n, s, z){
+    var p = [m * a1[0] + n * a2[0] + (s ? bas[0] : 0), m * a1[1] + n * a2[1] + (s ? bas[1] : 0), z || 0];
+    var id = nodes.length;
+    nodes.push({ id: id, x: p[0], y: p[1], z: 0, s: s ? "B" : "A", m: m, n: n, nb: [], el: null });
+    index[s ? "B" : "A"] = index[s ? "B" : "A"] || {};
+    index[s ? "B" : "A"][m + "," + n] = id;
+    return id;
+  }
+  for (var m = 0; m <= NX; m++) for (var n = 0; n <= NY; n++) place(m, n, 0);
+  for (m = 0; m <= NX; m++) for (n = 0; n <= NY; n++) place(m, n, 1);
+  var cx0 = 0, cy0 = 0;
+  nodes.forEach(function(p){ cx0 += p.x; cy0 += p.y; });
+  cx0 /= nodes.length; cy0 /= nodes.length;
+  nodes.forEach(function(p){ p.x -= cx0; p.y -= cy0; });
+
+  function A(m, n){ return (index.A && index.A[m + "," + n] !== undefined) ? index.A[m + "," + n] : -1; }
+  function B(m, n){ return (index.B && index.B[m + "," + n] !== undefined) ? index.B[m + "," + n] : -1; }
+  var bonds = [], seen = {};
+  function link(a, b){
+    var k = Math.min(a, b) + ":" + Math.max(a, b);
+    if (seen[k]) return; seen[k] = 1;
+    bonds.push([a, b]);
+    nodes[a].nb.push(b); nodes[b].nb.push(a);
+  }
+  nodes.forEach(function(p){
+    if (p.s !== "A") return;
+    var cand = [[p.m, p.n], [p.m - 1, p.n], [p.m, p.n - 1]];
+    cand.forEach(function(q){
+      var b = B(q[0], q[1]); if (b >= 0) link(p.id, b);
+    });
+  });
+
+  /* hexagonal rings: depth-5 cycle search over the bond graph, deduped */
+  var rings = [], ringSeen = {};
+  bonds.forEach(function(start){
+    var a = start[0], b = start[1];
+    nodes[b].nb.forEach(function(A1){
+      if (A1 === a) return;
+      nodes[A1].nb.forEach(function(B1){
+        if (B1 === b) return;
+        nodes[B1].nb.forEach(function(A2){
+          if (A2 === a || A2 === A1) return;
+          nodes[A2].nb.forEach(function(B2){
+            if (B2 === b || B2 === B1) return;
+            if (nodes[B2].nb.indexOf(a) < 0) return;
+            var cyc = [a, b, A1, B1, A2, B2];
+            var key = cyc.slice().sort(function(x, y){ return x - y; }).join(".");
+            if (ringSeen[key]) return; ringSeen[key] = 1;
+            rings.push({ v: cyc, cx: cyc.reduce(function(s, v){ return s + nodes[v].x; }, 0) / 6,
+                                  cy: cyc.reduce(function(s, v){ return s + nodes[v].y; }, 0) / 6 });
+          });
+        });
+      });
+    });
+  });
+
+  /* ------------------------------------------------ svg scaffolding */
+  var W = 720, H = 560;
+  var svg = sv("svg", { width: W, height: H, viewBox: "0 0 " + W + " " + H });
+  svg.style.marginLeft = (-W / 2) + "px";
+  svg.style.marginTop = (-H / 2) + "px";
+  var gCells = sv("g", {}), gBonds = sv("g", {}), gNodes = sv("g", {}), gPulse = sv("g", {});
+  var gX = sv("g", { opacity: ".5" });
+  svg.appendChild(gCells); svg.appendChild(gBonds); svg.appendChild(gX);
+  svg.appendChild(gNodes); svg.appendChild(gPulse);
+  lat.appendChild(svg);
+
+  rings.forEach(function(r){
+    r.el = sv("polygon", { fill: "none", stroke: "#57e6ff", "stroke-width": "1", opacity: ".1" });
+    r.dot = sv("circle", { r: "2.4", fill: "#57e6ff", opacity: "0" });
+    gCells.appendChild(r.el); gCells.appendChild(r.dot);
+  });
+  bonds.forEach(function(bd){
+    bd.el = sv("line", { stroke: "#57e6ff", "stroke-width": "1.1", opacity: ".45", "stroke-linecap": "round" });
+    gBonds.appendChild(bd.el);
+  });
+  nodes.forEach(function(p){
+    p.el = sv("circle", { r: "3.2", fill: "#0b2033", stroke: "#8affe0", "stroke-width": "1.2" });
+    p.hit = sv("circle", { r: "11", fill: "transparent", style: "cursor:pointer" });
+    p.hit.addEventListener("click", function(){ sel = p.id; show(p); });
+    gNodes.appendChild(p.el); gNodes.appendChild(p.hit);
+    p.lbl = sv("text", { fill: "#57e6ff", "font-size": "7.5", "font-family": "JetBrains Mono, monospace",
+      "letter-spacing": ".1em", opacity: "0", "text-anchor": "middle" });
+    p.lbl.textContent = p.s + p.m + p.n;
+    gNodes.appendChild(p.lbl);
+  });
+
+  /* measurement crosshair */
+  var cross = sv("g", { opacity: "0" });
+  cross.appendChild(sv("line", { stroke: "#ffb86b", "stroke-width": ".7", "stroke-dasharray": "3 3" }));
+  cross.appendChild(sv("circle", { r: "7", fill: "none", stroke: "#ffb86b", "stroke-width": ".7" }));
+  gNodes.appendChild(cross);
+
+  /* pulses */
+  var pulses = [];
+  for (var i = 0; i < 16; i++){
+    var e = sv("circle", { r: "2.6", fill: "#d8fbff" });
+    e.setAttribute("filter", "");
+    gPulse.appendChild(e);
+    pulses.push({ el: e, b: Math.floor(Math.random() * bonds.length), t: Math.random(), dir: i % 2 ? 1 : -1, sp: 0.26 + Math.random() * 0.2 });
+  }
+  gPulse.setAttribute("style", "filter:drop-shadow(0 0 5px #8affe0)");
+
+  /* ------------------------------------------------ projection */
+  var rx = 0, ry = 0, vrx = 0, vry = 0, F = 1400;
+  function project(x, y, z, ax, ay){
+    var cy2 = Math.cos(ay), sy = Math.sin(ay);
+    var x1 = x * cy2 + z * sy;
+    var z1 = -x * sy + z * cy2;
+    var cx2 = Math.cos(ax), sx2 = Math.sin(ax);
+    var y1 = y * cx2 - z1 * sx2;
+    var z2 = y * sx2 + z1 * cx2;
+    var s = F / (F - z2);
+    return { x: W / 2 + x1 * s, y: H / 2 + y1 * s, s: s, z: z2 };
+  }
+
+  var sel = -1, hover = -1;
+  function show(p){
+    document.getElementById("pSite").textContent = p.s + p.m + p.n;
+    document.getElementById("pEl").textContent = "C";
+    document.getElementById("pXY").textContent = (p.x / A0).toFixed(2) + ", " + (p.y / (A0 * Math.sqrt(3) / 2)).toFixed(2);
+    document.getElementById("pNb").textContent = p.nb.length + (p.nb.length === 3 ? "  (trigonal)" : "");
+    document.getElementById("pZ").textContent = p.z.toFixed(3) + " Å";
+    var cell = "A" + p.m + "-" + p.n;
+    document.getElementById("pCell").textContent = p.s === "A" ? cell : "B" + p.m + "-" + p.n + "  (offset)";
+  }
+
+  var T = 0;
+  function draw(now){
+    T += 0.016;
+    var breath = Math.sin(T * Math.PI * 2 / 7);
+    var ax = rx * Math.PI / 180, ay = ry * Math.PI / 180;
+    plate.style.setProperty("--rx", rx.toFixed(2) + "deg");
+    plate.style.setProperty("--ry", ry.toFixed(2) + "deg");
+    honey.style.setProperty("--rx", (rx * 0.9 + 14).toFixed(2) + "deg");
+    honey.style.setProperty("--ry", (ry * 0.9).toFixed(2) + "deg");
+
+    var proj = [];
+    for (var i = 0; i < nodes.length; i++){
+      var p = nodes[i];
+      var z = p.z + Math.sin(p.x * 0.035) * Math.cos(p.y * 0.045) * (7 + breath * 5.5);
+      var q = project(p.x, p.y, z, ax, ay);
+      proj.push(q);
+      p.el.setAttribute("cx", q.x.toFixed(1));
+      p.el.setAttribute("cy", q.y.toFixed(1));
+      var rr = (3.1 + breath * 0.45) * (0.5 + q.s * 0.62);
+      p.el.setAttribute("r", rr.toFixed(2));
+      p.el.setAttribute("stroke", p.s === "A" ? "#8affe0" : "#57e6ff");
+      p.el.setAttribute("stroke-width", (0.9 + (p.s === "A" ? 0.35 : 0)).toFixed(2));
+      p.el.setAttribute("opacity", (0.35 + 0.65 * (q.z / 320 + 0.5)).toFixed(2));
+      p.hit.setAttribute("cx", q.x.toFixed(1));
+      p.hit.setAttribute("cy", q.y.toFixed(1));
+      p.lbl.setAttribute("x", q.x.toFixed(1));
+      p.lbl.setAttribute("y", (q.y - 11).toFixed(1));
+      var lit = (p.id === sel || p.id === hover);
+      p.lbl.setAttribute("opacity", lit ? "1" : "0");
+      p.el.setAttribute("stroke", lit ? "#ffb86b" : (p.s === "A" ? "#8affe0" : "#57e6ff"));
+    }
+    for (i = 0; i < bonds.length; i++){
+      var bd = bonds[i], a = proj[bd[0]], b = proj[bd[1]];
+      bd.el.setAttribute("x1", a.x.toFixed(1)); bd.el.setAttribute("y1", a.y.toFixed(1));
+      bd.el.setAttribute("x2", b.x.toFixed(1)); bd.el.setAttribute("y2", b.y.toFixed(1));
+      var zc = (a.z + b.z) / 2;
+      bd.el.setAttribute("stroke-width", (0.7 + 0.7 * (zc / 320 + 0.5)).toFixed(2));
+      var pulseHere = pulses.some(function(pu){ return pu.b === i && pu.t < 0.14; });
+      bd.el.setAttribute("stroke", pulseHere ? "#d8fbff" : "#57e6ff");
+      bd.el.setAttribute("opacity", pulseHere ? "1" : (0.16 + 0.34 * (zc / 320 + 0.5)).toFixed(2));
+    }
+    for (i = 0; i < rings.length; i++){
+      var r = rings[i];
+      var hx = r.v.map(function(v){ return proj[v].x.toFixed(1) + "," + proj[v].y.toFixed(1); }).join(" ");
+      r.el.setAttribute("points", hx);
+      var phase = Math.sin(T * Math.PI * 2 / 7 - i * 0.55);
+      r.el.setAttribute("opacity", (0.07 + Math.max(0, phase) * 0.32).toFixed(3));
+      r.el.setAttribute("stroke-width", (1 + Math.max(0, phase) * 1.2).toFixed(2));
+      r.dot.setAttribute("cx", r.cx.toFixed(1));
+      r.dot.setAttribute("cy", r.cy.toFixed(1));
+      r.dot.setAttribute("opacity", (Math.max(0, phase) * 0.9).toFixed(3));
+    }
+    for (i = 0; i < pulses.length; i++){
+      var pu = pulses[i];
+      pu.t += pu.sp * pu.dir * 0.016;
+      if (pu.t > 1){ pu.t = 1; pu.dir = -1; }
+      if (pu.t < 0){ pu.t = 0; pu.dir = 1; pu.b = Math.floor(Math.random() * bonds.length); }
+      var bd2 = bonds[pu.b];
+      var e0 = proj[bd2[0]], e1 = proj[bd2[1]];
+      pulses[i].el.setAttribute("cx", (e0.x + (e1.x - e0.x) * pu.t).toFixed(1));
+      pulses[i].el.setAttribute("cy", (e0.y + (e1.y - e0.y) * pu.t).toFixed(1));
+      pulses[i].el.setAttribute("r", (1.6 + Math.sin(pu.t * Math.PI) * 1.9).toFixed(2));
+    }
+    if (sel >= 0){
+      var c = proj[sel];
+      cross.setAttribute("opacity", ".8");
+      cross.children[0].setAttribute("x1", c.x - 26); cross.children[0].setAttribute("y1", c.y);
+      cross.children[0].setAttribute("x2", c.x + 26); cross.children[0].setAttribute("y2", c.y);
+      cross.children[1].setAttribute("cx", c.x.toFixed(1)); cross.children[1].setAttribute("cy", c.y.toFixed(1));
+    } else cross.setAttribute("opacity", "0");
+
+    if (!dragging){ rx += vrx; vrx *= 0.9; ry += vry; vry *= 0.9; }
+    if (Math.abs(ry) > 46){ ry = 46 * Math.sign(ry); vry = 0; }
+    if (rx < -70) rx = -70; if (rx > 70) rx = 70;
+    document.getElementById("rRx").textContent = rx.toFixed(0);
+    document.getElementById("rRy").textContent = ry.toFixed(0);
+    requestAnimationFrame(draw);
+  }
+  document.getElementById("rN").textContent = nodes.length;
+  document.getElementById("rB").textContent = bonds.length;
+  document.getElementById("rP").textContent = pulses.length;
+  show(nodes[0]);
+
+  /* ------------------------------------------------ drag */
+  var dragging = false, sx = 0, sy = 0;
+  stage.addEventListener("pointerdown", function(e){
+    dragging = true; sx = e.clientX; sy = e.clientY;
+    stage.classList.add("drag"); stage.setPointerCapture(e.pointerId);
+  });
+  stage.addEventListener("pointermove", function(e){
+    var dx = e.clientX - sx, dy = e.clientY - sy;
+    sx = e.clientX; sy = e.clientY;
+    if (dragging){ ry += dx * 0.42; vry = dx * 0.42; rx -= dy * 0.36; vrx = -dy * 0.36; }
+    /* hover picking against the projected positions */
+    var best = -1, bd = 22;
+    var rect = svg.getBoundingClientRect();
+    for (var i = 0; i < nodes.length; i++){
+      var c = nodes[i].el.getAttribute("cx") * (W / rect.width);
+      var d = Math.hypot(e.clientX - rect.left - c, e.clientY - rect.top - nodes[i].el.getAttribute("cy") * (H / rect.height));
+      if (d < bd){ bd = d; best = i; }
+    }
+    hover = best;
+    if (best >= 0) show(nodes[best]);
+  });
+  function up(){ dragging = false; stage.classList.remove("drag"); }
+  stage.addEventListener("pointerup", up);
+  stage.addEventListener("pointercancel", up);
+  stage.addEventListener("pointerleave", function(){ up(); hover = -1; });
+  svg.addEventListener("click", function(e){ if (e.target.dataset && e.target.dataset.node) sel = +e.target.dataset.node; });
+
+  /* ------------------------------------------------ layer II: graphite fragment */
+  var R = 62, DZ = 40, HX = [];
+  [0, 1, 2].forEach(function(L){
+    var off = L === 1;
+    var set = [];
+    for (var i = 0; i < 6; i++){
+      var a = (i / 6) * Math.PI * 2 + (off ? Math.PI / 6 : 0);
+      set.push([Math.cos(a) * R, Math.sin(a) * R, (L - 1) * DZ + (off ? -DZ * 0.42 : 0)]);
+    }
+    set.push([0, 0, (L - 1) * DZ + (off ? -DZ * 0.42 : 0)]);
+    HX.push(set);
+  });
+  var atomCols = [
+    ["#0d2f42","#1a5f7d","#06202f","rgba(87,230,255,.55)"],
+    ["#123a2f","#2a7a63","#082019","rgba(138,255,224,.5)"],
+    ["#2c1f3a","#5b3f74","#150e1f","rgba(180,150,255,.45)"]
+  ];
+  HX.forEach(function(set, L){
+    set.forEach(function(p, i){
+      var d = document.createElement("div");
+      d.className = "sph";
+      d.style.setProperty("--r", i === 6 ? 21 : 17);
+      d.style.setProperty("--c1", atomCols[L][0]);
+      d.style.setProperty("--c2", atomCols[L][1]);
+      d.style.setProperty("--c3", atomCols[L][2]);
+      d.style.setProperty("--glow", atomCols[L][3]);
+      d.style.transform = "translate3d(" + p[0].toFixed(1) + "px," + p[1].toFixed(1) + "px," + p[2].toFixed(1) + "px)";
+      d.innerHTML = "<span>C</span>";
+      honey.appendChild(d);
+    });
+  });
+  function bond(p1, p2, two){
+    var dx = p2[0] - p1[0], dy = p2[1] - p1[1], dz = p2[2] - p1[2];
+    var L = Math.hypot(dx, dy, dz) || 1;
+    var th = Math.asin(dy / L);
+    var ph = Math.atan2(-dz, dx);
+    var b = document.createElement("div");
+    b.className = "bond" + (two ? " two" : "");
+    b.style.width = "100px";
+    b.style.transform = "translate3d(" + p1[0].toFixed(1) + "px," + p1[1].toFixed(1) + "px," + p1[2].toFixed(1) +
+      "px) rotateY(" + (ph * 180 / Math.PI).toFixed(2) + "deg) rotateZ(" + (th * 180 / Math.PI).toFixed(2) +
+      "deg) scaleX(" + (L / 100).toFixed(4) + ")";
+    b.style.marginTop = "-1px";
+    return b;
+  }
+  /* in-plane bonds first so the spheres draw over them */
+  for (var L2 = 2; L2 >= 0; L2--){
+    for (i = 0; i < 6; i++) honey.appendChild(bond(HX[L2][i], HX[L2][(i + 1) % 6], (i + L2) % 2 === 0));
+    for (i = 0; i < 6; i++) honey.appendChild(bond(HX[L2][i], HX[L2][6], false));
+  }
+  for (i = 0; i < 6; i++){
+    honey.appendChild(bond(HX[0][i], HX[1][i], false));
+    honey.appendChild(bond(HX[1][i], HX[2][i], false));
+  }
+  /* stagger the layer children so the bonds sit behind the atoms */
+  var kids = Array.prototype.slice.call(honey.children);
+  kids.forEach(function(k, i){ k.style.zIndex = k.className === "bond" ? "1" : "2"; });
+
+  /* ------------------------------------------------ layer switch */
+  [].forEach.call(document.querySelectorAll("[data-layer]"), function(btn){
+    btn.addEventListener("click", function(){
+      var m = btn.dataset.layer;
+      lat.classList.toggle("gone", m === "honey");
+      honey.classList.toggle("gone", m === "lattice");
+      honey.style.setProperty("--hs", m === "both" ? ".62" : ".9");
+      [].forEach.call(document.querySelectorAll("[data-layer]"), function(b2){
+        b2.setAttribute("aria-pressed", b2.dataset.layer === m ? "true" : "false");
+      });
+    });
+  });
+
+  requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>

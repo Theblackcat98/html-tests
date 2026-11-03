@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Hundred — a collection of 100 standalone HTML designs</title>
+<meta name="description" content="One hundred self-contained HTML files. No frameworks, no build step, no image assets. Every design is hand-built from CSS, SVG and Canvas.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#08080a; --ink2:#0e0e11; --ink3:#16161b; --line:#26262e;
+  --fg:#f2f0ea; --dim:#8e8c85; --dim2:#5d5b56;
+  --hot:#ff4a17; --gold:#e8b64c; --cool:#4fd1c5;
+  --pad:clamp(20px,4vw,64px);
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  --serif:"Instrument Serif",Georgia,"Times New Roman",serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--ink); color:var(--fg); font-family:var(--sans);
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+/* ─────────── error trap ─────────── */
+.trap{position:fixed;left:12px;bottom:12px;z-index:9600;max-width:min(560px,90vw);display:none;
+  background:#2a0a06;border:1px solid #ff6a45;border-left-width:4px;border-radius:3px;
+  padding:12px 14px;font:400 12px/1.55 var(--mono);color:#ffd9cd;white-space:pre-wrap;
+  box-shadow:0 18px 40px -14px rgba(0,0,0,.9)}
+.trap.show{display:block}
+.trap b{display:block;font:500 9px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;
+  color:#ff6a45;margin-bottom:8px}
+
+body::after{ /* global film grain */  content:""; position:fixed; inset:-50%; z-index:9000; pointer-events:none;
+  opacity:.028; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:grain 6s steps(6) infinite;
+}
+@keyframes grain{
+  0%{transform:translate(0,0)} 20%{transform:translate(-3%,2%)} 40%{transform:translate(2%,-3%)}
+  60%{transform:translate(-2%,-2%)} 80%{transform:translate(3%,1%)} 100%{transform:translate(0,0)}
+}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+::selection{background:var(--hot);color:#fff}
+
+/* ─────────── cursor ─────────── */
+.cur{position:fixed;top:0;left:0;z-index:9500;pointer-events:none;mix-blend-mode:difference;will-change:transform}
+.cur b{display:block;width:26px;height:26px;border:1.5px solid #fff;border-radius:50%;
+  transform:translate(-50%,-50%) scale(var(--s,1));transition:transform .35s cubic-bezier(.2,.9,.2,1),opacity .3s;opacity:.85}
+.cur.hot b{transform:translate(-50%,-50%) scale(2.1)}
+.cur span{position:absolute;top:-8px;left:22px;font:500 10px/1 var(--mono);letter-spacing:.14em;
+  text-transform:uppercase;opacity:0;transition:opacity .25s;white-space:nowrap}
+.cur.hot span{opacity:1}
+@media (pointer:coarse){.cur{display:none}}
+
+/* ─────────── nav ─────────── */
+.nav{position:fixed;top:0;left:0;right:0;z-index:800;display:flex;align-items:center;gap:18px;
+  padding:14px var(--pad);border-bottom:1px solid transparent;transition:background .4s,border-color .4s,backdrop-filter .4s}
+.nav.solid{background:rgba(8,8,10,.72);backdrop-filter:blur(18px) saturate(1.4);border-color:var(--line)}
+.nav .mark{font:400 15px/1 var(--serif);letter-spacing:.02em;display:flex;align-items:baseline;gap:8px}
+.nav .mark i{font:500 9px/1 var(--mono);font-style:normal;color:var(--hot);letter-spacing:.18em}
+.nav .sp{flex:1}
+.pill{border:1px solid var(--line);border-radius:100px;padding:7px 14px;font:500 10px/1 var(--mono);
+  letter-spacing:.12em;text-transform:uppercase;color:var(--dim);transition:.25s;white-space:nowrap}
+.pill:hover{color:var(--fg);border-color:var(--fg)}
+.pill.on{background:var(--fg);color:var(--ink);border-color:var(--fg)}
+
+/* ─────────── hero ─────────── */
+.hero{position:relative;min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;
+  padding:0 var(--pad) clamp(28px,5vh,56px);overflow:hidden}
+.hero-bg{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.85}
+.blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5;mix-blend-mode:screen;animation:drift 26s ease-in-out infinite alternate}
+.b1{width:52vw;height:52vw;left:-10vw;top:-14vw;background:radial-gradient(circle at 30% 30%,#ff4a17,transparent 66%)}
+.b2{width:46vw;height:46vw;right:-8vw;top:2vw;background:radial-gradient(circle at 60% 40%,#e8b64c,transparent 66%);animation-delay:-9s}
+.b3{width:44vw;height:44vw;left:26vw;bottom:-18vw;background:radial-gradient(circle at 50% 50%,#1d5cff,transparent 68%);animation-delay:-16s}
+@keyframes drift{0%{transform:translate3d(0,0,0) scale(1)}100%{transform:translate3d(6vw,4vh,0) scale(1.22)}}
+.grainlines{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.14;
+  background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(255,255,255,.5) 3px 4px)}
+.hero-in{position:relative;z-index:2}
+.kicker{display:flex;align-items:center;gap:12px;font:500 10px/1 var(--mono);letter-spacing:.24em;
+  text-transform:uppercase;color:var(--dim);margin-bottom:26px}
+.kicker i{width:44px;height:1px;background:var(--hot);font-style:normal}
+h1{font:400 clamp(56px,15.5vw,232px)/.82 var(--serif);letter-spacing:-.03em;margin-left:-.04em}
+h1 em{font-style:italic;color:var(--hot)}
+h1 .l2{display:block;padding-left:.14em;color:transparent;-webkit-text-stroke:1px rgba(242,240,234,.42)}
+.hero-sub{display:flex;flex-wrap:wrap;gap:clamp(20px,4vw,60px);align-items:flex-end;
+  justify-content:space-between;margin-top:clamp(26px,4vh,44px);padding-top:22px;border-top:1px solid var(--line)}
+.hero-sub p{max-width:44ch;color:var(--dim);font-size:14px;line-height:1.65;font-weight:300}
+.hero-sub p b{color:var(--fg);font-weight:500}
+.stats{display:flex;gap:clamp(18px,3vw,44px);flex-wrap:wrap}
+.stat b{display:block;font:400 clamp(26px,4vw,42px)/1 var(--serif);color:var(--fg)}
+.stat b sup{font:500 10px/1 var(--mono);color:var(--hot);vertical-align:super;margin-left:2px}
+.stat s{display:block;text-decoration:none;font:500 9px/1 var(--mono);letter-spacing:.16em;
+  text-transform:uppercase;color:var(--dim2);margin-top:8px}
+.scrollcue{position:absolute;right:var(--pad);bottom:calc(clamp(28px,5vh,56px) + 130px);
+  writing-mode:vertical-rl;font:500 9px/1 var(--mono);letter-spacing:.28em;text-transform:uppercase;color:var(--dim2)}
+
+/* ─────────── controls ─────────── */
+.bar{position:sticky;top:53px;z-index:700;background:rgba(8,8,10,.9);backdrop-filter:blur(20px);
+  border-block:1px solid var(--line);padding:12px var(--pad);display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);border-radius:100px;padding:6px 13px;font:500 10px/1 var(--mono);
+  letter-spacing:.1em;text-transform:uppercase;color:var(--dim);transition:.22s}
+.chip:hover{color:var(--fg);border-color:#4a4a54}
+.chip.on{background:var(--fg);color:var(--ink);border-color:var(--fg)}
+.search{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:100px;
+  padding:6px 15px;transition:.25s;min-width:190px}
+.search:focus-within{border-color:var(--fg);min-width:250px}
+.search svg{width:12px;height:12px;stroke:var(--dim2);fill:none;stroke-width:1.6}
+.search input{border:0;background:none;outline:none;color:var(--fg);font:400 12px/1 var(--mono);width:100%}
+.search input::placeholder{color:var(--dim2)}
+.count{font:500 10px/1 var(--mono);letter-spacing:.12em;color:var(--dim2);margin-left:auto;white-space:nowrap}
+
+/* ─────────── grid ─────────── */
+.wrap{padding:clamp(28px,5vh,64px) var(--pad) 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(272px,1fr));gap:clamp(14px,1.6vw,26px)}
+.card{position:relative;border:1px solid var(--line);border-radius:3px;overflow:hidden;background:var(--ink2);
+  transition:border-color .35s,transform .5s cubic-bezier(.2,.9,.2,1),box-shadow .5s;text-align:left;width:100%;display:block}
+.card:hover{border-color:#4a4a54;transform:translateY(-4px);box-shadow:0 22px 48px -20px rgba(0,0,0,.9)}
+.thumb{position:relative;aspect-ratio:16/10;overflow:hidden;background:#0b0b0e;border-bottom:1px solid var(--line)}
+.thumb iframe{position:absolute;top:0;left:0;width:1440px;height:900px;border:0;transform-origin:0 0;pointer-events:none}
+.tile{position:absolute;inset:0;display:grid;place-items:center;gap:0;padding:12px;text-align:center;
+  transition:opacity .5s}
+.tile b{font:400 26px/1.1 var(--serif);color:rgba(255,255,255,.9)}
+.tile s{text-decoration:none;display:block;margin-top:8px;font:500 8px/1.4 var(--mono);letter-spacing:.18em;
+  text-transform:uppercase;color:rgba(255,255,255,.42)}
+.card.live .tile{opacity:0;pointer-events:none}
+.shade{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .35s;
+  background:linear-gradient(to top,rgba(8,8,10,.94) 0%,rgba(8,8,10,.15) 45%,transparent 70%)}
+.card:hover .shade{opacity:1}
+.open{position:absolute;left:12px;bottom:12px;z-index:3;display:flex;align-items:center;gap:7px;
+  font:500 9px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;opacity:0;transform:translateY(6px);
+  transition:.35s;color:#fff}
+.card:hover .open{opacity:1;transform:none}
+.open i{width:16px;height:16px;border:1px solid currentColor;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:9px}
+.meta{padding:12px 13px 14px;display:flex;gap:10px;align-items:flex-start}
+.num{font:500 10px/1 var(--mono);color:var(--hot);letter-spacing:.06em;padding-top:2px;flex:0 0 auto}
+.meta h3{font:400 15px/1.25 var(--sans);font-weight:500;letter-spacing:-.01em;flex:1}
+.meta h3 s{text-decoration:none;display:block;font:400 11px/1.5 var(--sans);color:var(--dim2);margin-top:5px;font-weight:300}
+.tag{font:500 8px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--dim2);
+  border:1px solid var(--line);border-radius:2px;padding:4px 6px;flex:0 0 auto;margin-top:1px}
+.card:hover .tag{border-color:#3a3a44;color:var(--dim)}
+
+/* strip mode */
+.strip{display:none;gap:16px;overflow-x:auto;scroll-snap-type:x proximity;
+  padding:14px 0 16px;scrollbar-width:thin;
+  background:linear-gradient(90deg,var(--ink) 0 88%,transparent 100%)}
+body.strip .grid{display:none}
+body.strip .strip{display:flex}
+.strip .card{flex:0 0 min(84vw,660px);scroll-snap-align:center;background:var(--ink2)}
+.strip .thumb{aspect-ratio:16/9}
+.strip .nores{display:none}
+
+/* ─────────── lightbox ─────────── */
+.lb{position:fixed;inset:0;z-index:8500;background:rgba(4,4,6,.95);backdrop-filter:blur(30px);
+  display:none;grid-template-rows:auto 1fr auto;opacity:0;transition:opacity .4s}
+.lb.on{display:grid;opacity:1}
+.lb-top{display:flex;align-items:center;gap:16px;padding:14px var(--pad);border-bottom:1px solid var(--line)}
+.lb-top h4{font:400 18px/1.2 var(--serif);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb-top h4 s{text-decoration:none;font:500 10px/1 var(--mono);color:var(--hot);letter-spacing:.1em;margin-right:10px}
+.lb-stage{position:relative;display:grid;place-items:center;padding:clamp(10px,2.2vh,26px);min-height:0}
+.lb-stage iframe{width:100%;height:100%;border:1px solid var(--line);border-radius:3px;background:#000;opacity:0;transition:opacity .5s}
+.lb-stage iframe.ready{opacity:1}
+.lb-foot{display:flex;align-items:center;gap:14px;padding:13px var(--pad);border-top:1px solid var(--line);flex-wrap:wrap}
+.lb-foot p{font:300 12px/1.5 var(--sans);color:var(--dim);flex:1;min-width:200px}
+.lb-foot p b{color:var(--fg);font-weight:500}
+.nav-btn{width:38px;height:38px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;
+  transition:.25s;flex:0 0 auto;font-size:15px}
+.nav-btn:hover{background:var(--fg);color:var(--ink);border-color:var(--fg)}
+.hint{font:500 9px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--dim2)}
+
+/* ─────────── footer ─────────── */
+footer{margin-top:clamp(48px,9vh,110px);border-top:1px solid var(--line);padding:clamp(34px,6vh,70px) var(--pad) 44px}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:clamp(22px,4vw,60px)}
+footer h5{font:500 9px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--dim2);margin-bottom:16px}
+footer p{font:300 13px/1.7 var(--sans);color:var(--dim)}
+footer li{list-style:none;font:300 13px/2.1 var(--sans);color:var(--dim)}
+footer li a:hover{color:var(--fg)}
+.legal{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center;
+  margin-top:clamp(34px,6vh,60px);padding-top:20px;border-top:1px solid var(--line);
+  font:500 9px/1.6 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--dim2)}
+.nores{text-align:center;padding:80px 0;color:var(--dim);font:300 14px/1.7 var(--sans)}
+.nores b{display:block;font:400 34px/1 var(--serif);color:var(--fg);margin-bottom:14px}
+
+@media (max-width:640px){
+  .grid{grid-template-columns:1fr 1fr;gap:10px}
+  .meta{padding:9px 10px 11px;flex-wrap:wrap}
+  .meta h3{font-size:12.5px}
+  .meta h3 s{display:none}
+  .tag{margin:0}
+  .bar{top:49px}
+  .search,.search:focus-within{min-width:0;flex:1 1 100%;order:9}
+  .count{margin-left:0}
+  .nav .hide{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<div class="cur" id="cur"><b></b><span id="curLbl">view</span></div>
+<div class="trap" id="trap"></div>
+
+<nav class="nav" id="nav">
+  <div class="mark">The Hundred <i>／100</i></div>
+  <div class="sp"></div>
+  <button class="pill hide" data-scroll="#gallery">Gallery</button>
+  <button class="pill" id="rand">Random ↗</button>
+</nav>
+
+<header class="hero">
+  <div class="hero-bg">
+    <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  </div>
+  <div class="grainlines"></div>
+  <div class="scrollcue">scroll</div>
+  <div class="hero-in">
+    <div class="kicker"><i></i> Collection 001 — 100 · Standalone HTML</div>
+    <h1>A hundred<br><em>rooms.</em><span class="l2">No doors.</span></h1>
+    <div class="hero-sub">
+      <p>One hundred independent pages. <b>No frameworks, no bundler, no build step, not one external image.</b>
+         Every scene is drawn with CSS gradients, SVG geometry and Canvas 2D — from a Gerstner ocean to a
+         working chess engine to a prismatic ray tracer. Open any one. They all still work offline.</p>
+      <div class="stats">
+        <div class="stat"><b>100<sup>×</sup></b><s>Pages</s></div>
+        <div class="stat"><b>0</b><s>Dependencies</s></div>
+        <div class="stat"><b>14</b><s>Traditions</s></div>
+        <div class="stat"><b>2.6<sup>MB</sup></b><s>Total weight</s></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="bar" id="bar">
+  <div class="chips" id="chips"></div>
+  <label class="search">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+    <input id="q" type="search" placeholder="search 100 designs…" autocomplete="off" spellcheck="false">
+  </label>
+  <div class="chips">
+    <button class="chip on" id="viewG">Grid</button>
+    <button class="chip" id="viewS">Strip</button>
+    <button class="chip on" id="liveT">Live</button>
+  </div>
+  <div class="count" id="count">100 / 100</div>
+</div>
+
+<section class="wrap" id="gallery">
+  <div class="grid" id="grid"></div>
+  <div class="strip" id="strip"></div>
+  <div class="nores" id="nores" style="display:none"><b>Nothing matches.</b>Try a different word — or press <b style="display:inline">Esc</b> to clear.</div>
+</section>
+
+<div class="lb" id="lb">
+  <div class="lb-top">
+    <h4 id="lbT"></h4>
+    <button class="nav-btn" id="lbX" title="Close (Esc)">✕</button>
+  </div>
+  <div class="lb-stage"><iframe id="lbF" title="design preview"></iframe></div>
+  <div class="lb-foot">
+    <button class="nav-btn" id="lbP" title="Previous (←)">←</button>
+    <button class="nav-btn" id="lbN" title="Next (→)">→</button>
+    <p id="lbD"></p>
+    <span class="hint">← → navigate</span>
+    <a class="pill" id="lbO" target="_blank" rel="noopener">Open full ↗</a>
+  </div>
+</div>
+
+<footer>
+  <div class="fgrid">
+    <div>
+      <h5>What this is</h5>
+      <p>A stress test for the browser and a love letter to the hand-written page. Every file opens
+         straight from disk, works with no network, and degrades to something readable if you switch
+         JavaScript off.</p>
+    </div>
+    <div>
+      <h5>Rules that were set</h5>
+      <ul>
+        <li>Look stunning.</li>
+        <li>Zero repetitive designs.</li>
+        <li>Full creative mode.</li>
+      </ul>
+    </div>
+    <div>
+      <h5>Constraints held</h5>
+      <ul>
+        <li>No image files — SVG, CSS, Canvas only</li>
+        <li>No libraries — vanilla JS only</li>
+        <li>No two pages share a layout skeleton</li>
+        <li>Every page has at least one real interaction</li>
+      </ul>
+    </div>
+    <div>
+      <h5>The traditions</h5>
+      <ul id="catList"></ul>
+    </div>
+  </div>
+  <div class="legal">
+    <span>The Hundred — 100 standalone HTML designs</span>
+    <span>Rendered in your browser · nothing leaves this folder</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const box=document.getElementById("trap");
+  const seen=new Set();
+  function show(msg){
+    msg=String(msg).slice(0,600);
+    if(seen.has(msg))return;
+    seen.add(msg);
+    box.innerHTML="<b>Page error — the gallery is degraded</b>"+msg;
+    box.classList.add("show");
+  }
+  addEventListener("error",e=>{
+    if(e.target&&e.target!==window&&e.target.tagName==="IFRAME")return;
+    show((e.message||e.error)+"\n"+(e.filename||"")+":"+(e.lineno||""));
+  });
+  addEventListener("unhandledrejection",e=>show("Promise: "+(e.reason&&e.reason.message||e.reason)));
+  window.__trap=show;
+  // a card that never gets an index must not silently become a dead link
+  setTimeout(()=>{
+    const bad=[...document.querySelectorAll(".card")].filter(c=>!c.dataset.i);
+    if(bad.length)show(bad.length+" card(s) missing data-i");
+  },1200);
+})();
+
+const D=[
+[1,"liquid-chrome","Liquid Chrome","chrome","Mercury that moves. A pointer-tracked specular sweep across a self-playing conic gradient."],
+[2,"great-wave","The Great Wave","ink","Hokusai rebuilt from scratch in SVG paths — Prussian foam, claw highlights, seigaiha ground."],
+[3,"swiss-poster","Gutter & Rule","swiss","Vignelli discipline. Twelve columns, one red bar, and a difference-blend hover that inverts the page."],
+[4,"aurora-hero","Aurora, Behind Glass","glass","A mesh of drifting light bodies seen through a frosted pane. Tilt follows the cursor."],
+[5,"crt-terminal","AURORA-7 Console","retro","A phosphor terminal that boots, takes typed commands, and rains glyphs down a barrel-curved tube."],
+[6,"bauhaus-poster","Viereck, Dreieck, Kreis","bauhaus","Primary colour and the four basic forms, morphed under a masked cursor."],
+[7,"vaporwave-grid","Endless Sunset","vapor","Slit sun, receding grid, VHS tracking error. The horizon tilts when you lean."],
+[8,"constellation-map","Northern Circuit","space","A real J2000 star chart with sidereal drive, drag-pan and live magnitude readouts."],
+[9,"paper-cut","Sunrise, Cut by Hand","paper","Ten sheets of cardstock stacked into a landscape, each edge lit by the one behind it."],
+[10,"neon-alley","Rain on Kawaramachi","neon","A CSS 3D alley, six flickering signs, and rain that falls harder when you move fast."],
+[11,"zen-garden","Fifteen Stones","zen","Concentric raking, three rocks, and one long morning shadow. Nothing else."],
+[12,"art-deco","Maison Verrière","deco","Gold leaf and stepped symmetry, with a foil sheen that tracks the pointer."],
+[13,"isometric-city","Quarter Past Six","iso","A whole extruded city in CSS 3D — drag to orbit, it resumes its own spin when you let go."],
+[14,"solar-eclipse","Totality","minimal","One ring of light, one hairline circle, and a poem written around the corona."],
+[15,"rose-window","Rosace","glass","Twelve radial tracery segments of leaded glass, with light shafts that drift as the day turns."],
+[16,"blueprint","Assembly, Plate 4","blueprint","An invented mechanism drawn as an orthographic plus isometric sheet, with live callouts."],
+[17,"memphis-80s","Confetti, Roughly","memphis","Squiggles, terrazzo and squashed circles that scatter and spring back when you click."],
+[18,"melt-drip","Drip Theory","gradient","A gooey-filtered blob that sags, drips and stretches under your finger."],
+[19,"concrete","Board-Formed","brutal","Tie holes, shutter seams, and a recessed wordmark revealed by a moving hard shadow."],
+[20,"topographic","Contour Study","topo","Turbulence-displaced elevation rings that re-form as you change the height."],
+[21,"arcade-invaders","Invaders","arcade","An actual game: destructible shields, a bonus saucer, WebAudio blips, touch controls."],
+[22,"silk-ribbon","Seven Ribbons","gradient","Catmull-Rom bezier ribbons solved every frame, bending around your cursor."],
+[23,"herbarium","Herbarium, Folio 9","botanical","Aged laid paper, deckled edges, foxing, and hand-inked plants with Latin binomials."],
+[24,"pcb","Rev 2.1 Board","circuit","Gold traces, a BGA pin field and capacitor cylinders, with signal pulses on the nets."],
+[25,"milky-way","Thirty Seconds","space","A long exposure: pine ridge, headlamp, car trails, and a dust band made of ten thousand particles."],
+[26,"glass-cube","Dispersive Bodies","glass","True 3D glass solids with backdrop-filter refraction, caustics and orbiting drag."],
+[27,"smoke","Draft","atmos","Eight hundred turbulence sprites lit by one shaft. Stir it with your hand."],
+[28,"knolling","Everything, In Order","order","Forty oak compartments, every object in its place, all drawn as symbols."],
+[29,"synthwave","Patchbay","synth","Knobs, sliders and sagging cables over a real WebAudio sequencer you can play."],
+[30,"black-hole","Accretion","space","Einstein ring, photon sphere and a Doppler-beamed disk you can tilt."],
+[31,"wabisabi-pottery","Six Vessels","pottery","Matte clay glazes on plaster, hand-thrown rims, glaze notes on click."],
+[32,"zine","Against Everything","zine","Xeroxed, torn, taped, ransom-noted. Click to re-scan the whole page."],
+[33,"oscilloscope","Type 33","synth","A working bench instrument: trigger, persistence, volts-per-division, real Vpp."],
+[34,"origami","Fold Sequence","paper","A crane assembled from shaded triangles that unfold and refold on command."],
+[35,"sumi-e","Bamboo in One Breath","ink","Wet-edge strokes, dry-brush breakup and a live brush that you draw with."],
+[36,"izakaya-neon","Tabi no Heya","neon","Neon tube bloom on wet ply, lanterns, and signs that buzz when you touch them."],
+[37,"card-deck","Thirty Covers","iso","A fanned CSS 3D deck with pointer inertia. Drag to spin, hover to inspect."],
+[38,"molecular","Lattice","science","Benzene rings, travelling electrons and highlighted unit cells in deep cyan."],
+[39,"oil-slick","Thin Film","gradient","Real thin-film interference rims, rainbow sheen on black, and a colour legend."],
+[40,"splitflap","Departures","retro","Character cards flipping to land. A live board with times that tick over."],
+[41,"lofi","Study Hours","lofi","A 1 a.m. room, a sleeping cat, and a real lo-fi engine — pad, kick, hat, tape wow."],
+[42,"risograph","Two Inks Only","print","Independent draggable halftone plates. Misregister them and a third colour appears."],
+[43,"voxel","Valley, Voxel","iso","Noise-generated terrain, a draggable sun, and click-to-stack blocks."],
+[44,"type-specimen","Meridian Specimen","type","A foundry specimen with a real baseline grid and live size, tracking and weight axes."],
+[45,"polaroid","Sixteen Prints","gallery","Generated emulsion on a lit plaster wall. Drag to rearrange; click for the lightbox."],
+[46,"fluid-type","Melt / Pour / Set","type","Live turbulence displacing a display face — viscosity you can actually change."],
+[47,"gears","The Movement","mech","Eight involute gears at correct ratios, meshing off a stepping escapement."],
+[48,"chrome-3d","Fizz","chrome","Twenty-six gradient slices of extruded type with a three-point light rig you steer."],
+[49,"textile","Hallaway & Sons","weave","Plain, twill and basket interlacing with cylindrical thread shading and a loupe."],
+[50,"fire","Hearth","atmos","Buoyancy, turbulence, embers and heat-haze — lighting a whole brick room."],
+[51,"earth-section","Six Kilometres Down","science","A true slice through the planet with a drill you can drive by scroll."],
+[52,"manga","Page Four","manga","Six tilted panels, screentone, speed lines and hand-lettered sound effects."],
+[53,"deep-sea","Twelve Hundred Metres","atmos","Sinking past the photic zone. Each creature fades in on its own depth window."],
+[54,"split-hero","Studio Halden","editorial","A sticky editorial split with duotone compositions that swap as you read the index."],
+[55,"museum-poster","Now Showing","gallery","Four designed exhibition posters, gallery spotlights, and generated entry codes."],
+[56,"observatory","Sidereal","space","A real celestial sphere, GMST to LST, forty catalogue objects, drag to slew."],
+[57,"dotmatrix","Panel B","led","A 96×24 LED wall with hand-cut bitmap glyphs, bloom and a live cell count."],
+[58,"perspective-grid","Vector, 1986","vapor","A projected grid tunnel with monoliths, dither and six cycling palettes."],
+[59,"route-map","Twenty-One Cities","map","Haversine great circles, a plane that actually flies the path, passport stamps."],
+[60,"clay-dashboard","Soft Console","ui","Neumorphic cards, three datasets, draggable panels and doughy buttons that depress."],
+[61,"marble","E-Tatami","print","A suminagashi algorithm advecting pigment through a curl-noise flow field."],
+[62,"dunes","Caravan","atmos","Five dune ridges with a hard lit edge, heat shimmer and a heading readout."],
+[63,"chess","Tactics Board","game","Real chess: castling, en passant, promotion, algebraic notation and undo."],
+[64,"type-rain","Specimen Rain","type","Type-specimen glyphs falling in four sets across three depths of blur."],
+[65,"mesh-gradient","Molten","gradient","Fourteen drifting light bodies and a swatch dock that re-seeds the whole field."],
+[66,"dark-academia","The Reading Room","library","A hundred and twenty leather spines, a banker's lamp and dust that follows you."],
+[67,"glitch","Corruption 0.7","glitch","Channel split, block displacement and slice tearing over a clean layout."],
+[68,"monstera","Shadow Study","botanical","A plant that is really a shadow. Move the sun with your cursor."],
+[69,"kawaii","Sticker Sheet No. 4","kawaii","Ten die-cut risograph stickers that pop, drag, and shake."],
+[70,"crystal","Celestine","crystal","Faceted geometry with per-facet speculars and a specimen card with Mohs hardness."],
+[71,"hard-shadow","Hard Shadow","brutal","Three misregistered slab copies per word, doubling on hover with a spring."],
+[72,"glacier","Blue Ice Shelf","atmos","Subsurface-scattering polygons, trapped bubbles and a crevasse you can go under."],
+[73,"chip","Die Shot, 3 nm","science","Twenty-two functional blocks, a lens that zooms, and an exploded layer stack."],
+[74,"diorama","Ramen, in a Jar","iso","Nine depth planes with golden-ratio tilt-shift, condensation and a cork base."],
+[75,"marquetry","Atelier Briolet","weave","Intarsia panels with bevels, brass stringing and a polish slider for the sheen."],
+[76,"anatomical","Plate 41: Lanterna","print","Cross-hatched engraving, stipple fields, foxing, and a dissection-depth slider."],
+[77,"orrery","Orrery IV","mech","A true 3D point projection driving brass rings, gear teeth and a zodiac band."],
+[78,"neon-city","Harbour Reach, 02:10","neon","Three parallax layers of lit windows, fog, searchlights and a wet reflection."],
+[79,"ink-mountain","Empty Mountain, Silent","ink","Shan-shui ridges in ink wash, drifting mist, and a scroll that unrolls as you read."],
+[80,"nordic","Skeifan 04","minimal","An A-frame hytte in snow, scrubbed from 14:30 to 22:15 as you scroll."],
+[81,"halftone","Raking Light","print","An eight-screen halftone form with dot pitch, screen angle and moiré controls."],
+[82,"terminal-os","Hollowhand OS 4.2","os","A window manager, a virtual filesystem and four working apps, in HTML."],
+[83,"prism","Refraction Bench","optics","Ray-traced Snell refraction with Cauchy dispersion for SF10 flint glass."],
+[84,"snowglobe","A Small Weather","atmos","Twelve hundred flakes on a vortex inside a glass sphere, with a celesta."],
+[85,"subway-tile","Ardleigh Pattern","pattern","A procedurally generated four-tile repeat, three mockups and a full spec sheet."],
+[86,"coffee-menu","Marrow Lane","menu","A letterpress menu card with dotted leaders and unfolding tasting notes."],
+[87,"kaleidoscope","Folded Light","print","A flow field mirrored into N clipped wedges, breathing on black."],
+[88,"isometric-cafe","The Long Room","iso","A true isometric café that relights from day to night."],
+[89,"dark-dashboard","Meridian Control","data","Live KPIs, a streaming four-series chart, a fleet topology and a command palette."],
+[90,"mesh-soft","Soft Gradient Mesh","gradient","Four gallery prints sharing one travelling light source."],
+[91,"riso-flower","Dahlia, Two Plates","print","A procedurally grown flower in multiply overprint, with crop marks."],
+[92,"nasa-poster","Outer Planets Division","space","A 1970s travel poster with a vehicle that flies its own trajectory arc."],
+[93,"bubbles","Thin Film, Drifting","atmos","Physically-derived bubble rims, real metaball merging, and a breeze off your cursor."],
+[94,"cyber-sec","Operations Floor","data","A SOC wall: point-in-polygon map, threat arcs, log flood and a cascade you can trigger."],
+[95,"chef-portfolio","Cenere","editorial","A dark restaurant site with a working reservation card and a drawn floor plan."],
+[96,"ocean-wave","Sea State","atmos","Six summed Gerstner waves with sun glitter, foam and an underwater camera."],
+[97,"brush-ink","Form, Inked","ink","A hand-authored brush skeleton expanded into ribbons, then eroded for dry brush."],
+[98,"docs","Quill Documentation","docs","Nav tree, scroll-spy, a hand-rolled tokenizer and a theme that persists."],
+[99,"clay-studio","Plasticine","ui","Layered CSS gradients shading spheres, tori and an extruded letter."],
+[100,"grand-finale","The Hundred","finale","Ten different renderers, scrubbing into one another, plus the index you are reading."]
+].map(a=>({n:a[0],file:String(a[0]).padStart(2,"0")+"-"+a[1]+".html",title:a[2],cat:a[3],note:a[4]}));
+
+const FAMS=[
+  ["chrome","Chrome & Glass",["chrome","glass","optics"]],
+  ["ink","Ink & Paper",["ink","paper","print","zine","pottery"]],
+  ["modern","Bauhaus & Modern",["swiss","bauhaus","memphis","brutal","deco","minimal"]],
+  ["retro","Retro & Vapor",["retro","vapor","arcade","synth","lofi"]],
+  ["cosmic","Space & Signal",["space","circuit","led","data","os"]],
+  ["nature","Botanical & Air",["botanical","topo","atmos","zen"]],
+  ["type","Type & Editorial",["type","editorial","menu","docs","manga"]],
+  ["iso","Isometric",["iso"]],
+  ["craft","Craft & Science",["weave","pattern","mech","science"]],
+  ["neon","Neon & Light",["neon","glitch","crystal"]],
+  ["play","Play & Order",["game","kawaii","order"]],
+  ["ui","Interface & Map",["ui","map","gallery","library"]],
+  ["flow","Gradient & Draft",["gradient","blueprint"]],
+  ["finale","Finale",["finale"]]
+];
+const famOf=cat=>{const f=FAMS.find(x=>x[2].includes(cat));return f?f[0]:"flow"};
+const FAMNAME=Object.fromEntries(FAMS.map(f=>[f[0],f[1]]));
+const famCount=k=>D.filter(d=>famOf(d.cat)===k).length;
+
+function hue(i){return (i*47+205)%360}
+function tileBG(i){return `radial-gradient(120% 90% at 22% 18%, hsl(${hue(i)} 62% 46%) 0%, transparent 58%),
+radial-gradient(110% 100% at 84% 76%, hsl(${hue(i)+40} 58% 34%) 0%, transparent 60%),
+linear-gradient(155deg,#101014,#08080a)`}
+
+const grid=document.getElementById("grid"),strip=document.getElementById("strip"),
+      countEl=document.getElementById("count"),nores=document.getElementById("nores"),
+      q=document.getElementById("q"),chips=document.getElementById("chips");
+
+let activeCat="all",term="",live=true,list=D.slice(),lbIdx=-1;
+
+function card(d,i){
+  const a=document.createElement("a");
+  a.className="card";a.href=d.file;a.dataset.i=i;a.setAttribute("aria-label",d.n+" — "+d.title);
+  a.innerHTML=`<div class="thumb">
+      <div class="tile" style="background:${tileBG(d.n)}"><div><b>${d.title}</b><s>${String(d.n).padStart(3,"0")} · ${d.cat}</s></div></div>
+      <div class="shade"></div>
+      <div class="open"><i>↗</i>Open</div>
+    </div>
+    <div class="meta"><span class="num">${String(d.n).padStart(2,"0")}</span>
+      <h3>${d.title}<s>${d.note}</s></h3><span class="tag">${d.cat}</span></div>`;
+  return a;
+}
+
+function build(){
+  term=q.value.trim().toLowerCase();
+  list=D.filter(d=>(activeCat==="all"||famOf(d.cat)===activeCat)&&
+    (!term||(d.title+" "+d.note+" "+d.cat+" "+FAMNAME[famOf(d.cat)]+" "+d.n).toLowerCase().includes(term)));
+  grid.innerHTML="";strip.innerHTML="";
+  list.forEach((d,i)=>{
+    const c=card(d,i);
+    grid.appendChild(c);
+    if(d.n<8||d.n%2===0){
+      const s=c.cloneNode(true);
+      s.dataset.i=i;
+      s.querySelectorAll("[data-watched]").forEach(x=>x.removeAttribute("data-watched"));
+      strip.appendChild(s);
+    }
+  });
+  countEl.textContent=list.length+" / "+D.length;
+  nores.style.display=list.length?"none":"block";
+  grid.appendChild(nores);
+  mountAll();
+}
+FAMS.forEach(f=>{
+  const b=document.createElement("button");
+  b.className="chip";b.textContent=f[1]+" · "+famCount(f[0]);b.dataset.c=f[0];
+  b.onclick=()=>{activeCat=activeCat===f[0]?"all":f[0];
+    chips.querySelectorAll(".chip").forEach(x=>x.classList.toggle("on",x.dataset.c===activeCat&&activeCat!=="all"));
+    if(activeCat==="all")chips.querySelector('[data-c="all"]').classList.add("on");
+    build()};
+  chips.appendChild(b);
+});
+const all=document.createElement("button");
+all.className="chip on";all.textContent="all · "+D.length;all.dataset.c="all";
+all.onclick=()=>{activeCat="all";chips.querySelectorAll(".chip").forEach(x=>x.classList.toggle("on",x.dataset.c==="all"));build()};
+chips.appendChild(all);
+
+/* ── lazy live previews ──────────────────────────────────────────
+   Each card keeps a painted gradient tile underneath. The tile is
+   only faded out once the preview iframe has actually fired `load`,
+   so a design that fails to run still shows a readable card
+   instead of a black hole.                                     */
+const mounted=new Map(),pool=new Set(),MAXLIVE=10;
+
+function scaleFor(thumb){
+  const w=thumb.clientWidth||272;
+  return Math.max(.08,Math.min(1,w/1440));
+}
+function mount(c){
+  if(!live||lbIdx>-1||!c.isConnected)return;
+  if(mounted.has(c)||c.dataset.busy)return;
+  const d=list[+c.dataset.i];
+  if(!d||!d.file)return;
+  const th=c.querySelector(".thumb");
+  if(!th||!th.clientWidth)return;
+
+  const f=document.createElement("iframe");
+  f.loading="lazy";f.scrolling="no";f.tabIndex=-1;
+  f.setAttribute("aria-hidden","true");f.title="";
+  f.style.transform="scale("+scaleFor(th)+")";
+  f.addEventListener("load",()=>c.classList.add("live"),{once:true});
+  f.addEventListener("error",()=>c.classList.remove("live"),{once:true});
+  c.dataset.busy="1";
+  th.appendChild(f);
+  f.src=d.file;
+  mounted.set(c,f);
+  pool.add(c);
+  trim();
+}
+function unmount(c){
+  const f=mounted.get(c);
+  if(f){f.remove();mounted.delete(c);pool.delete(c)}
+  c.classList.remove("live");
+  delete c.dataset.busy;
+}
+function trim(){
+  while(pool.size>MAXLIVE){
+    const first=pool.values().next().value;
+    if(!first||first===undefined)break;
+    if(mounted.has(first))unmount(first);else pool.delete(first);
+  }
+}
+function observeAll(){
+  if(lbIdx>-1)return;
+  document.querySelectorAll(".card").forEach(c=>{if(!c.dataset.watched){c.dataset.watched="1";io.observe(c)}});
+}
+function mountAll(){
+  pool.clear();mounted.clear();
+  document.querySelectorAll(".card").forEach(c=>{c.classList.remove("live");delete c.dataset.busy});
+  if(live)observeAll();
+}
+const io=new IntersectionObserver(es=>{
+  es.forEach(e=>{e.isIntersecting?mount(e.target):unmount(e.target)});
+},{rootMargin:"220px 0px"});
+
+function cardClicked(e){
+  const c=e.target.closest(".card");
+  if(!c||!c.isConnected)return;
+  const i=+c.dataset.i;
+  if(Number.isNaN(i)||!list[i])return;      // never navigate on a broken index
+  e.preventDefault();
+  openLb(i);
+}
+grid.addEventListener("click",cardClicked);
+strip.addEventListener("click",cardClicked);
+
+let rz;addEventListener("resize",()=>{clearTimeout(rz);rz=setTimeout(()=>{
+  mounted.forEach((f,c)=>{
+    const th=c.querySelector(".thumb");
+    if(th)f.style.transform="scale("+scaleFor(th)+")";
+  });
+},180)});
+
+/* ── lightbox ── */
+const lb=document.getElementById("lb"),lbF=document.getElementById("lbF"),
+      lbT=document.getElementById("lbT"),lbD=document.getElementById("lbD"),
+      lbO=document.getElementById("lbO");
+function openLb(i){
+  const d=list[i];
+  if(!d||!d.file)return;
+  lbIdx=i;
+  lbT.innerHTML=`<s>${String(d.n).padStart(3,"0")}</s>${d.title}`;
+  lbD.innerHTML=`<b>${FAMNAME[famOf(d.cat)]}</b> — ${d.note}`;
+  lbO.href=d.file;
+  lbF.classList.remove("ready");
+  lbF.src=d.file;
+  lb.classList.add("on");document.body.style.overflow="hidden";
+  // free the CPU: every grid preview is torn down while the lightbox holds the stage
+  pool.clear();mounted.forEach((f,c)=>unmount(c));
+  document.querySelectorAll(".card").forEach(c=>{c.classList.remove("live");delete c.dataset.busy});
+}
+function closeLb(){
+  lbIdx=-1;lb.classList.remove("on");lbF.src="about:blank";
+  document.body.style.overflow="";
+  if(live)observeAll();
+}
+function step(k){if(lbIdx<0)return;openLb((lbIdx+k+list.length)%list.length)}
+document.getElementById("lbX").onclick=closeLb;
+document.getElementById("lbN").onclick=()=>step(1);
+document.getElementById("lbP").onclick=()=>step(-1);
+lb.addEventListener("click",e=>{if(e.target===lb||e.target.classList.contains("lb-stage"))closeLb()});
+lbF.addEventListener("load",()=>lbF.classList.add("ready"));
+
+/* ── controls ── */
+q.addEventListener("input",()=>{clearTimeout(q.t);q.t=setTimeout(build,140)});
+document.getElementById("liveT").onclick=function(){
+  live=!live;
+  this.classList.toggle("on",live);
+  if(live){mountAll()}else{pool.clear();mounted.forEach((f,c)=>unmount(c))}
+};
+function setView(mode){
+  document.body.classList.toggle("strip",mode==="strip");
+  document.getElementById("viewG").classList.toggle("on",mode!=="strip");
+  document.getElementById("viewS").classList.toggle("on",mode==="strip");
+  requestAnimationFrame(mountAll);
+}
+document.getElementById("viewG").onclick=()=>setView("grid");
+document.getElementById("viewS").onclick=()=>setView("strip");
+document.getElementById("rand").onclick=()=>openLb((Math.random()*D.length)|0);
+document.querySelector('[data-scroll]').onclick=function(){document.querySelector(this.dataset.scroll).scrollIntoView({behavior:"smooth"})};
+
+addEventListener("keydown",e=>{
+  if(e.key==="Escape"){if(lbIdx>-1){closeLb()}else if(term){q.value="";build();q.blur()}}
+  if(lbIdx>-1&&e.key==="ArrowRight")step(1);
+  if(lbIdx>-1&&e.key==="ArrowLeft")step(-1);
+  if(e.key==="/"&&lbIdx<0){e.preventDefault();document.getElementById("bar").scrollIntoView({behavior:"smooth"});q.focus()}
+  if(lbIdx<0&&(e.key==="r"||e.key==="R")&&!q.matches(":focus"))document.getElementById("rand").click();
+});
+
+/* ── cursor + nav state ── */
+const cur=document.getElementById("cur"),lbl=document.getElementById("curLbl");
+let mx=0,my=0,cx=0,cy=0;
+addEventListener("pointermove",e=>{mx=e.clientX;my=e.clientY;cur.style.transform="translate("+mx+"px,"+my+"px)";cur.style.left=0;cur.style.top=0});
+(function loop(){cx+=(mx-cx)*.16;cy+=(my-cy)*.16;
+  cur.style.transform="translate("+(mx*.4+cx*.6)+"px,"+(my*.4+cy*.6)+"px)";
+  requestAnimationFrame(loop)})();
+document.addEventListener("pointerover",e=>{
+  const t=e.target.closest("a,button,.card,.chip,.pill");
+  cur.classList.toggle("hot",!!t);
+  if(t){lbl.textContent=t.dataset.c|| (t.classList.contains("card")?"open":t.className.split(" ")[0]||"go")}else lbl.textContent="";
+});
+const nav=document.getElementById("nav");
+addEventListener("scroll",()=>nav.classList.toggle("solid",scrollY>60),{passive:true});
+
+/* ── footer category list ── */
+document.getElementById("catList").innerHTML=FAMS.map(f=>
+  `<li><a href="#" data-c="${f[0]}">${f[1]}</a> · ${famCount(f[0])}</li>`).join("");
+document.getElementById("catList").addEventListener("click",e=>{
+  const a=e.target.closest("a[data-c]");if(!a)return;e.preventDefault();
+  activeCat=a.dataset.c;term="";q.value="";
+  chips.querySelectorAll(".chip").forEach(x=>x.classList.toggle("on",x.dataset.c===activeCat));
+  build();document.getElementById("bar").scrollIntoView({behavior:"smooth"});
+});
+
+/* hero stat fix */
+document.querySelectorAll(".stat b")[3].innerHTML='2.6<sup>MB</sup>';
+
+build();
+/* one-time diagnostic */
+console.log("%cThe Hundred","font:700 22px/1 serif;color:#ff4a17",
+  "\n100 designs · grid cards:",document.querySelectorAll("#grid .card").length,
+  "\nstrip cards:",document.querySelectorAll("#strip .card").length,
+  "\ncards missing data-i:",[...document.querySelectorAll(".card")].filter(c=>!c.dataset.i).length);
+</script>
+</body>
+</html>

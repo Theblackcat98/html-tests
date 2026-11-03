@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Skeifan 04 — Nordhus, a two-person hytte on the Nordmarka shelf</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   NORDHUS — SKEIFAN 04
+   Technique: pure CSS clip-path geometry + gradient palettes driven
+   by a single scroll-scrubbed --tod (time-of-day) variable.
+   Skeleton: sticky full-bleed scene with an overlaid booking card.
+   ============================================================ */
+:root{
+  --tod:0;                /* 0 = 14:30, 1 = 22:15 */
+  --glow:0.12;            /* interior window light */
+  --amb:1;                /* ambient daylight on the snow */
+  --sky1:#7fa6c4; --sky2:#b9cfdd; --sky3:#e6eef2;
+  --sunx:70%; --suny:26%; --sunop:.5; --suncol:#fdf6e2;
+  --snowc:#eef4f7; --snow2:#cfdde6;
+  --pine:#1d2a2a; --pine2:#2c3c3a;
+  --timelabel:"14:30";
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:#0a0e12;color:#e9eef1;
+  font-family:"Inter","Helvetica Neue",Arial,sans-serif;
+  font-weight:300;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ============ top rail ============ */
+.rail{
+  position:fixed;top:0;left:0;right:0;z-index:40;
+  display:flex;justify-content:space-between;align-items:center;gap:1rem;
+  padding:.7rem clamp(1rem,3.4vw,2.4rem);
+  font-size:.62rem;letter-spacing:.22em;text-transform:uppercase;
+  color:rgba(233,238,241,.82);pointer-events:none;
+  mix-blend-mode:normal;
+}
+.rail .b{font-weight:500;letter-spacing:.3em}
+.rail .clock{display:flex;align-items:baseline;gap:.7rem}
+.rail .clock b{font-weight:500;font-variant-numeric:tabular-nums;font-size:.78rem;
+  letter-spacing:.14em}
+.rail .clock i{font-style:normal;width:52px;height:1px;background:rgba(233,238,241,.3);
+  position:relative}
+.rail .clock i::after{content:"";position:absolute;left:var(--t,0);top:-2px;
+  width:5px;height:5px;border-radius:50%;background:#e9eef1}
+
+/* ============ the scene ============ */
+.runway{height:340vh;position:relative;z-index:2}
+.scene{
+  position:sticky;top:0;height:100dvh;overflow:hidden;
+  background:linear-gradient(180deg,var(--sky1) 0%,var(--sky2) 46%,var(--sky3) 78%,var(--snow2) 100%);
+}
+.layer{position:absolute;inset:0;pointer-events:none}
+
+/* --- the low sun / early moon --- */
+.sun{
+  left:var(--sunx);top:var(--suny);width:min(9vw,110px);aspect-ratio:1;
+  transform:translate(-50%,-50%);border-radius:50%;
+  background:radial-gradient(circle at 46% 44%, #fff, var(--suncol) 58%, rgba(255,255,255,0) 74%);
+  opacity:var(--sunop);filter:blur(.4px);
+}
+.sun::after{
+  content:"";position:absolute;inset:-140%;border-radius:50%;
+  background:radial-gradient(circle, rgba(255,240,205,.34), rgba(255,240,205,0) 62%);
+}
+
+/* --- far ridge --- */
+.ridge-far{
+  bottom:34%;left:-4%;right:-4%;height:34%;
+  background:linear-gradient(180deg,#93aebe,#b6cbd6);
+  opacity:calc(.35 + var(--amb) * .5);
+  clip-path:polygon(0 46%, 9% 30%, 17% 40%, 27% 18%, 35% 34%, 46% 22%, 55% 38%,
+    66% 20%, 74% 36%, 85% 24%, 93% 40%, 100% 30%, 100% 100%, 0 100%);
+}
+
+/* --- pine forest, two depths --- */
+.forest-far{
+  bottom:26%;left:-2%;right:-2%;height:30%;background:var(--pine2);
+  opacity:calc(.42 + var(--amb)*.42);
+  clip-path:polygon(0 100%,0 76%, 3% 34%, 4% 76%, 8% 44%, 9% 76%, 13% 26%, 14% 76%,
+    19% 48%, 20% 76%, 25% 30%, 26% 76%, 31% 50%, 32% 76%, 37% 32%, 38% 76%,
+    43% 46%, 44% 76%, 49% 24%, 50% 76%, 55% 48%, 56% 76%, 61% 34%, 62% 76%,
+    67% 50%, 68% 76%, 73% 28%, 74% 76%, 79% 46%, 80% 76%, 85% 32%, 86% 76%,
+    91% 44%, 92% 76%, 96% 28%, 97% 76%, 100% 40%, 100% 100%);
+}
+.forest-near{
+  bottom:12%;left:-6%;right:-6%;height:44%;background:var(--pine);
+  opacity:calc(.5 + var(--amb)*.42);
+  clip-path:polygon(0 100%,0 60%, 6% 12%, 7% 60%, 14% 22%, 15% 60%, 22% 6%, 23% 60%,
+    31% 26%, 32% 60%, 40% 14%, 41% 60%, 49% 24%, 50% 60%, 58% 10%, 59% 60%,
+    67% 28%, 68% 60%, 76% 18%, 77% 60%, 85% 32%, 86% 60%, 93% 20%, 94% 60%,
+    100% 36%, 100% 100%);
+}
+
+/* --- snowfield --- */
+.snow{background:linear-gradient(180deg,var(--snow2) 0%,var(--snowc) 34%)}
+.snow .drift{
+  position:absolute;left:-6%;right:-6%;height:34%;bottom:0;
+  background:radial-gradient(60% 100% at 22% 100%, var(--snowc) 0%, transparent 70%),
+             radial-gradient(50% 100% at 62% 100%, var(--snowc) 0%, transparent 70%),
+             radial-gradient(70% 120% at 90% 100%, var(--snowc) 0%, transparent 72%);
+}
+.snow .drift::after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg, rgba(0,0,0,0), rgba(90,120,150,.14));
+}
+.snow .drift2{
+  position:absolute;left:-10%;right:-10%;height:16%;bottom:0;
+  background:linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,255,.55) 40%);
+  filter:blur(6px);
+}
+
+/* ============ the cabin ============ */
+.cabin{
+  position:absolute;left:50%;bottom:11%;transform:translateX(-50%);
+  width:min(64vw,780px);z-index:12;pointer-events:auto;
+}
+/* roof: one large inverted V, two tones */
+.roof{
+  position:relative;height:clamp(120px,20vw,250px);
+  clip-path:polygon(0 100%, 50% 0, 100% 100%);
+  background:
+    linear-gradient(96deg,#20252b 0%,#12161a 42%,#0a0d10 60%,#171c21 100%);
+  box-shadow:0 0 0 1px rgba(255,255,255,.04);
+}
+.roof::before{ /* the far slope catching the last light */
+  content:"";position:absolute;inset:0;
+  clip-path:polygon(50% 0, 100% 100%, 56% 100%);
+  background:linear-gradient(200deg, rgba(190,214,232,calc(var(--amb)*.30)) 0%, rgba(190,214,232,0) 70%);
+}
+.roof::after{ /* plank seams down the slope */
+  content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(84deg, rgba(255,255,255,.045) 0 1px, transparent 1px 13px);
+  clip-path:polygon(0 100%, 50% 0, 100% 100%);
+}
+.ridgebeam{position:absolute;left:50%;top:0;width:4px;height:100%;
+  transform:translateX(-50%);background:linear-gradient(180deg,#2b3238,#0c0f12)}
+
+/* wall block */
+.wall{
+  position:relative;height:clamp(54px,7.4vw,96px);
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 1px, transparent 1px 15px),
+    linear-gradient(180deg,#161a1e,#0b0e11);
+  box-shadow:0 18px 40px -22px rgba(0,0,0,.9);
+}
+.wall .base{position:absolute;left:0;right:0;bottom:0;height:16%;
+  background:linear-gradient(180deg,#3a4348,#232a2e)}
+/* deck */
+.deck{
+  position:relative;height:clamp(10px,1.2vw,16px);background:linear-gradient(180deg,#2b2119,#170f0a);
+  box-shadow:0 12px 26px -12px rgba(0,0,0,.8);
+}
+
+/* ---- windows: the only warm things in the picture ---- */
+.win{
+  position:absolute;cursor:pointer;border:0;padding:0;
+  background:
+    linear-gradient(180deg,
+      rgba(255,205,140,calc(.30 + var(--glow)*.62)) 0%,
+      rgba(255,176,92, calc(.22 + var(--glow)*.60)) 46%,
+      rgba(255,150,70, calc(.16 + var(--glow)*.55)) 100%);
+  box-shadow:
+    0 0 calc(14px + var(--glow)*40px) rgba(255,178,96, calc(var(--glow)*.75)),
+    inset 0 0 0 1px rgba(255,214,160,calc(.2 + var(--glow)*.6));
+  transition:box-shadow .4s, filter .3s, transform .3s;
+}
+.win::after{ /* glass reflection + a figure, sometimes */
+  content:"";position:absolute;inset:0;
+  background:
+    linear-gradient(122deg, rgba(255,255,255,.24) 0 16%, transparent 22%),
+    radial-gradient(22% 60% at 68% 74%, rgba(60,40,24,calc(.25 + var(--glow)*.5)) 0 60%, transparent 62%);
+  pointer-events:none;
+}
+.win:hover,.win:focus-visible{
+  filter:brightness(1.25);
+  box-shadow:0 0 60px 14px rgba(255,190,110,.7), inset 0 0 0 2px rgba(255,236,200,.9);
+  outline:none;z-index:4;
+}
+.win .mull{
+  position:absolute;background:#0a0d10;pointer-events:none;
+}
+/* gable glass: a big wedge in the roof */
+.w1{left:26%;top:14%;width:48%;height:62%;
+  clip-path:polygon(50% 0, 100% 100%, 0 100%)}
+.w1 .m1x{left:50%;top:0;width:5px;height:100%;transform:translateX(-50%)}
+.w1 .m2x{left:0;right:0;top:44%;height:5px}
+/* loft light in the apex */
+.w4{left:45.5%;top:3.5%;width:9%;height:15%;clip-path:polygon(50% 0,100% 100%,0 100%)}
+/* wall windows */
+.w2{left:7%;top:16%;width:15%;height:52%}
+.w2 .m1x{left:50%;top:0;width:3px;height:100%;transform:translateX(-50%)}
+.w3{left:78%;top:16%;width:15%;height:52%}
+.w3 .m1x{left:50%;top:0;width:3px;height:100%;transform:translateX(-50%)}
+
+/* chimney + smoke */
+.chimney{
+  position:absolute;right:23%;top:-9%;width:3.4%;height:26%;
+  background:linear-gradient(180deg,#2a2f34,#0a0d10);
+  box-shadow:inset 0 1px 0 rgba(200,220,235,.16);
+}
+.chimney::before{content:"";position:absolute;left:-22%;right:-22%;top:0;height:5px;
+  background:#161a1e}
+.smoke{position:absolute;left:50%;top:-4%;transform:translateX(-50%);
+  width:220%;height:280%;pointer-events:none}
+.smoke i{position:absolute;border-radius:50%;background:rgba(226,236,244,.34);
+  filter:blur(9px);animation:rise linear infinite}
+@keyframes rise{
+  0%{transform:translate(0,0) scale(.5);opacity:0}
+  12%{opacity:.5}
+  60%{transform:translate(24px,-60px) scale(1.5);opacity:.32}
+  100%{transform:translate(52px,-124px) scale(2.4);opacity:0}
+}
+
+/* ---- guest note ---- */
+.note{
+  position:absolute;z-index:30;left:50%;bottom:calc(100% + 14px);
+  transform:translateX(-50%) translateY(6px);
+  width:min(280px,70vw);padding:.7rem .85rem .8rem;
+  background:rgba(9,13,17,.9);border:1px solid rgba(255,196,120,.34);
+  border-left:2px solid #ffc478;
+  opacity:0;pointer-events:none;transition:opacity .22s,transform .22s;
+  backdrop-filter:blur(8px);
+}
+.note.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.note b{display:block;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;
+  color:#ffc478;font-weight:500;margin-bottom:.28rem}
+.note p{font-size:.78rem;line-height:1.62;color:#cdd8de}
+.note i{font-style:normal;display:block;margin-top:.4rem;font-size:.6rem;
+  letter-spacing:.14em;text-transform:uppercase;color:#7d8a92}
+
+/* ============ left type block ============ */
+.copy{
+  position:absolute;z-index:20;left:clamp(1rem,4vw,3.4rem);top:50%;
+  transform:translateY(-50%);max-width:min(30ch,42vw);pointer-events:none;
+}
+.copy .kick{font-size:.6rem;letter-spacing:.32em;text-transform:uppercase;
+  color:rgba(233,238,241,.66);margin-bottom:.7rem}
+.copy h1{font-weight:300;font-size:clamp(2.1rem,5.2vw,4.1rem);line-height:.96;
+  letter-spacing:-.02em;margin-bottom:.8rem;
+  text-shadow:0 2px 30px rgba(6,12,18,.5)}
+.copy h1 em{font-style:normal;font-weight:500}
+.copy p{font-size:.9rem;line-height:1.7;color:rgba(233,238,241,.86);
+  text-shadow:0 1px 18px rgba(6,12,18,.6)}
+.copy .quiet{margin-top:1rem;font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;
+  color:rgba(233,238,241,.6)}
+
+/* ============ booking card ============ */
+.book{
+  position:absolute;z-index:22;right:clamp(1rem,3.4vw,2.4rem);top:50%;
+  transform:translateY(-50%);width:min(330px,44vw);
+  background:rgba(247,249,250,.96);color:#12171b;border-radius:3px;
+  padding:1.1rem 1.15rem 1.2rem;
+  box-shadow:0 30px 60px -26px rgba(0,0,0,.75);
+}
+.book .h{display:flex;justify-content:space-between;align-items:baseline;
+  border-bottom:1px solid #d8dee2;padding-bottom:.7rem;margin-bottom:.8rem}
+.book .h b{font-weight:500;font-size:1.02rem;letter-spacing:-.01em}
+.book .h span{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:#6d7a83}
+.rows{display:grid;gap:0}
+.rows .r{display:flex;justify-content:space-between;align-items:center;gap:.8rem;
+  padding:.52rem 0;border-bottom:1px solid #e6eaed}
+.rows .r span{font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:#6d7a83}
+.rows .r b{font-weight:500;font-size:.86rem;font-variant-numeric:tabular-nums}
+.total{display:flex;justify-content:space-between;align-items:baseline;
+  padding:.8rem 0 .9rem}
+.total span{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:#6d7a83}
+.total b{font-weight:500;font-size:1.5rem;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.total b i{font-style:normal;font-size:.7rem;color:#6d7a83;margin-left:.3em;letter-spacing:.06em}
+.cta{
+  all:unset;display:block;width:100%;text-align:center;cursor:pointer;
+  background:#12171b;color:#f2f6f8;padding:.85rem;border-radius:2px;
+  font-size:.66rem;letter-spacing:.24em;text-transform:uppercase;font-weight:500;
+  transition:background .2s,letter-spacing .2s;
+}
+.cta:hover{background:#27313a;letter-spacing:.28em}
+.book .fine{margin-top:.7rem;font-size:.6rem;line-height:1.6;color:#8b959c;
+  text-align:center}
+.avail{margin-top:.9rem}
+.avail .l{display:flex;justify-content:space-between;font-size:.6rem;letter-spacing:.16em;
+  text-transform:uppercase;color:#6d7a83;margin-bottom:.4rem}
+.avail .g{display:grid;grid-template-columns:repeat(12,1fr);gap:3px}
+.avail .g i{height:16px;border-radius:1px;background:#dde3e7;display:block}
+.avail .g i.on{background:#27313a}
+.avail .g i.part{background:linear-gradient(90deg,#27313a 50%,#dde3e7 50%)}
+.avail .g i.off{background:#b8c2c8}
+
+/* ============ toggles ============ */
+.tools{
+  position:absolute;z-index:24;left:clamp(1rem,4vw,3.4rem);bottom:clamp(1.2rem,4vh,2.2rem);
+  display:flex;gap:.5rem;flex-wrap:wrap;pointer-events:auto;
+}
+.tool{
+  all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:.5em;
+  font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;
+  padding:.5em .85em;border:1px solid rgba(233,238,241,.34);border-radius:99px;
+  color:rgba(233,238,241,.86);background:rgba(9,13,17,.24);backdrop-filter:blur(6px);
+  transition:background .2s,color .2s,border-color .2s;
+}
+.tool:hover{background:rgba(9,13,17,.5)}
+.tool[aria-pressed="true"]{background:#e9eef1;color:#12171b;border-color:#e9eef1}
+.tool .d{width:5px;height:5px;border-radius:50%;background:currentColor;opacity:.55}
+.hint{
+  position:absolute;z-index:24;right:clamp(1rem,3.4vw,2.4rem);
+  bottom:clamp(1.2rem,4vh,2.2rem);
+  font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;
+  color:rgba(233,238,241,.62);text-align:right;pointer-events:none;
+}
+
+/* ============ precipitation ============ */
+.snowfall,.flies{position:absolute;inset:-14%;pointer-events:none;opacity:0;
+  transition:opacity .6s}
+.snowfall.on{opacity:1}
+.flies.on{opacity:1}
+.snowfall .l{position:absolute;inset:0;
+  background-image:radial-gradient(1.4px 1.4px at 30px 30px, rgba(255,255,255,.92), transparent),
+                   radial-gradient(1px 1px at 90px 70px, rgba(255,255,255,.7), transparent);
+  background-size:120px 120px, 160px 160px;
+  animation:drift 9s linear infinite;
+}
+.snowfall .l.b{background-size:70px 70px, 100px 100px;opacity:.6;animation-duration:5.5s}
+.snowfall .l.c{background-size:190px 190px, 220px 220px;opacity:.4;animation-duration:15s}
+@keyframes drift{to{transform:translate3d(-90px,320px,0)}}
+.flies i{
+  position:absolute;width:4px;height:4px;border-radius:50%;
+  background:#d8ff9a;box-shadow:0 0 10px 3px rgba(200,255,120,.6);
+  animation:wander linear infinite;
+}
+@keyframes wander{
+  0%{transform:translate(0,0);opacity:0}
+  20%{opacity:1}80%{opacity:1}
+  100%{transform:translate(var(--dx,40px),var(--dy,-30px));opacity:0}
+}
+
+/* ============ after the reel ============ */
+.after{
+  position:relative;z-index:5;background:#0a0e12;
+  padding:clamp(2.6rem,6vw,5rem) clamp(1rem,5vw,4rem);
+  border-top:1px solid rgba(233,238,241,.12);
+}
+.after h2{font-weight:300;font-size:clamp(1.6rem,3.4vw,2.6rem);line-height:1.1;
+  letter-spacing:-.015em;margin-bottom:1.4rem;max-width:22ch}
+.after h2 em{font-style:normal;color:#ffc478}
+.after .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:1px;background:rgba(233,238,241,.12);border:1px solid rgba(233,238,241,.12)}
+.after .cols section{background:#0a0e12;padding:1.2rem 1.25rem 1.35rem}
+.after .cols h3{font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;
+  color:#ffc478;font-weight:500;margin-bottom:.6rem}
+.after .cols p{font-size:.84rem;line-height:1.7;color:#a6b1b8}
+.after .cols .k{display:block;font-weight:300;font-size:1.7rem;color:#eef3f6;margin-bottom:.35rem}
+.after .foot{margin-top:1.6rem;padding-top:1rem;border-top:1px solid rgba(233,238,241,.12);
+  display:flex;flex-wrap:wrap;gap:.4rem 2rem;justify-content:space-between;
+  font-size:.56rem;letter-spacing:.2em;text-transform:uppercase;color:#69757d}
+
+@media (max-width:900px){
+  .runway{height:300vh}
+  .copy{top:3.4rem;bottom:auto;left:1rem;right:1rem;max-width:none;transform:none}
+  .copy p{display:none}
+  .copy .quiet{display:none}
+  .copy h1{font-size:clamp(1.7rem,7.4vw,2.6rem)}
+  .cabin{width:78vw;bottom:37%}
+  .book{top:auto;left:.7rem;right:.7rem;bottom:.7rem;transform:none;width:auto;
+    max-width:none;padding:.85rem .9rem .95rem;background:rgba(247,249,250,.97)}
+  .book .rows .r{padding:.3rem 0}
+  .book .fine,.book .avail{display:none}
+  .total{padding:.55rem 0 .65rem}
+  .total b{font-size:1.25rem}
+  .tools{bottom:calc(38% + .6rem);left:.7rem}
+  .hint{display:none}
+  .forest-near{bottom:34%}
+  .snow .drift{height:36%}
+}
+@media (prefers-reduced-motion:reduce){
+  .snowfall .l,.flies i,.smoke i{animation:none}
+}
+</style>
+</head>
+<body>
+
+<noscript>
+  <p style="padding:1.4rem;line-height:1.7;max-width:62ch">
+    The scene is drawn entirely with CSS clip-paths and gradients; the time of day is
+    scrubbed by scroll position. Without JavaScript the cabin is shown at 14:30 with
+    the lights off. Every guest note, price and detail below is static and complete.
+  </p>
+</noscript>
+
+<div class="rail">
+  <div class="b">Nordhus</div>
+  <div class="clock"><b id="clockLbl">14:30</b><i id="clockBar"></i><span id="phaseLbl">daylight</span></div>
+</div>
+
+<div class="runway" id="runway">
+  <div class="scene" id="scene">
+    <div class="layer sun" aria-hidden="true"></div>
+    <div class="layer ridge-far" aria-hidden="true"></div>
+    <div class="layer forest-far" aria-hidden="true"></div>
+    <div class="layer forest-near" aria-hidden="true"></div>
+
+    <div class="layer snow" aria-hidden="true">
+      <div class="drift"></div><div class="drift2"></div>
+    </div>
+
+    <div class="layer flies" id="flies" aria-hidden="true"></div>
+    <div class="layer snowfall on" id="snowfall" aria-hidden="true">
+      <div class="l c"></div><div class="l b"></div><div class="l"></div>
+    </div>
+
+    <!-- ============ the cabin ============ -->
+    <div class="cabin" id="cabin">
+      <div class="note" id="note" role="status" aria-live="polite">
+        <b id="noteWho">—</b><p id="noteText"></p><i id="noteWhen"></i>
+      </div>
+
+      <div class="roof">
+        <div class="ridgebeam" aria-hidden="true"></div>
+        <div class="chimney" aria-hidden="true">
+          <div class="smoke">
+            <i style="left:10%;bottom:88%;width:26%;height:22%;animation-duration:9s"></i>
+            <i style="left:32%;bottom:80%;width:30%;height:24%;animation-duration:11s;animation-delay:-3s"></i>
+            <i style="left:14%;bottom:70%;width:38%;height:26%;animation-duration:13s;animation-delay:-6s"></i>
+          </div>
+        </div>
+
+        <button class="win w1" type="button" data-who="Klara Berg, Bergen"
+          data-note="She read the whole book in three evenings and then sat facing this
+window until the light went off the fjord. Nobody has ever left a note about the room
+that is not the window." data-when="Stayed four nights, March" aria-label="Main gable window — guest note">
+          <span class="mull m1x"></span><span class="mull m2x"></span>
+        </button>
+        <button class="win w4" type="button" data-who="Anneke Ruud, Trondheim"
+          data-note="Sleeps up here because the floor over the stove is warmer than the
+bench, and will not say so. The light switches on at a quarter past six whether she is
+in it or not." data-when="Stayed six nights, January" aria-label="Loft light — guest note"></button>
+      </div>
+
+      <div class="wall">
+        <button class="win w2" type="button" data-who="Ferdinand Ola, Trondheim"
+          data-note="Eats breakfast facing this way so he can see whether the snow has
+reached the steps. He has got up at six in the morning in November to check, and he
+has never once mentioned doing it." data-when="Stayed nine nights, November" aria-label="Kitchen window — guest note">
+          <span class="mull m1x"></span>
+        </button>
+        <button class="win w3" type="button" data-who="Priya Raman, Oslo"
+          data-note="Left a book inside the shelf. We did not find it until March, read it
+in one sitting, and posted it back with two more. It is the only thing the shelf has
+ever held." data-when="Stayed three nights, February" aria-label="Cold room window — guest note">
+          <span class="mull m1x"></span>
+        </button>
+        <div class="base" aria-hidden="true"></div>
+      </div>
+
+      <div class="deck" aria-hidden="true"></div>
+    </div>
+
+    <!-- ============ type ============ -->
+    <div class="copy">
+      <div class="kick">Nordhus · whole-let · four guests maximum</div>
+      <h1>Skeifan 04<br><em>on the Nordmarka shelf</em></h1>
+      <p>
+        A two-room hytte built in 1971 for a forestry crew and kept dry ever since.
+        Black tar on the gable, a wood stove in the middle of the room, and a shelf
+        by the cold room door where the previous guests leave things.
+      </p>
+      <p class="quiet">Scroll — the light goes.</p>
+    </div>
+
+    <!-- ============ booking card ============ -->
+    <aside class="book" aria-label="Booking">
+      <div class="h"><b>Skeifan 04</b><span>Ref. NH-0404</span></div>
+      <div class="rows">
+        <div class="r"><span>Arrival</span><b>Fri 14 March, 15:00</b></div>
+        <div class="r"><span>Departure</span><b>Thu 20 March, 11:00</b></div>
+        <div class="r"><span>Nights</span><b>6</b></div>
+        <div class="r"><span>Guests</span><b>2 of 4</b></div>
+        <div class="r"><span>Snow cover</span><b>74 cm</b></div>
+        <div class="r"><span>Nearest road</span><b>1.9 km</b></div>
+      </div>
+      <div class="total"><span>Total, cabin only</span><b>1 640<i>NOK</i></b></div>
+      <button class="cta" type="button">Request the cabin</button>
+      <p class="fine">No card held. We write back within a day, usually before it.</p>
+      <div class="avail">
+        <div class="l"><span>Next 12 weeks</span><span>9 open</span></div>
+        <div class="g" id="avail" aria-hidden="true"></div>
+      </div>
+    </aside>
+
+    <div class="tools">
+      <button class="tool" id="wxBtn" type="button" aria-pressed="true">
+        <span class="d"></span><span id="wxLbl">Snowfall</span>
+      </button>
+      <button class="tool" id="resetBtn" type="button">Back to daylight</button>
+    </div>
+
+    <p class="hint">Hover a window</p>
+  </div>
+</div>
+
+<section class="after">
+  <h2>Four notes, left where the light <em>was</em>.</h2>
+  <div class="cols">
+    <section>
+      <span class="k">1971</span>
+      <h3>Built</h3>
+      <p>Fourteen by nine, on a single sill of poured concrete, with a stove pipe
+        straight up through the gable. The forestry crew used it for eleven winters
+        and left the shelf.</p>
+    </section>
+    <section>
+      <span class="k">−24 °C</span>
+      <h3>Coldest recorded</h3>
+      <p>February 2019, at the shelf thermometer on the north wall. The water pipe
+        was run under the floor for that reason and has not frozen since.</p>
+    </section>
+    <section>
+      <span class="k">4</span>
+      <h3>Guests, maximum</h3>
+      <p>Two in the room, two in the loft. The loft floor is warm, the bench is not,
+        and we tell people this in the first email so nobody is disappointed in
+        February.</p>
+    </section>
+    <section>
+      <span class="k">74 cm</span>
+      <h3>Snow at the door</h3>
+      <p>Measured on the third of March, which is late for the shelf. Guests dig in
+        from the north side because the drift always builds against the gable.</p>
+    </section>
+  </div>
+  <div class="foot">
+    <span>Nordhus · whole-let hytter · Nordmarka, Norway</span>
+    <span>Scene drawn entirely with clip-path geometry and gradients</span>
+    <span>Scroll scrubs the light from 14:30 to 22:15</span>
+  </div>
+</section>
+
+<script>
+(function(){
+  "use strict";
+  var root = document.documentElement;
+  var runway = document.getElementById('runway');
+  var clockLbl = document.getElementById('clockLbl');
+  var clockBar = document.getElementById('clockBar');
+  var phaseLbl = document.getElementById('phaseLbl');
+
+  /* ================= time of day ================= */
+  /* four keys: afternoon, low sun, blue hour, night */
+  var KEYS = [
+    { at:0.00, t:'14:30', ph:'daylight',
+      sky:['#7fa6c4','#b9cfdd','#e6eef2'], sun:[70,24,.62,'#fdf6e2'],
+      snow:['#eef4f7','#cfdde6'], pine:['#1d2a2a','#2c3c3a'],
+      amb:1.00, glow:0.05 },
+    { at:0.34, t:'17:20', ph:'low sun',
+      sky:['#4f6f95','#c98a72','#f0c79a'], sun:[76,44,.85,'#ffd79a'],
+      snow:['#f3e2d6','#cbb4a8'], pine:['#1a2224','#2b3237'],
+      amb:0.66, glow:0.30 },
+    { at:0.62, t:'19:40', ph:'blue hour',
+      sky:['#1b2c4d','#4a3f68','#9a6b7e'], sun:[84,66,.30,'#ffb27a'],
+      snow:['#9fb0c2','#71818f'], pine:['#121a1c','#1e262a'],
+      amb:0.28, glow:0.78 },
+    { at:1.00, t:'22:15', ph:'night',
+      sky:['#080d16','#111a26','#1d2a33'], sun:[86,80,.16,'#c9d6e6'],
+      snow:['#6b7b8a','#3d4a56'], pine:['#080c0e','#101719'],
+      amb:0.07, glow:1.00 }
+  ];
+
+  function lerp(a,b,t){ return a + (b-a)*t; }
+  function lerpArr(A,B,t){
+    var o = [];
+    for (var i=0;i<A.length;i++) o.push(lerp(A[i],B[i],t));
+    return o;
+  }
+  function hex(c){
+    return [parseInt(c.substr(1,2),16), parseInt(c.substr(3,2),16), parseInt(c.substr(5,2),16)];
+  }
+  function rgb(a){ return 'rgb(' + Math.round(a[0]) + ',' + Math.round(a[1]) + ',' + Math.round(a[2]) + ')'; }
+
+  var K = KEYS.map(function(k){
+    return {at:k.at, t:k.t, ph:k.ph, sky:k.sky.map(hex), sun:k.sun.slice(0,3),
+      sunc:hex(k.sun[3]), snow:k.snow.map(hex), pine:k.pine.map(hex),
+      amb:k.amb, glow:k.glow};
+  });
+
+  function applyTod(v){
+    v = Math.max(0, Math.min(1, v));
+    var i = 0;
+    while (i < K.length-2 && v > K[i+1].at) i++;
+    var span = K[i+1].at - K[i].at;
+    var t = span > 0 ? (v - K[i].at) / span : 0;
+    t = t*t*(3-2*t);   /* smoothstep between keys */
+
+    root.style.setProperty('--sky1', rgb(lerpArr(K[i].sky[0], K[i+1].sky[0], t)));
+    root.style.setProperty('--sky2', rgb(lerpArr(K[i].sky[1], K[i+1].sky[1], t)));
+    root.style.setProperty('--sky3', rgb(lerpArr(K[i].sky[2], K[i+1].sky[2], t)));
+    root.style.setProperty('--snowc', rgb(lerpArr(K[i].snow[0], K[i+1].snow[0], t)));
+    root.style.setProperty('--snow2', rgb(lerpArr(K[i].snow[1], K[i+1].snow[1], t)));
+    root.style.setProperty('--pine',  rgb(lerpArr(K[i].pine[0], K[i+1].pine[0], t)));
+    root.style.setProperty('--pine2', rgb(lerpArr(K[i].pine[1], K[i+1].pine[1], t)));
+    root.style.setProperty('--sunx', lerp(K[i].sun[0], K[i+1].sun[0], t).toFixed(1) + '%');
+    root.style.setProperty('--suny', lerp(K[i].sun[1], K[i+1].sun[1], t).toFixed(1) + '%');
+    root.style.setProperty('--sunop', lerp(K[i].sun[2], K[i+1].sun[2], t).toFixed(3));
+    root.style.setProperty('--suncol', rgb(lerpArr(K[i].sunc, K[i+1].sunc, t)));
+    root.style.setProperty('--amb', lerp(K[i].amb, K[i+1].amb, t).toFixed(3));
+    root.style.setProperty('--glow', lerp(K[i].glow, K[i+1].glow, t).toFixed(3));
+    root.style.setProperty('--tod', v.toFixed(4));
+
+    clockLbl.textContent = t > .5 ? K[i+1].t : K[i].t;
+    phaseLbl.textContent = t > .5 ? K[i+1].ph : K[i].ph;
+    clockBar.style.setProperty('--t', (v*100).toFixed(1) + '%');
+  }
+
+  var ticking = false;
+  function onScroll(){
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function(){
+      var total = runway.offsetHeight - window.innerHeight;
+      var p = total > 0 ? Math.min(1, Math.max(0, window.scrollY / total)) : 0;
+      applyTod(p);
+      /* fireflies only exist after the blue hour */
+      flies.classList.toggle('on', p > 0.52);
+      ticking = false;
+    });
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('resize', onScroll, {passive:true});
+
+  var flies = document.getElementById('flies');
+  document.getElementById('resetBtn').addEventListener('click', function(){
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  /* ================= weather toggle ================= */
+  var MODES = [
+    {id:'snow', label:'Snowfall', on:function(){ document.getElementById('snowfall').classList.add('on'); flies.classList.remove('on'); }},
+    {id:'flies', label:'Fireflies', on:function(){ document.getElementById('snowfall').classList.remove('on'); flies.classList.add('on'); }},
+    {id:'clear', label:'Clear', on:function(){ document.getElementById('snowfall').classList.remove('on'); flies.classList.remove('on'); }}
+  ];
+  var mi = 0;
+  var wxBtn = document.getElementById('wxBtn');
+  wxBtn.addEventListener('click', function(){
+    mi = (mi + 1) % MODES.length;
+    MODES[mi].on();
+    document.getElementById('wxLbl').textContent = MODES[mi].label;
+    wxBtn.setAttribute('aria-pressed', String(MODES[mi].id !== 'clear'));
+  });
+
+  /* fireflies: 14 of them, wandering */
+  (function(){
+    var h = '';
+    for (var i=0;i<14;i++){
+      h += '<i style="left:' + (6 + Math.random()*88).toFixed(1) + '%;top:' +
+        (54 + Math.random()*40).toFixed(1) + '%;--dx:' + (Math.random()*80-40).toFixed(0) +
+        'px;--dy:' + (Math.random()*-50-14).toFixed(0) + 'px;animation-duration:' +
+        (4 + Math.random()*7).toFixed(1) + 's;animation-delay:-' + (Math.random()*8).toFixed(1) + 's"></i>';
+    }
+    flies.innerHTML = h;
+  })();
+
+  /* ================= guest notes ================= */
+  var note = document.getElementById('note');
+  var noteWho = document.getElementById('noteWho');
+  var noteText = document.getElementById('noteText');
+  var noteWhen = document.getElementById('noteWhen');
+  var cabin = document.getElementById('cabin');
+  var wins = Array.prototype.slice.call(document.querySelectorAll('.win'));
+
+  function showNote(btn){
+    noteWho.textContent = btn.getAttribute('data-who');
+    noteText.textContent = btn.getAttribute('data-note');
+    noteWhen.textContent = btn.getAttribute('data-when');
+    /* sit the note above the whole cabin, biased toward the window */
+    var r = btn.getBoundingClientRect(), c = cabin.getBoundingClientRect();
+    var bias = (r.left + r.width/2 - (c.left + c.width/2)) / (c.width/2);
+    note.style.left = (50 + bias * 26) + '%';
+    note.classList.add('on');
+  }
+  function hideNote(){ note.classList.remove('on'); }
+  wins.forEach(function(b){
+    b.addEventListener('pointerenter', function(){ showNote(b); });
+    b.addEventListener('focus', function(){ showNote(b); });
+    b.addEventListener('click', function(){ showNote(b); });
+    b.addEventListener('pointerleave', hideNote);
+    b.addEventListener('blur', hideNote);
+  });
+  cabin.addEventListener('pointerleave', hideNote);
+
+  /* ================= availability grid ================= */
+  (function(){
+    var h = '';
+    var pattern = 'off,off,off,on,on,on,on,on,part,off,on,on';
+    for (var i=0;i<12;i++){
+      h += '<i class="' + pattern[i] + '"></i>';
+    }
+    document.getElementById('avail').innerHTML = h;
+  })();
+
+  applyTod(0);
+  onScroll();
+})();
+</script>
+</body>
+</html>

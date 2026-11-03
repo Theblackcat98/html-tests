@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Soft Gradient Mesh — a gallery series of four printed posters</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;1,9..144,300&family=Inter:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   SOFT GRADIENT MESH — POSTER SERIES
+   Technique: layered radial-gradient fields under a blur filter,
+   lit by one pointer-driven highlight shared across the wall.
+   Skeleton: gallery wall — four hanging prints plus labels.
+   ============================================================ */
+:root{
+  --wall1:#c9c2b6; --wall2:#b3ab9d; --floor:#8f877a;
+  --ink:#2a2723; --ink2:#5b554c; --label:#efeae1;
+  --serif:"Fraunces",Georgia,"Times New Roman",serif;
+  --sans:"Inter","Helvetica Neue",Arial,sans-serif;
+  --mono:"IBM Plex Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:
+    radial-gradient(120% 60% at 50% -6%,rgba(255,250,240,.5),transparent 60%),
+    linear-gradient(#c9c2b6 0%,#c0b9ac 62%,#9d9587 62.1%,#8f877a 100%);
+  color:var(--ink);font-family:var(--sans);min-height:100dvh;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.plaster{position:fixed;inset:0;pointer-events:none;z-index:60;opacity:.09;mix-blend-mode:multiply}
+.plaster svg{width:100%;height:100%}
+
+/* ---------- head ---------- */
+.hd{max-width:1500px;margin:0 auto;padding:clamp(1.6rem,4vw,3.4rem) clamp(1rem,4vw,3rem) 0;
+  display:flex;justify-content:space-between;align-items:flex-end;gap:2rem;flex-wrap:wrap}
+.hd h1{font-family:var(--serif);font-weight:300;font-size:clamp(1.8rem,4.4vw,3.4rem);line-height:1.02;
+  letter-spacing:-.015em}
+.hd h1 em{font-style:italic;font-weight:300}
+.hd .rt{text-align:right;font-family:var(--mono);font-size:10.5px;line-height:1.9;color:var(--ink2);
+  letter-spacing:.1em;text-transform:uppercase;max-width:30ch}
+@media (max-width:760px){.hd .rt{text-align:left}}
+
+/* ---------- palette row ---------- */
+.pals{display:flex;gap:1.6rem;align-items:center;flex-wrap:wrap;
+  max-width:1500px;margin:clamp(1.2rem,2.6vw,2rem) auto 0;padding:0 clamp(1rem,4vw,3rem)}
+.pals .lb{font-family:var(--mono);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink2)}
+.pals .row{display:flex;gap:.4rem;flex-wrap:wrap}
+.pals button{width:clamp(30px,4vw,46px);aspect-ratio:1;border-radius:50%;border:0;cursor:pointer;
+  position:relative;box-shadow:0 2px 6px rgba(40,30,18,.25),inset 0 1px 1px rgba(255,255,255,.35);
+  transition:transform .25s cubic-bezier(.2,1.3,.4,1)}
+.pals button:hover{transform:translateY(-5px) scale(1.08)}
+.pals button[aria-pressed=true]{transform:translateY(-5px) scale(1.08);
+  box-shadow:0 0 0 2px var(--wall1),0 0 0 3px var(--ink),0 8px 14px -6px rgba(40,30,18,.5)}
+.pals .nm{font-family:var(--mono);font-size:10.5px;color:var(--ink2);letter-spacing:.1em;margin-left:.6rem}
+
+/* ---------- the wall ---------- */
+.wall{max-width:1500px;margin:clamp(1.4rem,3vw,2.4rem) auto 0;padding:0 clamp(1rem,4vw,3rem);
+  display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(1rem,2.4vw,2.2rem);align-items:start}
+@media (max-width:1100px){.wall{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:560px){.wall{grid-template-columns:1fr;max-width:420px}}
+.slot{position:relative}
+.hanger{position:absolute;left:50%;top:-16px;transform:translateX(-50%);width:1px;height:16px;
+  background:linear-gradient(rgba(0,0,0,0),rgba(40,30,18,.5))}
+.poster{position:relative;aspect-ratio:5/7;background:#8d8578;overflow:hidden;cursor:pointer;
+  transform-style:preserve-3d;will-change:transform;
+  box-shadow:0 2px 3px rgba(30,22,12,.18),0 22px 34px -18px rgba(30,22,12,.6);
+  transition:box-shadow .4s ease}
+.poster::after{content:"";position:absolute;inset:0;pointer-events:none;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.16),inset 0 0 30px rgba(0,0,0,.22)}
+.poster .mesh{position:absolute;inset:-14%;filter:blur(26px) saturate(118%);transform:scale(1.02);
+  transition:filter .6s ease}
+.poster .light{position:absolute;inset:0;pointer-events:none;mix-blend-mode:soft-light;
+  background:radial-gradient(58% 42% at var(--lx,50%) var(--ly,40%),rgba(255,255,255,.85),transparent 72%);
+  transition:opacity .5s}
+.poster .bloom{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
+  background:radial-gradient(46% 34% at var(--lx,50%) var(--ly,40%),rgba(255,246,228,.20),transparent 74%);
+  transition:opacity .5s}
+.poster .grain{position:absolute;inset:0;pointer-events:none;opacity:.5;mix-blend-mode:overlay}
+.poster .grain svg{width:100%;height:100%}
+.poster .scrim{position:absolute;left:0;right:0;bottom:0;pointer-events:none;
+  background:linear-gradient(transparent,rgba(18,14,10,.30) 42%,rgba(14,11,8,.72))}
+.poster .type{position:absolute;left:0;right:0;bottom:0;padding:clamp(.7rem,1.4vw,1.15rem);
+  color:#f6f1e8;pointer-events:none}
+.poster .num{font-family:var(--mono);font-size:clamp(9px,1vw,11px);letter-spacing:.3em;opacity:.72}
+.poster h3{font-family:var(--serif);font-weight:300;font-size:clamp(1.05rem,2.1vw,1.65rem);
+  line-height:1.04;margin:.3rem 0 .28rem;letter-spacing:-.01em}
+.poster h3 em{font-style:italic}
+.poster .sub{font-size:clamp(10px,1.05vw,12.5px);line-height:1.5;opacity:.82;max-width:26ch;font-weight:300}
+.poster .tech{position:absolute;left:clamp(.7rem,1.4vw,1.15rem);top:clamp(.7rem,1.4vw,1.15rem);
+  font-family:var(--mono);font-size:clamp(8px,.85vw,10px);letter-spacing:.18em;text-transform:uppercase;
+  color:rgba(255,255,255,.7);text-shadow:0 1px 6px rgba(0,0,0,.5);text-align:right;right:clamp(.7rem,1.4vw,1.15rem);
+  line-height:1.9}
+.label{margin-top:.75rem;font-family:var(--mono);font-size:10px;line-height:1.8;color:var(--ink2);
+  letter-spacing:.04em;padding-left:.1rem;border-left:2px solid rgba(42,39,35,.18);padding-left:.6rem}
+.label b{display:block;color:var(--ink);font-weight:500;letter-spacing:.12em;text-transform:uppercase;font-size:10.5px}
+@media (max-width:560px){.label{font-size:10.5px}}
+
+/* ---------- foot ---------- */
+.ft{max-width:1500px;margin:clamp(2.4rem,5vw,4rem) auto 0;padding:1.2rem clamp(1rem,4vw,3rem) 3rem;
+  border-top:1px solid rgba(42,39,35,.2);display:flex;justify-content:space-between;gap:1.4rem;flex-wrap:wrap;
+  font-family:var(--mono);font-size:10.5px;line-height:1.9;color:var(--ink2);letter-spacing:.08em}
+.ft b{color:var(--ink);font-weight:500;letter-spacing:.16em;text-transform:uppercase;font-size:9.5px;
+  display:block;margin-bottom:.2rem}
+.ft p{max-width:44ch}
+</style>
+</head>
+<body>
+<svg class="plaster" aria-hidden="true"><filter id="pl"><feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="4" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="100%" height="100%" filter="url(#pl)"/></svg>
+
+<header class="hd">
+  <h1>Soft Gradient <em>Mesh</em></h1>
+  <div class="rt">Four prints, one wall<br>Edinburgh Print Studio · Room 2<br>Open Thursday to Sunday, 12 – 6</div>
+</header>
+
+<div class="pals">
+  <span class="lb">Palette</span>
+  <div class="row" id="pals" role="group" aria-label="Palette"></div>
+  <span class="nm" id="pname">Ember &amp; Ink</span>
+</div>
+
+<main class="wall" id="wall" aria-label="Four printed posters"></main>
+
+<footer class="ft">
+  <p><b>About the series</b>Each poster is a single field of blended colour — no shapes, no drawing,
+  just four soft bodies of colour printed one over another on a warm-white cotton stock. The
+  numbers refer to the order of the passes, not to editions.</p>
+  <p><b>Printing</b>Riso, two to four spot inks, 300 gsm cotton, 500 × 700 mm, edition of 40,
+  numbered on the reverse. Mounted unframed on 3 mm dibond with a natural fibre hanger.</p>
+  <p><b>This page</b>Move the pointer across the wall. One soft light travels over all four
+  prints at once; the poster under the cursor lifts and tilts toward you.</p>
+</footer>
+
+<noscript><p style="padding:3rem 2rem;font-family:var(--mono);font-size:12px;line-height:1.8;color:#5b554c">
+The series is drawn in JavaScript. Enable scripting to render the four prints and the shared light.</p></noscript>
+
+<script>
+(function(){
+"use strict";
+/* ---------- the palettes: each is four poster field recipes ---------- */
+var SETS={
+  ember:{
+    label:'Ember & Ink',
+    sw:['#1a1512','#c4552a','#e0a34b','#6b3b2c'],
+    posters:[
+      {bg:'#150f0b',stops:[["#e0661f",.62],[ "#f0a83c",.5],["#7d1f14",.62],["#2b0f0c",.8]],
+       p:[[18,26,66],[52,44,58],[30,74,42],[72,20,50]]},
+      {bg:'#efe6d8',stops:[["#d98a72",.6],["#c9a184",.5],["#e8c3ae",.7],["#8f5f4c",.4]],
+       p:[[22,22,60],[58,30,52],[34,68,40],[76,80,26]]},
+      {bg:'#1a1c18',stops:[["#5e7a52",.55],["#93a86a",.45],["#2c3a2a",.72],["#d5c07a",.3]],
+       p:[[26,20,58],[50,60,48],[20,74,44],[70,34,62]]},
+      {bg:'#12141a',stops:[["#3b4a6b",.58],["#7e8fb5",.42],["#2a2f45",.7],["#c2705a",.28]],
+       p:[[30,32,62],[44,66,44],[70,20,52],[16,80,38]]}
+    ]
+  },
+  dusk:{
+    label:'Dusk — rose & clay',
+    sw:['#3a2b31','#b8717a','#c98f6d','#e6d5c6'],
+    posters:[
+      {bg:'#2b1f24',stops:[["#b06070",.6],["#d98f7a",.46],["#5a2f3c",.7],["#e3b79c",.3]],
+       p:[[24,18,62],[56,44,50],[34,72,42],[74,22,54]]},
+      {bg:'#2a1a1c',stops:[["#8c3a3f",.6],["#c26a4e",.5],["#40181c",.76],["#e0a377",.3]],
+       p:[[26,30,58],[52,54,44],[72,18,48],[18,78,40]]},
+      {bg:'#f0e2d4',stops:[["#d59a8c",.58],["#c98f6d",.5],["#e8c9b4",.68],["#8d5f52",.42]],
+       p:[[20,20,58],[60,32,54],[32,70,42],[78,78,24]]},
+      {bg:'#2e2a2a',stops:[["#6b5a55",.55],["#a4836f",.45],["#3a3230",.72],["#cf9c7e",.34]],
+       p:[[28,22,60],[48,62,46],[22,72,44],[72,36,58]]}
+    ]
+  },
+  field:{
+    label:'Field — sage & bone',
+    sw:['#39412f','#8fa07a','#c8bda4','#f0ead9'],
+    posters:[
+      {bg:'#2e3529',stops:[["#8fa07a",.6],["#c3c9a2",.44],["#4a5740",.7],["#e2d6b4",.3]],
+       p:[[22,22,60],[56,32,52],[32,70,44],[74,78,26]]},
+      {bg:'#f2ecdd',stops:[["#b6bfa0",.56],["#9aa887",.5],["#e2dbc6",.7],["#6f7a5c",.36]],
+       p:[[26,20,60],[54,60,46],[20,72,42],[76,24,54]]},
+      {bg:'#252c2b',stops:[["#5b7a70",.58],["#8fb0a2",.42],["#2f3b38",.72],["#cfb98a",.3]],
+       p:[[24,26,60],[50,54,48],[70,22,50],[18,78,40]]},
+      {bg:'#e9e2d1',stops:[["#c7a98a",.56],["#b0876c",.48],["#e6dcc6",.68],["#6d6250",.4]],
+       p:[[28,24,58],[58,34,52],[30,72,42],[74,74,26]]}
+    ]
+  }
+};
+/* ---------- copy ---------- */
+var COPY=[
+ {t:'Ember <em>Study</em>',s:'Warm light, held still for about four seconds.',
+  tech:'Riso · 2 inks<br>500 × 700 mm',lab:'01 · Ember Study',yr:'2026',pr:'Riso, two spot inks on cotton'},
+ {t:'Bone, <em>Late</em>',s:'A room after everybody has gone home. The chairs stay where they were left.',
+  tech:'Riso · 3 inks<br>500 × 700 mm',lab:'02 · Bone, Late',yr:'2026',pr:'Riso, three spot inks on cotton'},
+ {t:'Sage <em>Interval</em>',s:'The hour between the rain stopping and the sky deciding.',
+  tech:'Riso · 3 inks<br>500 × 700 mm',lab:'03 · Sage Interval',yr:'2026',pr:'Riso, three spot inks on cotton'},
+ {t:'Ink <em>Field</em>',s:'Nothing added that the printer did not put there on its own.',
+  tech:'Riso · 4 inks<br>500 × 700 mm',lab:'04 · Ink Field',yr:'2026',pr:'Riso, four spot inks on cotton'}
+];
+/* ---------- build ---------- */
+function meshCSS(P){
+  var g=P.bg+' 0%';
+  P.stops.forEach(function(s,i){
+    var q=P.p[i];
+    g+=',radial-gradient('+(52+q[2]*.5)+'% '+(42+q[2]*.42)+'% at '+
+       (q[0]+'% ')+' '+(q[1]+'% ')+', '+s[0]+' '+(s[1]*100).toFixed(0)+'%, transparent '+(72+q[2]*.3).toFixed(0)+'%)';
+  });
+  g+=',radial-gradient(120% 90% at 50% 50%, transparent 30%, '+P.bg+' 96%)';
+  return g;
+}
+var GRAIN='<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><filter id="g">'+
+  '<feTurbulence type="fractalNoise" baseFrequency="0.95" numOctaves="3" stitchTiles="stitch"/>'+
+  '<feColorMatrix type="saturate" values="0"/></filter><rect width="120" height="120" filter="url(#g)"/></svg>';
+var wall=document.getElementById('wall');
+function build(){
+  var S=SETS[cur];
+  wall.innerHTML='';
+  COPY.forEach(function(c,i){
+    var P=S.posters[i];
+    var slot=document.createElement('figure');
+    slot.className='slot';slot.style.margin='0';
+    slot.innerHTML=
+      '<span class="hanger"></span>'+
+      '<div class="poster" tabindex="0" role="img" aria-label="'+c.lab.replace(/·/g,'—')+': '+c.s.replace(/<[^>]+>/g,'')+'">'+
+        '<div class="mesh"></div><div class="light"></div><div class="bloom"></div>'+
+        '<div class="grain">'+GRAIN+'</div><div class="scrim"></div>'+
+        '<div class="tech">'+c.tech+'</div>'+
+        '<div class="type"><span class="num">'+String(i+1).padStart(2,'0')+' / 04</span>'+
+        '<h3>'+c.t+'</h3><p class="sub">'+c.s+'</p></div>'+
+      '</div>'+
+      '<figcaption class="label"><b>'+c.lab+'</b>'+c.yr+' · '+c.pr+' · edition of 40</figcaption>';
+    wall.appendChild(slot);
+    var post=slot.querySelector('.poster');
+    post.querySelector('.mesh').style.background=meshCSS(P);
+    /* hover: lift and tilt toward the pointer */
+    post.addEventListener('pointermove',function(e){
+      var r=post.getBoundingClientRect();
+      var px=(e.clientX-r.left)/r.width,py=(e.clientY-r.top)/r.height;
+      post.style.transform='perspective(1100px) rotateX('+((.5-py)*9).toFixed(2)+'deg) rotateY('+
+        ((px-.5)*11).toFixed(2)+'deg) translateY(-14px) scale(1.015)';
+      post.style.boxShadow='0 6px 10px -4px rgba(30,22,12,.3),0 46px 60px -26px rgba(30,22,12,.7)';
+      lightAt(px,py,1,post.parentNode);
+    });
+    post.addEventListener('pointerenter',function(){post.querySelector('.mesh').style.filter='blur(20px) saturate(126%)';});
+    post.addEventListener('pointerleave',function(){
+      post.style.transition='transform .5s cubic-bezier(.2,.8,.2,1),box-shadow .5s';
+      post.style.transform='none';
+      post.style.boxShadow='0 2px 3px rgba(30,22,12,.18),0 22px 34px -18px rgba(30,22,12,.6)';
+      post.querySelector('.mesh').style.filter='';
+      lightAt(0,0,0);
+      setTimeout(function(){post.style.transition='';},520);
+    });
+  });
+}
+/* one light travelling across the whole wall */
+var lightOn=false;
+function lightAt(px,py,on,only){
+  lightOn=!!on;
+  [].forEach.call(wall.children,function(slot){
+    if(only&&slot!==only)return;
+    var post=slot.querySelector('.poster');
+    post.style.setProperty('--lx',on?(px*100).toFixed(1)+'%':'50%');
+    post.style.setProperty('--ly',on?(py*100).toFixed(1)+'%':'40%');
+  });
+}
+addEventListener('pointermove',function(e){
+  if(lightOn)return;
+  var wr=wall.getBoundingClientRect();
+  var x=Math.max(0,Math.min(1,(e.clientX-wr.left)/wr.width));
+  [].forEach.call(wall.children,function(slot){
+    var r=slot.getBoundingClientRect();
+    var l=(r.left-wr.left)/wr.width,w=r.width/wr.width;
+    var lx=((x-l)/w)*100;
+    var post=slot.querySelector('.poster');
+    post.style.setProperty('--lx',Math.max(-40,Math.min(140,lx)).toFixed(1)+'%');
+    post.style.setProperty('--ly',(Math.max(0,Math.min(1,(e.clientY-wr.top)/wr.height))*100).toFixed(1)+'%');
+  });
+});
+
+/* ---------- palette switcher ---------- */
+var cur='ember';
+var palRow=document.getElementById('pals');
+Object.keys(SETS).forEach(function(k){
+  var b=document.createElement('button');
+  b.setAttribute('aria-label',SETS[k].label+' palette');
+  b.setAttribute('aria-pressed',k==='ember');
+  b.style.background='linear-gradient(135deg,'+SETS[k].sw[0]+' 0 25%,'+SETS[k].sw[1]+' 25% 50%,'+
+    SETS[k].sw[2]+' 50% 75%,'+SETS[k].sw[3]+' 75% 100%)';
+  b.onclick=function(){
+    cur=k;
+    [].forEach.call(palRow.children,function(x){x.setAttribute('aria-pressed','false');});
+    b.setAttribute('aria-pressed','true');
+    document.getElementById('pname').textContent=SETS[k].label;
+    build();lightAt(0,0,0);
+  };
+  palRow.appendChild(b);
+});
+build();
+})();
+</script>
+</body>
+</html>

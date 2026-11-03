@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>THREE HANGINGS &amp; ONE FEATURED — Kunsthal Nord Poster Wall</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Playfair+Display:ital,wght@0,700;1,700&family=Oswald:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --wall:#e9e7e2; --wall2:#dcdad4; --ink:#1a1917; --grey:#8a857c;
+    --black:"Archivo Black",system-ui,sans-serif; --deco:"Playfair Display",Georgia,serif;
+    --cond:"Oswald",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  }
+  html,body{height:100%}
+  body{background:#151412;color:var(--ink);font-family:var(--mono);
+    display:flex;flex-direction:column;overflow:hidden}
+
+  /* ── gallery chrome ──────────────────────────────── */
+  .chrome{position:relative;z-index:30;display:flex;justify-content:space-between;align-items:center;
+    gap:20px;padding:14px 24px;border-bottom:1px solid #2c2a26;background:#151412;flex-wrap:wrap}
+  .chrome .id{display:flex;align-items:baseline;gap:12px}
+  .chrome h1{font-family:var(--cond);font-weight:700;font-size:14px;letter-spacing:.24em;text-transform:uppercase;color:#efece4}
+  .chrome .sub{font-size:9px;letter-spacing:.2em;color:#6f6a62;text-transform:uppercase}
+  .chrome .nav{display:flex;gap:7px}
+  .chrome button{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+    background:transparent;border:1px solid #3b3831;color:#b6b1a7;padding:8px 12px;cursor:pointer;transition:all .16s}
+  .chrome button:hover{background:#efece4;color:#151412;border-color:#efece4}
+  .chrome button[aria-pressed=true]{background:#c8451c;border-color:#c8451c;color:#fff}
+
+  /* ── the room ────────────────────────────────────── */
+  .room{position:relative;flex:1;min-height:0;display:grid;grid-template-columns:1.35fr 1fr;
+    background:
+      radial-gradient(120% 90% at 22% 0%,#f2f0eb 0%,#e2dfd8 44%,#c9c5bc 100%);
+    overflow:hidden}
+  .room::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:20;
+    background:radial-gradient(84% 76% at 40% 34%,transparent 34%,rgba(60,55,48,.16) 78%,rgba(40,36,30,.4) 100%)}
+
+  /* spotlights */
+  .spot{position:absolute;top:-14%;width:34%;height:96%;pointer-events:none;z-index:6;
+    background:conic-gradient(from 168deg at 50% 0%,transparent 0 32%,rgba(255,250,236,.44) 47%,
+      rgba(255,250,236,.56) 50%,rgba(255,250,236,.44) 53%,transparent 68% 100%);
+    filter:blur(11px);mix-blend-mode:screen;animation:sway 14s ease-in-out infinite alternate}
+  @keyframes sway{to{transform:translateX(3%) rotate(1.4deg)}}
+  .spot.s1{left:4%} .spot.s2{left:30%;animation-delay:-4s} .spot.s3{left:56%;animation-delay:-8s;width:26%}
+
+  /* floor */
+  .floor{position:absolute;left:0;right:0;bottom:0;height:19%;z-index:4;
+    background:linear-gradient(180deg,rgba(120,112,100,.20),rgba(70,64,56,.44));
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.28)}
+  .floor::after{content:"";position:absolute;inset:0;
+    background:repeating-linear-gradient(90deg,rgba(0,0,0,.05) 0 1px,transparent 1px 78px)}
+
+  /* wall posters */
+  .wall{position:relative;z-index:8;padding:5.5% 3% 0 5%;min-width:0}
+  .hang{position:absolute;transition:transform .42s cubic-bezier(.2,.85,.25,1.1),opacity .3s;will-change:transform}
+  .hang .shadow{position:absolute;inset:14px -20px -26px 20px;background:rgba(46,40,32,.42);
+    filter:blur(20px);transform:skewY(1.6deg);transition:opacity .35s,filter .35s}
+  .hang .wire{position:absolute;left:50%;top:-30px;width:1px;height:30px;background:rgba(40,36,30,.4)}
+  .hang .pin{position:absolute;left:50%;top:-33px;width:6px;height:6px;margin-left:-3px;border-radius:99px;
+    background:radial-gradient(circle at 34% 30%,#fff,#9b948a 60%,#4a453d)}
+  .hang:hover{transform:translateY(-10px) rotate(0deg) scale(1.02)!important;z-index:14}
+  .hang:hover .shadow{opacity:.62;filter:blur(26px)}
+  .hang.gone{opacity:0;pointer-events:none;transform:scale(.9)!important}
+  .hang .frame{position:relative;background:#fbfaf7;padding:9px 9px 11px;
+    box-shadow:0 2px 3px rgba(40,34,26,.3),0 20px 40px -22px rgba(30,25,18,.7)}
+  .hang .art{position:relative;overflow:hidden;background:#fff}
+  .hang .art>*{display:block;width:100%;height:auto}
+  .plaque{position:absolute;left:calc(100% + 26px);top:4px;width:132px;background:#fbfaf7;
+    padding:9px 10px;box-shadow:0 8px 20px -12px rgba(30,25,18,.8);cursor:pointer}
+  .plaque b{display:block;font-family:var(--cond);font-weight:600;font-size:11px;letter-spacing:.1em;
+    text-transform:uppercase;color:#22201c;line-height:1.2}
+  .plaque span{display:block;font-size:8.5px;letter-spacing:.06em;color:#78736a;margin-top:5px;line-height:1.55}
+  .plaque i{display:block;font-style:normal;font-size:8px;letter-spacing:.14em;color:#a8a299;margin-top:6px;
+    border-top:1px solid #e2ded5;padding-top:5px}
+
+  /* featured side */
+  .feature{position:relative;z-index:10;display:flex;flex-direction:column;justify-content:center;
+    align-items:center;padding:24px 24px 24px 6px;min-width:0;gap:16px}
+  .plinth{position:relative;width:100%;max-width:300px}
+  .plinth .top{background:linear-gradient(180deg,#f6f4ef,#e4e1da);height:20px;border-radius:2px;
+    box-shadow:0 4px 10px rgba(40,34,26,.24)}
+  .plinth .body{background:linear-gradient(180deg,#eeeae2,#d8d4cb);height:22px;
+    box-shadow:0 18px 30px -18px rgba(30,25,18,.7)}
+  #slot{position:relative;width:100%;aspect-ratio:100/141;background:#fbfaf7;padding:10px 10px 12px;
+    box-shadow:0 3px 5px rgba(40,34,26,.24),0 34px 60px -26px rgba(28,23,17,.78);
+    transition:box-shadow .3s}
+  #slot .art{position:relative;overflow:hidden;background:#fff;height:100%}
+  #slot .art>*{display:block;width:100%;height:100%}
+
+  #flyer{position:fixed;z-index:60;pointer-events:none;background:#fbfaf7;padding:9px 9px 11px;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,.6);transform-origin:0 0;display:none}
+  #flyer .art{overflow:hidden;background:#fff;height:100%}
+
+  .detail{width:100%;max-width:440px}
+  .detail .top{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
+    border-bottom:1px solid rgba(40,34,26,.22);padding-bottom:9px}
+  .detail h2{font-family:var(--cond);font-weight:700;font-size:clamp(19px,2.3vw,27px);
+    letter-spacing:.02em;text-transform:uppercase;line-height:1}
+  .detail .yr{font-size:10px;letter-spacing:.2em;color:#6d675f}
+  .detail .sub{margin-top:8px;font-size:11.5px;line-height:1.6;color:#5c564e;font-style:italic;
+    font-family:"Playfair Display",serif}
+  .detail p{margin-top:11px;font-size:11.5px;line-height:1.75;color:#484239}
+  .facts{margin-top:13px;display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:rgba(40,34,26,.16);
+    border:1px solid rgba(40,34,26,.16)}
+  .facts div{background:#efebe3;padding:8px 10px}
+  .facts b{display:block;font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:#8b857b;margin-bottom:4px}
+  .facts span{font-size:11px;letter-spacing:.04em;color:#241f19}
+  .pass{margin-top:13px;display:flex;align-items:center;gap:12px;background:#efebe3;padding:10px 12px;
+    border:1px solid rgba(40,34,26,.16)}
+  .pass svg{width:64px;height:64px;flex:none;background:#fff;padding:4px;border:1px solid #ddd8ce}
+  .pass p{font-size:10px;line-height:1.65;color:#5a544b;margin:0}
+  .pass p b{display:block;font-size:11px;color:#241f19;letter-spacing:.1em;margin-bottom:3px}
+
+  .hint{position:absolute;left:24px;bottom:calc(19% + 12px);z-index:12;font-size:9px;letter-spacing:.2em;
+    text-transform:uppercase;color:#7d776e}
+  .ticket{position:absolute;right:24px;bottom:18px;z-index:12;font-size:9px;letter-spacing:.18em;
+    text-transform:uppercase;color:#7d776e;text-align:right;line-height:1.9}
+
+  @media (max-width:1080px){
+    body{overflow:auto}
+    .room{grid-template-columns:1fr;min-height:1180px}
+    .wall{position:relative;height:660px;padding:8% 6% 0}
+    .plaque{display:none}
+    .feature{padding:20px 6% 40px}
+    .plinth{max-width:340px}
+    .detail{max-width:520px}
+  }
+  @media (max-width:620px){
+    .wall{height:820px}
+    .detail .facts{grid-template-columns:1fr}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="chrome">
+  <div class="id">
+    <h1>Kunsthal Nord</h1>
+    <span class="sub">Grafiksalongen &middot; Graphic Design Wing &middot; Gallery 4</span>
+  </div>
+  <div class="nav">
+    <button id="bAll" aria-pressed="true">All Posters</button>
+    <button id="bFeatured">Show Featured</button>
+  </div>
+</header>
+
+<main class="room">
+  <div class="spot s1" aria-hidden="true"></div>
+  <div class="spot s2" aria-hidden="true"></div>
+  <div class="spot s3" aria-hidden="true"></div>
+  <div class="floor" aria-hidden="true"></div>
+
+  <section class="wall" id="wall" aria-label="Poster wall"></section>
+
+  <aside class="feature">
+    <div>
+      <div class="plinth" aria-hidden="true"><div class="top"></div></div>
+      <div id="slot" aria-live="polite"></div>
+      <div class="body" style="background:linear-gradient(180deg,#eeeae2,#d8d4cb);box-shadow:0 18px 30px -18px rgba(30,25,18,.7)"></div>
+    </div>
+    <div class="detail" id="detail"></div>
+  </aside>
+
+  <div class="hint">Click a poster to bring it to the plinth</div>
+  <div class="ticket">Kunsthal Nord<br>Open Tue&ndash;Sun 10&ndash;18 &middot; Closed Mondays<br>Ticket desk, ground floor</div>
+</main>
+
+<div id="flyer" aria-hidden="true"></div>
+
+<noscript><p style="position:fixed;left:0;right:0;bottom:0;z-index:99;background:#151412;color:#cfc9bf;padding:12px 20px;font:12px/1.7 var(--mono);border-top:1px solid #333">Bringing a poster to the plinth needs JavaScript. All four designs, their dates, venues, admission prices and scannable entry codes are already on the wall.</p></noscript>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ── generated QR-like code from a string ─────────── */
+  function qr(seed){
+    var n=21, cell=2, pad=0, out=[], s=0,i,j;
+    for(i=0;i<seed.length;i++) s=(s*31+seed.charCodeAt(i))>>>0;
+    function rnd(){ s=(s*1664525+1013904223)>>>0; return s/4294967296; }
+    function finder(ox,oy){
+      var g="";
+      for(var y=0;y<7;y++)for(var x=0;x<7;x++){
+        var edge=(x===0||y===0||x===6||y===6), core=(x>=2&&x<=4&&y>=2&&y<=4);
+        if(edge||core) g+='<rect x="'+((ox+x)*cell)+'" y="'+((oy+y)*cell)+'" width="'+cell+'" height="'+cell+'"/>';
+      }
+      return g;
+    }
+    for(i=0;i<n;i++)for(j=0;j<n;j++){
+      var inFinder=(i<7&&j<7)||(i<7&&j>=n-7)||(i>=n-7&&j<7);
+      if(inFinder) continue;
+      if(rnd()>0.54) out.push('<rect x="'+(i*cell)+'" y="'+(j*cell)+'" width="'+cell+'" height="'+cell+'"/>');
+    }
+    out.push(finder(0,0)); out.push(finder(n-7,0)); out.push(finder(0,n-7));
+    for(i=0;i<9;i++) out.push('<rect x="'+(n-2-1)*cell+'" y="'+(i*cell)+'" width="'+cell+'" height="'+cell+'"/>');
+    return '<svg viewBox="0 0 '+(n*cell)+' '+(n*cell)+'" fill="#151412" role="img" aria-label="Entry code">'+out.join("")+'</svg>';
+  }
+
+  /* ── the four posters ─────────────────────────────── */
+  function qrBlock(code,color){
+    return '<div style="position:absolute;right:6%;bottom:5%;width:13%;opacity:.92">'+qr(code)+'</div>';
+  }
+  var POSTERS=[
+    { id:"signal", code:"KH-NORD-2025-0117",
+      title:"Signal &amp; Noise", sub:"Photography from the edge of the cable",
+      dates:"14 March &ndash; 2 August 2026", venue:"Gallery 4, Kunsthal Nord",
+      adm:"140 NOK / 90 reduced / Free under 18", yr:"2026",
+      curator:"Curated by Ingrid Halvorsen with Tomás Rey",
+      body:"Ninety-one photographs of the North Sea's data infrastructure: subsea cable landings, weather buoys, the machine rooms of weather stations. The gallery is kept at 40 lux, so the prints were made with a light-stable process developed for the show.",
+      tags:"Silver gelatin, 18 prints, 120 × 160 cm",
+      art:function(){ return ''+
+        '<svg viewBox="0 0 420 592" style="background:#f2efe6">'+
+        '<rect x="0" y="0" width="420" height="592" fill="#f2efe6"/>'+
+        '<rect x="0" y="0" width="420" height="196" fill="#d61f1c"/>'+
+        '<circle cx="286" cy="196" r="132" fill="#151412"/>'+
+        '<rect x="36" y="196" width="348" height="1" fill="#151412"/>'+
+        '<text x="36" y="150" font-family="Archivo Black" font-size="72" fill="#f2efe6" letter-spacing="-3">SIGNAL</text>'+
+        '<text x="36" y="300" font-family="Archivo Black" font-size="72" fill="#151412" letter-spacing="-3">&amp; NOISE</text>'+
+        '<rect x="36" y="330" width="88" height="88" fill="#d61f1c"/>'+
+        '<text x="36" y="464" font-family="Oswald" font-weight="400" font-size="17" fill="#151412" letter-spacing="3.2">PHOTOGRAPHY FROM THE EDGE</text>'+
+        '<text x="36" y="488" font-family="Oswald" font-weight="400" font-size="17" fill="#151412" letter-spacing="3.2">OF THE CABLE</text>'+
+        '<line x1="36" y1="506" x2="384" y2="506" stroke="#151412" stroke-width="1"/>'+
+        '<text x="36" y="532" font-family="IBM Plex Mono" font-size="13" fill="#4a463f">14.03 &ndash; 02.08.2026</text>'+
+        '<text x="384" y="532" text-anchor="end" font-family="IBM Plex Mono" font-size="13" fill="#4a463f">GALLERY 4</text>'+
+        '<text x="36" y="560" font-family="IBM Plex Mono" font-size="11" fill="#8a857b">KUNSTHAL NORD &middot; OSLO</text>'+
+        qrBlock("KH-NORD-2025-0117")+
+        '</svg>'; } },
+
+    { id:"gilded", code:"KH-NORD-2026-0342",
+      title:"The Gilded Hour", sub:"Nordic metalwork, 1919&ndash;1949",
+      dates:"19 September 2026 &ndash; 8 January 2027", venue:"Gallery 2, Kunsthal Nord",
+      adm:"120 NOK / Free on Wednesdays after 17:00", yr:"2027",
+      curator:"Curated by Beate Nyström",
+      body:"Two hundred and forty objects in silver, brass and lacquer, drawn from four private collections. The hang follows a single day of northern light across the room: the gilded hour is the forty minutes before the sun drops below the horizon in December.",
+      tags:"Silver, brass, lacquer &middot; 240 objects",
+      art:function(){ var rays='';
+        for(var i=0;i<13;i++){ var a=(-96+i*8)*Math.PI/180;
+          rays+='<polygon points="210,600 '+ (210+Math.cos(a)*700).toFixed(1)+','+(600+Math.sin(a)*700).toFixed(1)+' '+
+            (210+Math.cos(a+0.075)*700).toFixed(1)+','+(600+Math.sin(a+0.075)*700).toFixed(1)+'" fill="#d9a441" opacity="'+(0.16+i*0.028).toFixed(2)+'"/>'; }
+        var steps='';
+        for(var k=0;k<4;k++) steps+='<rect x="'+(18+k*7)+'" y="'+(18+k*7)+'" width="'+(384-k*14)+'" height="'+(556-k*14)+'" fill="none" stroke="#d9a441" stroke-width="'+(1.6-k*0.3)+'" opacity=".9"/>';
+        return '<svg viewBox="0 0 420 592" style="background:#0f2f31">'+
+        '<rect width="420" height="592" fill="#0f2f31"/>'+ rays +
+        '<circle cx="210" cy="392" r="96" fill="none" stroke="#e8c98a" stroke-width="2.4" opacity=".95"/>'+
+        '<circle cx="210" cy="392" r="76" fill="#e8c98a" opacity=".2"/>'+
+        steps+
+        '<text x="210" y="118" text-anchor="middle" font-family="Playfair Display" font-weight="700" font-size="46" fill="#e8c98a" letter-spacing="3">THE</text>'+
+        '<text x="210" y="176" text-anchor="middle" font-family="Playfair Display" font-weight="700" font-size="46" fill="#e8c98a" letter-spacing="3">GILDED</text>'+
+        '<text x="210" y="234" text-anchor="middle" font-family="Playfair Display" font-style="italic" font-weight="700" font-size="46" fill="#e8c98a" letter-spacing="3">Hour</text>'+
+        '<line x1="120" y1="256" x2="300" y2="256" stroke="#e8c98a" stroke-width="1.2"/>'+
+        '<text x="210" y="284" text-anchor="middle" font-family="IBM Plex Mono" font-size="13" fill="#9fb8b4" letter-spacing="4">NORDIC METALWORK</text>'+
+        '<text x="210" y="306" text-anchor="middle" font-family="IBM Plex Mono" font-size="13" fill="#9fb8b4" letter-spacing="4">1919 &ndash; 1949</text>'+
+        '<text x="210" y="546" text-anchor="middle" font-family="IBM Plex Mono" font-size="12" fill="#7d9b99" letter-spacing="3">19.09.26 &ndash; 08.01.27 &middot; GALLERY 2</text>'+
+        qrBlock("KH-NORD-2026-0342")+
+        '</svg>'; } },
+
+    { id:"machina", code:"KH-NORD-2025-0908",
+      title:"Machina", sub:"Constructivist poster fight, 1919&ndash;1933",
+      dates:"2 May &ndash; 29 September 2026", venue:"Gallery 4, Kunsthal Nord",
+      adm:"110 NOK / 60 students", yr:"2026",
+      curator:"Curated by the Poster Conservation Studio",
+      body:"A confrontation. Two hundred and six lithographs hung in opposing pairs, each pair an argument between a workshop and its rival. The room reads left to right as a single sentence that never finishes.",
+      tags:"Lithograph &amp; letterpress &middot; 206 sheets",
+      art:function(){
+        return '<svg viewBox="0 0 420 592" style="background:#eae3d2">'+
+        '<rect width="420" height="592" fill="#eae3d2"/>'+
+        '<polygon points="0,0 420,0 420,300 0,120" fill="#151412"/>'+
+        '<polygon points="0,120 420,300 420,380 0,200" fill="#c8201a"/>'+
+        '<circle cx="118" cy="440" r="86" fill="#c8201a"/>'+
+        '<polygon points="238,392 300,330 300,478 238,540" fill="#151412"/>'+
+        '<g transform="rotate(-27 210 300)">'+
+        '<text x="210" y="300" text-anchor="middle" font-family="Oswald" font-weight="700" font-size="96" fill="#eae3d2" letter-spacing="-2">MACHINA</text>'+
+        '<text x="210" y="336" text-anchor="middle" font-family="Oswald" font-weight="400" font-size="18" fill="#eae3d2" letter-spacing="9">1919 &ndash; 1933</text>'+
+        '</g>'+
+        '<rect x="36" y="556" width="120" height="3" fill="#151412"/>'+
+        '<text x="36" y="540" font-family="Oswald" font-weight="400" font-size="15" fill="#151412" letter-spacing="2.4">POSTER FIGHT</text>'+
+        '<text x="384" y="540" text-anchor="end" font-family="IBM Plex Mono" font-size="12" fill="#5a554c">02.05 &ndash; 29.09.26</text>'+
+        qrBlock("KH-NORD-2025-0908")+
+        '</svg>'; } },
+
+    { id:"dusk", code:"KH-NORD-2026-0510",
+      title:"Dusk, Daily", sub:"A sequence of 365 sky photographs",
+      dates:"Continuous from 1 January 2026", venue:"North Stair Hall, Kunsthal Nord",
+      adm:"Included with admission", yr:"2026",
+      curator:"Commissioned by Kunsthal Nord, 2026",
+      body:"One frame from the roof of the museum, taken at the same minute each day for a year. The images are printed at 1.4 metres square and hung in a continuous sequence so that the hall itself becomes the calendar.",
+      tags:"Pigment print on aluminium &middot; 365 panels",
+      art:function(){ var dots='';
+        for(var y=0;y<26;y++)for(var x=0;x<26;x++){
+          var d=Math.hypot(x-12.5,y-13);
+          if(d<13) dots+='<circle cx="'+(52+x*12)+'" cy="'+(96+y*12)+'" r="'+(0.6+(1-d/13)*2.6).toFixed(2)+'" fill="#e9e4d8"/>';
+        }
+        return '<svg viewBox="0 0 420 592" style="background:#131512">'+
+        '<rect width="420" height="592" fill="#131512"/>'+
+        '<circle cx="210" cy="240" r="150" fill="#1c201c"/>'+ dots +
+        '<rect x="0" y="392" width="420" height="1.4" fill="#4d5a4a"/>'+
+        '<text x="36" y="440" font-family="Oswald" font-weight="300" font-size="58" fill="#e9e4d8" letter-spacing="1">DUSK,</text>'+
+        '<text x="36" y="500" font-family="Oswald" font-weight="300" font-size="58" fill="#e9e4d8" letter-spacing="1">DAILY</text>'+
+        '<line x1="36" y1="524" x2="384" y2="524" stroke="#4d5a4a" stroke-width="1"/>'+
+        '<text x="36" y="548" font-family="IBM Plex Mono" font-size="12" fill="#8d938a" letter-spacing="1.6">365 FRAMES &middot; ONE MINUTE &middot; NORTH STAIR HALL</text>'+
+        qrBlock("KH-NORD-2026-0510")+
+        '</svg>'; } }
+  ];
+
+  var wall=document.getElementById("wall"), slot=document.getElementById("slot"),
+      detail=document.getElementById("detail"), flyer=document.getElementById("flyer");
+  var featured=3;
+
+  function artHTML(p){ return '<div class="art">'+p.art()+'</div>'; }
+
+  /* hang three posters on the wall */
+  var spots=[
+    {x:"4%",  y:"2%",  w:"25%", rot:-1.1},
+    {x:"34%", y:"14%", w:"27%", rot:0.8},
+    {x:"66%", y:"3%",  w:"23%", rot:-0.6}
+  ];
+  var hangs=[];
+  spots.forEach(function(s,i){
+    var p=POSTERS[i], el=document.createElement("article");
+    el.className="hang"; el.dataset.i=i;
+    el.style.left=s.x; el.style.top=s.y; el.style.width=s.w;
+    el.style.transform="rotate("+s.rot+"deg)";
+    el.innerHTML='<div class="shadow"></div><div class="wire"></div><div class="pin"></div>'+
+      '<div class="frame">'+artHTML(p)+'</div>'+
+      '<div class="plaque" role="button" tabindex="0" aria-label="Bring '+p.title.replace(/&amp;/g,"and")+' to the plinth">'+
+        '<b>'+p.title+'</b><span>'+p.sub+'</span><i>'+p.dates+'</i></div>';
+    wall.appendChild(el); hangs.push(el);
+  });
+
+  function renderDetail(i){
+    var p=POSTERS[i];
+    detail.innerHTML='<div class="top"><h2>'+p.title+'</h2><span class="yr">'+p.yr+'</span></div>'+
+      '<div class="sub">'+p.sub+'</div>'+
+      '<p>'+p.body+'</p>'+
+      '<div class="facts">'+
+        '<div><b>Dates</b><span>'+p.dates+'</span></div>'+
+        '<div><b>Venue</b><span>'+p.venue+'</span></div>'+
+        '<div><b>Admission</b><span>'+p.adm+'</span></div>'+
+        '<div><b>Works</b><span>'+p.tags+'</span></div>'+
+      '</div>'+
+      '<div class="pass">'+qr(p.code)+
+        '<p><b>Entry code '+p.code+'</b>'+p.curator+'. Scan at the door or collect a printed ticket at the desk; the code is live from 30 minutes before opening.</p></div>';
+  }
+
+  function setFeatured(i){
+    featured=i; renderDetail(i);
+    slot.innerHTML='<div class="frame" style="padding:0;background:transparent;box-shadow:none">'+
+      artHTML(POSTERS[i])+'</div>';
+  }
+  setFeatured(3);
+
+  /* ── FLIP: wall poster → plinth ────────────────────── */
+  function bring(i){
+    var hangEl=hangs[i], p=POSTERS[i];
+    var art=hangEl.querySelector(".art");
+    var from=art.getBoundingClientRect();
+    flyer.innerHTML=artHTML(p);
+    var to=slot.getBoundingClientRect();
+    flyer.style.display="block";
+    flyer.style.left=from.left+"px"; flyer.style.top=from.top+"px";
+    flyer.style.width=from.width+"px"; flyer.style.height=from.height+"px";
+    flyer.querySelector(".art").style.height="100%";
+    var pad=9;
+    var sx=from.width/(to.width-pad*2), sy=from.height/(to.height-pad*2), s=Math.min(sx,sy);
+    var tx=to.left+pad-from.left;
+    var ty=to.top+pad-from.top;
+    flyer.style.transition="none";
+    flyer.style.transform="translate(0,0) scale(1)";
+    flyer.getBoundingClientRect();
+    flyer.style.transition="transform .78s cubic-bezier(.65,0,.2,1)";
+    flyer.style.transform="translate("+tx+"px,"+ty+"px) scale("+s+")";
+    hangEl.classList.add("gone");
+    setTimeout(function(){
+      setFeatured(i);
+      flyer.style.display="none";
+    },700);
+  }
+  hangs.forEach(function(el,i){
+    el.addEventListener("click",function(e){ e.stopPropagation(); if(el.classList.contains("gone"))return; bring(i); });
+    el.querySelector(".plaque").addEventListener("keydown",function(e){
+      if(e.key==="Enter"||e.key===" ") bring(i);
+    });
+  });
+
+  document.getElementById("bAll").addEventListener("click",function(){
+    this.setAttribute("aria-pressed","true");
+    document.getElementById("bFeatured").setAttribute("aria-pressed","false");
+    hangs.forEach(function(el){el.classList.remove("gone");});
+    setFeatured(3);
+  });
+  document.getElementById("bFeatured").addEventListener("click",function(){
+    this.setAttribute("aria-pressed","true");
+    document.getElementById("bAll").setAttribute("aria-pressed","false");
+    hangs.forEach(function(el,i){ el.classList.toggle("gone", i===featured); });
+    setFeatured(featured);
+  });
+  window.addEventListener("keydown",function(e){
+    if(e.key>="1"&&e.key<="4"){ var i=+e.key-1; if(i<3) bring(i); else { hangs.forEach(function(el){el.classList.remove("gone");}); setFeatured(3);} }
+  });
+})();
+</script>
+</body>
+</html>

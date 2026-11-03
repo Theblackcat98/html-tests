@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Screening No. 12 — Raking Light, a halftone portrait in seven screens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;1,500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   SCREENING No.12 — HALFTONE DOT PORTRAIT
+   Technique: eight SVG <pattern> dot screens at rotating angles,
+   composited through radial-gradient light masks. No bitmaps.
+   Skeleton: press sheet (left) + press console (right).
+   ============================================================ */
+:root{
+  --paper:#f3ede1; --paper2:#e8dfcd; --ink:#1a1a1c; --spot:#c8452e;
+  --pitch:9px; --mi:0.55; --rule:132; --lx:52%; --ly:34%;
+  --mono:"IBM Plex Mono","SFMono-Regular",Menlo,Consolas,monospace;
+  --serif:"Playfair Display","Iowan Old Style",Georgia,"Times New Roman",serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:#17161a;color:#e8e2d6;font-family:var(--mono);
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;min-height:100dvh;
+}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- grain over the whole bench ---------- */
+.grain{position:fixed;inset:0;pointer-events:none;z-index:60;opacity:.05;mix-blend-mode:overlay}
+.grain svg{width:100%;height:100%}
+
+/* ---------- masthead ---------- */
+.mast{
+  position:fixed;top:0;left:0;right:0;z-index:40;
+  display:flex;justify-content:space-between;align-items:baseline;gap:1rem;
+  padding:.85rem clamp(1rem,3vw,2.2rem);
+  border-bottom:1px solid rgba(232,226,214,.14);
+  background:linear-gradient(#141317,#14131770);backdrop-filter:blur(6px);
+  font-size:.6rem;letter-spacing:.24em;text-transform:uppercase;color:rgba(232,226,214,.62);
+}
+.mast b{color:#f3ede1;letter-spacing:.34em;font-weight:600}
+.mast .mid{color:var(--spot)}
+
+/* ---------- layout ---------- */
+.bench{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:0;min-height:100dvh;padding-top:44px}
+@media (max-width:960px){.bench{grid-template-columns:1fr}}
+
+/* ---------- the printed sheet ---------- */
+.stage{position:relative;display:flex;align-items:center;justify-content:center;padding:clamp(1.2rem,4vw,3.4rem)}
+.sheet{
+  position:relative;width:min(560px,92vw);aspect-ratio:560/760;
+  background:linear-gradient(168deg,var(--paper) 0%,#efe7d8 58%,var(--paper2) 100%);
+  box-shadow:0 40px 80px -30px #000,0 2px 0 rgba(255,255,255,.05) inset,0 0 0 1px #000;
+  padding:0;isolation:isolate;
+}
+.sheet::after{ /* press vignette + plate bite */
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:5;
+  background:radial-gradient(120% 100% at 50% 40%,transparent 55%,rgba(80,64,40,.16) 100%);
+  mix-blend-mode:multiply;
+}
+.sheet svg.port{position:absolute;inset:0;width:100%;height:100%;display:block}
+.sheet svg.port .inkg{mix-blend-mode:normal}
+.sheet[data-mode="duotone"] svg.port .inkg,
+.sheet[data-mode="cmyk"] svg.port .inkg{mix-blend-mode:multiply}
+
+/* registration + trim marks */
+.marks{position:absolute;inset:0;z-index:6;pointer-events:none;color:#2b2a2c}
+.marks i{position:absolute;width:22px;height:22px;margin:-11px 0 0 -11px;opacity:.72}
+.marks i::before,.marks i::after{content:"";position:absolute;background:currentColor}
+.marks i::before{left:50%;top:0;bottom:0;width:1px;transform:translateX(-.5px)}
+.marks i::after{top:50%;left:0;right:0;height:1px;transform:translateY(-.5px)}
+.marks i b{position:absolute;inset:4px;border:1px solid currentColor;border-radius:50%;background:none}
+.marks .tl{left:6.5%;top:3.4%}.marks .tr{left:93.5%;top:3.4%}.marks .bl{left:6.5%;top:96.6%}
+.bar{position:absolute;left:6.5%;right:6.5%;bottom:2.4%;height:12px;z-index:6;display:flex;pointer-events:none}
+.bar span{flex:1}
+.bar span:nth-child(1){background:#00a3e0}.bar span:nth-child(2){background:#e0367c}
+.bar span:nth-child(3){background:#f5c518}.bar span:nth-child(4){background:#111}
+.bar span:nth-child(5){background:linear-gradient(90deg,#00a3e0,#e0367c)}
+.bar span:nth-child(6){background:linear-gradient(90deg,#111,#e8e2d6)}
+
+/* ink spatter */
+.spat{position:absolute;inset:0;z-index:4;pointer-events:none;mix-blend-mode:multiply;opacity:.85}
+
+/* ---------- press console ---------- */
+.console{
+  background:linear-gradient(#1b1a1f,#131216);border-left:1px solid rgba(232,226,214,.12);
+  padding:1.5rem 1.35rem 2.4rem;display:flex;flex-direction:column;gap:1.35rem;
+}
+@media (max-width:960px){.console{border-left:0;border-top:1px solid rgba(232,226,214,.12)}}
+.console h1{font-family:var(--serif);font-style:italic;font-weight:500;font-size:1.32rem;line-height:1.2;color:#f3ede1}
+.console .sub{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:rgba(232,226,214,.45);margin-top:.4rem}
+.group{border-top:1px solid rgba(232,226,214,.14);padding-top:1rem}
+.group>h2{font-size:.58rem;letter-spacing:.26em;text-transform:uppercase;color:var(--spot);margin-bottom:.85rem;font-weight:500}
+.ctl{margin-bottom:1.05rem}
+.ctl label{display:flex;justify-content:space-between;font-size:.63rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(232,226,214,.66);margin-bottom:.5rem}
+.ctl label b{color:#f3ede1;font-weight:500;font-variant-numeric:tabular-nums}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:18px;background:transparent;cursor:ew-resize}
+input[type=range]::-webkit-slider-runnable-track{height:1px;background:rgba(232,226,214,.28)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;margin-top:-6px;background:var(--paper);border:1px solid #000;border-radius:0;transform:rotate(45deg)}
+input[type=range]::-moz-range-track{height:1px;background:rgba(232,226,214,.28)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;background:var(--paper);border:1px solid #000;border-radius:0}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(232,226,214,.16);border:1px solid rgba(232,226,214,.16)}
+.seg button{
+  background:#201f24;color:rgba(232,226,214,.7);border:0;padding:.7rem .2rem;cursor:pointer;
+  font-family:var(--mono);font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;transition:.2s;
+}
+.seg button:hover{color:#fff;background:#2a2930}
+.seg button[aria-pressed=true]{background:var(--paper);color:#17161a}
+.plate{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:.3rem}
+.plate div{aspect-ratio:1;border:1px solid rgba(232,226,214,.2);display:grid;place-items:end;padding:3px;font-size:.5rem;color:rgba(255,255,255,.75)}
+.read{display:grid;grid-template-columns:1fr auto;gap:.3rem .8rem;font-size:.62rem;letter-spacing:.06em}
+.read dt{color:rgba(232,226,214,.45);text-transform:uppercase;letter-spacing:.16em;font-size:.55rem}
+.read dd{text-align:right;color:#f3ede1;font-variant-numeric:tabular-nums}
+.warn{border-left:2px solid var(--spot);padding-left:.7rem;font-size:.6rem;line-height:1.6;color:rgba(232,226,214,.6);letter-spacing:.04em}
+.warn em{color:var(--spot);font-style:normal}
+caption{text-align:left;font-size:.6rem;line-height:1.65;color:rgba(232,226,214,.55);padding-top:.8rem;border-top:1px solid rgba(232,226,214,.14)}
+</style>
+</head>
+<body>
+
+<svg class="grain" aria-hidden="true"><filter id="g1"><feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/></filter><rect width="100%" height="100%" filter="url(#g1)"/></svg>
+
+<header class="mast">
+  <span><b>Hallow Press</b></span>
+  <span class="mid">Screening No. 12 &nbsp;·&nbsp; Rotogravure, 7 screens</span>
+  <span>Sheet 1 of 1 &nbsp;·&nbsp; 560 × 760 mm</span>
+</header>
+
+<main class="bench">
+  <section class="stage" id="stage">
+    <div class="sheet" id="sheet" data-mode="single" role="img" aria-label="A halftone dot portrait of a woman in left profile, printed in seven dot screens">
+      <svg class="port" id="port" viewBox="0 0 560 760" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <!-- light masks: paper-lit centre falling to solid ink at the rim -->
+          <radialGradient id="g0" gradientUnits="userSpaceOnUse" cx="300" cy="250" r="190">
+            <stop offset="0" stop-color="#fff"/><stop offset=".55" stop-color="#8a8a8a"/><stop offset="1" stop-color="#2a2a2a"/>
+          </radialGradient>
+          <radialGradient id="g1" gradientUnits="userSpaceOnUse" cx="300" cy="250" r="270">
+            <stop offset="0" stop-color="#4a4a4a"/><stop offset=".6" stop-color="#2e2e2e"/><stop offset="1" stop-color="#fff"/>
+          </radialGradient>
+          <radialGradient id="g2" gradientUnits="userSpaceOnUse" cx="300" cy="250" r="340">
+            <stop offset="0" stop-color="#3a3a3a"/><stop offset=".7" stop-color="#6d6d6d"/><stop offset="1" stop-color="#fff"/>
+          </radialGradient>
+          <radialGradient id="g3" gradientUnits="userSpaceOnUse" cx="300" cy="250" r="150">
+            <stop offset="0" stop-color="#fff"/><stop offset=".5" stop-color="#cfcfcf"/><stop offset="1" stop-color="#5a5a5a"/>
+          </radialGradient>
+          <mask id="m0" maskUnits="userSpaceOnUse" x="0" y="0" width="560" height="760"><rect width="560" height="760" fill="url(#g0)"/></mask>
+          <mask id="m1" maskUnits="userSpaceOnUse" x="0" y="0" width="560" height="760"><rect width="560" height="760" fill="url(#g1)"/></mask>
+          <mask id="m2" maskUnits="userSpaceOnUse" x="0" y="0" width="560" height="760"><rect width="560" height="760" fill="url(#g2)"/></mask>
+          <mask id="m3" maskUnits="userSpaceOnUse" x="0" y="0" width="560" height="760"><rect width="560" height="760" fill="url(#g3)"/></mask>
+          <mask id="hairM" maskUnits="userSpaceOnUse" x="0" y="0" width="560" height="760">
+            <rect width="560" height="760" fill="#fff"/>
+            <g fill="#000">
+              <path d="M236 206 C300 176 380 186 424 226 C404 206 372 192 340 190 C300 186 262 192 236 206Z"/>
+              <path d="M414 250 C432 296 434 350 424 392 C438 348 440 292 428 244Z"/>
+            </g>
+          </mask>
+          <pattern id="t0" patternUnits="userSpaceOnUse" width="9" height="9" patternTransform="rotate(15)"><circle cx="4.5" cy="4.5" r="1" fill="#1a1a1c"/></pattern>
+          <pattern id="t1" patternUnits="userSpaceOnUse" width="9" height="9" patternTransform="rotate(24)"><circle cx="4.5" cy="4.5" r="1.8" fill="#1a1a1c"/></pattern>
+          <pattern id="t2" patternUnits="userSpaceOnUse" width="9" height="9" patternTransform="rotate(33)"><circle cx="4.5" cy="4.5" r="2.6" fill="#1a1a1c"/></pattern>
+          <pattern id="t3" patternUnits="userSpaceOnUse" width="9" height="9" patternTransform="rotate(42)"><circle cx="4.5" cy="4.5" r="3.2" fill="#1a1a1c"/></pattern>
+          <pattern id="t4" patternUnits="userSpaceOnUse" width="9" height="9" patternTransform="rotate(51)"><circle cx="4.5" cy="4.5" r="3.7" fill="#1a1a1c"/></pattern>
+          <pattern id="t5" patternUnits="userSpaceOnUse" width="9" height="9" patternTransform="rotate(60)"><circle cx="4.5" cy="4.5" r="4.1" fill="#1a1a1c"/></pattern>
+          <pattern id="t6" patternUnits="userSpaceOnUse" width="9" height="9" patternTransform="rotate(69)"><circle cx="4.5" cy="4.5" r="4.4" fill="#1a1a1c"/></pattern>
+          <pattern id="t7" patternUnits="userSpaceOnUse" width="9" height="9" patternTransform="rotate(78)"><rect width="9" height="9" fill="#1a1a1c"/></pattern>
+          <pattern id="hl" patternUnits="userSpaceOnUse" width="9" height="9" patternTransform="rotate(33)"><circle cx="4.5" cy="4.5" r="1.5" fill="#f3ede1"/></pattern>
+          <pattern id="hl2" patternUnits="userSpaceOnUse" width="9" height="9" patternTransform="rotate(42)"><circle cx="4.5" cy="4.5" r="2.1" fill="#f3ede1"/></pattern>
+          <pattern id="spatP" patternUnits="userSpaceOnUse" width="180" height="180"><circle cx="22" cy="40" r="1.6" fill="#1a1a1c"/><circle cx="150" cy="18" r="1" fill="#1a1a1c"/><circle cx="96" cy="120" r="2.1" fill="#1a1a1c"/><circle cx="60" cy="160" r=".8" fill="#1a1a1c"/><circle cx="172" cy="96" r="1.3" fill="#1a1a1c"/><path d="M104 62c3 2 5 5 3 7-3 1-6-2-6-5 0-1 2-3 3-2Z" fill="#1a1a1c"/><path d="M30 96l4-1 1 3-4 1Z" fill="#1a1a1c"/></pattern>
+        </defs>
+
+        <!-- 1 · cloth / shoulder mass -->
+        <g class="inkg"><path fill="url(#t6)" d="M40 760 C60 690 120 656 186 644 C214 640 232 630 240 612 L360 612 C372 640 404 646 434 660 C500 688 530 720 548 760Z"/></g>
+
+        <!-- 2 · neck -->
+        <g class="inkg" mask="url(#m1)">
+          <path fill="url(#t4)" d="M214 646 C204 600 208 558 222 524 C228 510 230 498 228 484 C268 500 344 500 392 466 C388 486 388 504 392 520 C404 560 404 604 394 646Z"/>
+        </g>
+
+        <!-- 3 · skin base -->
+        <g class="inkg" mask="url(#m0)">
+          <path id="face" fill="url(#t2)" d="M322 186 C378 188 428 232 438 294 C446 340 438 378 426 406 C416 430 400 446 392 466 C388 486 388 504 392 520 C348 546 262 546 226 486 C190 476 166 452 156 420 C152 404 150 392 144 384 C140 378 132 376 128 370 C122 362 128 352 134 344 C142 334 150 330 152 322 C154 314 146 310 144 302 C142 294 152 290 156 280 C168 250 200 218 240 202 C266 190 296 184 322 186Z"/>
+        </g>
+
+        <!-- 4 · mid modelling: cheek, jaw, temple -->
+        <g class="inkg" mask="url(#m2)">
+          <path fill="url(#t3)" d="M300 250 C372 254 428 296 434 348 C438 400 412 452 372 476 C330 500 268 494 236 466 C262 430 268 350 300 250Z"/>
+        </g>
+
+        <!-- 5 · core shadow -->
+        <g class="inkg" mask="url(#m1)">
+          <path fill="url(#t5)" d="M356 306 C404 316 430 356 424 400 C418 446 386 476 344 486 C306 494 268 480 252 452 C300 452 344 418 356 306Z"/>
+        </g>
+
+        <!-- 6 · features: socket, brow, nose, lips, ear, jawline -->
+        <g class="inkg" mask="url(#m3)">
+          <path fill="url(#t5)" d="M186 274 C210 262 246 266 262 284 C236 280 208 286 190 300Z"/>
+          <path fill="url(#t6)" d="M196 302 C220 292 246 296 258 310 C232 306 212 314 200 326Z"/>
+          <path fill="url(#t6)" d="M138 336 C150 332 158 330 160 340 C156 352 144 360 132 362 C124 358 130 344 138 336Z"/>
+          <path fill="url(#t6)" d="M150 366 C158 364 166 368 164 374 C158 380 148 378 144 374Z"/>
+          <path fill="url(#t6)" d="M142 388 C152 384 162 388 160 394 C152 398 144 396 140 392Z"/>
+          <path fill="url(#t5)" d="M146 404 C156 402 164 406 162 412 C154 416 146 414 142 410Z"/>
+          <path fill="url(#t5)" d="M156 428 C176 432 190 442 194 456 C178 450 164 442 154 434Z"/>
+          <path fill="url(#t5)" d="M352 300 C370 296 384 310 382 330 C380 350 366 360 354 354 C344 346 346 314 352 300Z"/>
+          <path fill="url(#t6)" d="M358 320 C368 316 374 324 370 334 C366 342 358 340 356 332Z"/>
+        </g>
+
+        <!-- 7 · hair: the near-solid screen, with a rim of paper-light dots -->
+        <g class="inkg">
+          <path fill="url(#t7)" d="M240 202 C266 190 296 184 322 186 C378 188 428 232 438 294 C446 340 438 378 426 406 C416 430 404 444 396 458 C404 400 400 320 372 272 C336 212 288 196 240 202Z"/>
+          <path fill="url(#t6)" d="M404 420 C418 436 428 458 430 486 C444 470 448 434 438 404Z"/>
+          <path fill="url(#t7)" d="M240 202 C224 246 218 300 226 352 C232 404 250 452 262 486 C246 452 236 396 232 340 C228 284 232 238 240 202Z"/>
+        </g>
+        <g class="inkg" mask="url(#hairM)">
+          <path fill="url(#hl)" d="M240 202 C266 190 296 184 322 186 C378 188 428 232 438 294 C446 340 438 378 426 406 C416 430 404 444 396 458 C404 400 400 320 372 272 C336 212 288 196 240 202Z"/>
+        </g>
+
+        <!-- 8 · specular: paper-coloured dots printing light back onto the form -->
+        <g class="inkg" mask="url(#m0)">
+          <path fill="url(#hl)" d="M256 232 C276 216 300 210 320 216 C296 226 274 244 262 268Z"/>
+          <path fill="url(#hl)" d="M300 300 C330 300 356 316 364 340 C338 326 312 324 296 332Z"/>
+          <path fill="url(#hl2)" d="M166 320 C176 316 186 322 188 332 C178 330 168 328 164 324Z"/>
+        </g>
+        <g class="inkg" mask="url(#m3)">
+          <path fill="url(#hl)" d="M186 272 C208 260 244 262 262 280 C238 274 210 280 192 292Z"/>
+        </g>
+
+        <!-- 9 · the sheet tone, and the spatter field -->
+        <g class="inkg"><rect width="560" height="760" fill="url(#spatP)" opacity=".5"/></g>
+      </svg>
+      <div class="marks" aria-hidden="true">
+        <i class="tl"><b></b></i><i class="tr"><b></b></i><i class="bl"><b></b></i>
+      </div>
+      <div class="spat" id="spat" aria-hidden="true"></div>
+      <div class="bar" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+    </div>
+  </section>
+
+  <aside class="console">
+    <div>
+      <h1>Raking Light</h1>
+      <p class="sub">Seven screens · one portrait · Gouraud-do&nbsp;Weber Halftone</p>
+    </div>
+
+    <div class="group">
+      <h2>Screen geometry</h2>
+      <div class="ctl">
+        <label for="pitch">Dot pitch <b id="vPitch">0.23 mm</b></label>
+        <input id="pitch" type="range" min="4" max="20" step="0.5" value="9">
+      </div>
+      <div class="ctl">
+        <label for="angle">Base screen angle <b id="vAngle">15°</b></label>
+        <input id="angle" type="range" min="0" max="60" step="1" value="15">
+      </div>
+      <div class="ctl">
+        <label for="rot">Rosette spread <b id="vRot">9° / screen</b></label>
+        <input id="rot" type="range" min="0" max="22" step="1" value="9">
+      </div>
+      <div class="ctl">
+        <label for="mis">Misregistration <b id="vMis">0.11 mm</b></label>
+        <input id="mis" type="range" min="0" max="3" step="0.1" value="0.6">
+      </div>
+    </div>
+
+    <div class="group">
+      <h2>Ink build</h2>
+      <div class="seg" role="group" aria-label="Ink build">
+        <button data-mode="single" aria-pressed="true">Single</button>
+        <button data-mode="duotone" aria-pressed="false">Duotone</button>
+        <button data-mode="cmyk" aria-pressed="false">CMYK</button>
+      </div>
+      <div class="plate" id="plate" aria-hidden="true"></div>
+    </div>
+
+    <div class="group">
+      <h2>Press readout</h2>
+      <dl class="read">
+        <dt>Screen ruling</dt><dd id="rRuling">133 lpi</dd>
+        <dt>Cell aspect</dt><dd id="rAspect">1 : 1 round</dd>
+        <dt>Dot gain</dt><dd id="rGain">+12 %</dd>
+        <dt>Light azimuth</dt><dd id="rAz">214°</dd>
+        <dt>Light altitude</dt><dd id="rAlt">38°</dd>
+        <dt>Total ink laydown</dt><dd id="rInk">41 %</dd>
+      </dl>
+      <p class="warn" id="warn" style="margin-top:.9rem">
+        <em>Rosette is stable.</em> Push the pitch below 6&nbsp;px and the screens will
+        beat against each other — that beat is the moiré, and it is the one artefact
+        the press cannot hide.
+      </p>
+    </div>
+
+    <caption>
+      The tonal build is painted light-to-dark: paper, then eight screens, each rotated
+      a few degrees from the last. Nothing here is a photograph. The face is a stack of
+      measured shapes, screened on a rosette, and lit by whatever the mouse is pointing at.
+    </caption>
+  </aside>
+</main>
+
+<noscript><p style="padding:2rem;font-family:monospace">This screening requires JavaScript to re-screen the plates. The un-screened portrait is drawn below.</p>
+<p style="padding:0 2rem 2rem;color:#888">Enable scripting to move the light source, change the dot pitch and switch ink builds.</p></noscript>
+
+<script>
+(function(){
+  "use strict";
+  var sheet=document.getElementById('sheet'), stage=document.getElementById('stage');
+  var pats=[].slice.call(document.querySelectorAll('#port defs pattern[id^=t]'));
+  var grads=[].slice.call(document.querySelectorAll('#port defs radialGradient'));
+  var toneR=[0.07,0.17,0.245,0.305,0.36,0.405,0.45,0.5];
+  var INK={
+    single:{p:'#1a1a1c'},
+    duotone:{a:'#1d3b52',b:'#c96a35'},
+    cmyk:['#00a3e0','#2b6fb8','#e0367c','#d8407f','#f2a63b','#f5c518','#c8a415','#1a1a1c']
+  };
+  var S={pitch:9,angle:15,rot:9,mis:0.6,mode:'single',lx:300,ly:250};
+  function hex(c){return[parseInt(c.substr(1,2),16),parseInt(c.substr(3,2),16),parseInt(c.substr(5,2),16)];}
+  function mix(a,b,t){var A=hex(a),B=hex(b);return'rgb('+Math.round(A[0]+(B[0]-A[0])*t)+','+Math.round(A[1]+(B[1]-A[1])*t)+','+Math.round(A[2]+(B[2]-A[2])*t)+')';}
+  function toneColor(i){
+    if(S.mode==='single')return INK.single.p;
+    if(S.mode==='duotone')return mix(INK.duotone.b,INK.duotone.a,i/7);
+    return INK.cmyk[i];
+  }
+  function mis(i){
+    if(S.mode!=='cmyk')return[0,0];
+    var a=(i*2.399+1)*S.mis*1.4, r=(i%3+1)*S.mis*0.8;
+    return[Math.cos(a)*r,Math.sin(a)*r];
+  }
+  function screens(){
+    pats.forEach(function(p,i){
+      var P=S.pitch, c=p.firstElementChild, m=mis(i);
+      p.setAttribute('width',P.toFixed(2)); p.setAttribute('height',P.toFixed(2));
+      p.setAttribute('patternTransform','translate('+m[0].toFixed(2)+' '+m[1].toFixed(2)+') rotate('+(S.angle+i*S.rot)+')');
+      if(c.tagName==='rect'){c.setAttribute('width',P.toFixed(2));c.setAttribute('height',P.toFixed(2));}
+      else{c.setAttribute('cx',(P/2).toFixed(2));c.setAttribute('cy',(P/2).toFixed(2));c.setAttribute('r',(P*toneR[i]).toFixed(2));}
+      c.setAttribute('fill',toneColor(i));
+    });
+    var hlA=document.getElementById('hl'), hlB=document.getElementById('hl2');
+    [hlA,hlB].forEach(function(p,k){
+      p.setAttribute('width',S.pitch.toFixed(2));p.setAttribute('height',S.pitch.toFixed(2));
+      p.setAttribute('patternTransform','rotate('+(S.angle+(k?10:6))+')');
+      var c=p.firstElementChild;c.setAttribute('cx',(S.pitch/2).toFixed(2));c.setAttribute('cy',(S.pitch/2).toFixed(2));
+      c.setAttribute('r',(S.pitch*(k?0.16:0.11)).toFixed(2));
+    });
+  }
+  function light(x,y){
+    S.lx=x;S.ly=y;
+    var R=[150,270,340,190];
+    grads.forEach(function(g,i){g.setAttribute('cx',x.toFixed(1));g.setAttribute('cy',y.toFixed(1));g.setAttribute('r',R[i]);});
+    document.getElementById('rAz').textContent=Math.round((Math.atan2(y-350,x-280)*180/Math.PI+360+180)%360)+'°';
+    document.getElementById('rAlt').textContent=Math.round(88-Math.min(78,y/760*90))+'°';
+  }
+  function readout(){
+    var mmPerUnit=420/560;                 /* the plate is 420 mm across 560 user units */
+    var pitchMM=S.pitch*mmPerUnit;
+    document.getElementById('rRuling').textContent=Math.round(25.4/pitchMM)+' lpi';
+    document.getElementById('rGain').textContent='+'+Math.round(6+S.pitch*0.8)+' %';
+    var ink=0; for(var i=0;i<7;i++) ink+=toneR[i]*toneR[i]*4*Math.PI;
+    document.getElementById('rInk').textContent=Math.round(Math.min(99,ink*38))+' %';
+    document.getElementById('rAspect').textContent=(S.mis>0.2?'off-register':'1 : 1 round');
+    var w=document.getElementById('warn');
+    if(S.pitch<6.2){w.innerHTML='<em>Screen ruling is below 150 lpi.</em> At this pitch the rosette beats against the output grid — visible roping and moiré on the left cheek and the hairline.';}
+    else if(S.rot<3){w.innerHTML='<em>Screens are parallel.</em> The rosette has collapsed; ink traps will go solid in the core shadow.';}
+  }
+  function plate(){
+    var el=document.getElementById('plate');el.innerHTML='';
+    for(var i=0;i<8;i++){var d=document.createElement('div');d.style.background=toneColor(i);
+      d.textContent='T'+i;d.style.color=toneColor(i)==='#1a1a1c'?'rgba(255,255,255,.7)':'#111';el.appendChild(d);}
+  }
+  function spatter(){
+    var host=document.getElementById('spat'),h='';var seed=7;
+    function r(){seed=(seed*16807)%2147483647;return seed/2147483647;}
+    for(var i=0;i<170;i++){
+      var x=r()*100,y=r()*100,s=(0.4+r()*2.6);
+      h+='<span style="position:absolute;left:'+x+'%;top:'+y+'%;width:'+(s*2.4)+'px;height:'+(s*2.4)+'px;margin:-'+(s*1.2)+'px 0 0 -'+(s*1.2)+'px;border-radius:'+(r()>.7?'50%':'24%')+';background:rgba(26,26,28,'+(0.18+r()*0.5).toFixed(2)+')"></span>';
+    }
+    for(var j=0;j<7;j++){
+      var a=r()*6.28,d=14+r()*72,rad=3+r()*9;
+      h+='<span style="position:absolute;left:'+(50+Math.cos(a)*d*0.8).toFixed(1)+'%;top:'+(62+Math.sin(a)*d).toFixed(1)+'%;width:'+rad+'px;height:'+rad+'px;margin:-'+(rad/2)+'px 0 0 -'+(rad/2)+'px;border-radius:46% 54% 60% 40%;background:rgba(26,26,28,.5)"></span>';
+    }
+    host.innerHTML=h;
+  }
+  function bind(id,key,fmt,after){
+    var el=document.getElementById(id),out=document.getElementById('v'+id[0].toUpperCase()+id.slice(1));
+    el.addEventListener('input',function(){
+      S[key]=parseFloat(el.value);out.textContent=fmt(S[key]);screens();readout();
+      if(after)after();
+    });
+  }
+  bind('pitch','pitch',function(v){return (v*0.093).toFixed(2)+' mm';});
+  bind('angle','angle',function(v){return v+'°';});
+  bind('rot','rot',function(v){return v+'° / screen';});
+  bind('mis','mis',function(v){return (v*0.18).toFixed(2)+' mm';});
+  [].forEach.call(document.querySelectorAll('.seg button'),function(b){
+    b.addEventListener('click',function(){
+      [].forEach.call(document.querySelectorAll('.seg button'),function(x){x.setAttribute('aria-pressed','false');});
+      b.setAttribute('aria-pressed','true');S.mode=b.dataset.mode;sheet.dataset.mode=S.mode;
+      screens();plate();readout();
+    });
+  });
+  stage.addEventListener('pointermove',function(e){
+    var r=document.getElementById('sheet').getBoundingClientRect();
+    light(560*(e.clientX-r.left)/r.width,760*(e.clientY-r.top)/r.height);
+  });
+  stage.addEventListener('pointerleave',function(){light(300,250);});
+  spatter();screens();plate();readout();light(300,250);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PIN &amp; TAPE — Polaroid Wall</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--warm:#f0b878}
+  html,body{height:100%}
+  body{background:#191512;color:#efe7da;font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+    overflow:hidden;-webkit-user-select:none;user-select:none}
+  .wall{position:absolute;inset:0;overflow:hidden;
+    background:
+      radial-gradient(120% 78% at 50% -14%,rgba(255,214,160,.30),transparent 62%),
+      radial-gradient(58% 42% at 22% 16%,rgba(255,190,120,.14),transparent 70%),
+      radial-gradient(52% 46% at 82% 74%,rgba(255,170,100,.10),transparent 72%),
+      linear-gradient(178deg,#3a3129 0%,#2a231d 46%,#1b1613 100%)}
+  .wall::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.62 0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E")}
+  .plaster{position:absolute;inset:0;pointer-events:none;opacity:.35;
+    background:repeating-linear-gradient(91deg,rgba(255,255,255,.03) 0 2px,transparent 2px 7px),
+      repeating-linear-gradient(89deg,rgba(0,0,0,.05) 0 1px,transparent 1px 23px)}
+  .vig{position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(72% 62% at 50% 34%,transparent 34%,rgba(12,8,5,.5) 76%,rgba(8,5,3,.92) 100%)}
+  .spot{position:absolute;left:50%;top:-16vh;width:78vw;height:96vh;transform:translateX(-50%);pointer-events:none;
+    background:conic-gradient(from 180deg at 50% 0%,transparent 0 22%,rgba(255,208,150,.10) 40%,rgba(255,214,160,.16) 50%,rgba(255,208,150,.10) 60%,transparent 78% 100%);
+    filter:blur(16px)}
+
+  .plate{position:absolute;left:22px;top:20px;z-index:20;max-width:290px}
+  .plate h1{font-family:"Caveat",cursive;font-weight:600;font-size:38px;line-height:.9;color:#f6e7d2}
+  .plate p{font-size:9.5px;line-height:1.7;letter-spacing:.1em;text-transform:uppercase;color:#a2937f;margin-top:8px}
+  .hint{position:absolute;right:22px;bottom:18px;z-index:20;font-size:9.5px;letter-spacing:.18em;
+    text-transform:uppercase;color:#8d7f6d;text-align:right;line-height:2}
+  .count{position:absolute;left:22px;bottom:18px;z-index:20;font-size:9.5px;letter-spacing:.18em;
+    text-transform:uppercase;color:#8d7f6d}
+
+  .ph{position:absolute;width:168px;padding:9px 9px 0;background:linear-gradient(170deg,#fbf7ef,#ece4d4 62%,#ded4c0);
+    box-shadow:0 2px 4px rgba(0,0,0,.34),0 14px 26px -12px rgba(0,0,0,.62);
+    cursor:grab;transition:box-shadow .18s,transform .18s ease-out;will-change:transform}
+  .ph.grab{cursor:grabbing;transition:none;z-index:60;box-shadow:0 6px 10px rgba(0,0,0,.4),0 40px 60px -18px rgba(0,0,0,.8);
+    transform-origin:50% 0}
+  .ph .art{position:relative;width:100%;aspect-ratio:1/1;overflow:hidden;background:#333}
+  .ph .art .lay{position:absolute;inset:0}
+  .ph .art .g{position:absolute;inset:0;mix-blend-mode:overlay;opacity:.42;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23g)'/%3E%3C/svg%3E")}
+  .ph .art .vig{background:radial-gradient(72% 68% at 46% 42%,transparent 40%,rgba(0,0,0,.36) 100%)}
+  .ph .cap{font-family:"Caveat",cursive;font-size:17px;line-height:1.12;color:#2c2620;padding:7px 2px 10px;
+    min-height:38px;word-break:break-word}
+  .ph .tape{position:absolute;width:74px;height:22px;background:rgba(238,226,192,.42);
+    box-shadow:0 1px 3px rgba(0,0,0,.22);mix-blend-mode:normal}
+  .ph .tape::after{content:"";position:absolute;inset:0;
+    background:repeating-linear-gradient(90deg,rgba(255,255,255,.3) 0 2px,transparent 2px 5px)}
+  .ph .pin{position:absolute;width:13px;height:13px;border-radius:99px;top:-6px;
+    background:radial-gradient(circle at 34% 30%,#fff,#c9503f 42%,#6d2318 100%);
+    box-shadow:0 3px 5px rgba(0,0,0,.55),inset 0 -1px 2px rgba(0,0,0,.4)}
+
+  .lb{position:fixed;inset:0;z-index:100;display:none;place-items:center;
+    background:radial-gradient(70% 60% at 50% 40%,rgba(24,17,12,.86),rgba(8,5,3,.97))}
+  .lb.on{display:grid}
+  .lbbox{display:grid;grid-template-columns:auto 280px;gap:30px;align-items:start;max-width:min(900px,92vw)}
+  .bigshot{background:linear-gradient(170deg,#fbf7ef,#e6ddcc);padding:14px 14px 0;transform:rotate(-1.2deg);
+    box-shadow:0 40px 90px -20px #000}
+  .bigshot .art{width:min(58vh,440px);aspect-ratio:1/1;position:relative;overflow:hidden}
+  .bigshot .cap{font-family:"Caveat",cursive;font-size:26px;padding:12px 4px 16px;color:#2c2620;min-height:0}
+  .side h2{font-family:"Caveat",cursive;font-weight:600;font-size:40px;line-height:.95;margin-bottom:4px;color:#f6e7d2}
+  .side .sub{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:#9b8c78;margin-bottom:18px}
+  .exif{display:grid;gap:0}
+  .exif div{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.08);
+    font-size:10.5px;letter-spacing:.06em}
+  .exif div b{font-weight:400;color:#8b7d6b;text-transform:uppercase;letter-spacing:.16em;font-size:9px}
+  .exif div span{color:#e7dccb}
+  .note{font-size:11px;line-height:1.7;color:#a89a86;margin-top:16px;font-style:italic}
+  .close{position:fixed;right:20px;top:16px;z-index:110;font:inherit;font-size:10px;letter-spacing:.2em;
+    text-transform:uppercase;background:transparent;border:1px solid #6a5c4c;color:#e7dccb;padding:8px 14px;
+    border-radius:3px;cursor:pointer}
+  .close:hover{background:#e7dccb;color:#191512}
+  .dots{position:absolute;left:0;right:0;bottom:-2px;display:flex;justify-content:center;gap:6px;z-index:110}
+  .dots button{width:26px;height:3px;border:0;background:rgba(255,255,255,.22);cursor:pointer;padding:0}
+  .dots button.on{background:var(--warm)}
+  @media (max-width:760px){.plate p{display:none}.hint{display:none}}
+</style>
+</head>
+<body>
+
+<div class="wall" id="wall">
+  <div class="plaster"></div>
+  <div class="spot"></div>
+  <div id="photos"></div>
+  <div class="vig"></div>
+</div>
+
+<div class="plate">
+  <h1>Pin &amp; Tape</h1>
+  <p>Sixteen prints from the shoebox, 2019&ndash;2026.<br>Drag to rearrange. Click to look closer.</p>
+</div>
+<div class="count" id="count">16 prints &middot; 2 unpinned</div>
+<div class="hint">drag a print to move it<br>neighbours step aside<br>click to enlarge &middot; esc to close</div>
+
+<div class="lb" id="lb">
+  <button class="close" id="close">Close</button>
+  <div class="lbbox">
+    <div class="bigshot">
+      <div class="art" id="lbArt"></div>
+      <div class="cap" id="lbCap"></div>
+    </div>
+    <div class="side">
+      <h2 id="lbTitle"></h2>
+      <div class="sub" id="lbSub"></div>
+      <div class="exif" id="lbExif"></div>
+      <p class="note" id="lbNote"></p>
+    </div>
+  </div>
+  <div class="dots" id="dots"></div>
+</div>
+
+<script>
+const SHOTS = [
+  { t: "Pier, 4:12am", c: "the pier at half four", k: "horizon", p: 0, w: 168, rot: -3.2,
+    cam: "Pentax MX", lens: "SMC 50mm f/1.7", ex: "f/2 &middot; 1/15s &middot; ISO 400", film: "Kodak ColorPlus 200",
+    loc: "Dungeness, Sussex", date: "14 Oct 2021", n: "Metered for the sky, which was wrong, and I left it that way." },
+  { t: "Greenhouse, Tuesday", c: "mum's greenhouse, tuesday", k: "grid", p: 1, w: 152, rot: 2.6,
+    cam: "Canon AE-1", lens: "FD 50mm f/1.4", ex: "f/5.6 &middot; 1/60s &middot; ISO 200", film: "Fujicolor Superia 200",
+    loc: "Norwich", date: "9 Jun 2020", n: "Forty-two tomatoes and one ladder that has never moved." },
+  { t: "Half a stop under", c: "half a stop under, oops", k: "bloom", p: 2, w: 174, rot: -1.4,
+    cam: "Leica M6", lens: "Summicron-M 35mm", ex: "f/2 &middot; 1/250s &middot; ISO 400", film: "Portra 400",
+    loc: "Copenhagen", date: "2 Apr 2024", n: "The light went and I panicked. Kept it anyway." },
+  { t: "The long way home", c: "took the long way round", k: "strata", p: 3, w: 160, rot: 3.4,
+    cam: "Nikon F3", lens: "Nikkor 85mm f/2", ex: "f/4 &middot; 1/125s &middot; ISO 160", film: "Ektar 100",
+    loc: "Wicklow", date: "19 Sep 2022", n: "Eleven extra minutes to avoid the roadworks. Worth every one." },
+  { t: "Kitchen, 2am", c: "kettle on, no idea what for", k: "bloom", p: 4, w: 156, rot: -4.1,
+    cam: "Olympus OM-2", lens: "Zuiko 50mm f/1.8", ex: "f/1.8 &middot; 1/30s &middot; ISO 800", film: "HP5+",
+    loc: "At home", date: "3 Feb 2023", n: "Push processed badly and it does not matter." },
+  { t: "Snow on the shed", c: "first snow on the shed", k: "strata", p: 5, w: 170, rot: 1.8,
+    cam: "Yashica Mat-124G", lens: "Yashinon 80mm f/3.5", ex: "f/11 &middot; 1/60s &middot; ISO 100", film: "Gold 200",
+    loc: "Galashiels", date: "29 Jan 2026", n: "Focus set to infinity on a cold morning, which mostly worked." },
+  { t: "Bus stop, rain", c: "waiting, obviously", k: "waves", p: 6, w: 150, rot: -2.2,
+    cam: "Rolleiflex 2.8F", lens: "Planar 80mm f/2.8", ex: "f/4 &middot; 1/125s &middot; ISO 200", film: "Delta 3200",
+    loc: "Sheffield, 71 bus", date: "8 Nov 2023", n: "Fourteen minutes. Got on the wrong one afterwards." },
+  { t: "Sheep, indifferent", c: "completely uninterested", k: "orbit", p: 7, w: 162, rot: 2.1,
+    cam: "Hasselblad 500C/M", lens: "Sonnar 150mm f/4", ex: "f/5.6 &middot; 1/250s &middot; ISO 100", film: "Ektachrome E100",
+    loc: "Cumbria", date: "11 May 2025", n: "Eleven sheep. One looked. The other ten were unimpressed." },
+  { t: "Third coffee", c: "number three", k: "arc", p: 8, w: 146, rot: -3.8,
+    cam: "Contax T2", lens: "Sonnar 38mm f/2.8", ex: "f/2.8 &middot; 1/30s &middot; ISO 800", film: "T-Max 400",
+    loc: "A cafe with no chairs", date: "17 Jul 2024", n: "The autofocus hunted for eight seconds. This is the best of the run." },
+  { t: "Nobody's umbrella", c: "somebody dropped this", k: "fold", p: 9, w: 164, rot: 3.9,
+    cam: "Mamiya 7", lens: "Mamiya 80mm f/4", ex: "f/5.6 &middot; 1/60s &middot; ISO 400", film: "Portra 800",
+    loc: "Bologna", date: "5 Sep 2023", n: "Left it on the post box. Two weeks later it was gone." },
+  { t: "The last lido", c: "closed for good", k: "horizon", p: 10, w: 158, rot: -1.1,
+    cam: "Pentax 67", lens: "105mm f/2.4", ex: "f/8 &middot; 1/125s &middot; ISO 100", film: "Velvia 50",
+    loc: "Southsea", date: "30 Aug 2021", n: "Fenced off six weeks later. This was the second to last day." },
+  { t: "Cousin's dog", c: "he hates the camera", k: "type", p: 11, w: 152, rot: 2.9,
+    cam: "Canonet QL17", lens: "Canon 40mm f/2.8", ex: "f/2.8 &middot; 1/60s &middot; ISO 400", film: "Kodak Gold",
+    loc: "Wrexham", date: "21 Dec 2022", n: "Took four frames. This is the only one with both eyes." },
+  { t: "Ferry lights", c: "last crossing before they stopped it", k: "waves", p: 12, w: 172, rot: -3.6,
+    cam: "Chinon CP-7m", lens: "50mm f/1.8", ex: "f/1.8 &middot; 1/15s &middot; ISO 400", film: "Cinestill 800T",
+    loc: "Dover&ndash;Calais", date: "12 Jan 2025", n: "Hand held at 1/15. Hand held is doing a lot of work in that sentence." },
+  { t: "Aunt Jo, 1994", c: "aunt jo, whitsun 94", k: "arc", p: 13, w: 150, rot: 1.5,
+    cam: "Kodak Disposable", lens: "Fixed focus 31mm", ex: "f/10 &middot; 1/60s &middot; ISO 200", film: "Built in",
+    loc: "Rhyl", date: "30 May 1994", n: "The only camera in the house. Found in a drawer in 2019." },
+  { t: "Greenhouse door", c: "same door, different year", k: "grid", p: 14, w: 166, rot: -2.9,
+    cam: "Minolta X-700", lens: "MD 58mm f/1.9", ex: "f/2.8 &middot; 1/30s &middot; ISO 800", film: "Delta 100",
+    loc: "Norwich", date: "6 Jun 2026", n: "Nine years after the tomatoes. The door has not moved." },
+  { t: "Home by six", c: "home by six", k: "fold", p: 15, w: 154, rot: 2.4,
+    cam: "Olympus OM-1n", lens: "Zuiko 50mm f/1.8", ex: "f/1.8 &middot; 1/8s &middot; ISO 400", film: "HP5+",
+    loc: "Hedgerow", date: "22 Oct 2025", n: "One eighth of a second, four inches from the bramble. Somehow." }
+];
+const PALS = [
+  ["#f6b26b", "#c8543a", "#3a2a3c", "#f3e2c0"], ["#9fd4c4", "#2f6f6b", "#e8d7a8", "#20302f"],
+  ["#ff9fb0", "#c9395f", "#43255c", "#ffe3d2"], ["#c9d8f2", "#6a8fd4", "#2b3a5c", "#f0f4ff"],
+  ["#e8c98a", "#b06a2c", "#3d2a1e", "#f6ead0"], ["#eef3f7", "#9fb6c8", "#48606f", "#ffffff"],
+  ["#f0b878", "#a4522e", "#2e2a3c", "#f7e6c8"], ["#b9d9a0", "#4c7a45", "#26301f", "#eef6e0"]
+];
+
+function rng(seed) { let s = seed; return () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; }; }
+function artHTML(kind, pal, seed) {
+  const r = rng(seed * 7919 + 13);
+  const [a, b, c, d] = PALS[pal % PALS.length];
+  const L = [];
+  const base = "background:" + a;
+  L.push('<div class="lay" style="background:linear-gradient(' + (170 + Math.floor(r() * 40)) + 'deg,' + a + "," + b + ')"></div>');
+  if (kind === "horizon") {
+    L.push('<div class="lay" style="background:linear-gradient(0deg,' + c + ' 0 44%,transparent 44%);opacity:.92"></div>');
+    L.push('<div class="lay" style="left:' + (24 + r() * 34) + '%;top:' + (16 + r() * 14) +
+      '%;width:34%;aspect-ratio:1;border-radius:99px;background:radial-gradient(circle,' + d + ',' + d + ' 62%,transparent 64%);box-shadow:0 0 40px 12px ' + d + '55"></div>');
+    L.push('<div class="lay" style="background:repeating-linear-gradient(0deg,rgba(255,255,255,.16) 0 2px,transparent 2px 9px);top:56%"></div>');
+  } else if (kind === "orbit") {
+    L.push('<div class="lay" style="background:repeating-radial-gradient(circle at 50% 52%,transparent 0 13px,' + c + ' 13px 15px);opacity:.55"></div>');
+    L.push('<div class="lay" style="left:38%;top:40%;width:24%;aspect-ratio:1;border-radius:99px;background:' + d + ';box-shadow:0 0 60px 18px ' + d + '66"></div>');
+    L.push('<div class="lay" style="left:6%;top:8%;width:44%;height:6%;background:' + c + ';transform:rotate(-14deg);opacity:.8"></div>');
+  } else if (kind === "strata") {
+    let y = 0;
+    while (y < 100) {
+      const h = 6 + r() * 22;
+      L.push('<div class="lay" style="top:' + y.toFixed(1) + '%;height:' + h.toFixed(1) + '%;background:' +
+        [b, c, d, a][Math.floor(r() * 4)] + ';opacity:' + (.5 + r() * .5).toFixed(2) + '"></div>');
+      y += h;
+    }
+    L.push('<div class="lay" style="background:linear-gradient(96deg,transparent 42%,' + d + 'aa 42% 47%,transparent 47%)"></div>');
+  } else if (kind === "bloom") {
+    for (let i = 0; i < 7; i++) {
+      const s = 16 + r() * 40, l = r() * 100, t = r() * 100;
+      L.push('<div class="lay" style="left:' + l.toFixed(0) + '%;top:' + t.toFixed(0) + '%;width:' + s.toFixed(0) +
+        '%;aspect-ratio:1;border-radius:99px;filter:blur(' + (2 + r() * 9).toFixed(0) + 'px);background:' + [b, c, d][Math.floor(r() * 3)] + 'cc"></div>');
+    }
+  } else if (kind === "fold") {
+    L.push('<div class="lay" style="background:linear-gradient(150deg,' + c + ' 0 46%,transparent 46.4%)"></div>');
+    L.push('<div class="lay" style="background:linear-gradient(320deg,' + b + ' 0 38%,transparent 38.4%);opacity:.9"></div>');
+    L.push('<div class="lay" style="left:0;top:auto;bottom:0;height:34%;background:linear-gradient(0deg,' + d + '33,transparent)"></div>');
+    L.push('<div class="lay" style="left:14%;top:18%;width:22%;height:44%;background:' + d + ';clip-path:polygon(50% 0,100% 100%,0 100%);opacity:.85"></div>');
+  } else if (kind === "grid") {
+    L.push('<div class="lay" style="background:repeating-linear-gradient(90deg,' + c + ' 0 2px,transparent 2px 15px);opacity:.7"></div>');
+    L.push('<div class="lay" style="background:repeating-linear-gradient(0deg,' + c + ' 0 2px,transparent 2px 15px);opacity:.7"></div>');
+    L.push('<div class="lay" style="left:0;top:' + (30 + r() * 30).toFixed(0) + '%;width:100%;height:16%;background:' + b + ';transform:skewY(' + (-8 + r() * 16).toFixed(0) + 'deg)"></div>');
+    L.push('<div class="lay" style="left:62%;top:8%;width:24%;height:34%;background:' + d + ';opacity:.9"></div>');
+  } else if (kind === "waves") {
+    let s = "";
+    for (let i = 0; i < 9; i++) s += '<div class="lay" style="top:' + (8 + i * 10) + '%;height:3%;background:' +
+      (i % 2 ? d : c) + ';opacity:' + (.4 + r() * .5).toFixed(2) + ';transform:translateX(' + ((r() - .5) * 14).toFixed(1) + '%) skewX(' + ((r() - .5) * 20).toFixed(0) + 'deg)"></div>';
+    L.push('<div class="lay" style="' + base + '"></div>');
+    L.push('<div class="lay" style="left:0;right:0;top:52%;bottom:0;background:linear-gradient(0deg,' + c + ',' + b + ')"></div>');
+    L.push('<div class="lay">' + s + '</div>');
+    L.push('<div class="lay" style="left:' + (20 + r() * 50).toFixed(0) + '%;top:' + (8 + r() * 18).toFixed(0) +
+      '%;width:5%;aspect-ratio:1;border-radius:99px;background:' + d + ';box-shadow:0 0 22px 6px ' + d + 'aa"></div>');
+  } else if (kind === "arc") {
+    L.push('<div class="lay" style="background:' + c + '"></div>');
+    L.push('<div class="lay" style="left:14%;top:22%;width:72%;aspect-ratio:1;border-radius:99px;background:' + a + '"></div>');
+    L.push('<div class="lay" style="left:26%;top:34%;width:48%;aspect-ratio:1;border-radius:99px;background:' + b + '"></div>');
+    L.push('<div class="lay" style="left:38%;top:46%;width:24%;aspect-ratio:1;border-radius:99px;background:' + d + '"></div>');
+    L.push('<div class="lay" style="background:linear-gradient(180deg,transparent 58%,' + c + 'cc 58%)"></div>');
+  } else {
+    L.push('<div class="lay" style="background:' + b + '"></div>');
+    L.push('<div class="lay" style="left:16%;top:18%;font-family:Georgia,serif;font-size:' + (78 + r() * 40).toFixed(0) +
+      'px;line-height:1;color:' + d + ';display:flex;align-items:center;justify-content:center">R</div>');
+    L.push('<div class="lay" style="left:52%;top:44%;font-family:Georgia,serif;font-size:' + (54 + r() * 30).toFixed(0) +
+      'px;line-height:1;color:' + a + ';opacity:.85">&amp;</div>');
+  }
+  L.push('<div class="lay vig"></div><div class="lay g"></div>');
+  return L.join("");
+}
+
+const wall = document.getElementById("wall"), host = document.getElementById("photos");
+const items = [];
+function place(i) {
+  const s = SHOTS[i], r = rng(i * 131 + 7);
+  const cols = 4, rows = 4;
+  const col = i % cols, row = Math.floor(i / cols);
+  return {
+    nx: .1 + col * .24 + r() * .07, ny: .12 + row * .225 + r() * .05,
+    x: 0, y: 0, rot: s.rot + (r() - .5) * 2, w: s.w
+  };
+}
+SHOTS.forEach((s, i) => {
+  const el = document.createElement("div");
+  el.className = "ph";
+  el.style.width = s.w + "px";
+  const p = place(i);
+  const tape = i % 3 === 0;
+  el.innerHTML =
+    (i % 5 === 0 ? '<div class="pin" style="left:50%;margin-left:-6px"></div>' : "") +
+    (tape ? '<div class="tape" style="left:50%;top:-11px;margin-left:-37px;transform:rotate(' + ((i % 2) ? -4 : 3) + 'deg)"></div>' : "") +
+    '<div class="art">' + artHTML(s.k, s.p, i + 1) + '</div>' +
+    '<div class="cap">' + s.c + '</div>';
+  host.appendChild(el);
+  items.push({ el, s, i, ...p, h: 0 });
+});
+function measure() {
+  const W = wall.clientWidth, H = wall.clientHeight;
+  items.forEach(o => {
+    o.el.style.left = "0px"; o.el.style.top = "0px";
+    o.h = o.el.offsetHeight;
+    o.x = o.nx * (W - o.w - 40) + 20;
+    o.y = o.ny * (H - o.h - 20) + 10;
+    o.el.style.transform = "translate(" + o.x.toFixed(1) + "px," + o.y.toFixed(1) + "px) rotate(" + o.rot.toFixed(2) + "deg)";
+  });
+}
+function draw(o) {
+  o.el.style.transform = "translate(" + o.x.toFixed(1) + "px," + o.y.toFixed(1) + "px) rotate(" + o.rot.toFixed(2) + "deg)";
+}
+let drag = null, suppressClick = false;
+function overlaps(a, b) {
+  return a.x < b.x + b.w - 8 && a.x + a.w > b.x + 8 && a.y < b.y + b.h - 8 && a.y + a.h > b.y + 8;
+}
+function separate(mover) {
+  for (let pass = 0; pass < 3; pass++) {
+    for (const o of items) {
+      if (o === mover) continue;
+      if (!overlaps(mover, o)) continue;
+      const ox = (mover.w + o.w) / 2 - Math.abs((mover.x + mover.w / 2) - (o.x + o.w / 2));
+      const oy = (mover.h + o.h) / 2 - Math.abs((mover.y + mover.h / 2) - (o.y + o.h / 2));
+      if (ox < oy) o.x += (mover.x + mover.w / 2 > o.x + o.w / 2 ? 1 : -1) * (ox + 3);
+      else o.y += (mover.y + mover.h / 2 > o.y + o.h / 2 ? 1 : -1) * (oy + 3);
+      const W = wall.clientWidth, H = wall.clientHeight;
+      o.x = Math.max(4, Math.min(W - o.w - 4, o.x));
+      o.y = Math.max(4, Math.min(H - o.h - 4, o.y));
+      draw(o);
+    }
+  }
+}
+items.forEach(o => {
+  o.el.addEventListener("pointerdown", e => {
+    e.stopPropagation();
+    drag = o; o.moved = false; o.sx = e.clientX; o.sy = e.clientY; o.ox = o.x; o.oy = o.y;
+    o.el.classList.add("grab");
+    o.el.setPointerCapture(e.pointerId);
+  });
+  o.el.addEventListener("pointermove", e => {
+    if (drag !== o) return;
+    if (Math.abs(e.clientX - o.sx) + Math.abs(e.clientY - o.sy) > 4) o.moved = true;
+    o.x = o.ox + e.clientX - o.sx;
+    o.y = o.oy + e.clientY - o.sy;
+    draw(o); separate(o);
+  });
+  const end = () => {
+    if (drag !== o) return;
+    drag = null; o.el.classList.remove("grab");
+    if (o.moved) { suppressClick = true; setTimeout(() => suppressClick = false, 90); }
+  };
+  o.el.addEventListener("pointerup", end);
+  o.el.addEventListener("pointercancel", end);
+  o.el.addEventListener("click", e => {
+    e.stopPropagation();
+    if (suppressClick) return;
+    open(o.i);
+  });
+});
+
+const lb = document.getElementById("lb");
+let cur = 0;
+function open(i) {
+  cur = i;
+  const s = SHOTS[i];
+  document.getElementById("lbArt").innerHTML = artHTML(s.k, s.p, i + 1);
+  document.getElementById("lbCap").textContent = s.c;
+  document.getElementById("lbTitle").textContent = s.t;
+  document.getElementById("lbSub").textContent = s.loc + " \u00b7 " + s.date;
+  const rows = [["Camera", s.cam], ["Lens", s.lens], ["Exposure", s.ex], ["Film", s.film]];
+  document.getElementById("lbExif").innerHTML = rows.map(r =>
+    "<div><b>" + r[0] + "</b><span>" + r[1] + "</span></div>").join("");
+  document.getElementById("lbNote").textContent = s.n;
+  const d = document.getElementById("dots");
+  d.innerHTML = SHOTS.map((_, j) => '<button data-j="' + j + '" class="' + (j === i ? "on" : "") + '"></button>').join("");
+  d.querySelectorAll("button").forEach(b => b.onclick = () => open(+b.dataset.j));
+  lb.classList.add("on");
+}
+function close() { lb.classList.remove("on"); }
+document.getElementById("close").onclick = close;
+lb.addEventListener("click", e => { if (e.target === lb) close(); });
+addEventListener("keydown", e => {
+  if (!lb.classList.contains("on")) return;
+  if (e.key === "Escape") close();
+  if (e.key === "ArrowRight") open((cur + 1) % SHOTS.length);
+  if (e.key === "ArrowLeft") open((cur + SHOTS.length - 1) % SHOTS.length);
+});
+measure();
+addEventListener("resize", measure);
+</script>
+</body>
+</html>

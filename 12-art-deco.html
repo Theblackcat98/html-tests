@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MAISON VERRE — COLONNE IMPÉRIALE, Paris 1927</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;700&family=Poiret+One&family=Josefin+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --emerald:#04211a;
+    --emerald2:#0a3a2d;
+    --emerald3:#0f4a39;
+    --oxblood:#4d1119;
+    --oxblood2:#731d25;
+    --gold:#e3c384;
+    --gold-hi:#fdf0cf;
+    --gold-lo:#8b6320;
+    --gold-dim:rgba(227,195,132,.42);
+    --bone:#f3e8d2;
+    --fp:50%;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:
+      radial-gradient(70% 55% at 50% 24%, #0d4636 0%, #072e24 42%, var(--emerald) 78%, #021711 100%);
+    color:var(--gold);
+    font-family:"Josefin Sans","Helvetica Neue",Arial,sans-serif;
+    display:grid; place-items:center; overflow:hidden;
+  }
+  /* etched velvet texture */
+  .weave{
+    position:fixed; inset:0; z-index:1; pointer-events:none; opacity:.28; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='v'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' seed='21'/%3E%3CfeColorMatrix values='0 0 0 0 0.85 0 0 0 0 0.72 0 0 0 0 0.45 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23v)'/%3E%3C/svg%3E");
+  }
+  .rays{
+    position:fixed; inset:-20%; z-index:1; pointer-events:none; mix-blend-mode:screen; opacity:.16;
+    background:conic-gradient(from 200deg at 50% 8%,
+      rgba(253,240,207,0) 0deg, rgba(253,240,207,.55) 8deg, rgba(253,240,207,0) 16deg,
+      rgba(253,240,207,0) 90deg, rgba(253,240,207,.45) 98deg, rgba(253,240,207,0) 106deg,
+      rgba(253,240,207,0) 180deg, rgba(253,240,207,.5) 188deg, rgba(253,240,207,0) 196deg,
+      rgba(253,240,207,0) 270deg, rgba(253,240,207,.4) 278deg, rgba(253,240,207,0) 286deg);
+    animation:rayturn 90s linear infinite;
+  }
+  @keyframes rayturn{to{transform:rotate(360deg)}}
+
+  .sheet{
+    position:relative; z-index:4; width:min(1080px,94vw);
+    padding:clamp(18px,2.6vw,38px) clamp(20px,3vw,52px);
+    text-align:center;
+  }
+  /* double rule */
+  .rule{
+    height:5px; border-top:1px solid var(--gold); border-bottom:1px solid var(--gold);
+    position:relative; margin:0 auto;
+  }
+  .rule::after{
+    content:""; position:absolute; left:50%; top:50%; width:7px; height:7px;
+    transform:translate(-50%,-50%) rotate(45deg);
+    background:linear-gradient(135deg,var(--gold-hi),var(--gold-lo));
+  }
+  .rule.thin{height:1px;border-bottom:none;border-top:1px solid var(--gold-dim)}
+
+  .topline{
+    display:flex; justify-content:space-between; align-items:center; gap:12px;
+    font-size:clamp(8px,.85vw,10.5px); letter-spacing:.5em; text-transform:uppercase;
+    color:var(--gold-dim); margin:12px 0 0;
+  }
+  .topline span:nth-child(2){letter-spacing:.6em;color:var(--gold)}
+
+  .fan{
+    position:absolute; left:50%; top:clamp(30px,7vh,90px); transform:translate(-50%,-50%);
+    width:min(760px,88vw); aspect-ratio:1/1; z-index:-1; opacity:.5; pointer-events:none;
+  }
+  .core{
+    position:relative; z-index:2; padding:clamp(26px,5vh,58px) 0 clamp(14px,2vh,22px);
+  }
+  .eyebrow{
+    font-family:"Poiret One",Didot,"Times New Roman",serif;
+    font-size:clamp(11px,1.15vw,15px); letter-spacing:.66em; text-transform:uppercase;
+    color:var(--gold-dim);
+  }
+  .wordmark{
+    display:block; line-height:.86; margin:clamp(10px,1.6vh,18px) 0 0;
+    font-family:"Poiret One",Didot,"Times New Roman",serif;
+    font-size:clamp(46px,9.4vw,148px); letter-spacing:.08em; text-transform:uppercase;
+  }
+  .wordmark.alt{font-size:clamp(34px,6.6vw,104px); letter-spacing:.14em; margin-top:.06em}
+  /* foil: gradient follows the pointer, shimmer sweeps on its own clock */
+  .foil{
+    position:relative; color:transparent;
+    background-image:linear-gradient(101deg,
+      #7a5620 0%, #c9a253 12%, #fdf0cf 26%, #ffffff 31%, #e3c384 40%,
+      #a97f2f 56%, #e3c384 72%, #fdf0cf 84%, #8b6320 100%);
+    background-size:270% 100%; background-position:var(--fp) 0;
+    -webkit-background-clip:text; background-clip:text;
+    filter:drop-shadow(0 2px 0 rgba(0,0,0,.35));
+  }
+  .foil::after{
+    content:attr(data-t); position:absolute; inset:0; color:transparent;
+    background-image:linear-gradient(101deg,
+      transparent 38%, rgba(255,255,255,.92) 48%, rgba(255,255,255,.25) 54%, transparent 64%);
+    background-size:270% 100%;
+    -webkit-background-clip:text; background-clip:text;
+    animation:sweep 6.5s linear infinite;
+  }
+  @keyframes sweep{
+    0%{background-position:190% 0}
+    100%{background-position:-90% 0}
+  }
+  .sub{
+    font-size:clamp(9px,.95vw,11.5px); letter-spacing:.52em; text-transform:uppercase;
+    color:var(--gold-dim); margin-top:clamp(16px,2.4vh,26px);
+  }
+  .sub b{color:var(--gold); font-weight:400}
+
+  /* stepped symmetric mass */
+  .zigg{
+    position:relative; z-index:2; margin:clamp(20px,3.4vh,40px) auto 0;
+    width:min(660px,86vw); aspect-ratio:5/2;
+  }
+  .zigg i{
+    position:absolute; left:50%; bottom:0; transform:translateX(-50%);
+    background:linear-gradient(180deg,var(--oxblood2),var(--oxblood) 60%,#2c0a10);
+    box-shadow:0 -1px 0 rgba(227,195,132,.5) inset;
+  }
+  .zigg i::after{
+    content:""; position:absolute; left:50%; transform:translateX(-50%);
+    top:-4px; width:100%; height:4px;
+    background:linear-gradient(90deg,transparent,var(--gold),transparent);
+    opacity:.65;
+  }
+  .zigg .a{width:100%;height:26%}
+  .zigg .b{width:74%;height:52%}
+  .zigg .c{width:48%;height:78%}
+  .zigg .d{width:24%;height:100%}
+  .flask{
+    position:absolute; left:50%; top:6%; transform:translateX(-50%); z-index:3;
+    width:clamp(52px,6vw,86px); aspect-ratio:1/2.6; border-radius:10px 10px 6px 6px;
+    background:
+      linear-gradient(96deg, rgba(255,255,255,.5) 0 12%, transparent 34%),
+      linear-gradient(180deg,#d9a441 0%,#8b6320 46%,#3a2509 100%);
+    box-shadow:0 12px 26px -10px rgba(0,0,0,.9), 0 0 0 1px rgba(253,240,207,.5) inset;
+  }
+  .flask::before{
+    content:""; position:absolute; left:32%; right:32%; top:-16%; height:18%;
+    background:linear-gradient(90deg,#c9a253,#fdf0cf,#c9a253);
+    border-radius:3px 3px 0 0;
+  }
+  .flask::after{
+    content:"No 7"; position:absolute; left:0; right:0; top:38%;
+    font-family:"Poiret One",serif; font-size:clamp(8px,.9vw,12px); letter-spacing:.14em;
+    color:#2a1a05; text-align:center;
+  }
+
+  .grid3{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(10px,2vw,26px);
+    margin-top:clamp(18px,3vh,34px); text-align:center;
+  }
+  .grid3 div{border-top:1px solid var(--gold-dim); padding-top:12px}
+  .grid3 h4{
+    font-family:"Poiret One",serif; font-size:clamp(10px,.9vw,12px); font-weight:400;
+    letter-spacing:.34em; text-transform:uppercase; color:var(--gold);
+  }
+  .grid3 p{
+    font-size:clamp(8.5px,.8vw,10.5px); letter-spacing:.16em; line-height:1.9;
+    text-transform:uppercase; color:rgba(227,195,132,.62); margin-top:8px;
+  }
+  .foot{
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    margin-top:clamp(16px,2.6vh,30px); font-size:clamp(7.5px,.75vw,9.5px);
+    letter-spacing:.44em; text-transform:uppercase; color:var(--gold-dim);
+  }
+  .vig{
+    position:fixed; inset:0; z-index:5; pointer-events:none;
+    background:radial-gradient(72% 62% at 50% 44%, transparent 40%, rgba(2,14,10,.72) 100%);
+  }
+  @media (max-width:680px){
+    .grid3{grid-template-columns:1fr; gap:10px}
+    .grid3 p{line-height:1.7}
+    .topline span:first-child,.foot span:first-child{display:none}
+    .zigg{aspect-ratio:5/2.4}
+    .rays{opacity:.1}
+  }
+</style>
+</head>
+<body>
+<div class="weave" aria-hidden="true"></div>
+<div class="rays" aria-hidden="true"></div>
+
+<svg class="fan" id="fan" viewBox="-100 -100 200 200" aria-hidden="true"></svg>
+
+<main class="sheet">
+  <div class="rule"></div>
+  <div class="topline">
+    <span>Established MDCCCLXXII</span>
+    <span>Maison Verre</span>
+    <span>Rue de la Paix 12</span>
+  </div>
+
+  <div class="core">
+    <p class="eyebrow">Extrait de Parfum &nbsp;·&nbsp; Number Seven</p>
+    <h1><span class="foil wordmark" data-t="Colonne">Colonne</span></h1>
+    <h1><span class="foil wordmark alt" data-t="Imp&#233;riale">Imp&#233;riale</span></h1>
+    <p class="sub">Bottled in the cellar of a certain hotel &nbsp;·&nbsp; <b>24 hours of stillness</b></p>
+  </div>
+
+  <div class="zigg" aria-hidden="true">
+    <i class="a"></i><i class="b"></i><i class="c"></i><i class="d"></i>
+    <div class="flask"></div>
+  </div>
+
+  <div class="grid3">
+    <div>
+      <h4>Head</h4>
+      <p>Bergamot of Calabria<br>Neroli &amp; green mandarin</p>
+    </div>
+    <div>
+      <h4>Heart</h4>
+      <p>Turkish rose absolute<br>Jasmin de Grasse, orris</p>
+    </div>
+    <div>
+      <h4>Base</h4>
+      <p>Labdanum ciste<br>Vanilla Bourbon, sandalwood</p>
+    </div>
+  </div>
+
+  <div class="rule thin" style="margin-top:clamp(18px,3vh,32px)"></div>
+  <div class="foot">
+    <span>Verre &amp; Or &mdash; Paris</span>
+    <span>Move the pointer &mdash; the foil follows</span>
+    <span>Volume 30 ml</span>
+  </div>
+</main>
+
+<div class="vig" aria-hidden="true"></div>
+
+<noscript>
+  <p style="position:fixed;left:50%;bottom:10px;transform:translateX(-50%);z-index:9;
+     font:9px/1 'Josefin Sans',Arial,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:#e3c384">
+    Poster shown without the fan motif &mdash; enable JavaScript for the full plate</p>
+</noscript>
+
+<script>
+(function(){
+  var fan = document.getElementById('fan');
+  var NS = 'http://www.w3.org/2000/svg';
+  var g = document.createElementNS(NS,'g');
+  g.setAttribute('stroke','url(#fanG)');
+  g.setAttribute('stroke-width','0.5');
+  g.setAttribute('fill','none');
+  var defs = document.createElementNS(NS,'defs');
+  defs.innerHTML =
+    '<radialGradient id="fanG"><stop offset="0" stop-color="#fdf0cf" stop-opacity=".95"/>' +
+    '<stop offset="1" stop-color="#8b6320" stop-opacity=".35"/></radialGradient>';
+  fan.appendChild(defs); fan.appendChild(g);
+
+  for (var i = 0; i < 24; i++){
+    var a = (i * 7.5 - 90) * Math.PI / 180;
+    var a2 = ((i * 7.5) - 90) * Math.PI / 180;
+    var p = document.createElementNS(NS,'path');
+    var r0 = i % 3 === 0 ? 22 : 34, r1 = 96;
+    p.setAttribute('d','M' + (Math.cos(a)*r0).toFixed(2) + ' ' + (Math.sin(a)*r0).toFixed(2) +
+      ' L' + Math.cos(a2).toFixed(2)*r1 + ' ' + Math.sin(a2).toFixed(2)*r1);
+    g.appendChild(p);
+  }
+  [46,62,78,94].forEach(function(r){
+    var c = document.createElementNS(NS,'circle');
+    c.setAttribute('r', r); c.setAttribute('stroke','#e3c384');
+    c.setAttribute('stroke-opacity','.22'); c.setAttribute('fill','none');
+    c.setAttribute('stroke-width','.4'); g.appendChild(c);
+  });
+
+  var root = document.documentElement, idle = true, t = 0;
+  function onMove(e){
+    var w = window.innerWidth, h = window.innerHeight;
+    var x = (e.clientX / w) * 100, y = (e.clientY / h) * 100;
+    root.style.setProperty('--fp', (x * 0.7 + y * 0.3).toFixed(1) + '%');
+    fan.style.transform = 'translate(-50%,-50%) rotate(' + ((x - 50) * 0.06).toFixed(2) + 'deg)';
+    idle = false;
+  }
+  window.addEventListener('pointermove', onMove, {passive:true});
+
+  (function loop(){
+    if (idle){
+      t += 0.004;
+      root.style.setProperty('--fp', (50 + Math.sin(t) * 26).toFixed(1) + '%');
+    }
+    requestAnimationFrame(loop);
+  })();
+
+  document.addEventListener('pointerleave', function(){ idle = true; });
+})();
+</script>
+</body>
+</html>

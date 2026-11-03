@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ice Shelf Section 7 — Field Station Brae 04</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   ICE SHELF SECTION 7 — Field Station Brae 04
+   Technique: layered SVG polygons + subsurface-scattering gradients,
+   fracture strokes, bubble fields, scroll-driven sub-ice camera.
+   Skeleton: full-bleed sticky stage + fixed instrument sidebar.
+   ============================================================ */
+:root{
+  --white:#f4fbff;
+  --ice:#a9dcea;
+  --cyan:#57c3e0;
+  --glacier:#2b8fb4;
+  --teal:#0d4a63;
+  --deep:#052430;
+  --ink:#02141c;
+  --sub:0;            /* 0 = above the surface, 1 = fully beneath */
+  --line:rgba(180,226,242,.34);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--deep);color:var(--white);
+  font-family:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+
+/* ---------------- header strip ---------------- */
+.bar{
+  position:fixed;top:0;left:0;right:0;z-index:60;
+  display:flex;justify-content:space-between;align-items:center;gap:1rem;
+  padding:.55rem clamp(.7rem,2.5vw,1.8rem);
+  font-family:"IBM Plex Mono",monospace;font-size:.6rem;
+  letter-spacing:.2em;text-transform:uppercase;
+  background:linear-gradient(180deg,rgba(2,20,28,.86),rgba(2,20,28,0));
+  backdrop-filter:blur(2px);
+}
+.bar b{font-weight:500}
+.bar .st{color:var(--cyan)}
+.pill{border:1px solid var(--line);padding:.15em .55em;border-radius:99px}
+
+/* ---------------- scroll runway ---------------- */
+.runway{height:420vh;position:relative}
+
+/* ---------------- sticky stage ---------------- */
+.stage{
+  position:sticky;top:0;height:100dvh;overflow:hidden;
+  background:
+    radial-gradient(120% 80% at 50% -10%, #bfe6f4 0%, #7fc6de 26%, #2f88ab 52%, #0d4a63 76%, #052430 100%);
+}
+.scene{position:absolute;inset:0;width:100%;height:100%}
+#sky{transform:translateY(calc(var(--sub) * 16%));opacity:calc(1 - var(--sub) * .82)}
+#iceOver{transform:translateY(calc(var(--sub) * -46%))}
+#surface{transform:translateY(calc(var(--sub) * -30%))}
+#shafts{
+  transform:translateX(calc(var(--sub) * 9%)) scaleY(calc(1 + var(--sub) * 1.5));
+  transform-origin:50% 0%;opacity:calc(.5 + var(--sub) * .5);
+  mix-blend-mode:screen;
+}
+#cavern{opacity:var(--sub)}
+#figure{transform:translateY(calc(var(--sub) * 20%)) scale(calc(1 - var(--sub) * .45));
+  transform-origin:0 100%;opacity:calc(1 - var(--sub)*.55)}
+#bubbles{transform:translateY(calc(var(--sub) * -14%))}
+
+/* vignette + cold bloom */
+.stage::after{
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:5;
+  background:radial-gradient(80% 60% at 50% 42%, transparent 40%, rgba(2,20,28,.62) 100%);
+}
+
+/* ---------------- overlay copy ---------------- */
+.hero{
+  position:absolute;z-index:10;left:clamp(1rem,5vw,4.4rem);top:clamp(3.4rem,9vh,6.4rem);
+  max-width:min(46ch,62vw);
+  transition:opacity .3s;
+}
+.hero .eyebrow{
+  font-family:"IBM Plex Mono",monospace;font-size:.62rem;letter-spacing:.32em;
+  text-transform:uppercase;color:var(--cyan);margin-bottom:.8rem;
+  display:flex;align-items:center;gap:.6rem;
+}
+.hero .eyebrow::before{content:"";width:34px;height:1px;background:var(--cyan)}
+.hero h1{
+  font-family:"Barlow Condensed","Barlow Condensed",Impact,sans-serif;
+  font-weight:300;font-size:clamp(2.9rem,8.4vw,6.6rem);line-height:.86;
+  letter-spacing:-.012em;text-transform:uppercase;
+  text-shadow:0 2px 40px rgba(3,26,36,.55);
+}
+.hero h1 em{font-style:normal;font-weight:600;color:var(--cyan);display:block}
+.hero p{
+  margin-top:1.1rem;font-size:clamp(.9rem,1.15vw,1.02rem);line-height:1.62;
+  color:#d8eef7;max-width:44ch;text-shadow:0 1px 18px rgba(3,26,36,.7);
+}
+.hero .meta{
+  margin-top:1.4rem;display:flex;flex-wrap:wrap;gap:.5rem;
+  font-family:"IBM Plex Mono",monospace;font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;
+}
+.hero .meta span{border:1px solid var(--line);padding:.35em .7em;border-radius:2px;
+  background:rgba(5,36,48,.42)}
+
+/* depth ruler down the left edge */
+.ruler{
+  position:absolute;z-index:11;left:clamp(.6rem,2vw,1.4rem);top:22%;bottom:14%;
+  display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;
+  font-family:"IBM Plex Mono",monospace;font-size:.56rem;letter-spacing:.14em;
+  color:rgba(200,232,246,.72);
+}
+.ruler i{display:block;width:22px;height:1px;background:var(--line);margin-bottom:4px;transition:width .3s}
+.ruler li{list-style:none;opacity:.4;transition:opacity .3s}
+.ruler li.on{opacity:1;color:var(--white)}
+.ruler li.on i{width:40px;background:var(--cyan)}
+
+/* ---------------- instrument sidebar ---------------- */
+.instr{
+  position:absolute;z-index:12;right:clamp(.8rem,2.4vw,1.8rem);top:50%;
+  transform:translateY(-50%);
+  width:min(268px,32vw);
+  background:rgba(4,30,41,.62);
+  border:1px solid var(--line);border-radius:3px;
+  backdrop-filter:blur(9px) saturate(120%);
+  box-shadow:0 26px 60px -22px rgba(0,0,0,.7);
+  padding:.9rem .95rem 1rem;
+}
+.instr h2{
+  font-family:"IBM Plex Mono",monospace;font-size:.6rem;letter-spacing:.26em;
+  text-transform:uppercase;font-weight:500;color:var(--cyan);
+  display:flex;justify-content:space-between;align-items:center;
+  padding-bottom:.55rem;border-bottom:1px solid var(--line);
+}
+.instr h2 span{color:var(--white);letter-spacing:.1em}
+.rows{margin:.5rem 0 .2rem}
+.rows .r{display:flex;justify-content:space-between;align-items:baseline;
+  padding:.36rem 0;border-bottom:1px dotted rgba(160,210,230,.2);
+  font-family:"IBM Plex Mono",monospace;font-size:.66rem;letter-spacing:.06em}
+.rows .r span{color:#93c4d6;font-size:.58rem;text-transform:uppercase;letter-spacing:.14em}
+.rows .r b{font-weight:500;color:var(--white);font-variant-numeric:tabular-nums}
+.core{
+  margin-top:.75rem;height:74px;border:1px solid var(--line);border-radius:2px;
+  position:relative;overflow:hidden;background:rgba(2,18,26,.6);
+}
+.core i{
+  position:absolute;left:0;right:0;bottom:0;display:block;
+  height:var(--h,0%);
+  background:linear-gradient(180deg,#bfeaf6,#7fd0e8 22%,#3f9dc0 55%,#12556f 100%);
+  transition:height .12s linear;
+}
+.core i::after{
+  content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.16) 0 1px,transparent 1px 7px);
+}
+.core u{
+  position:absolute;left:0;right:0;height:1px;background:var(--white);opacity:.75;
+  bottom:var(--h,0%);transition:bottom .12s linear;
+}
+.core .lbl{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:"IBM Plex Mono",monospace;font-size:.56rem;letter-spacing:.2em;
+  text-transform:uppercase;color:#032330;mix-blend-mode:hard-light;font-weight:500;
+}
+.note{
+  margin-top:.7rem;font-size:.68rem;line-height:1.55;color:#b6dced;
+  border-left:2px solid var(--cyan);padding-left:.6rem;
+}
+.note em{display:block;font-style:normal;font-family:"IBM Plex Mono",monospace;
+  font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:#7fb6cb;margin-bottom:.2rem}
+
+/* scroll cue */
+.cue{
+  position:absolute;z-index:12;left:50%;bottom:1.4rem;transform:translateX(-50%);
+  font-family:"IBM Plex Mono",monospace;font-size:.58rem;letter-spacing:.3em;
+  text-transform:uppercase;color:#a8d3e3;display:flex;flex-direction:column;
+  align-items:center;gap:.5rem;transition:opacity .4s;
+}
+.cue s{display:block;width:1px;height:34px;background:linear-gradient(180deg,var(--cyan),transparent);
+  text-decoration:none;animation:drip 2.6s ease-in-out infinite}
+@keyframes drip{0%,100%{transform:scaleY(.35);opacity:.4}50%{transform:scaleY(1);opacity:1}}
+
+/* ---------------- end plate ---------------- */
+.after{
+  position:relative;z-index:20;background:linear-gradient(180deg,#041c27,#02121a);
+  border-top:1px solid var(--line);padding:clamp(2.4rem,7vw,5.4rem) clamp(1rem,5vw,4.4rem);
+}
+.after h3{
+  font-family:"Barlow Condensed",Impact,sans-serif;font-weight:400;
+  font-size:clamp(1.7rem,4.4vw,3.1rem);line-height:1;letter-spacing:.005em;
+  text-transform:uppercase;margin-bottom:.7rem;
+}
+.after .grid{
+  margin-top:2rem;display:grid;gap:1px;background:var(--line);
+  grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+  border:1px solid var(--line);
+}
+.after .grid section{background:#041c27;padding:1.1rem 1.15rem 1.3rem}
+.after .grid h4{
+  font-family:"IBM Plex Mono",monospace;font-size:.58rem;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--cyan);font-weight:500;margin-bottom:.55rem;
+}
+.after .grid p{font-size:.82rem;line-height:1.62;color:#bcdcea}
+.after .grid .k{
+  font-family:"Barlow Condensed",Impact,sans-serif;font-size:2.2rem;line-height:1;
+  color:var(--white);display:block;margin-bottom:.4rem;font-weight:500;
+}
+.foot{
+  margin-top:2.2rem;padding-top:1rem;border-top:1px solid var(--line);
+  display:flex;flex-wrap:wrap;gap:1rem 2.4rem;justify-content:space-between;
+  font-family:"IBM Plex Mono",monospace;font-size:.58rem;letter-spacing:.16em;
+  text-transform:uppercase;color:#79a8bb;
+}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+@media (max-width:900px){
+  .instr{position:relative;right:auto;top:auto;transform:none;width:100%;margin:0 0 0;
+    position:absolute;left:.7rem;right:.7rem;bottom:4.6rem;top:auto}
+  .hero{max-width:none;right:1rem}
+  .hero p{max-width:34ch}
+  .ruler{display:none}
+  .bar span:nth-child(3){display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  .cue s{animation:none}
+  .stage *{transition:none}
+}
+</style>
+</head>
+<body>
+
+<noscript>
+  <p style="padding:2rem;font-family:monospace;line-height:1.7">
+    This section is drawn as one continuous SVG plate and the camera descends beneath
+    the ice as you scroll. With JavaScript disabled you are shown the surface view
+    only; the written field log below is complete and readable.
+  </p>
+</noscript>
+
+<div class="bar">
+  <b>FIELD STATION BRAE 04</b>
+  <span>ICE SHELF SECTION 7 · 67°21′N 49°04′W</span>
+  <span class="st pill">SUB-SURFACE: <i id="stateOut">SURFACE</i></span>
+</div>
+
+<div class="runway" id="runway">
+  <div class="stage">
+
+    <svg class="scene" id="scene" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <!-- subsurface scattering: light that enters and comes back out -->
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#e8f7ff"/><stop offset=".38" stop-color="#a9dced"/>
+          <stop offset=".72" stop-color="#4a9dbe"/><stop offset="1" stop-color="#0d4a63"/>
+        </linearGradient>
+        <linearGradient id="shelf" x1="0" y1="0" x2="0.25" y2="1">
+          <stop offset="0" stop-color="#eaf9ff" stop-opacity=".95"/>
+          <stop offset=".22" stop-color="#9ddcee" stop-opacity=".88"/>
+          <stop offset=".58" stop-color="#2f88ab" stop-opacity=".82"/>
+          <stop offset="1" stop-color="#093b52" stop-opacity=".9"/>
+        </linearGradient>
+        <linearGradient id="shaft" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#ffffff" stop-opacity=".55"/>
+          <stop offset=".5" stop-color="#bfeaf7" stop-opacity=".18"/>
+          <stop offset="1" stop-color="#8fd6ea" stop-opacity="0"/>
+        </linearGradient>
+        <linearGradient id="crev" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#02222f"/><stop offset="1" stop-color="#0a5f79"/>
+        </linearGradient>
+        <radialGradient id="bubble" cx=".35" cy=".3" r=".8">
+          <stop offset="0" stop-color="#ffffff" stop-opacity=".95"/>
+          <stop offset=".45" stop-color="#d8f4ff" stop-opacity=".35"/>
+          <stop offset="1" stop-color="#8fd0e4" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="glow" cx=".5" cy=".5" r=".5">
+          <stop offset="0" stop-color="#dff6ff" stop-opacity=".5"/>
+          <stop offset="1" stop-color="#dff6ff" stop-opacity="0"/>
+        </radialGradient>
+        <filter id="frost" x="-20%" y="-20%" width="140%" height="140%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9 0.03" numOctaves="3" seed="7" result="n"/>
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="9" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+        <clipPath id="iceClip">
+          <path d="M0 470 L140 452 L268 476 L400 448 L520 470 L650 442 L780 466 L910 438 L1050 462 L1180 436 L1320 458 L1460 434 L1600 456 L1600 620 L1400 648 L1200 626 L1000 652 L800 630 L600 656 L400 632 L200 658 L0 640 Z"/>
+        </clipPath>
+      </defs>
+
+      <!-- air / water column -->
+      <rect id="sky" x="0" y="0" width="1600" height="900" fill="url(#sky)"/>
+      <g id="cavern" opacity="0">
+        <rect x="0" y="0" width="1600" height="900" fill="url(#crev)"/>
+        <ellipse cx="820" cy="700" rx="900" ry="260" fill="#021620" opacity=".7"/>
+      </g>
+
+      <!-- light shafts -->
+      <g id="shafts">
+        <path d="M120 0 L215 0 L470 900 L215 900 Z" fill="url(#shaft)"/>
+        <path d="M430 0 L470 0 L760 900 L600 900 Z" fill="url(#shaft)" opacity=".8"/>
+        <path d="M700 0 L730 0 L1080 900 L940 900 Z" fill="url(#shaft)" opacity=".6"/>
+        <path d="M980 0 L1050 0 L1460 900 L1300 900 Z" fill="url(#shaft)" opacity=".45"/>
+      </g>
+
+      <!-- distant shelf faces -->
+      <g id="iceOver">
+        <path d="M0 470 L140 452 L268 476 L400 448 L520 470 L650 442 L780 466 L910 438 L1050 462 L1180 436 L1320 458 L1460 434 L1600 456 L1600 640 L0 660 Z"
+              fill="url(#shelf)" opacity=".55" filter="url(#frost)"/>
+        <!-- internal fracture lines -->
+        <g stroke="#e6f8ff" stroke-opacity=".45" fill="none" stroke-linecap="round">
+          <path d="M40 500 L260 540 L300 610 L520 646" stroke-width="2.4"/>
+          <path d="M300 610 L286 700 L420 760" stroke-width="1.6"/>
+          <path d="M520 646 L700 668 L742 740" stroke-width="2.1"/>
+          <path d="M742 470 L736 560 L902 600 L920 700" stroke-width="1.7"/>
+          <path d="M920 700 L1120 726 L1160 800" stroke-width="2.3"/>
+          <path d="M1160 480 L1140 560 L1300 596 L1320 690" stroke-width="1.5"/>
+          <path d="M1320 690 L1500 716" stroke-width="2.2"/>
+          <path d="M170 480 L150 590 L60 640" stroke-width="1.4"/>
+        </g>
+        <!-- hairline strain set -->
+        <g stroke="#bfeaf7" stroke-opacity=".22" stroke-width=".8" fill="none">
+          <path d="M0 520 L1600 512"/><path d="M0 566 L1600 552"/>
+          <path d="M0 612 L1600 596"/><path d="M0 654 L1600 640"/>
+        </g>
+        <!-- trapped bubbles: ancient air, sealed at the close-off depth -->
+        <g id="bubbles" fill="url(#bubble)">
+          <circle cx="212" cy="556" r="17"/><circle cx="300" cy="618" r="11"/>
+          <circle cx="352" cy="540" r="8"/><circle cx="470" cy="600" r="20"/>
+          <circle cx="612" cy="576" r="13"/><circle cx="700" cy="676" r="24"/>
+          <circle cx="830" cy="606" r="10"/><circle cx="912" cy="530" r="16"/>
+          <circle cx="1004" cy="640" r="22"/><circle cx="1092" cy="560" r="9"/>
+          <circle cx="1180" cy="676" r="18"/><circle cx="1268" cy="588" r="12"/>
+          <circle cx="1380" cy="640" r="26"/><circle cx="1480" cy="570" r="14"/>
+          <circle cx="1540" cy="700" r="19"/><circle cx="120" cy="640" r="15"/>
+          <circle cx="440" cy="700" r="12"/><circle cx="760" cy="500" r="9"/>
+        </g>
+        <!-- crevasse: the shelf in shadow, depth unreadable -->
+        <path d="M600 660 L648 664 L700 668 L742 664 L760 900 L520 900 Z" fill="#02222f" opacity=".72"/>
+        <path d="M600 660 L648 664 L700 668 L742 664 L736 760 L560 780 Z" fill="#01161f" opacity=".85"/>
+      </g>
+
+      <!-- the surface you are standing on at t=0 -->
+      <g id="surface">
+        <path d="M0 0 L1600 0 L1600 456 L1460 434 L1320 458 L1180 436 L1050 462 L910 438 L780 466 L650 442 L520 470 L400 448 L268 476 L140 452 L0 470 Z"
+              fill="#f2fcff" opacity=".14"/>
+        <path d="M0 0 L1600 0 L1600 456 L1460 434 L1320 458 L1180 436 L1050 462 L910 438 L780 466 L650 442 L520 470 L400 448 L268 476 L140 452 L0 470 Z"
+              fill="none" stroke="#eafaff" stroke-opacity=".8" stroke-width="2"/>
+        <ellipse cx="500" cy="470" rx="420" ry="34" fill="url(#glow)"/>
+        <ellipse cx="500" cy="470" rx="300" ry="18" fill="none" stroke="#ffffff" stroke-opacity=".5" stroke-width="1"/>
+      </g>
+
+      <!-- the research figure, 1.78 m, for scale -->
+      <g id="figure" transform="translate(500,470)">
+        <ellipse cx="0" cy="3" rx="26" ry="6" fill="#03303f" opacity=".5"/>
+        <path d="M-7 0 L7 0 L5 -46 L-5 -46 Z" fill="#0b2a34"/>
+        <path d="M-6 -46 L6 -46 L7 -74 L-5 -76 Z" fill="#c8341f"/>
+        <circle cx="1" cy="-82" r="6" fill="#0b2a34"/>
+        <path d="M8 -70 L30 -86" stroke="#0b2a34" stroke-width="2" fill="none"/>
+        <path d="M30 -86 L44 -86" stroke="#c8341f" stroke-width="3" fill="none"/>
+        <path d="M44 -86 L44 -96 L40 -96" stroke="#c8341f" stroke-width="1" fill="none"/>
+        <text x="46" y="-88" font-family="IBM Plex Mono, monospace" font-size="9"
+              fill="#cfeaf5" opacity=".85" letter-spacing="1.5">B-17</text>
+        <text x="-24" y="20" font-family="IBM Plex Mono, monospace" font-size="9"
+              fill="#cfeaf5" opacity=".6" letter-spacing="1">1.78 m</text>
+      </g>
+    </svg>
+
+    <div class="hero" id="hero">
+      <div class="eyebrow">Ice Shelf Section 7 · Dome C-2 analog</div>
+      <h1>The ice<em>remembers</em></h1>
+      <p>
+        Every bubble in this shelf is a sealed sample of the air that was there when the
+        snow fell. Scroll, and the section opens downward: firn, close-off, blue ice,
+        the crevasse wall where the light gives out. Nothing moves. That is the point
+        of the place.
+      </p>
+      <div class="meta">
+        <span>Core B-17 · 214 m</span>
+        <span>ΔT −38 °C at base</span>
+        <span>Audio: none</span>
+      </div>
+    </div>
+
+    <ul class="ruler" id="ruler" aria-hidden="true">
+      <li data-at="0"><i></i>00 m · surface</li>
+      <li data-at=".25"><i></i>40 m · firn</li>
+      <li data-at=".5"><i></i>95 m · close-off</li>
+      <li data-at=".75"><i></i>150 m · blue ice</li>
+      <li data-at="1"><i></i>214 m · basal</li>
+    </ul>
+
+    <aside class="instr" aria-label="Core sample readout">
+      <h2>Core readout <span id="idOut">B-17</span></h2>
+      <div class="rows">
+        <div class="r"><span>Depth</span><b id="dOut">0.0 m</b></div>
+        <div class="r"><span>Air age</span><b id="aOut">0 yr</b></div>
+        <div class="r"><span>CO₂</span><b id="cOut">289 ppm</b></div>
+        <div class="r"><span>δ¹⁸O</span><b id="oOut">−38.4 ‰</b></div>
+        <div class="r"><span>State</span><b id="sOut">FIRN</b></div>
+      </div>
+      <div class="core"><i id="coreFill" style="--h:0%"></i><u id="coreLine" style="--h:0%"></u>
+        <div class="lbl" id="coreLbl">SECTION A-0</div>
+      </div>
+      <p class="note" id="note"><em>Note 01</em>Snowpack. Density 120 kg/m³. Grains round, none welded.</p>
+    </aside>
+
+    <div class="cue" id="cue">Descend<s></s>Scroll</div>
+  </div>
+</div>
+
+<section class="after">
+  <h3>Field log, 14 March — surface instruments, closed</h3>
+  <div class="grid">
+    <section>
+      <span class="k">214 m</span>
+      <h4>Recovery</h4>
+      <p>Core B-17 came up in three runs. The bottom metre was wet, refrozen, and not
+        counted. Everything above it is archived, logged, and colder than it has any
+        right to be in a liquid-water summer.</p>
+    </section>
+    <section>
+      <span class="k">−38 °C</span>
+      <h4>Basal temperature</h4>
+      <p>Cold enough that the shelf is not melting at the bed, only flexing. The tide
+        below flexes it. Twice a day the whole 40-kilometre slab lifts by eleven
+        centimetres and settles again.</p>
+    </section>
+    <section>
+      <span class="k">1 100 yr</span>
+      <h4>Oldest sealed air</h4>
+      <p>At 214 metres the gas is about eleven centuries younger than the ice holding
+        it. The mismatch is not an error. It is the difference between how long it
+        takes snow to fall and how long it takes a bubble to stop moving.</p>
+    </section>
+    <section>
+      <span class="k">0 dB</span>
+      <h4>Acoustic record</h4>
+      <p>No wind, no traffic, no meltwater. A station on the shelf produces one sound
+        every few minutes and it is the winch. Everything else in the log is
+        silence, measured and published.</p>
+    </section>
+  </div>
+  <div class="foot">
+    <span>Field Station Brae 04 · Longyearbreen basin, 67°21′N 49°04′W</span>
+    <span>Drawings: survey team, sheet 7 of 11</span>
+    <span>Plate not to scale below 0.5 m</span>
+  </div>
+</section>
+
+<script>
+(function(){
+  "use strict";
+  var runway = document.getElementById('runway');
+  var root = document.documentElement;
+  var stateOut = document.getElementById('stateOut');
+  var dOut = document.getElementById('dOut');
+  var aOut = document.getElementById('aOut');
+  var cOut = document.getElementById('cOut');
+  var oOut = document.getElementById('oOut');
+  var sOut = document.getElementById('sOut');
+  var note = document.getElementById('note');
+  var coreFill = document.getElementById('coreFill');
+  var coreLine = document.getElementById('coreLine');
+  var coreLbl = document.getElementById('coreLbl');
+  var hero = document.getElementById('hero');
+  var cue = document.getElementById('cue');
+  var ticks = Array.prototype.slice.call(document.querySelectorAll('#ruler li'));
+
+  var NOTES = [
+    ['Note 01','Snowpack. Density 120 kg/m³. Grains round, none welded.'],
+    ['Note 02','Firn. Sintering necks forming; porosity still 38 per cent.'],
+    ['Note 03','Close-off depth. Bubbles pinch shut, ~95 m. Air becomes a fossil.'],
+    ['Note 04','Blue ice. Bubbles stretched into lenses along the flow line.'],
+    ['Note 05','Basal. Grain boundary brine, warmer by 0.4 K than the surface.'],
+    ['Note 06','Below the shelf. Open water, 11 m, tidal. No light reaches here.']
+  ];
+
+  /* interpolation table: depth(m) -> [airAge, co2, d18o, state] */
+  var PROFILE = [
+    [0,     2,    289, -38.4, 'FIRN'],
+    [40,    38,   286, -38.6, 'FIRN'],
+    [95,   128,   281, -39.1, 'CLOSE-OFF'],
+    [150,  405,   273, -39.9, 'BLUE ICE'],
+    [214, 1100,   265, -40.7, 'BASAL'],
+    [240, 1350,   261, -41.0, 'SUB-ICE']
+  ];
+
+  function lerp(a,b,t){ return a + (b-a)*t; }
+  function profile(d){
+    for (var i=0;i<PROFILE.length-1;i++){
+      var a = PROFILE[i], b = PROFILE[i+1];
+      if (d >= a[0] && d <= b[0]){
+        var t = (d - a[0]) / (b[0] - a[0]);
+        return [lerp(a[1],b[1],t), lerp(a[2],b[2],t), lerp(a[3],b[3],t),
+                t < .5 ? a[4] : b[4]];
+      }
+    }
+    var last = PROFILE[PROFILE.length-1];
+    return [last[1], last[2], last[3], last[4]];
+  }
+
+  function render(p){
+    p = Math.max(0, Math.min(1, p));
+    root.style.setProperty('--sub', p.toFixed(4));
+
+    var depth = p * 240;
+    var pr = profile(depth);
+    dOut.textContent = depth.toFixed(1) + ' m';
+    aOut.textContent = Math.round(pr[0]) + ' yr';
+    cOut.textContent = Math.round(pr[1]) + ' ppm';
+    oOut.textContent = pr[2].toFixed(1) + ' ‰';
+    sOut.textContent = pr[3];
+
+    var pct = Math.min(100, depth / 214 * 100);
+    coreFill.style.setProperty('--h', pct + '%');
+    coreLine.style.setProperty('--h', pct + '%');
+    coreLbl.textContent = depth < 60 ? 'SECTION A-0'
+      : depth < 110 ? 'SECTION A-1'
+      : depth < 175 ? 'SECTION A-2' : 'SECTION A-3';
+
+    var ni = Math.min(NOTES.length - 1, Math.floor(p * NOTES.length));
+    note.innerHTML = '<em>' + NOTES[ni][0] + '</em>' + NOTES[ni][1];
+
+    stateOut.textContent = p < .18 ? 'SURFACE' : p < .55 ? 'IN-ICE' : 'SUB-ICE';
+    hero.style.opacity = p > .62 ? Math.max(0, 1 - (p - .62) * 3.2) : 1;
+    cue.style.opacity = p > .1 ? 0 : 1;
+
+    for (var i=0;i<ticks.length;i++){
+      ticks[i].className = Math.abs(p - (+ticks[i].getAttribute('data-at'))) < .12 ? 'on' : '';
+    }
+  }
+
+  var ticking = false;
+  function onScroll(){
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function(){
+      var rect = runway.getBoundingClientRect();
+      var total = runway.offsetHeight - window.innerHeight;
+      var p = total > 0 ? (-rect.top / total) : 0;
+      render(p);
+      ticking = false;
+    });
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('resize', onScroll, {passive:true});
+  render(0);
+  onScroll();
+})();
+</script>
+</body>
+</html>

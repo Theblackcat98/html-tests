@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hollowhand OS 4.2 — a complete desktop that lives in one HTML file</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   HOLLOWHAND OS 4.2
+   Technique: vanilla window manager over a virtual filesystem.
+   Skeleton: full-bleed desktop (menu bar / windows / dock).
+   ============================================================ */
+:root{
+  --bg:#12151b; --bg2:#1a1f28; --panel:#161a22; --line:rgba(255,255,255,.10);
+  --fg:#e6e9ef; --dim:#8f99a8; --accent:#e0a24a;
+  --accent-soft:rgba(224,162,74,.16); --wall:0;
+  --mono:"IBM Plex Mono",Menlo,Consolas,monospace;
+  --sans:"Inter","Helvetica Neue",Arial,sans-serif;
+  --r:12px; --shadow:0 30px 70px -24px rgba(0,0,0,.75),0 2px 10px rgba(0,0,0,.35);
+}
+body.light{
+  --bg:#e8e6e0; --bg2:#f4f2ed; --panel:#fbfaf7; --line:rgba(20,22,28,.12);
+  --fg:#1b1e25; --dim:#5f6672; --accent:#a86a17; --accent-soft:rgba(168,106,23,.12);
+  --shadow:0 26px 60px -26px rgba(30,26,18,.45),0 1px 4px rgba(30,26,18,.14);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--fg);font-family:var(--sans);
+  overflow:hidden;-webkit-font-smoothing:antialiased;
+  transition:background .5s ease,color .5s ease;
+}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+button{font-family:inherit;color:inherit}
+
+/* ---------------- boot ---------------- */
+#boot{position:fixed;inset:0;z-index:999;background:#05070a;color:#b9c6b0;
+  font-family:var(--mono);font-size:12.5px;line-height:1.75;padding:clamp(1rem,5vw,4rem);
+  overflow:hidden;transition:opacity .7s ease}
+#boot .glow{position:absolute;left:0;right:0;top:38%;height:1px;background:#8ef0a8;opacity:.35;filter:blur(6px)}
+#boot .brand{color:#8ef0a8;letter-spacing:.5em;font-size:11px;margin-bottom:1.6rem}
+#boot pre{white-space:pre-wrap;max-width:70ch}
+#boot .ok{color:#8ef0a8}.dim{color:#5c6b60}
+#boot.done{opacity:0;pointer-events:none}
+
+/* ---------------- desktop ---------------- */
+#wall{position:fixed;inset:0;z-index:0;transition:opacity .6s,filter .6s;background:
+  radial-gradient(70% 55% at 18% 14%,rgba(224,162,74,.30),transparent 60%),
+  radial-gradient(60% 50% at 84% 24%,rgba(64,132,168,.34),transparent 62%),
+  radial-gradient(80% 60% at 62% 96%,rgba(150,74,120,.26),transparent 60%),
+  linear-gradient(160deg,#141922 0%,#0f131a 55%,#0b0e14 100%)}
+body[data-wall="1"] #wall{background:
+  radial-gradient(65% 55% at 78% 18%,rgba(96,190,160,.32),transparent 60%),
+  radial-gradient(60% 60% at 20% 80%,rgba(224,162,74,.26),transparent 62%),
+  linear-gradient(200deg,#101a1c 0%,#0c1116 60%,#090c10 100%)}
+body[data-wall="2"] #wall{background:
+  radial-gradient(60% 50% at 30% 20%,rgba(200,120,90,.30),transparent 60%),
+  radial-gradient(70% 60% at 78% 78%,rgba(90,110,180,.30),transparent 62%),
+  linear-gradient(140deg,#1b1620 0%,#131019 60%,#0c0a10 100%)}
+body.light #wall{background:
+  radial-gradient(65% 55% at 20% 18%,rgba(224,162,74,.40),transparent 62%),
+  radial-gradient(60% 50% at 84% 30%,rgba(64,132,168,.30),transparent 62%),
+  linear-gradient(160deg,#f6f4ef 0%,#eae7e0 100%)}
+body.light[data-wall="1"] #wall{background:radial-gradient(60% 55% at 70% 20%,rgba(96,190,160,.45),transparent 62%),linear-gradient(180deg,#f2f6f3,#e4ebe6)}
+body.light[data-wall="2"] #wall{background:radial-gradient(65% 55% at 30% 20%,rgba(200,120,90,.40),transparent 62%),linear-gradient(140deg,#faf4f1,#ece4ec)}
+
+/* ---------------- menu bar ---------------- */
+#menubar{position:fixed;top:0;left:0;right:0;height:30px;z-index:400;display:flex;align-items:center;
+  gap:2px;padding:0 .6rem;background:rgba(12,15,20,.55);backdrop-filter:blur(18px) saturate(1.4);
+  border-bottom:1px solid var(--line);font-size:12px;user-select:none}
+body.light #menubar{background:rgba(250,249,246,.65)}
+#menubar .apple{font-weight:700;letter-spacing:.02em;padding:0 .55rem;opacity:.9}
+#menubar .mtitle{padding:.32rem .6rem;border-radius:6px;cursor:default;opacity:.86}
+#menubar .mtitle:hover{background:rgba(255,255,255,.08)}
+#menubar .mtitle.open{background:var(--accent-soft);opacity:1}
+#menubar .right{margin-left:auto;display:flex;align-items:center;gap:1rem;opacity:.75;font-variant-numeric:tabular-nums;font-size:11.5px}
+#menubar .right b{font-weight:500}
+.menu{position:fixed;top:30px;min-width:212px;background:var(--panel);border:1px solid var(--line);
+  border-radius:10px;box-shadow:var(--shadow);padding:.35rem;z-index:401;display:none;font-size:12.5px}
+.menu.open{display:block;animation:pop .14s ease}
+@keyframes pop{from{opacity:0;transform:translateY(-5px)}}
+.menu button{display:flex;width:100%;gap:1rem;justify-content:space-between;background:none;border:0;
+  padding:.46rem .6rem;border-radius:6px;cursor:pointer;text-align:left}
+.menu button:hover{background:var(--accent-soft)}
+.menu button span:last-child{color:var(--dim);font-family:var(--mono);font-size:11px}
+.menu hr{border:0;border-top:1px solid var(--line);margin:.32rem .3rem}
+
+/* ---------------- icons on the desktop ---------------- */
+.deskicons{position:fixed;top:44px;right:14px;z-index:5;display:flex;flex-direction:column;gap:14px}
+.deskicon{width:78px;text-align:center;font-size:10.5px;line-height:1.35;opacity:.9;cursor:default}
+.deskicon .gl{height:40px;margin-bottom:5px;border-radius:10px;background:var(--panel);
+  border:1px solid var(--line);box-shadow:var(--shadow);display:grid;place-items:center;font-size:17px}
+.deskicon:hover .gl{border-color:var(--accent)}
+
+/* ---------------- windows ---------------- */
+#desk{position:fixed;inset:30px 0 0 0;z-index:10}
+.win{position:absolute;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden;min-width:240px;min-height:150px;
+  animation:win .22s cubic-bezier(.2,.9,.3,1)}
+@keyframes win{from{opacity:0;transform:scale(.97) translateY(8px)}}
+.win.min{display:none}
+.win.max{border-radius:0}
+.win:not(.focus){box-shadow:0 14px 34px -20px rgba(0,0,0,.6);opacity:.94}
+.tbar{height:36px;flex:0 0 36px;display:flex;align-items:center;gap:.5rem;padding:0 .55rem;
+  background:var(--bg2);border-bottom:1px solid var(--line);cursor:grab;user-select:none}
+.tbar .lights{display:flex;gap:6px}
+.tbar .lights i{width:11px;height:11px;border-radius:50%;display:block;cursor:pointer}
+.tbar .lights i:nth-child(1){background:#ff5f57}.tbar .lights i:nth-child(2){background:#febc2e}.tbar .lights i:nth-child(3){background:#28c840}
+.win:not(.focus) .tbar .lights i{background:rgba(255,255,255,.16)}
+.tbar .ttl{position:absolute;left:0;right:0;text-align:center;font-size:12px;pointer-events:none;font-weight:500}
+.tbar{position:relative}
+.tbar .tools{margin-left:auto;display:flex;gap:.2rem;z-index:2}
+.tbar .tools button{background:none;border:0;width:26px;height:22px;border-radius:6px;cursor:pointer;opacity:.6;font-size:13px;line-height:1}
+.tbar .tools button:hover{background:rgba(255,255,255,.09);opacity:1}
+.body{flex:1;min-height:0;display:flex;overflow:hidden}
+.rz{position:absolute;right:0;bottom:0;width:18px;height:18px;cursor:nwse-resize;z-index:5}
+.rz::after{content:"";position:absolute;right:4px;bottom:4px;width:7px;height:7px;
+  border-right:2px solid var(--line);border-bottom:2px solid var(--line);border-radius:0 0 2px 0}
+
+/* ---------------- app: editor ---------------- */
+.ed{flex:1;display:flex;flex-direction:column;min-width:0}
+.ed .bar{flex:0 0 34px;display:flex;align-items:center;gap:.4rem;padding:0 .5rem;border-bottom:1px solid var(--line);font-size:11.5px}
+.btn{background:var(--bg2);border:1px solid var(--line);border-radius:7px;padding:.3rem .65rem;cursor:pointer;font-size:11.5px}
+.btn:hover{border-color:var(--accent)}
+.btn.p{background:var(--accent);color:#17130a;border-color:transparent;font-weight:600}
+body.light .btn.p{color:#fff}
+.ed textarea{flex:1;resize:none;border:0;outline:0;background:transparent;color:var(--fg);
+  font-family:var(--mono);font-size:13px;line-height:1.75;padding:1rem 1.15rem;tab-size:2}
+.ed .status{flex:0 0 26px;display:flex;gap:1.2rem;align-items:center;padding:0 .9rem;border-top:1px solid var(--line);
+  font-family:var(--mono);font-size:10.5px;color:var(--dim);letter-spacing:.04em}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block;margin-right:6px}
+
+/* ---------------- app: terminal ---------------- */
+.term{flex:1;display:flex;flex-direction:column;min-width:0;background:rgba(6,9,12,.55)}
+body.light .term{background:rgba(255,255,255,.4)}
+.term .out{flex:1;overflow:auto;padding:.85rem 1rem;font-family:var(--mono);font-size:12.5px;line-height:1.7;white-space:pre-wrap;word-break:break-word}
+.term .out .p{color:var(--accent)}
+.term .in{display:flex;gap:.5rem;align-items:center;padding:.6rem 1rem;border-top:1px solid var(--line);font-family:var(--mono);font-size:12.5px}
+.term .in span{color:var(--accent)}
+.term .in input{flex:1;background:none;border:0;outline:0;color:var(--fg);font:inherit}
+
+/* ---------------- app: files ---------------- */
+.files{flex:1;display:flex;min-width:0}
+.files .side{flex:0 0 148px;border-right:1px solid var(--line);padding:.6rem;overflow:auto;font-size:12px}
+.files .side h4{font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);padding:.4rem .3rem}
+.files .side button{display:block;width:100%;text-align:left;background:none;border:0;padding:.35rem .45rem;border-radius:6px;cursor:pointer;font-size:12px}
+.files .side button:hover{background:rgba(255,255,255,.06)}
+.files .side button.on{background:var(--accent-soft)}
+.files .main{flex:1;display:flex;flex-direction:column;min-width:0}
+.files .crumb{flex:0 0 30px;display:flex;align-items:center;gap:.4rem;padding:0 .7rem;border-bottom:1px solid var(--line);
+  font-family:var(--mono);font-size:11px;color:var(--dim)}
+.files .crumb b{color:var(--fg);font-weight:500}
+.files .list{flex:1;overflow:auto;padding:.4rem}
+.files .row{display:flex;align-items:center;gap:.6rem;padding:.42rem .55rem;border-radius:7px;cursor:pointer;font-size:12.5px}
+.files .row:hover{background:rgba(255,255,255,.055)}
+.files .row .ic{width:18px;text-align:center;opacity:.85;font-size:13px}
+.files .row .mt{margin-left:auto;font-size:10.5px;color:var(--dim);font-family:var(--mono)}
+.preview{padding:.7rem .9rem;border-top:1px solid var(--line);max-height:36%;overflow:auto;
+  font-family:var(--mono);font-size:11.5px;color:var(--dim);line-height:1.7;white-space:pre-wrap}
+
+/* ---------------- app: settings ---------------- */
+.set{flex:1;overflow:auto;padding:1.1rem 1.25rem}
+.set h3{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin:1.2rem 0 .7rem;font-weight:600}
+.set h3:first-child{margin-top:0}
+.set .row{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.62rem 0;border-bottom:1px solid var(--line);font-size:13px}
+.set .row small{display:block;color:var(--dim);font-size:11px;margin-top:2px}
+.sw{width:46px;height:26px;border-radius:99px;background:var(--bg2);border:1px solid var(--line);position:relative;cursor:pointer;flex:0 0 auto;transition:.25s}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:var(--fg);transition:.25s cubic-bezier(.3,1.4,.5,1)}
+.sw[aria-checked=true]{background:var(--accent)}
+.sw[aria-checked=true]::after{left:22px;background:#fff}
+.walls{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem}
+.walls button{aspect-ratio:16/10;border-radius:9px;border:2px solid transparent;cursor:pointer;background:#222}
+.walls button.on{border-color:var(--accent)}
+
+/* ---------------- dock ---------------- */
+#dock{position:fixed;left:50%;transform:translateX(-50%);bottom:12px;z-index:380;display:flex;gap:6px;
+  padding:7px;border-radius:18px;background:rgba(14,17,23,.5);backdrop-filter:blur(22px) saturate(1.6);
+  border:1px solid var(--line);box-shadow:var(--shadow)}
+body.light #dock{background:rgba(252,251,248,.7)}
+#dock button{position:relative;width:46px;height:46px;border-radius:13px;border:0;cursor:pointer;
+  background:var(--bg2);color:var(--fg);font-size:18px;display:grid;place-items:center;
+  transition:transform .18s cubic-bezier(.2,1.3,.4,1)}
+#dock button:hover{transform:translateY(-9px) scale(1.06)}
+#dock button::after{content:"";position:absolute;bottom:-6px;left:50%;transform:translateX(-50%) scale(0);
+  width:4px;height:4px;border-radius:50%;background:var(--fg);transition:transform .2s}
+#dock button.run::after{transform:translateX(-50%) scale(1)}
+#dock .sep{width:1px;background:var(--line);margin:6px 3px}
+@media (max-width:600px){#dock button{width:40px;height:40px;font-size:15px}#dock{gap:4px}}
+
+/* ---------------- modal ---------------- */
+#modal{position:fixed;inset:0;z-index:500;background:rgba(4,6,9,.5);backdrop-filter:blur(6px);
+  display:none;align-items:center;justify-content:center;padding:1.5rem}
+#modal.open{display:flex}
+.card{width:min(460px,100%);background:var(--panel);border:1px solid var(--line);border-radius:16px;
+  box-shadow:var(--shadow);overflow:hidden}
+.card h4{padding:1rem 1.2rem;border-bottom:1px solid var(--line);font-size:13px}
+.card .inner{padding:1.1rem 1.2rem;font-size:13px;line-height:1.7;color:var(--dim)}
+.card .inner code{font-family:var(--mono);color:var(--accent)}
+.card .foot{padding:.8rem 1.2rem;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:.5rem}
+</style>
+</head>
+<body data-wall="0">
+
+<div id="boot"><div class="brand">HOLLOWHAND</div><pre id="bootout"></pre><div class="glow"></div></div>
+
+<div id="wall"></div>
+
+<div id="menubar">
+  <span class="apple">◆</span>
+  <span class="mtitle" data-menu="app">Hollowhand</span>
+  <span class="mtitle" data-menu="file">File</span>
+  <span class="mtitle" data-menu="view">View</span>
+  <span class="mtitle" data-menu="win">Window</span>
+  <span class="mtitle" data-menu="help">Help</span>
+  <div class="right">
+    <span id="net">ethernet · 1000baseT</span>
+    <span><b id="vol">◼◼◼◻</b> 62%</span>
+    <span id="clk">--:--</span>
+  </div>
+</div>
+
+<div class="deskicons">
+  <div class="deskicon"><div class="gl">▤</div>System&nbsp;Notes.txt</div>
+  <div class="deskicon"><div class="gl">◈</div>Release&nbsp;4.2</div>
+</div>
+
+<div id="desk" aria-label="Desktop"></div>
+
+<div id="dock" role="toolbar" aria-label="Dock"></div>
+
+<div id="modal"><div class="card" role="dialog" aria-modal="true" aria-labelledby="mtitle">
+  <h4 id="mtitle">About Hollowhand OS</h4>
+  <div class="inner" id="mbody"></div>
+  <div class="foot"><button class="btn p" id="mok">Close</button></div>
+</div></div>
+
+<noscript><p style="padding:6rem 2rem;font-family:monospace;max-width:60ch;line-height:1.8;color:#8f99a8">
+Hollowhand OS needs JavaScript: the kernel boots a window manager, mounts a virtual filesystem
+and starts four applications. Everything is written by hand — no frameworks, no build step.
+Enable scripting and the desktop will come up.</p></noscript>
+
+<script>
+(function(){
+"use strict";
+/* ==================== virtual filesystem ==================== */
+function f(c){return{type:'file',content:c,mod:'11 Feb'}}
+function d(o){return{type:'dir',children:o,mod:'09 Feb'}}
+var FS=d({
+  home:d({gyr:d({
+    Documents:d({
+      'roadmap.txt':f('Hollowhand 4.2\n=============\n\n[x] window compositor\n[x] virtual filesystem\n[x] four first-party apps\n[ ] clipboard history\n[ ] window snapping to quarters\n\nThe compositor is 90 lines. The window manager is 400. The dock is 12.'),
+      'invoice-0217.txt':f('INVOICE 0217\nBramble & Daughters Ltd\n\nWindow dressing, station platform tile study\nDay rate .............. 1,240.00\nTile sampling ........ 310.00\nRush delivery ........ 180.00\n\nBalance due: 1,730.00 — net 14')
+    }),
+    Desktop:d({'scratch.txt':f('ink on the proof, not on the file')}),
+    notes:d({
+      'today.txt':f('Monday.\n\nShipped the prism study. The dispersion is right to within 0.4 degrees of the reference tables, which is the sort of accuracy you only notice when it is missing.\n\nLunch: the good bread, not the fast bread.'),
+      'archive.txt':f('Archived. Move things here when they stop being urgent and start being history.')
+    })
+  })}),
+  System:d({Logs:d({
+    'boot.log':f('00.000 cold start\n00.014 memory 512 MB OK\n00.031 compositor online\n00.044 input pipeline online\n00.061 filesystem mounted at /\n00.070 dock online\n00.072 welcome'),
+    'thermal.log':f('t=00 mean 31.2 C\nt=60 mean 33.8 C\nt=120 mean 36.4 C\nt=180 mean 34.1 C')
+  })})
+});
+function node(p,create){
+  var parts=p.split('/').filter(Boolean),cur=FS;
+  for(var i=0;i<parts.length;i++){
+    if(cur.type!=='dir')return null;
+    if(!cur.children[parts[i]]){if(!create)return null;cur.children[parts[i]]=d({});}
+    cur=cur.children[parts[i]];
+  }
+  return cur;
+}
+var HOME='/home/gyr';
+
+/* ==================== windows ==================== */
+var desk=document.getElementById('desk'),z=10,seq=0,windows={},focused=null;
+function open(app,args){
+  var def=APPS[app];
+  if(def.singleton&&windows[app]&&!windows[app].el.classList.contains('min')){focusWin(app);return windows[app].el;}
+  seq++;
+  var el=document.createElement('div');
+  el.className='win focus';el.dataset.app=app;
+  el.style.cssText='left:'+(def.spawn?def.spawn(seq)[0]:90+seq*26)+'px;top:'+(def.spawn?def.spawn(seq)[1]:54+seq*22)+
+    'px;width:'+(def.w||620)+'px;height:'+(def.h||380)+'px';
+  el.innerHTML='<div class="tbar"><div class="lights"><i data-a="close" title="Close"></i><i data-a="min" title="Minimise"></i><i data-a="max" title="Zoom"></i></div>'+
+    '<div class="ttl">'+def.title+'</div><div class="tools"><button data-a="close" aria-label="Close">×</button></div></div>'+
+    '<div class="body"></div><div class="rz"></div>';
+  desk.appendChild(el);
+  var w={el:el,app:app,args:args||{},title:def.title};
+  windows[app+'-'+seq]=w;w.key=app+'-'+seq;
+  def.mount(w);
+  /* interactions */
+  el.addEventListener('pointerdown',()=>focusWin(w.key));
+  var t=el.querySelector('.tbar'),drag=null;
+  t.addEventListener('pointerdown',function(e){
+    if(e.target.dataset.a)return;
+    var r=el.getBoundingClientRect();drag={dx:e.clientX-r.left,dy:e.clientY-r.top};
+    if(el.classList.contains('max'))unmax(w);
+    t.setPointerCapture(e.pointerId);
+  });
+  t.addEventListener('pointermove',function(e){
+    if(!drag)return;
+    el.style.left=Math.max(-40,Math.min(innerWidth-80,e.clientX-drag.dx))+'px';
+    el.style.top=Math.max(0,Math.min(innerHeight-46,e.clientY-drag.dy))+'px';
+  });
+  t.addEventListener('pointerup',function(){drag=null});
+  [].forEach.call(el.querySelectorAll('[data-a]'),function(b){
+    b.addEventListener('click',function(){
+      var a=b.dataset.a;
+      if(a==='close'){el.classList.add('min');closeWin(w.key);}
+      if(a==='min'){el.classList.add('min');dockSync();}
+      if(a==='max'){el.classList.contains('max')?unmax(w):maximise(w);}
+    });
+  });
+  var rz=el.querySelector('.rz'),rs=null;
+  rz.addEventListener('pointerdown',function(e){rs={x:e.clientX,y:e.clientY,w:el.offsetWidth,h:el.offsetHeight};rz.setPointerCapture(e.pointerId);});
+  rz.addEventListener('pointermove',function(e){
+    if(!rs)return;
+    el.style.width=Math.max(250,rs.w+e.clientX-rs.x)+'px';
+    el.style.height=Math.max(160,rs.h+e.clientY-rs.y)+'px';
+    if(def.resize)def.resize(w);
+  });
+  rz.addEventListener('pointerup',function(){rs=null});
+  focusWin(w.key);dockSync();
+  return el;
+}
+function focusWin(k){
+  focused=k;var w=windows[k];if(!w)return;
+  w.el.style.zIndex=++z;w.el.classList.remove('min');
+  Object.keys(windows).forEach(function(x){windows[x].el.classList.toggle('focus',x===k);});
+  w.el.querySelector('.ttl').textContent=w.title;
+  dockSync();
+  setTimeout(function(){var i=w.el.querySelector('[data-input]');if(i)i.focus();},30);
+}
+function closeWin(k){var w=windows[k];if(!w)return;w.el.remove();delete windows[k];dockSync();}
+function minimiseAll(){Object.keys(windows).forEach(function(k){windows[k].el.classList.add('min');});dockSync();}
+function maximise(w){w.prev={l:w.el.style.left,t:w.el.style.top,w:w.el.style.width,h:w.el.style.height};
+  w.el.classList.add('max');Object.assign(w.el.style,{left:'0',top:'0',width:'100%',height:'100%'});if(APPS[w.app].resize)APPS[w.app].resize(w);}
+function unmax(w){w.el.classList.remove('max');
+  if(w.prev)Object.assign(w.el.style,{left:w.prev.l,top:w.prev.t,width:w.prev.w,height:w.prev.h});
+  if(APPS[w.app].resize)APPS[w.app].resize(w);}
+
+/* ==================== applications ==================== */
+var APPS={};
+
+APPS.editor={
+  title:'Untitled — Hollowhand Editor',w:640,h:420,
+  mount:function(w){
+    var p=w.args.path||HOME+'/notes/today.txt',n=node(p);
+    w.path=p;w.dirty=false;
+    w.el.querySelector('.body').innerHTML=
+      '<div class="ed"><div class="bar"><button class="btn p" data-c="save">Save</button><button class="btn" data-c="rev">Revert</button>'+
+      '<button class="btn" data-c="new">New</button><span style="margin-left:auto;color:var(--dim);font-family:var(--mono);font-size:11px" data-c="path"></span></div>'+
+      '<textarea data-input spellcheck="false"></textarea>'+
+      '<div class="status"><span><i class="dot"></i><b data-c="state">saved</b></span><span data-c="loc">1:1</span><span data-c="len">0 chars</span><span data-c="enc">UTF-8 · LF</span></div></div>';
+    var ta=w.el.querySelector('textarea'),st=w.el.querySelector('[data-c=state]'),loc=w.el.querySelector('[data-c=loc]'),len=w.el.querySelector('[data-c=len]');
+    function title(){w.title=(w.dirty?'• ':'')+p.split('/').pop()+' — Hollowhand Editor';w.el.querySelector('.ttl').textContent=w.title;sync();}
+    function setState(s){st.textContent=s;w.dirty=(s==='modified');title();}
+    function meta(){
+      var v=ta.value,c=v.slice(0,ta.selectionStart),ln=c.split('\n');
+      loc.textContent=(ln.length)+':'+(ln[ln.length-1].length+1);
+      len.textContent=v.length+' chars · '+v.split('\n').length+' lines';
+    }
+    w.el.querySelector('[data-c=path]').textContent=p;
+    ta.value=n&&n.type==='file'?n.content:'';meta();title();
+    ta.addEventListener('input',function(){setState('modified');meta();});
+    ta.addEventListener('keyup',meta);ta.addEventListener('click',meta);
+    ta.addEventListener('keydown',function(e){
+      if(e.key==='s'&&(e.metaKey||e.ctrlKey)){e.preventDefault();save();}
+      if(e.key==='Tab'){e.preventDefault();var s=ta.selectionStart;ta.value=ta.value.slice(0,s)+'  '+ta.value.slice(ta.selectionEnd);
+        ta.selectionStart=ta.selectionEnd=s+2;setState('modified');meta();}
+    });
+    function save(){
+      var nd=node(p,true);nd.type='file';nd.content=ta.value;nd.mod='today';
+      setState('saved');toast('Saved to '+p);
+    }
+    w.save=save;
+    w.el.querySelector('[data-c=save]').onclick=save;
+    w.el.querySelector('[data-c=rev]').onclick=function(){var f=node(p);if(f)ta.value=f.content;setState('saved');meta();};
+    w.el.querySelector('[data-c=new]').onclick=function(){
+      var i=1,np;do{np=HOME+'/Documents/untitled-'+(i++)+'.txt';}while(node(np));
+      w.args.path=np;p=np;w.el.querySelector('[data-c=path]').textContent=np;ta.value='';meta();setState('modified');
+    };
+    w.ta=ta;w.setState=setState;
+  }
+};
+
+APPS.terminal={
+  title:'gyr@hollowhand — /home/gyr',w:660,h:400,
+  mount:function(w){
+    w.cwd=HOME;w.hist=[];w.hi=0;
+    w.el.querySelector('.body').innerHTML='<div class="term"><div class="out"></div><div class="in"><span>gyr@hh</span>:<b data-c="p"></b>$ <input data-input spellcheck="false" autocomplete="off"></div></div>';
+    var out=w.el.querySelector('.out'),inp=w.el.querySelector('input'),pp=w.el.querySelector('[data-c=p]');
+    function p(){pp.textContent=w.cwd.replace(HOME,'~');}
+    function echo(s,cls){var d=document.createElement('div');d.textContent=s;if(cls)d.style.color=cls;out.appendChild(d);out.scrollTop=out.scrollHeight;}
+    function echoHTML(s){var d=document.createElement('div');d.innerHTML=s;out.appendChild(d);out.scrollTop=out.scrollHeight;}
+    w.echo=echo;
+    echo('Hollowhand shell 4.2 — type '+String.fromCharCode(96)+'help'+String.fromCharCode(96)+' for the command set.');
+    echo('');
+    p();
+    function run(line){
+      line=line.trim();if(!line)return;
+      echo('gyr@hh:'+w.cwd.replace(HOME,'~')+'$ '+line);
+      w.hist.push(line);w.hi=w.hist.length;
+      var a=line.split(/\s+/),c=a[0],args=a.slice(1),np=null;
+      var CMD={
+        help:function(){echo('  ls cd pwd cat echo mkdir touch rm tree open ps kill uname date whoami clear neofetch cowsay history');},
+        pwd:function(){echo(w.cwd);},
+        cd:function(){
+          var t=args[0]||HOME;
+          var abs=(t[0]==='/'?t:w.cwd+'/'+t).replace(/[^/]+?\/\.\./g,'').replace(/\/\./g,'/');
+          var full=abs.replace(HOME,'~');
+          var nd=node(abs);
+          if(!nd||nd.type!=='dir'){echo('cd: no such directory: '+full,'#ff7b6b');return;}
+          w.cwd=abs.replace(/\/+$/,'')||'/';p();
+        },
+        ls:function(){
+          var nd=node(w.cwd+(args[0]?'/'+args[0]:''));
+          if(!nd){echo('ls: no such path','#ff7b6b');return;}
+          if(nd.type==='file'){echo(nd.content.split('\n')[0]);return;}
+          var ks=Object.keys(nd.children);
+          if(!ks.length){echo('(empty)');return;}
+          echo(ks.map(function(k){return nd.children[k].type==='dir'?'<span style="color:#7fc7ff">'+k+'/</span>':k;}).join('   '));
+        },
+        cat:function(){
+          if(!args[0]){echo('usage: cat <file>','#ff7b6b');return;}
+          var nd=node(w.cwd+'/'+args[0]);
+          if(!nd||nd.type!=='file'){echo('cat: '+args[0]+': not a file','#ff7b6b');return;}
+          echo(nd.content);
+        },
+        echo:function(){echo(args.join(' '));},
+        mkdir:function(){
+          if(!args[0]){echo('usage: mkdir <name>','#ff7b6b');return;}
+          node(w.cwd+'/'+args[0],true);echo('created '+args[0]);
+        },
+        touch:function(){
+          if(!args[0]){echo('usage: touch <name>','#ff7b6b');return;}
+          var nd=node(w.cwd+'/'+args[0],true);
+          if(nd.type!=='file'){node(w.cwd+'/'+args[0]+'.txt',true).type='file';echo('created '+args[0]+'.txt');}
+          else echo('touched '+args[0]);
+        },
+        rm:function(){echo('rm: read-only volume. Hollowhand keeps its own history.','#e0a24a');},
+        tree:function(){
+          function walk(n,p,pre){
+            var ks=Object.keys(n.children||{});
+            echoHTML('<span style="color:#7fc7ff">'+p+'</span>');
+            ks.forEach(function(k,i){
+              var last=i===ks.length-1,c=n.children[k];
+              echoHTML('   '+(last?'└ ':'├ ')+'<span style="color:'+(c.type==='dir'?'#7fc7ff':'#8f99a8')+'">'+k+(c.type==='dir'?'/':'')+'</span>');
+              if(c.type==='dir')walk(c,p+k+'/','');
+            });
+          }
+          walk(node(w.cwd),w.cwd.replace(HOME,'~'));
+        },
+        open:function(){
+          if(!args[0]){echo('usage: open <name>','#ff7b6b');return;}
+          var nd=node(w.cwd+'/'+args[0]);
+          if(!nd){echo('open: '+args[0]+': no such file','#ff7b6b');return;}
+          if(nd.type==='dir'){echo('open: only files open into windows');return;}
+          open('editor',{path:(w.cwd+'/'+args[0]).replace(/[^/]+?\/\.\./g,'')});
+        },
+        ps:function(){
+          echo('  PID APP              STATE');
+          Object.keys(windows).forEach(function(k,i){
+            var win=windows[k];
+            echo('  '+String(200+i*7).padStart(3,'0')+'  '+win.app.padEnd(14,' ')+(win.el.classList.contains('min')?'suspended':'running'));
+          });
+        },
+        kill:function(){echo('kill: this is a demonstration operating system. Nothing dies.','#e0a24a');},
+        uname:function(){echo('Hollowhand 4.2.0-desktop single-file x86_64 virtual');},
+        date:function(){echo(new Date().toString());},
+        whoami:function(){echo('gyr — compositor maintainer, tile obsessive, mild tea drinker');},
+        clear:function(){out.innerHTML='';},
+        history:function(){echo(w.hist.map(function(h,i){return String(i+1).padStart(3,' ')+'  '+h;}).join('\n'));},
+        neofetch:function(){
+          echoHTML('<pre style="margin:.2em 0;color:#7fc7ff">      ▟█████\n   ▟███████▙   hollowhand@4.2\n  ▟███▛   ▜███▙  ─────────────────\n ███▛     ▜███  OS      Hollowhand 4.2\n ███▙     ▟███  WM      Hollowhand WM\n ████▄   ▄███   Shell    hhsh 4.2\n  ▜█████▄█████▛  Theme    '+(document.body.classList.contains('light')?'bone':'graphite')+'\n   ▜█████████▛   WM      4 windows open\n     ▜█████▛     Disk    512 MB / in-memory\n</pre>'+
+          '<span style="color:#ff5f57">███</span><span style="color:#febc2e">███</span><span style="color:#28c840">███</span>');
+        },
+        cowsay:function(){
+          var t=args.join(' ')||'hollow hands';
+          var w2=Math.max(t.length,10);
+          echo(' '+'_'.repeat(w2+2)+'\n< '+t+' >\n '+'-'.repeat(w2+2)+'\n        \\   ^__^\n         \\  (oo)\\_______\n            (__)\\       )\\/\\\n                ||----w |\n                ||     ||');
+        }
+      };
+      if(CMD[c])CMD[c]();else echo('hhsh: '+c+': command not found','#ff7b6b');
+    }
+    inp.addEventListener('keydown',function(e){
+      if(e.key==='Enter'){run(inp.value);inp.value='';}
+      if(e.key==='ArrowUp'){e.preventDefault();if(w.hi>0)inp.value=w.hist[--w.hi]||'';}
+      if(e.key==='ArrowDown'){e.preventDefault();w.hi=Math.min(w.hist.length,w.hi+1);inp.value=w.hist[w.hi]||'';}
+      if(e.key==='l'&&(e.metaKey||e.ctrlKey)){e.preventDefault();out.innerHTML='';}
+    });
+    w.run=run;p();
+  }
+};
+
+APPS.files={
+  title:'Files — /home/gyr',w:640,h:430,
+  mount:function(w){
+    w.cwd=HOME;
+    w.el.querySelector('.body').innerHTML=
+      '<div class="files"><div class="side"><h4>Places</h4>'+
+      [['Home','/home/gyr'],['Documents','/home/gyr/Documents'],['Desktop','/home/gyr/Desktop'],
+       ['notes','/home/gyr/notes'],['System Logs','/System/Logs'],['Volume','/']].map(function(p){
+        return '<button data-p="'+p[1]+'">'+p[0]+'</button>';}).join('')+
+      '</div><div class="main"><div class="crumb"><button class="btn" data-c="up">↑</button> <b data-c="path"></b></div>'+
+      '<div class="list" data-c="list"></div><div class="preview" data-c="prev">Select a file to preview it.</div></div></div>';
+    var q=w.el.querySelector.bind(w.el.querySelector);
+    function render(){
+      var nd=node(w.cwd);w.title='Files — '+(w.cwd.replace(HOME,'~')||'/');
+      w.el.querySelector('.ttl').textContent=w.title;
+      q('[data-c=path]').textContent=w.cwd.replace(HOME,'~')||'/';
+      [].forEach.call(w.el.querySelectorAll('.side button'),function(b){b.classList.toggle('on',b.dataset.p===w.cwd);});
+      var list=q('[data-c=list]');list.innerHTML='';
+      if(!nd||nd.type!=='dir'){list.textContent='not a directory';return;}
+      var ks=Object.keys(nd.children).sort(function(a,b){
+        var A=nd.children[a],B=nd.children[b];
+        return (B.type==='dir')-(A.type==='dir')||a.localeCompare(b);});
+      if(w.cwd!=='/')ks.unshift('..');
+      ks.forEach(function(k){
+        var it=k==='..'?{type:'dir',name:'..',mod:''}:Object.assign({name:k},nd.children[k]);
+        var row=document.createElement('div');row.className='row';
+        row.innerHTML='<span class="ic">'+(it.type==='dir'?'▸':'·')+'</span><span>'+it.name+'</span><span class="mt">'+
+          (it.type==='dir'?'folder':(it.content.length+' B'))+' · '+it.mod+'</span>';
+        row.onclick=function(){
+          if(k==='..'){w.cwd=w.cwd.split('/').slice(0,-1).join('/')||'/';render();return;}
+          q('[data-c=prev]').textContent=it.type==='dir'?'Folder — double-click to enter.':it.content;
+          row.style.background='var(--accent-soft)';
+          row.ondblclick=function(){
+            row.style.background='';row.ondblclick=null;
+            if(it.type==='dir'){w.cwd=(w.cwd+'/'+k).replace('//','/');render();}
+            else open('editor',{path:w.cwd+'/'+k});
+          };
+        };
+        list.appendChild(row);
+      });
+    }
+    [].forEach.call(w.el.querySelectorAll('.side button'),function(b){b.onclick=function(){w.cwd=b.dataset.p;render();};});
+    q('[data-c=up]').onclick=function(){w.cwd=w.cwd.split('/').slice(0,-1).join('/')||'/';render();};
+    render();
+  }
+};
+
+APPS.settings={
+  title:'System Settings',w:520,h:460,
+  mount:function(w){
+    w.el.querySelector('.body').innerHTML='<div class="set">'+
+      '<h3>Appearance</h3>'+
+      '<div class="row"><div>Light mode<small>Bone paper, warm greys, high legibility.</small></div><div class="sw" role="switch" tabindex="0" aria-checked="'+document.body.classList.contains('light')+'" data-c="light"></div></div>'+
+      '<div class="row"><div>Wallpaper<small>Three fields, rendered from layered radial gradients.</small></div></div>'+
+      '<div class="walls" data-c="walls">'+
+      ['linear-gradient(140deg,#e0a24a,#406fa0)','linear-gradient(140deg,#60bea0,#c07a3a)','linear-gradient(140deg,#c8785a,#5a6eb4)']
+        .map(function(g,i){return '<button data-w="'+i+'" class="'+(document.body.dataset.wall==i?'on':'')+'" style="background:'+g+'"></button>';}).join('')+
+      '</div>'+
+      '<h3>Compositor</h3>'+
+      '<div class="row"><div>Reduce motion<small>Stops window and dock animation.</small></div><div class="sw" role="switch" tabindex="0" aria-checked="false" data-c="motion"></div></div>'+
+      '<div class="row"><div>Accent<small>Hollowhand amber. Restrained on purpose.</small></div><div style="display:flex;gap:6px" data-c="acc">'+
+      ['#e0a24a','#7fc7a0','#c8748f','#8ba7d6'].map(function(c,i){return '<span data-a="'+c+'" style="width:22px;height:22px;border-radius:6px;background:'+c+';cursor:pointer;border:1px solid var(--line)"></span>';}).join('')+
+      '</div></div>'+
+      '<h3>Storage</h3>'+
+      '<div class="row"><div>Virtual volume<small>In-memory. Everything resets on reload — including your 4 a.m. edits.</small></div><div style="font-family:var(--mono);font-size:11.5px;color:var(--dim)">512 MB / 512 MB</div></div>'+
+      '<div class="row"><div>Applications<small>Four first-party, zero dependencies.</small></div><div style="font-family:var(--mono);font-size:11.5px;color:var(--dim)">4</div></div>'+
+      '</div>';
+    var sw=w.el.querySelector('[data-c=light]');
+    function toggle(){var on=!document.body.classList.contains('light');
+      document.body.classList.toggle('light',on);sw.setAttribute('aria-checked',on);toast(on?'Light mode':'Dark mode');}
+    sw.onclick=toggle;sw.onkeydown=function(e){if(e.key===' '||e.key==='Enter')toggle();};
+    [].forEach.call(w.el.querySelectorAll('[data-w]'),function(b){
+      b.onclick=function(){
+        document.body.dataset.wall=b.dataset.w;
+        [].forEach.call(w.el.querySelectorAll('[data-w]'),function(x){x.classList.remove('on');});
+        b.classList.add('on');toast('Wallpaper changed');
+      };
+    });
+    var mo=w.el.querySelector('[data-c=motion]');
+    mo.onclick=function(){var on=mo.getAttribute('aria-checked')!=='true';
+      mo.setAttribute('aria-checked',on);
+      document.documentElement.style.setProperty('--shadow',on?'0 0 0 rgba(0,0,0,0)':'0 30px 70px -24px rgba(0,0,0,.75)');
+      document.querySelectorAll('#dock button').forEach(function(b){b.style.transition=on?'none':'';});
+    };
+    [].forEach.call(w.el.querySelectorAll('[data-a]'),function(s){
+      s.onclick=function(){document.documentElement.style.setProperty('--accent',s.dataset.a);
+        document.documentElement.style.setProperty('--accent-soft',s.dataset.a+'28');};
+    });
+  }
+};
+
+/* ==================== dock ==================== */
+var DOCK=[['editor','✎','Hollowhand Editor'],['terminal','>_','Shell'],['files','▤','Files'],['settings','⚙','System Settings']];
+var dock=document.getElementById('dock');
+DOCK.forEach(function(d){
+  var b=document.createElement('button');b.title=d[2];b.setAttribute('aria-label',d[2]);b.textContent=d[0];
+  b.dataset.app=d[0];
+  b.onclick=function(){open(d[0]);};
+  dock.appendChild(b);
+});
+var sep=document.createElement('span');sep.className='sep';dock.appendChild(sep);
+var mini=document.createElement('button');mini.title='Minimise all windows';mini.setAttribute('aria-label','Minimise all');mini.textContent='—';
+mini.onclick=minimiseAll;dock.appendChild(mini);
+function dockSync(){
+  var runs={};Object.keys(windows).forEach(function(k){runs[windows[k].app]=1;});
+  [].forEach.call(dock.querySelectorAll('button[data-app]'),function(b){b.classList.toggle('run',!!runs[b.dataset.app]);});
+}
+
+/* ==================== menu bar ==================== */
+var MENUS={
+  app:[['<b>Hollowhand OS</b>',''],['Version 4.2 (build 2177)',''],'-',['About Hollowhand…',function(){modal('About Hollowhand OS','<p>Hollowhand is a complete desktop metaphor implemented in a single HTML file: a window manager with <code>drag</code>, <code>zoom</code>, <code>minimise</code> and <code>close</code>, a virtual filesystem with real file content, and four applications that talk to each other.</p><p>Open the shell and run <code>neofetch</code>. Edit <code>/home/gyr/notes/today.txt</code> in the editor, save it, then <code>cat notes/today.txt</code> in the terminal. The change is really there.</p>')}],['System Settings…',function(){open('settings');}]],
+  file:[['New note',function(){open('editor',{path:HOME+'/Documents/untitled-1.txt'});}],['Open…',function(){open('files');}],
+        ['Save (⌘S in editor)',function(){var k=focused;if(k&&windows[k].app==='editor')windows[k].save();}],'-',['Close window',function(){if(focused)closeWin(focused);}]],
+  view:[['Toggle light / dark',function(){document.body.classList.toggle('light');}],
+        ['Cycle wallpaper',function(){var n=+document.body.dataset.wall;document.body.dataset.wall=(n+1)%3;}],
+        ['Minimise all',minimiseAll]],
+  win:Object.keys(APPS).map(function(k){return [APPS[k].title.replace(/ —.*/,''),function(){open(k);}];})
+      .concat([['-'],['Close focused',function(){if(focused)closeWin(focused);}]]),
+  help:[['Command reference',function(){open('terminal');setTimeout(function(){
+        var k=Object.keys(windows).filter(function(x){return windows[x].app==='terminal';}).pop();
+        if(k)windows[k].run('help');},320);}],
+        ['Keyboard',function(){modal('Keyboard','<p>Every window drags by its title bar and resizes from the bottom-right corner. <code>⌘/Ctrl + S</code> saves in the editor. In the shell, <code>↑</code> and <code>↓</code> walk history, <code>⌘/Ctrl + L</code> clears the screen. Press <code>Escape</code> to close a menu.</p>')}],
+        ['About…',function(){MENUS.app[3][1]();}]]
+};
+var openMenu=null;
+[].forEach.call(document.querySelectorAll('#menubar .mtitle'),function(t){
+  t.addEventListener('click',function(e){
+    e.stopPropagation();
+    var k=t.dataset.menu;
+    if(openMenu===k){closeMenus();return;}
+    closeMenus();
+    var m=document.createElement('div');m.className='menu open';
+    MENUS[k].forEach(function(row){
+      if(row==='-'){m.appendChild(document.createElement('hr'));return;}
+      var b=document.createElement('button');
+      b.innerHTML='<span>'+row[0]+'</span><span>'+(row[1]?'↵':'')+'</span>';
+      b.onclick=function(){closeMenus();row[1]&&row[1]();};
+      m.appendChild(b);
+    });
+    document.body.appendChild(m);
+    var r=t.getBoundingClientRect();
+    m.style.left=Math.min(r.left,innerWidth-230)+'px';
+    t.classList.add('open');openMenu=k;
+  });
+});
+function closeMenus(){
+  [].forEach.call(document.querySelectorAll('.menu'),function(m){m.remove();});
+  [].forEach.call(document.querySelectorAll('#menubar .mtitle'),function(t){t.classList.remove('open');});
+  openMenu=null;
+}
+document.addEventListener('click',closeMenus);
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape')closeMenus();
+  if((e.metaKey||e.ctrlKey)&&e.key==='w'&&focused){e.preventDefault();closeWin(focused);}
+});
+
+/* ==================== modal + toast ==================== */
+var modalEl=document.getElementById('modal');
+function modal(t,html){document.getElementById('mtitle').textContent=t;
+  document.getElementById('mbody').innerHTML=html;modalEl.classList.add('open');}
+document.getElementById('mok').onclick=function(){modalEl.classList.remove('open');};
+modalEl.onclick=function(e){if(e.target===modalEl)modalEl.classList.remove('open');};
+var toastEl=document.createElement('div');
+toastEl.style.cssText='position:fixed;left:50%;transform:translate(-50%,20px);bottom:86px;z-index:600;'+
+  'background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:.6rem 1rem;font-size:12.5px;'+
+  'box-shadow:var(--shadow);opacity:0;transition:.3s;pointer-events:none';
+document.body.appendChild(toastEl);
+var toastT;
+function toast(s){toastEl.textContent=s;toastEl.style.opacity='1';toastEl.style.transform='translate(-50%,0)';
+  clearTimeout(toastT);toastT=setTimeout(function(){toastEl.style.opacity='0';toastEl.style.transform='translate(-50%,20px)';},2200);}
+
+/* ==================== clock ==================== */
+setInterval(function(){
+  var d=new Date(),h=d.getHours(),m=d.getMinutes();
+  document.getElementById('clk').textContent=((h<10?'0':'')+h)+':'+((m<10?'0':'')+m);
+},1000);
+
+/* ==================== boot sequence ==================== */
+var BOOT=[
+ ['Hollowhand BIOS 4.2.0 — 512 MB ECC',''],
+ ['0.014  memory check ......... 512 MB OK',''],
+ ['0.031  display pipeline ..... 1 virtual framebuffer',''],
+ ['0.044  input pipeline ....... pointer, keyboard',''],
+ ['0.052  window compositor .... online',''],
+ ['0.061  mounting / .......... 12 inodes',''],
+ ['0.070  first-party apps .... 4 loaded',''],
+ ['0.074  dock ................ ready',''],
+ ['0.081  launching Hollowhand Shell','']
+];
+var bi=0,bo=document.getElementById('bootout'),bt;
+(function step(){
+  if(bi>=BOOT.length){
+    bo.innerHTML+='<span class="ok">Hollowhand OS 4.2 — handed over to the window manager.</span>';
+    setTimeout(function(){
+      document.getElementById('boot').classList.add('done');
+      setTimeout(function(){document.getElementById('boot').remove();},800);
+      open('terminal');setTimeout(function(){open('files');},260);
+      setTimeout(function(){open('editor',{path:HOME+'/notes/today.txt'});},520);
+    },620);
+    return;
+  }
+  bo.innerHTML+=BOOT[bi][0]+'\n';
+  bo.parentNode.scrollTop=bo.parentNode.scrollHeight;
+  bi++;
+  bt=setTimeout(step,110+Math.random()*230);
+})();
+})();
+</script>
+</body>
+</html>

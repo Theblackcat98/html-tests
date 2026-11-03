@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MERIDIAN — Variable Grotesque &middot; Type Specimen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,100..1000&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --stack:"Roboto Flex","Inter","Helvetica Neue",Helvetica,Arial,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+    --paper:#f4f2ec; --ink:#14130f; --grey:#8b8779; --rule:#d6d2c6; --red:#c8362b;
+    --lead:64px; --base:40px; --track:0em; --tsize:200px; --wght:700; --wdth:100; --opsz:144;
+  }
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:var(--stack);
+    font-variation-settings:"wght" var(--wght),"wdth" var(--wdth),"opsz" var(--opsz);
+    -webkit-font-smoothing:antialiased}
+  .mono{font-family:var(--mono);font-weight:400}
+  .top{position:sticky;top:0;z-index:40;background:rgba(244,242,236,.94);backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--ink);display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:center;
+    padding:11px 22px}
+  .brand{display:flex;flex-direction:column;line-height:1.15}
+  .brand b{font-size:14px;letter-spacing:.01em}
+  .brand span{font-size:8.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--grey)}
+  .ctrls{display:flex;gap:16px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+  .kn{display:grid;gap:4px;min-width:104px}
+  .kn label{font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--grey);
+    display:flex;justify-content:space-between;gap:8px}
+  .kn label i{font-style:normal;color:var(--ink)}
+  input[type=range]{-webkit-appearance:none;width:100%;height:2px;background:var(--ink);opacity:.85;outline:0}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:11px;border-radius:99px;
+    background:var(--red);cursor:ew-resize}
+  input[type=range]::-moz-range-thumb{width:11px;height:11px;border:2px solid var(--paper);border-radius:99px;
+    background:var(--red);cursor:ew-resize}
+  .tog{display:flex;gap:0;border:1px solid var(--ink)}
+  .tog button{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+    padding:6px 9px;background:transparent;border:0;border-right:1px solid var(--ink);cursor:pointer;color:var(--ink)}
+  .tog button:last-child{border-right:0}
+  .tog button.on{background:var(--ink);color:var(--paper)}
+  main{padding:0 22px 120px}
+  section{display:grid;grid-template-columns:150px 1fr;gap:26px;padding:52px 0 0}
+  .slabel{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--grey);
+    padding-top:10px;border-top:1px solid var(--rule);display:flex;justify-content:space-between}
+  .slabel b{color:var(--red);font-weight:500}
+  .stage{position:relative;overflow:hidden}
+  .glines{position:absolute;inset:0;pointer-events:none;display:none;z-index:3}
+  .glines.on{display:block}
+  .cols{position:absolute;inset:0;pointer-events:none;display:none;z-index:2;
+    background:repeating-linear-gradient(90deg,rgba(200,54,43,.16) 0 1px,transparent 1px 8.3333%)}
+  .cols.on{display:block}
+  .xh{position:absolute;left:0;right:0;height:0;border-top:1px dashed var(--red);display:none;z-index:4;opacity:.85}
+  .xh.on{display:block}
+  .xh.cap{border-top-style:solid;border-color:#1b6ec2}
+  .xh b{position:absolute;right:0;top:-13px;font-family:var(--mono);font-size:8px;letter-spacing:.16em;
+    color:var(--red);background:var(--paper);padding:0 4px}
+  .xh.cap b{color:#1b6ec2}
+  .spec{line-height:calc(var(--lead) * 1px);letter-spacing:var(--track);font-size:calc(var(--tsize) * 1px)}
+  .mast{font-size:clamp(54px,10.5vw,158px);line-height:.84;letter-spacing:-.045em;margin:6px 0 0;
+    font-variation-settings:"wght" 760,"wdth" 112,"opsz" 144}
+  .mast em{font-style:normal;display:block;font-size:clamp(9px,1vw,12px);letter-spacing:.34em;
+    text-transform:uppercase;color:var(--grey);margin-bottom:14px}
+  .disp{font-size:calc(var(--tsize) * 1px);line-height:calc(var(--lead) * 1px);letter-spacing:var(--track);
+    white-space:nowrap;margin:0}
+  .disp.vf{font-variation-settings:"wght" var(--wght),"wdth" var(--wdth),"opsz" var(--opsz)}
+  .note{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;color:var(--grey);margin-top:8px}
+  .set{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:2px}
+  .set span{font-size:30px;line-height:1.15;border:1px solid var(--rule);text-align:center;padding:6px 0;
+    transition:.14s;font-variation-settings:"wght" 450,"wdth" 100}
+  .set span:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .set .k{font-size:17px;letter-spacing:.06em}
+  .glyphs{margin-top:22px;display:grid;gap:2px}
+  .glyphs div{border:1px solid var(--rule);padding:9px 12px;display:flex;gap:14px;align-items:baseline;flex-wrap:wrap}
+  .glyphs div b{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--red);width:88px;flex:0 0 auto}
+  .glyphs div span{font-size:23px;line-height:1.1}
+  .fall{font-size:12px}
+  .wf{position:relative;border-bottom:1px solid var(--rule);display:flex;align-items:baseline;gap:18px;overflow:hidden}
+  .wf em{font-family:var(--mono);font-style:normal;font-size:8.5px;letter-spacing:.14em;color:var(--grey);
+    width:74px;flex:0 0 auto;text-align:right}
+  .wf p{white-space:nowrap;line-height:1.06;letter-spacing:-.012em;overflow:hidden;flex:1}
+  .trk{display:grid;gap:6px;margin-top:4px}
+  .trk div{display:flex;align-items:baseline;gap:20px;border-bottom:1px solid var(--rule);padding-bottom:4px}
+  .trk em{font-family:var(--mono);font-style:normal;font-size:9px;color:var(--red);width:64px;flex:0 0 auto}
+  .trk p{font-size:clamp(28px,5.2vw,62px);line-height:1.02;white-space:nowrap}
+  .para{font-size:19px;max-width:74ch;letter-spacing:-.004em;line-height:1.5;
+    font-variation-settings:"wght" 380,"wdth" 100}
+  .para + .para{margin-top:1.1em}
+  .para b{font-variation-settings:"wght" 720}
+  .best{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:0;border:1px solid var(--ink)}
+  .best div{padding:16px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+  .best div:last-child{border-right:0}
+  .best h4{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--red);
+    margin-bottom:9px}
+  .best p{font-size:12.5px;line-height:1.55;color:#3c3a33}
+  .best .big{font-size:34px;line-height:1.05;letter-spacing:-.02em;margin:6px 0 4px;
+    font-variation-settings:"wght" 640,"wdth" 96}
+  .best .sm{font-size:11px;letter-spacing:.01em}
+  .colophon{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:0;border-top:1px solid var(--ink);
+    margin-top:18px}
+  .colophon div{padding:12px 0;border-right:1px solid var(--rule);padding-right:16px;margin-right:16px}
+  .colophon h5{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--grey);
+    margin-bottom:6px}
+  .colophon p{font-size:12px;line-height:1.5}
+  .colophon table{width:100%;border-collapse:collapse;font-size:11px}
+  .colophon td{padding:2px 0;border-bottom:1px dotted var(--rule)}
+  .colophon td:last-child{text-align:right;font-family:var(--mono);font-size:10px}
+  footer{margin-top:70px;padding-top:16px;border-top:1px solid var(--ink);display:flex;
+    justify-content:space-between;gap:20px;font-family:var(--mono);font-size:9px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--grey);flex-wrap:wrap}
+  @media (max-width:900px){
+    .top{grid-template-columns:1fr}
+    section{grid-template-columns:1fr;gap:12px}
+    .slabel{border:0;padding-top:0}
+  }
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="brand"><b>Meridian</b><span class="mono">Corvid Type Foundry &middot; 2026</span></div>
+  <div class="ctrls">
+    <div class="kn"><label>Size <i id="v_sz">200</i></label><input id="s_sz" type="range" min="24" max="400" value="200"></div>
+    <div class="kn"><label>Tracking <i id="v_tr">0</i></label><input id="s_tr" type="range" min="-60" max="300" value="0"></div>
+    <div class="kn"><label>Leading <i id="v_ld">64</i></label><input id="s_ld" type="range" min="18" max="140" value="64"></div>
+    <div class="kn"><label>Weight <i id="v_wg">700</i></label><input id="s_wg" type="range" min="100" max="1000" step="1" value="700"></div>
+    <div class="kn"><label>Width <i id="v_wd">100</i></label><input id="s_wd" type="range" min="62" max="151" value="100"></div>
+    <div class="kn"><label>Optical <i id="v_op">144</i></label><input id="s_op" type="range" min="8" max="144" value="144"></div>
+    <div class="tog">
+      <button id="t_grid">Grid</button>
+      <button id="t_cols">Columns</button>
+      <button id="t_xh">Metrics</button>
+    </div>
+  </div>
+</div>
+
+<main>
+  <section id="top">
+    <div class="slabel">00 <b>Cover</b></div>
+    <div>
+      <h1 class="mast"><em>A variable grotesque in four dimensions</em>Meridian</h1>
+    </div>
+  </section>
+
+  <section>
+    <div class="slabel">01 <b>Display</b></div>
+    <div class="stage" id="stDisp">
+      <div class="cols" id="cols1"></div>
+      <div class="glines" id="gl1"></div>
+      <div class="xh" id="xh"><b>x-height</b></div>
+      <div class="xh cap" id="cap"><b>cap height</b></div>
+      <p class="disp vf" id="disp">Ridge</p>
+      <div class="note" id="dispNote">200 px / 0 tracking / 64 leading &middot; wght 700, wdth 100, opsz 144</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="slabel">02 <b>Character set</b></div>
+    <div>
+      <div class="set" id="setA"></div>
+      <div class="set" id="setB" style="margin-top:2px"></div>
+      <div class="set" id="setC" style="margin-top:2px"></div>
+      <div class="glyphs">
+        <div><b>Punctuation</b>
+          <span>!"#$%&amp;'()*+,-./</span><span>:;&lt;=&gt;?@</span><span>[\]^_`{|}~</span></div>
+        <div><b>Currency &amp; marks</b>
+          <span>&euro;&pound;&yen;&cent;</span><span>&copy;&reg;&trade;&sect;&para;</span><span>&deg;&plusmn;&times;&divide;&ne;&le;&ge;</span></div>
+        <div><b>Figures</b>
+          <span>0123456789</span><span>&frac12; &frac14; &frac34; ⅓ ⅔ №</span><span>0/0 1/1 &amp; 7/8</span></div>
+        <div><b>Diacritics</b>
+          <span>&aacute;&eacute;&iacute;&oacute;&uacute;</span><span>&ntilde;&ccedil;&aring;&oslash;&aelig;</span><span>&Auml;&Ouml;&Uuml;&szlig;&larr;&rarr;&harr;</span></div>
+      </div>
+      <div class="note">1,284 glyphs &middot; Latin core, Latin Extended-A, 312 Cyrillic forms on request, 88 arrows and math symbols.</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="slabel">03 <b>Waterfall</b></div>
+    <div id="wf"></div>
+  </section>
+
+  <section>
+    <div class="slabel">04 <b>Text</b></div>
+    <div class="stage" id="stPara">
+      <div class="glines" id="gl2"></div>
+      <p class="para">Meridian began as a correction. The brief was a display grotesque that could survive being set at
+        eleven pixels on a departures board, which is a harder problem than it sounds: at that size a wide bowl
+        becomes a blot, a tight aperture becomes a hole, and anything with a personality starts shouting over its
+        neighbours. So the counters were opened first, the joins flattened, the terminals cut on a single angle,
+        and only then was anybody allowed to have fun with the tail on the <b>q</b>.</p>
+      <p class="para">What came back is a face that changes its mind with the size. The optical size axis is not a
+        nicety bolted on at the end; it is the reason the 8&nbsp;pt setting is a different drawing from the 72&nbsp;pt
+        setting. Turn the optical slider down and watch the spacing tighten, the apertures narrow and the counters
+        plump out. Turn the weight up and the joins fill first, the way a punch does. The width axis is the
+        strangest of the four, and the one we get asked about least: stretch it past 120 and the face stops being a
+        grotesque and starts being a banner.</p>
+      <p class="para">It is a workhorse that has opinions. Set it in a single weight and it behaves. Set a whole
+        paragraph at 400 and it will read like a colleague who has read the memo. The italic is a true italic, drawn
+        with a forward angle of eleven degrees and a single-storey a, because a two-storey a at small sizes is a
+        staircase in a bad mood.</p>
+      <div class="note" id="paraNote">19 px &middot; 1.50 leading &middot; wght 380</div>
+    </div>
+  </section>
+
+  <section>
+    <div class="slabel">05 <b>Tracking</b></div>
+    <div class="trk">
+      <div><em>+180</em><p style="letter-spacing:.18em">HAMBURGEFONS</p></div>
+      <div><em>+60</em><p style="letter-spacing:.06em">HAMBURGEFONS</p></div>
+      <div><em>0</em><p>HAMBURGEFONS</p></div>
+      <div><em>&minus;20</em><p style="letter-spacing:-.02em">HAMBURGEFONS</p></div>
+      <div><em>&minus;45</em><p style="letter-spacing:-.045em">HAMBURGEFONS</p></div>
+    </div>
+    <div class="note">Display capitals want +40 to +80 at 40&nbsp;px and above. Below 14&nbsp;px they want the opposite, or they fall apart into a picket fence.</div>
+  </section>
+
+  <section>
+    <div class="slabel">06 <b>Best used at</b></div>
+    <div>
+      <div class="best">
+        <div>
+          <h4>Primary &mdash; interfaces</h4>
+          <p class="big">14 / 20</p>
+          <p class="sm">Body, labels, table numerals. Anything the reader has to finish.</p>
+        </div>
+        <div>
+          <h4>Secondary &mdash; headlines</h4>
+          <p class="big">72 &ndash; 140</p>
+          <p class="sm">Weight 620&ndash;760, tracking &minus;30, optical size locked high.</p>
+        </div>
+        <div>
+          <h4>Tertiary &mdash; numerals</h4>
+          <p class="big" style="font-variation-settings:'wght' 500,'wdth' 78">0123456789</p>
+          <p class="sm">Tabular by default. Width 78 for dashboards, 100 for receipts.</p>
+        </div>
+        <div>
+          <h4>Avoid</h4>
+          <p class="big" style="font-variation-settings:'wght' 200,'wdth' 140;color:#8b8779">body</p>
+          <p class="sm">Below weight 250 and above width 130, the counters fill and it turns to porridge.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="slabel">07 <b>Colophon</b></div>
+    <div>
+      <div class="colophon">
+        <div>
+          <h5>Design</h5>
+          <p>Wren Adisa and the Corvid drawing table, between March 2024 and a very wet November 2025.</p>
+        </div>
+        <div>
+          <h5>Axes</h5>
+          <table>
+            <tr><td>wght</td><td>100 &ndash; 1000</td></tr>
+            <tr><td>wdth</td><td>62.5 &ndash; 151</td></tr>
+            <tr><td>opsz</td><td>8 &ndash; 144</td></tr>
+            <tr><td>GRAD</td><td>&ndash; 100 &ndash; 100</td></tr>
+            <tr><td>slnt</td><td>&ndash; 11 &ndash; 0</td></tr>
+          </table>
+        </div>
+        <div>
+          <h5>Vertical metrics</h5>
+          <table id="metTab">
+            <tr><td>cap height</td><td id="m_cap">&mdash;</td></tr>
+            <tr><td>x-height</td><td id="m_x">&mdash;</td></tr>
+            <tr><td>ascender</td><td id="m_asc">&mdash;</td></tr>
+            <tr><td>descender</td><td id="m_desc">&mdash;</td></tr>
+            <tr><td>x / cap</td><td id="m_rat">&mdash;</td></tr>
+          </table>
+        </div>
+        <div>
+          <h5>Hinting &amp; formats</h5>
+          <p>TrueType, variable, static instances at nine optical sizes. Hinted for 8&ndash;64&nbsp;px on the
+            roman. Kerning is in the GPOS table; the tracking shown above is applied live in CSS and is not baked in.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span>Corvid Type Foundry &middot; 41 Quayside, Norwich</span>
+  <span>Specimen set in Meridian and IBM Plex Mono</span>
+  <span>Version 1.4 &middot; released 12 March 2026</span>
+</footer>
+
+<script>
+const root = document.documentElement;
+const measureCv = document.createElement("canvas").getContext("2d");
+let M = { cap: .71, x: .52, asc: .97, desc: .24 };
+function measure() {
+  try {
+    measureCv.font = '1000px ' + getComputedStyle(root).getPropertyValue("--stack");
+    const h = measureCv.measureText("H");
+    const x = measureCv.measureText("x");
+    M.cap = (h.actualBoundingBoxAscent || 710) / 1000;
+    M.x = (x.actualBoundingBoxAscent || 520) / 1000;
+    M.asc = (h.fontBoundingBoxAscent || 970) / 1000;
+    M.desc = (h.fontBoundingBoxDescent || 240) / 1000;
+  } catch (e) { }
+  const r = document.getElementById("metTab");
+  const f = v => Math.round(v * 1000) + " / 1000";
+  r.rows[0].cells[1].textContent = f(M.cap);
+  r.rows[1].cells[1].textContent = f(M.x);
+  r.rows[2].cells[1].textContent = f(M.asc);
+  r.rows[3].cells[1].textContent = f(M.desc);
+  r.rows[4].cells[1].textContent = (M.x / M.cap).toFixed(3);
+  paint();
+}
+function paint() {
+  const S = +document.getElementById("s_sz").value;
+  const L = +document.getElementById("s_ld").value;
+  const base = (L - (M.asc + M.desc) * S) / 2 + M.asc * S;
+  root.style.setProperty("--lead", L);
+  root.style.setProperty("--base", base.toFixed(2));
+  document.getElementById("xh").style.top = (base - M.x * S).toFixed(1) + "px";
+  document.getElementById("cap").style.top = (base - M.cap * S).toFixed(1) + "px";
+  for (const id of ["gl1", "gl2"]) {
+    const el = document.getElementById(id);
+    el.style.background = "repeating-linear-gradient(to bottom,rgba(20,19,15,.24) 0 1px,transparent 1px " + L + "px)";
+    el.style.backgroundPosition = "0 " + base.toFixed(2) + "px";
+  }
+  const gl2 = document.getElementById("gl2");
+  const ps = 19, pl = 28.5;
+  gl2.style.background = "repeating-linear-gradient(to bottom,rgba(20,19,15,.24) 0 1px,transparent 1px " + pl + "px)";
+  gl2.style.backgroundPosition = "0 " + ((pl - (M.asc + M.desc) * ps) / 2 + M.asc * ps).toFixed(2) + "px";
+}
+const SIZES = [96, 72, 54, 40, 30, 24, 19, 16, 13, 11];
+const wf = document.getElementById("wf");
+SIZES.forEach(s => {
+  const d = document.createElement("div");
+  d.className = "wf";
+  d.innerHTML = '<em>' + s + ' px</em><p style="font-size:' + s + 'px">Handgloves &mdash; quantity</p>';
+  wf.appendChild(d);
+});
+const A = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+const B = "abcdefghijklmnopqrstuvwxyz".split("");
+const C = "0123456789".split("");
+function fill(id, arr, cls) {
+  const el = document.getElementById(id);
+  arr.forEach(ch => {
+    const s = document.createElement("span");
+    if (cls) s.className = cls;
+    s.textContent = ch;
+    s.title = "U+" + ch.codePointAt(0).toString(16).toUpperCase().padStart(4, "0");
+    el.appendChild(s);
+  });
+}
+fill("setA", A); fill("setB", B); fill("setC", C);
+const bind = (id, key, outId, fmt) => {
+  const el = document.getElementById(id), out = document.getElementById(outId);
+  const run = () => {
+    root.style.setProperty(key, fmt(el.value));
+    out.textContent = fmt(el.value).replace(/px|em|%/g, "");
+    upd();
+  };
+  el.addEventListener("input", run);
+  run();
+};
+const upd = () => {
+  const S = +document.getElementById("s_sz").value;
+  const T = +document.getElementById("s_tr").value;
+  const L = +document.getElementById("s_ld").value;
+  const W = +document.getElementById("s_wg").value;
+  const D = +document.getElementById("s_wd").value;
+  const O = +document.getElementById("s_op").value;
+  root.style.setProperty("--tsize", S);
+  root.style.setProperty("--track", (T / 1000).toFixed(3) + "em");
+  root.style.setProperty("--lead", L);
+  root.style.setProperty("--wght", W);
+  root.style.setProperty("--wdth", D);
+  root.style.setProperty("--opsz", O);
+  const disp = document.getElementById("disp");
+  disp.style.fontWeight = W;
+  disp.style.fontStretch = D + "%";
+  document.getElementById("dispNote").textContent = S + " px / " + (T / 1000).toFixed(3) +
+    "em tracking / " + L + " px leading \u00b7 wght " + W + ", wdth " + D + ", opsz " + O;
+  document.getElementById("paraNote").textContent = "19 px \u00b7 " + (L / 19).toFixed(2) + " leading \u00b7 wght 380 (paragraph held at reading weight)";
+  paint();
+};
+bind("s_sz", "--tsize", "v_sz", v => v);
+bind("s_tr", "--track", "v_tr", v => (v / 1000).toFixed(3) + "em");
+bind("s_ld", "--lead", "v_ld", v => v);
+bind("s_wg", "--wght", "v_wg", v => v);
+bind("s_wd", "--wdth", "v_wd", v => v + "%");
+bind("s_op", "--opsz", "v_op", v => v);
+const tog = (id, cls) => {
+  const b = document.getElementById(id);
+  b.onclick = () => {
+    b.classList.toggle("on");
+    document.querySelectorAll("." + cls).forEach(e => e.classList.toggle("on", b.classList.contains("on")));
+  };
+};
+tog("t_grid", "glines");
+tog("t_cols", "cols");
+tog("t_xh", "xh");
+document.getElementById("t_cols").onclick = () => {
+  document.getElementById("t_cols").classList.toggle("on");
+  document.getElementById("cols1").classList.toggle("on");
+};
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
+measure();
+</script>
+</body>
+</html>

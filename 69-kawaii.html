@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sheet 12 — Kawaii Die-Cut Stickers, Risograph Pastel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;1,9..144,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   №69 — KAWAII STICKER SHEET
+   Core technique: the die-cut line is two stacked silhouette
+   layers (::before in sticker-white at scale 1.30, ::after in
+   warm grey at 1.12) behind the artwork. No clip-path, so the
+   cut stays resolution independent and drop-shadows follow the
+   true contour. Perforations are four tiled radial-gradient
+   dot tracks. Layout: one floating sheet object.
+   ============================================================ */
+:root{
+  --paper-a:#fbf5ea; --paper-b:#f2e8da; --paper-c:#e8dac6;
+  --pink:#f4a7bd; --pink-d:#e07a99; --rose:#f7c9d4;
+  --butter:#f6d995; --butter-d:#e2b45f; --mint:#a8dcc8; --mint-d:#6fbfa4;
+  --sky:#a9d5ef; --sky-d:#6eaed4; --ink:#4a3f52; --ink-2:#7d7186;
+  --cut:#ffffff; --cut-2:#f2efeb;
+  --ring:calc(var(--tx,0px) + 0px);
+  --spring:cubic-bezier(.22,1.7,.32,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  min-height:100dvh;display:grid;place-items:center;padding:clamp(12px,2.6vw,40px);
+  background:radial-gradient(92% 72% at 50% 0%,#fdf9f2,#ece0d0 68%,#dccdb8);
+  color:var(--ink);font-family:"Space Mono",ui-monospace,"Courier New",monospace;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+
+/* ---------- the sheet ---------- */
+.sheet{
+  position:relative;width:min(1180px,100%);border-radius:7px;
+  padding:clamp(16px,2.4vw,32px) clamp(20px,3.2vw,46px);
+  background:
+    repeating-linear-gradient(46deg,
+      rgba(244,167,189,.14) 0 16px,transparent 16px 32px,
+      rgba(169,213,239,.14) 32px 48px,transparent 48px 64px,
+      rgba(168,220,200,.14) 64px 80px,transparent 80px 96px,
+      rgba(246,217,149,.14) 96px 112px,transparent 112px 128px),
+    linear-gradient(168deg,var(--paper-a),var(--paper-b) 55%,var(--paper-c));
+  box-shadow:0 1px 0 rgba(255,255,255,.9) inset,0 30px 62px -34px rgba(84,66,80,.55),0 2px 5px rgba(84,66,80,.12);
+  isolation:isolate;
+}
+.head,.field,.foot{position:relative;z-index:2}
+/* perforated margin: four tiled dot tracks, no masks */
+.perf{
+  position:absolute;inset:7px;z-index:5;pointer-events:none;opacity:.42;
+  background:
+    radial-gradient(circle 4.4px at 50% 50%,#8a7d8e 96%,transparent) left top/22px 11px repeat-x,
+    radial-gradient(circle 4.4px at 50% 50%,#8a7d8e 96%,transparent) left bottom/22px 11px repeat-x,
+    radial-gradient(circle 4.4px at 50% 50%,#8a7d8e 96%,transparent) left top/11px 22px repeat-y,
+    radial-gradient(circle 4.4px at 50% 50%,#8a7d8e 96%,transparent) right top/11px 22px repeat-y;
+}
+
+/* ---------- header ---------- */
+.head{display:flex;flex-wrap:wrap;gap:16px 30px;align-items:flex-end;justify-content:space-between;
+  border-bottom:1px dashed rgba(74,63,82,.3);padding-bottom:clamp(12px,1.6vw,18px);margin-bottom:clamp(16px,2.2vw,26px)}
+.title .no{font-size:10px;letter-spacing:.3em;color:var(--ink-2)}
+.title h1{font-family:"Fraunces",Georgia,serif;font-weight:500;letter-spacing:-.022em;font-size:clamp(27px,4.3vw,52px);line-height:.98}
+.title h1 em{font-style:italic;font-weight:300;color:var(--pink-d)}
+.title p{margin-top:9px;font-size:11px;line-height:1.7;color:var(--ink-2);max-width:46ch}
+.stamp{flex:0 0 auto;width:86px;height:86px;border-radius:50%;border:1.5px dashed rgba(224,122,153,.65);
+  color:var(--pink-d);display:grid;place-content:center;text-align:center;line-height:1.4;
+  font-size:8.5px;letter-spacing:.16em;transform:rotate(-9deg);background:rgba(255,255,255,.32)}
+.stamp b{font-family:"Fraunces",Georgia,serif;font-size:16px;letter-spacing:0;display:block}
+
+/* ---------- the stickers ---------- */
+.field{display:grid;gap:clamp(14px,2.1vw,28px);
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  grid-template-areas:"a b c d" "e f g h" "sp sp sp i";
+  align-items:center;justify-items:center;padding:clamp(6px,1vw,14px) 0}
+.sticker{
+  grid-area:var(--g);width:var(--w,clamp(110px,13vw,156px));height:var(--w,clamp(110px,13vw,156px));
+  position:relative;display:grid;place-items:center;cursor:grab;touch-action:none;
+  filter:drop-shadow(0 11px 13px rgba(96,76,92,.3));
+  transform:translate(var(--tx,0px),var(--ty,0px)) rotate(var(--rot,0deg));
+  transition:transform 420ms var(--spring),filter 300ms ease;
+}
+.sticker::before,.sticker::after{
+  content:"";position:absolute;inset:0;z-index:-1;background:var(--cut);
+  box-shadow:0 1px 0 var(--cut-2) inset;
+}
+.sticker::before{transform:scale(1.30)}
+.sticker::after{transform:scale(1.12);background:var(--cut-2)}
+.sticker>svg{width:70%;height:70%;display:block;overflow:visible;transform-origin:50% 50%;
+  animation:idle var(--dur,7s) ease-in-out var(--delay,0s) infinite;
+  filter:drop-shadow(.7px .5px 0 rgba(224,122,153,.26))}
+@keyframes idle{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(1.5deg)}}
+.sticker:hover{filter:drop-shadow(0 22px 19px rgba(96,76,92,.32));z-index:9}
+.sticker.dragging{cursor:grabbing;transition:none;z-index:12;
+  transform:translate(var(--tx,0px),var(--ty,0px)) rotate(var(--rot,0deg)) scale(1.05)}
+.sticker:focus-visible{outline:none;z-index:9}
+.sticker:focus-visible::after{box-shadow:0 0 0 2px var(--sky-d),0 1px 0 var(--cut-2) inset}
+
+/* ---------- footer ---------- */
+.foot{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;justify-content:space-between;
+  margin-top:clamp(16px,2.2vw,28px);padding-top:clamp(12px,1.6vw,18px);
+  border-top:1px dashed rgba(74,63,82,.3)}
+.foot .note{font-size:10.5px;line-height:1.7;color:var(--ink-2);max-width:54ch}
+.foot .note b{color:var(--ink);font-weight:700}
+.btn{font:700 10px/1 "Space Mono",monospace;letter-spacing:.22em;text-transform:uppercase;
+  padding:13px 20px;margin:3px;border-radius:999px;border:1px solid var(--ink);
+  background:var(--ink);color:var(--paper-a);cursor:pointer;
+  box-shadow:0 5px 0 rgba(74,63,82,.26);transition:transform 140ms ease,box-shadow 140ms ease,background 200ms}
+.btn:hover{transform:translateY(-2px);box-shadow:0 7px 0 rgba(74,63,82,.28)}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(74,63,82,.3)}
+.btn:focus-visible{outline:2px solid var(--pink-d);outline-offset:3px}
+.btn--ghost{background:transparent;color:var(--ink);box-shadow:none}
+.btn--ghost:hover{background:rgba(74,63,82,.07)}
+.shake{animation:shake 660ms cubic-bezier(.36,.07,.19,.97) both}
+.shake *{animation:none !important}
+@keyframes shake{
+  10%{transform:translate(-2px,1px) rotate(-.5deg)} 20%{transform:translate(4px,-2px) rotate(.7deg)}
+  30%{transform:translate(-6px,2px) rotate(-.9deg)} 40%{transform:translate(5px,-1px) rotate(.6deg)}
+  50%{transform:translate(-3px,2px) rotate(-.4deg)} 60%{transform:translate(4px,1px) rotate(.5deg)}
+  70%{transform:translate(-2px,-1px) rotate(-.3deg)} 80%{transform:translate(2px,1px) rotate(.2deg)}
+  90%{transform:translate(-1px,0) rotate(0)} 100%{transform:translate(0,0) rotate(0)}
+}
+@media (prefers-reduced-motion:reduce){
+  .sticker,.sticker>svg,.shake,.shake *{animation:none !important}
+  .sticker,.btn{transition-duration:.01ms}
+}
+@media (max-width:900px){
+  .field{grid-template-columns:repeat(3,1fr);grid-template-areas:"a b c" "d e f" "g h i"}
+  .sticker{--w:clamp(94px,25vw,130px)}
+  .stamp{width:70px;height:70px}
+}
+@media (max-width:560px){
+  .field{grid-template-columns:repeat(2,1fr);grid-template-areas:"a b" "c d" "e f" "g h" "i i"}
+  .sticker{--w:clamp(108px,37vw,148px)}
+}
+</style>
+</head>
+<body>
+
+<main class="sheet" id="sheet">
+  <div class="perf" aria-hidden="true"></div>
+
+  <header class="head">
+    <div class="title">
+      <p class="no">No. 69 &middot; Stationery, sheet twelve</p>
+      <h1>Small things, <em>cut out</em> carefully</h1>
+      <p>Eight stickers, hand-trimmed, for the flat side of a card or the inside cover of a
+        notebook. Fluorescent pink, mint, butter and sky, printed in four passes on
+        300&nbsp;gsm uncoated stock. The white line is the trim allowance &mdash; keep your
+        blade outside it.</p>
+    </div>
+    <div class="stamp" aria-hidden="true"><span><b>12</b>PACK<br>OF 8</span></div>
+  </header>
+
+  <div class="field" id="field">
+    <div class="sticker" style="--g:a;--rot:-7deg;--dur:6.4s" tabindex="0" role="img"
+         aria-label="Sticker: a strawberry with a sleepy face">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <path d="M50 96C32 82 18 66 18 48c0-16 13-26 32-26s32 10 32 26c0 18-14 34-32 48Z" fill="#e0576f"/>
+        <path d="M50 96C36 84 24 69 24 52c0-13 11-22 26-22s26 9 26 22c0 17-12 32-26 44Z" fill="#f4a7bd"/>
+        <ellipse cx="38" cy="54" rx="5" ry="7" fill="#fff1e0"/><ellipse cx="62" cy="56" rx="5" ry="7" fill="#fff1e0"/>
+        <path d="M36 51q2-4 4 0M60 53q2-4 4 0" stroke="#4a3f52" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+        <path d="M44 68q6 5 12 0" stroke="#4a3f52" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+        <ellipse cx="30" cy="64" rx="4" ry="2.6" fill="#f7c9d4"/><ellipse cx="70" cy="66" rx="4" ry="2.6" fill="#f7c9d4"/>
+        <path d="M50 22c-9-9-24-8-30 1 6 2 10 5 12 8-6 1-10 4-12 8 10 2 20 1 30-4Z" fill="#7bbd93"/>
+        <path d="M50 22c9-9 24-8 30 1-6 2-10 5-12 8 6 1 10 4 12 8-10 2-20 1-30-4Z" fill="#8fcda4"/>
+        <path d="M50 24v10" stroke="#5f9c78" stroke-width="3" stroke-linecap="round"/>
+        <g fill="#fff1e0"><circle cx="36" cy="44" r="1.5"/><circle cx="64" cy="42" r="1.5"/><circle cx="50" cy="76" r="1.5"/><circle cx="28" cy="56" r="1.3"/><circle cx="72" cy="54" r="1.3"/></g>
+      </svg>
+    </div>
+
+    <div class="sticker" style="--g:b;--rot:5deg;--dur:8.1s" tabindex="0" role="img"
+         aria-label="Sticker: a cream cat, curled up">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <ellipse cx="50" cy="70" rx="34" ry="21" fill="#f6d995"/>
+        <ellipse cx="50" cy="74" rx="26" ry="14" fill="#fdf0cf"/>
+        <path d="M78 58q14-4 12 6t-14 4Z" fill="#f6d995"/>
+        <path d="M31 34 27 12l20 11ZM69 34 73 12 53 23Z" fill="#f6d995"/>
+        <path d="M34 33 32 21l12 7ZM66 33 68 21l-12 7Z" fill="#e2b45f"/>
+        <ellipse cx="50" cy="40" rx="27" ry="24" fill="#fdf0cf"/>
+        <path d="M28 36q4-4 8-1M64 35q4-4 8 1" stroke="#e2b45f" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M33 43q4-5 8-1M59 42q4-5 8 1" stroke="#4a3f52" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+        <path d="M47 49q3 3 6 0" stroke="#4a3f52" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+        <path d="M22 45h13M22 51h13M65 45h13M65 51h13" stroke="#c9a45c" stroke-width="1.6" stroke-linecap="round"/>
+        <path d="M50 58c-8 8-22 8-30 2 6-3 12-3 18-1-2-4-2-8 0-11 5 3 9 6 12 10Z" fill="#f6d995"/>
+      </svg>
+    </div>
+
+    <div class="sticker" style="--g:c;--rot:-3deg;--dur:7.3s" tabindex="0" role="img"
+         aria-label="Sticker: a strawberry milk carton">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <path d="M28 30h44l-5 62H33Z" fill="#a9d5ef"/>
+        <path d="M32 30h18l-3 62H33Z" fill="#c2e2f5"/>
+        <path d="M28 30 50 12l22 18Z" fill="#6eaed4"/>
+        <path d="M28 30h44v9H28Z" fill="#fdf0cf"/>
+        <circle cx="50" cy="62" r="13" fill="#fffaf2"/>
+        <path d="M50 51a4 4 0 0 1 8 0 4 4 0 0 1-8 0Z" fill="#f4a7bd" opacity=".5"/>
+        <path d="M42 70q8 6 16 0" stroke="#e07a99" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M50 22 41 40M50 22l9 18" stroke="#8ec3e0" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M70 30l-4 62" stroke="#6eaed4" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <div class="sticker" style="--g:d;--rot:8deg;--dur:6.9s" tabindex="0" role="img"
+         aria-label="Sticker: a small rain cloud">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <path d="M28 66a15 15 0 0 1 1-30 20 20 0 0 1 37-6 14 14 0 0 1 6 27 15 15 0 0 1-2 9Z" fill="#a9d5ef"/>
+        <path d="M34 62a11 11 0 0 1 1-22 16 16 0 0 1 29-5 11 11 0 0 1 5 21 11 11 0 0 1-2 6Z" fill="#d7ebf8"/>
+        <path d="M37 56q3-4 6 0M55 56q3-4 6 0" stroke="#4a3f52" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+        <path d="M45 63q4 3 8 0" stroke="#4a3f52" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+        <ellipse cx="34" cy="62" rx="4" ry="2.6" fill="#f7c9d4"/><ellipse cx="64" cy="62" rx="4" ry="2.6" fill="#f7c9d4"/>
+        <path d="M40 78v9M52 80v11M62 78v8" stroke="#f6d995" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <div class="sticker" style="--g:e;--rot:6deg;--dur:7.8s" tabindex="0" role="img"
+         aria-label="Sticker: a five-pointed star">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <path d="M50 8 61 38l32 4-24 22 7 32-26-15-26 15 7-32L7 42l32-4Z" fill="#f6d995"/>
+        <path d="M50 22 57 44l24 3-18 16 5 24-18-11-18 11 5-24-18-16 24-3Z" fill="#fbe6b4"/>
+        <path d="M38 45q4-5 8 0M54 45q4-5 8 0" stroke="#4a3f52" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+        <path d="M45 56q5 4 10 0" stroke="#4a3f52" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+        <ellipse cx="34" cy="53" rx="4.4" ry="3" fill="#f7c9d4"/><ellipse cx="66" cy="53" rx="4.4" ry="3" fill="#f7c9d4"/>
+        <circle cx="30" cy="20" r="2.4" fill="#fffaf2"/><circle cx="72" cy="26" r="2" fill="#fffaf2"/>
+      </svg>
+    </div>
+
+    <div class="sticker" style="--g:f;--rot:-8deg;--dur:6.1s" tabindex="0" role="img"
+         aria-label="Sticker: a cup of milk tea with boba">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <path d="M24 34h52l-5 56H29Z" fill="#f4d7b0"/>
+        <path d="M24 34h24l-4 56H29Z" fill="#f9e4c8"/>
+        <path d="M24 34h52v10H24Z" fill="#c98f5c"/>
+        <path d="M27 44h46l-4 46H31Z" fill="#c98f5c" opacity=".28"/>
+        <rect x="56" y="20" width="9" height="42" rx="4.5" transform="rotate(11 60 41)" fill="#f7c9d4"/>
+        <path d="M60 16 66 34" stroke="#e07a99" stroke-width="3.4" stroke-linecap="round"/>
+        <g fill="#4a3f52">
+          <circle cx="35" cy="68" r="4.4"/><circle cx="46" cy="76" r="4.4"/><circle cx="57" cy="69" r="4.4"/>
+          <circle cx="40" cy="82" r="4.4"/><circle cx="62" cy="80" r="4.4"/><circle cx="31" cy="78" r="4.4"/>
+        </g>
+        <path d="M33 48q4-4 8 0M52 48q4-4 8 0" stroke="#4a3f52" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+        <path d="M44 57q5 3 10 0" stroke="#4a3f52" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+        <path d="M22 40h56" stroke="#fffaf2" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <div class="sticker" style="--g:g;--rot:4deg;--dur:7.4s" tabindex="0" role="img"
+         aria-label="Sticker: a cactus in a pot">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <path d="M40 22h20v46H40Z" fill="#a8dcc8"/>
+        <path d="M40 22h10v46H40Z" fill="#c2ebdb"/>
+        <path d="M22 42h12a8 8 0 0 1 8 8v4a8 8 0 0 1-8 8H22Z" fill="#6fbfa4"/>
+        <path d="M68 32H78a8 8 0 0 1 8 8v6a8 8 0 0 1-8 8H68Z" fill="#8fcfae"/>
+        <path d="M30 66h40l-5 26H35Z" fill="#f4a7bd"/>
+        <path d="M30 66h18l-4 26H35Z" fill="#f7c9d4"/>
+        <path d="M26 66h48v8H26Z" fill="#e07a99"/>
+        <path d="M40 12h20v10H40Z" fill="#f6d995"/>
+        <path d="M44 21h2M54 21h2" stroke="#e07a99" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="50" cy="40" r="4.6" fill="#fffaf2"/><circle cx="50" cy="40" r="1.8" fill="#4a3f52"/>
+        <g stroke="#8fcfae" stroke-width="1.6" stroke-linecap="round">
+          <path d="M45 50v4M55 50v4M45 60v4M55 60v4"/></g>
+      </svg>
+    </div>
+
+    <div class="sticker" style="--g:h;--rot:-5deg;--dur:8.6s" tabindex="0" role="img"
+         aria-label="Sticker: a step-through bicycle">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <g fill="none" stroke="#6eaed4" stroke-width="4.4" stroke-linecap="round">
+          <circle cx="27" cy="66" r="19"/><circle cx="75" cy="66" r="19"/></g>
+        <g stroke="#a9d5ef" stroke-width="1.6">
+          <path d="M27 47v38M8 66h38M14 53l26 26M40 53 14 79M75 47v38M56 66h38M62 53l26 26M88 53 62 79"/></g>
+        <path d="M27 66 45 40h20l10 26M45 40 41 28M31 28h22" fill="none" stroke="#e07a99" stroke-width="4.2"
+              stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M38 24h16" stroke="#4a3f52" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="75" cy="66" r="4" fill="#f4a7bd"/>
+        <path d="M62 30h10" stroke="#f6d995" stroke-width="5" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <div class="sticker" style="--g:i;--w:clamp(94px,11vw,128px);--rot:3deg;--dur:9.2s" tabindex="0" role="img"
+         aria-label="Sticker: a pink ribbon">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <path d="M50 8 66 34 50 60 34 34Z" fill="#e07a99"/>
+        <path d="M50 8v52M34 34l16 26 16-26" stroke="#f7c9d4" stroke-width="2.4" fill="none"/>
+        <path d="M34 60q-12 10-4 20t22-8ZM66 60q12 10 4 20t-22-8Z" fill="#f4a7bd"/>
+        <path d="M40 62q-6 8-2 14M60 62q6 8 2 14" stroke="#e07a99" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+  </div>
+
+  <footer class="foot">
+    <p class="note"><b>How to use:</b> drag a sticker anywhere on the sheet; press
+      <b>Enter</b> on a focused sticker to nudge it. Die-cut line 4&nbsp;mm, trim allowance
+      3&nbsp;mm. Ink: fluorescent pink, mint, butter, sky. No varnish, no lamination.</p>
+    <div>
+      <button class="btn" id="shake" type="button">Shake the sheet</button>
+      <button class="btn btn--ghost" id="reset" type="button">Lay flat</button>
+    </div>
+  </footer>
+</main>
+
+<noscript>
+  <p style="max-width:54ch;margin:0 auto;padding:2rem;font:400 13px/1.8 'Space Mono',monospace;color:#4a3f52">
+    The sheet prints without scripts &mdash; every sticker above is plain SVG. JavaScript only
+    adds the drag, the hover bounce and the shake.
+  </p>
+</noscript>
+
+<script>
+(function(){
+  "use strict";
+  var field=document.getElementById("field");
+  var sheet=document.getElementById("sheet");
+  var items=[].slice.call(field.querySelectorAll(".sticker"));
+  var reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var EASE="cubic-bezier(.22,1.7,.32,1)";
+
+  /* where each sticker sits at print time, measured live so resize stays honest */
+  function homeOf(s){
+    var f=field.getBoundingClientRect(), b=s.getBoundingClientRect();
+    return {x:b.left-f.left, y:b.top-f.top};
+  }
+  function num(s,name,dflt){
+    var v=parseFloat(getComputedStyle(s).getPropertyValue(name));
+    return isNaN(v)?dflt:v;
+  }
+  /* one canonical transform string, shared by CSS-free JS animations */
+  function place(s,extra,scale){
+    var cs=getComputedStyle(s);
+    return "translate("+(cs.getPropertyValue("--tx").trim()||"0px")+","
+         + (cs.getPropertyValue("--ty").trim()||"0px")+") rotate("
+         + (cs.getPropertyValue("--rot").trim()||"0deg")+") scale("+(scale||1)+")"
+         + (extra?" translateY("+extra+"px)":"");
+  }
+  function rest(s){return place(s,0,1)}
+
+  items.forEach(function(s){
+    var baseRot=num(s,"--rot",0);
+    var st=null;
+
+    s.addEventListener("pointerenter",function(){
+      if(st||reduced)return;
+      s.style.setProperty("--rot","0deg");
+      s.animate(
+        [{transform:place(s,0,1)},{transform:place(s,-13,1.16)},{transform:place(s,-9,1.13)}],
+        {duration:440,easing:"cubic-bezier(.24,1.6,.32,1)"});
+    });
+    s.addEventListener("pointerleave",function(){
+      if(st)return;
+      s.style.setProperty("--rot",baseRot+"deg");
+    });
+
+    s.addEventListener("pointerdown",function(e){
+      if(e.button!==undefined&&e.button!==0)return;
+      var h=homeOf(s), f=field.getBoundingClientRect();
+      var b0=s.getBoundingClientRect();
+      st={px:e.clientX,py:e.clientY,lx:e.clientX-(b0.left+b0.width/2),
+          x:num(s,"--tx",0),y:num(s,"--ty",0),
+          loX:-h.x+8, hiX:f.width-h.x-s.offsetWidth-8,
+          loY:-h.y+8, hiY:f.height-h.y-s.offsetHeight-8};
+      s.classList.add("dragging");
+      if(s.setPointerCapture)s.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+    s.addEventListener("pointermove",function(e){
+      if(!st)return;
+      st.x=Math.max(st.loX,Math.min(st.hiX,st.x+e.clientX-st.px));
+      st.y=Math.max(st.loY,Math.min(st.hiY,st.y+e.clientY-st.py));
+      st.px=e.clientX; st.py=e.clientY;
+      s.style.setProperty("--tx",st.x.toFixed(1)+"px");
+      s.style.setProperty("--ty",st.y.toFixed(1)+"px");
+      s.style.setProperty("--rot",(baseRot*0.4+(e.clientX-st.lx)*0.014).toFixed(2)+"deg");
+    });
+    function release(){
+      if(!st)return; st=null;
+      s.classList.remove("dragging");
+      s.style.setProperty("--rot",baseRot+"deg");
+      if(reduced)return;
+      s.animate([{transform:rest(s)},{transform:place(s,-18,1.02)},{transform:place(s,4,1.02)},{transform:rest(s)}],
+        {duration:580,easing:"cubic-bezier(.3,1.5,.4,1)"});
+    }
+    s.addEventListener("pointerup",release);
+    s.addEventListener("pointercancel",release);
+
+    s.addEventListener("keydown",function(e){
+      if(e.key!=="Enter"&&e.key!==" ")return;
+      e.preventDefault();
+      s.animate([{transform:rest(s)},{transform:place(s,-20,1.06)},{transform:place(s,0,1)}],
+        {duration:440,easing:"cubic-bezier(.3,1.6,.4,1)"});
+    });
+  });
+
+  /* ---- shake the whole sheet ---- */
+  var shaking=false, shk=document.getElementById("shake");
+  shk.addEventListener("click",function(){
+    if(shaking)return; shaking=true;
+    sheet.classList.remove("shake"); void sheet.offsetWidth;
+    sheet.classList.add("shake");
+    setTimeout(function(){sheet.classList.remove("shake");shaking=false},700);
+  });
+  /* ---- lay everything back on the printed grid ---- */
+  document.getElementById("reset").addEventListener("click",function(){
+    items.forEach(function(s){
+      s.style.setProperty("--tx","0px");
+      s.style.setProperty("--ty","0px");
+      s.style.setProperty("--rot",num(s,"--rot",0)+"deg");
+      if(reduced)return;
+      s.animate([{transform:rest(s)},{transform:place(s,-14,1.05)},{transform:rest(s)}],
+        {duration:620,easing:EASE,delay:Math.random()*160});
+    });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TYPE R-9 AXIAL FLUX COUPLING — Manufacturing Schema, Draft 04</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --blue:#072a52;
+    --blue2:#0a3563;
+    --blue3:#041c39;
+    --line:rgba(206,230,255,.62);
+    --line-soft:rgba(206,230,255,.24);
+    --line-faint:rgba(206,230,255,.12);
+    --ink:#dceaff;
+    --ink-soft:rgba(206,230,255,.62);
+    --ink-dim:rgba(206,230,255,.4);
+    --hot:#ffd48a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--blue3);
+    color:var(--ink);
+    font-family:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    overflow:hidden;
+  }
+  .field{position:fixed;inset:0;z-index:0;
+    background:
+      linear-gradient(rgba(206,230,255,.045) 1px, transparent 1px) 0 0/22px 22px,
+      linear-gradient(90deg, rgba(206,230,255,.045) 1px, transparent 1px) 0 0/22px 22px,
+      linear-gradient(rgba(206,230,255,.09) 1px, transparent 1px) 0 0/110px 110px,
+      linear-gradient(90deg, rgba(206,230,255,.09) 1px, transparent 1px) 0 0/110px 110px,
+      radial-gradient(120% 90% at 50% 8%, #0d3f74 0%, #072a52 44%, #04182f 100%);}
+  .glowline{position:fixed;left:0;right:0;top:0;height:2px;z-index:5;pointer-events:none;
+    background:linear-gradient(90deg,transparent,var(--hot),transparent);opacity:.5;
+    animation:sweep 11s linear infinite}
+  @keyframes sweep{0%{transform:translateX(-60%)}100%{transform:translateX(60%)}}
+
+  .sheet{position:relative;z-index:3;height:100dvh;display:grid;
+    grid-template-rows:auto minmax(0,1fr) auto;gap:0}
+
+  .head{display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center;
+    padding:10px clamp(10px,1.6vw,22px);border-bottom:1px solid var(--line-soft);
+    background:rgba(4,20,40,.45)}
+  .head .mark{display:flex;align-items:center;gap:10px;font-size:10px;letter-spacing:.22em;
+    text-transform:uppercase;color:var(--ink-soft)}
+  .head .mark b{color:var(--ink);font-weight:500}
+  .head h1{font-size:clamp(12px,1.5vw,20px);font-weight:500;letter-spacing:.14em;
+    text-transform:uppercase;text-align:center;color:var(--ink)}
+  .head h1 span{color:var(--hot)}
+  .stamp{
+    border:1.5px solid var(--hot); color:var(--hot); padding:5px 10px;
+    font-size:10px;letter-spacing:.26em;text-transform:uppercase;font-weight:700;
+    transform:rotate(-6deg);opacity:.85;white-space:nowrap;text-align:center;line-height:1.5
+  }
+  .stamp small{display:block;font-size:7.5px;letter-spacing:.18em;opacity:.8;font-weight:400}
+
+  .body{display:grid;grid-template-columns:minmax(0,1fr) clamp(220px,20vw,300px);
+    min-height:0}
+  .draw{position:relative;min-width:0;overflow:hidden}
+  svg{width:100%;height:100%;display:block}
+  .ln{fill:none;stroke:var(--line);stroke-width:1}
+  .ln-thin{fill:none;stroke:var(--line-soft);stroke-width:.7}
+  .vis{fill:rgba(206,230,255,.05);stroke:var(--line);stroke-width:1}
+  .hatch{fill:none;stroke:var(--line-soft);stroke-width:.6}
+  .ctr{stroke:var(--hot);stroke-width:.6;stroke-dasharray:14 3 2 3;opacity:.75;fill:none}
+  .dim{stroke:var(--line-soft);stroke-width:.7;fill:none}
+  .dimtxt{fill:var(--ink-soft);font-size:8.5px;letter-spacing:.1em}
+  .lbl{fill:var(--ink-soft);font-size:9px;letter-spacing:.22em;text-transform:uppercase}
+  .lbl.hot{fill:var(--hot)}
+  .coil{fill:none;stroke:var(--line);stroke-width:.7}
+  .part{transition:opacity .25s ease}
+  svg.hot .part{opacity:.2}
+  svg.hot .part.on{opacity:1}
+  .part.on .vis{stroke:var(--hot);fill:rgba(255,212,138,.09)}
+  .callout circle{fill:none;stroke:var(--hot);stroke-width:.8}
+  .callout text{fill:var(--hot);font-size:8px;letter-spacing:.1em}
+
+  .side{border-left:1px solid var(--line-soft);background:rgba(4,20,40,.42);
+    display:flex;flex-direction:column;min-height:0}
+  .side .cap{padding:9px 12px;border-bottom:1px solid var(--line-faint);
+    font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:var(--ink-dim)}
+  .parts{list-style:none;overflow:auto;flex:1 1 auto}
+  .parts li{padding:9px 12px;border-bottom:1px solid var(--line-faint);cursor:pointer;
+    display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:baseline}
+  .parts li:hover,.parts li.on{background:rgba(255,212,138,.1)}
+  .parts li:hover b,.parts li.on b{color:var(--hot)}
+  .parts li i{font-style:normal;color:var(--hot);font-size:10px}
+  .parts li b{display:block;font-size:10.5px;font-weight:500;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--ink)}
+  .parts li s{display:block;text-decoration:none;font-size:9px;color:var(--ink-dim);
+    margin-top:3px;letter-spacing:.04em;line-height:1.6}
+  .spec{border-top:1px solid var(--line-soft);padding:12px;min-height:104px;
+    background:rgba(3,16,32,.6)}
+  .spec h3{font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:500;
+    color:var(--hot);margin-bottom:8px}
+  .spec dl{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;font-size:9.5px}
+  .spec dt{color:var(--ink-dim);letter-spacing:.14em;text-transform:uppercase}
+  .spec dd{color:var(--ink);text-align:right}
+  .spec p{font-size:10px;line-height:1.7;color:var(--ink-soft);margin-top:9px}
+
+  .foot{display:grid;grid-template-columns:repeat(5,1fr) auto;gap:0;
+    border-top:1px solid var(--line-soft);background:rgba(4,20,40,.5)}
+  .foot div{padding:7px 12px;border-right:1px solid var(--line-faint)}
+  .foot dt{font-size:7.5px;letter-spacing:.28em;text-transform:uppercase;color:var(--ink-dim)}
+  .foot dd{font-size:10.5px;letter-spacing:.08em;margin-top:2px;color:var(--ink)}
+  @media (max-width:920px){
+    .body{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto}
+    .side{border-left:none;border-top:1px solid var(--line-soft);max-height:34dvh}
+    .parts{display:grid;grid-template-columns:1fr 1fr}
+    .spec{min-height:0}
+    .foot{grid-template-columns:repeat(2,1fr)}
+    .foot div:nth-child(n+5){display:none}
+    .head h1{font-size:11px;letter-spacing:.08em}
+    .stamp{font-size:8px;padding:3px 6px}
+  }
+  @media (max-width:520px){
+    .head .mark{display:none}
+    .parts{grid-template-columns:1fr}
+    .foot{grid-template-columns:1fr}
+    .foot div:nth-child(n+3){display:none}
+  }
+</style>
+</head>
+<body>
+<div class="field" aria-hidden="true"></div>
+<div class="glowline" aria-hidden="true"></div>
+
+<div class="sheet">
+  <header class="head">
+    <div class="mark"><b>MECANIQUE&nbsp;DU&nbsp;VAL</b><span>&nbsp;/&nbsp; ATELIER 4</span></div>
+    <h1>Axial Flux Coupling &nbsp;<span>Type R-9</span> &nbsp;·&nbsp; Assembly &amp; Section</h1>
+    <div class="stamp">Draft 04<small>Not for manufacture</small></div>
+  </header>
+
+  <div class="body">
+    <div class="draw">
+      <svg id="dwg" viewBox="0 0 960 600" preserveAspectRatio="xMidYMid meet"
+           role="img" aria-label="Engineering drawing of the Type R-9 axial flux coupling: an orthographic front view with dimensions, a section view, and a large isometric assembly.">
+        <defs>
+          <pattern id="hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="5" stroke="rgba(206,230,255,.3)" stroke-width=".7"/>
+          </pattern>
+          <marker id="ar" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+            <path d="M0 1 L6 3.5 L0 6" fill="none" stroke="rgba(206,230,255,.7)" stroke-width="1"/>
+          </marker>
+          <marker id="ars" markerWidth="7" markerHeight="7" refX="1" refY="3.5" orient="auto">
+            <path d="M6 1 L0 3.5 L6 6" fill="none" stroke="rgba(206,230,255,.7)" stroke-width="1"/>
+          </marker>
+        </defs>
+
+        <!-- ============ ORTHOGRAPHIC FRONT VIEW ============ -->
+        <g transform="translate(60,58)">
+          <text class="lbl" x="150" y="-24">Front elevation &nbsp;·&nbsp; scale 1:2</text>
+          <line class="ctr" x1="150" y1="-12" x2="150" y2="318"/>
+          <line class="ctr" x1="20" y1="150" x2="280" y2="150"/>
+          <!-- flange -->
+          <rect class="vis" x="30" y="0" width="240" height="14"/>
+          <rect x="30" y="0" width="240" height="14" fill="url(#hatch)" opacity=".5"/>
+          <!-- body -->
+          <rect class="vis" x="52" y="14" width="196" height="120"/>
+          <rect x="52" y="14" width="196" height="120" fill="url(#hatch)" opacity=".28"/>
+          <!-- stator shoulder -->
+          <rect class="vis" x="68" y="134" width="164" height="34"/>
+          <!-- bearing race -->
+          <rect class="vis" x="100" y="168" width="100" height="32"/>
+          <!-- collar -->
+          <rect class="vis" x="120" y="200" width="60" height="14"/>
+          <!-- bore -->
+          <rect x="134" y="200" width="32" height="180" fill="rgba(4,20,40,.9)" stroke="none"/>
+          <line class="ln" x1="134" y1="200" x2="134" y2="380"/>
+          <line class="ln" x1="166" y1="200" x2="166" y2="380"/>
+          <!-- ribs -->
+          <g class="ln-thin">
+            <line x1="70" y1="14" x2="70" y2="134"/><line x1="110" y1="14" x2="110" y2="134"/>
+            <line x1="150" y1="14" x2="150" y2="134"/><line x1="190" y1="14" x2="190" y2="134"/>
+            <line x1="230" y1="14" x2="230" y2="134"/>
+          </g>
+          <!-- port + inlet, hidden lines -->
+          <g class="ln-thin" stroke-dasharray="4 3">
+            <circle cx="86" cy="96" r="11"/><circle cx="214" cy="60" r="9"/>
+            <line x1="86" y1="85" x2="86" y2="70"/><line x1="214" y1="51" x2="214" y2="30"/>
+          </g>
+
+          <!-- dimension: overall height -->
+          <g class="dim">
+            <line x1="272" y1="0" x2="272" y2="214" marker-start="url(#ars)" marker-end="url(#ar)"/>
+            <line class="ln-thin" x1="248" y1="0" x2="286" y2="0"/>
+            <line class="ln-thin" x1="248" y1="214" x2="286" y2="214"/>
+            <text class="dimtxt" x="282" y="112" text-anchor="end">138.0</text>
+          </g>
+          <!-- dimension: flange diameter -->
+          <g class="dim">
+            <line x1="30" y1="-20" x2="270" y2="-20" marker-start="url(#ars)" marker-end="url(#ar)"/>
+            <line class="ln-thin" x1="30" y1="-14" x2="30" y2="-26"/>
+            <line class="ln-thin" x1="270" y1="-14" x2="270" y2="-26"/>
+            <text class="dimtxt" x="150" y="-26" text-anchor="middle">&#8960; 240.0</text>
+          </g>
+          <text class="dimtxt" x="196" y="140">M8 &#215; 6 EQUIDIST</text>
+          <text class="lbl" x="30" y="410">Flange datum A</text>
+        </g>
+
+        <!-- ============ SECTION A—A ============ -->
+        <g transform="translate(60,470)">
+          <text class="lbl" x="0" y="-16">Section A—A &nbsp;·&nbsp; half</text>
+          <line class="ctr" x1="20" y1="-4" x2="280" y2="-4"/>
+          <text class="lbl" x="24" y="-10">A</text>
+          <path class="vis" d="M30 0 h20 v34 h14 v40 h20 v26 h10 v34 h10 v0 h96 v-34 h10 v-26 h20 v-40 h14 v-34 h20 v-14 h-24 v34 h-14 v40 h-20 v26 h-10 v34 h-96 v-34 h-10 v-26 h-20 v-40 h-14 v-34 h-24 z"
+                transform="translate(0,-70)"/>
+          <path d="M30 -70 h20 v34 h14 v40 h20 v26 h10 v34 h10 v-34 h10 v-26 h20 v-40 h14 v-34 h20 v-14 h-24 v34 h-14 v40 h-20 v26 h-10 v34 h-96 v-34 h-10 v-26 h-20 v-40 h-14 v-34 h-24 z"
+                transform="translate(0,-70)" fill="url(#hatch)" opacity=".55"/>
+          <g class="ln-thin">
+            <line x1="30" y1="0" x2="30" y2="-14"/><line x1="270" y1="0" x2="270" y2="-14"/>
+          </g>
+          <text class="dimtxt" x="150" y="16" text-anchor="middle">Wall 6.0 &nbsp;/&nbsp; gap 0.4 nominal</text>
+        </g>
+
+        <!-- ============ ISOMETRIC ============ -->
+        <g id="iso" transform="translate(690,300) scale(0.86)">
+          <text class="lbl" x="0" y="-224" text-anchor="middle">Isometric &nbsp;·&nbsp; assembly</text>
+          <line class="ctr" x1="-220" y1="0" x2="220" y2="0"/>
+          <line class="ctr" x1="0" y1="-200" x2="0" y2="120"/>
+
+          <!-- 1 · mounting flange -->
+          <g class="part" data-i="1">
+            <path class="vis" d="M-144 0 A144 84 0 0 0 144 0 L144 -12 A144 84 0 0 1 -144 -12 Z"/>
+            <path class="vis" fill-rule="evenodd"
+                  d="M-144 -12 A144 84 0 1 0 144 -12 A144 84 0 1 0 -144 -12 Z
+                     M-108 -12 A108 63 0 1 1 108 -12 A108 63 0 1 1 -108 -12 Z"/>
+            <g class="ln-thin">
+              <circle cx="0" cy="-12" r="4" fill="none"/>
+              <circle cx="0" cy="-12" r="126" fill="none"/>
+            </g>
+            <g class="ln-thin" fill="none">
+              <ellipse cx="-126" cy="-6" rx="3.4" ry="2"/><ellipse cx="-63" cy="-35" rx="3.4" ry="2"/>
+              <ellipse cx="63" cy="-35" rx="3.4" ry="2"/><ellipse cx="126" cy="-6" rx="3.4" ry="2"/>
+              <ellipse cx="63" cy="23" rx="3.4" ry="2"/><ellipse cx="-63" cy="23" rx="3.4" ry="2"/>
+            </g>
+          </g>
+
+          <!-- 2 · body shell -->
+          <g class="part" data-i="2">
+            <path class="vis" d="M-108 -12 A108 63 0 0 0 108 -12 L108 -78 A108 63 0 0 1 -108 -78 Z"/>
+            <ellipse class="vis" cx="0" cy="-78" rx="108" ry="63"/>
+            <g class="ln-thin">
+              <line x1="-86" y1="-6" x2="-86" y2="-72"/><line x1="-43" y1="-30" x2="-43" y2="-96"/>
+              <line x1="0" y1="-37.5" x2="0" y2="-103.5"/>
+              <line x1="43" y1="-30" x2="43" y2="-96"/><line x1="86" y1="-6" x2="86" y2="-72"/>
+            </g>
+          </g>
+
+          <!-- 7 · inspection port -->
+          <g class="part" data-i="7">
+            <path class="vis" d="M13 -33 A30 17.5 0 0 0 73 -33 L73 -59 A30 17.5 0 0 1 13 -59 Z"/>
+            <ellipse class="vis" cx="43" cy="-59" rx="30" ry="17.5"/>
+            <ellipse cx="43" cy="-59" rx="20" ry="11.6" fill="rgba(4,20,40,.85)" stroke="var(--line-soft)" stroke-width=".7"/>
+          </g>
+
+          <!-- 8 · coolant inlet -->
+          <g class="part" data-i="8">
+            <path class="vis" d="M-109 -93 A24 14 0 0 0 -61 -93 L-61 -123 A24 14 0 0 1 -109 -123 Z"/>
+            <ellipse class="vis" cx="-85" cy="-123" rx="24" ry="14"/>
+            <ellipse cx="-85" cy="-123" rx="15" ry="8.7" fill="rgba(4,20,40,.85)" stroke="var(--line-soft)" stroke-width=".7"/>
+          </g>
+
+          <!-- 3 · stator ring -->
+          <g class="part" data-i="3">
+            <path class="vis" d="M-96 -78 A96 56 0 0 0 96 -78 L96 -104 A96 56 0 0 1 -96 -104 Z"/>
+            <path class="vis" fill-rule="evenodd"
+                  d="M-96 -104 A96 56 0 1 0 96 -104 A96 56 0 1 0 -96 -104 Z
+                     M-72 -104 A72 42 0 1 1 72 -104 A72 42 0 1 1 -72 -104 Z"/>
+            <g class="coil">
+              <ellipse cx="0" cy="-104" rx="84" ry="48.6"/><ellipse cx="0" cy="-104" rx="60" ry="34.7"/>
+            </g>
+          </g>
+
+          <!-- 4 · rotor -->
+          <g class="part" data-i="4">
+            <ellipse class="vis" cx="0" cy="-100" rx="72" ry="42"/>
+            <g class="ln-thin" fill="none">
+              <ellipse cx="0" cy="-100" rx="56" ry="32.6"/>
+              <ellipse cx="-26" cy="-115" rx="9" ry="5.2"/><ellipse cx="26" cy="-115" rx="9" ry="5.2"/>
+              <ellipse cx="26" cy="-85" rx="9" ry="5.2"/><ellipse cx="-26" cy="-85" rx="9" ry="5.2"/>
+            </g>
+            <path class="vis" d="M-36 -100 A36 20.8 0 0 0 36 -100 L36 -90 A36 20.8 0 0 1 -36 -90 Z"/>
+          </g>
+
+          <!-- 5 · bearing race -->
+          <g class="part" data-i="5">
+            <path class="vis" d="M-48 -100 A48 28 0 0 0 48 -100 L48 -128 A48 28 0 0 1 -48 -128 Z"/>
+            <path class="vis" fill-rule="evenodd"
+                  d="M-48 -128 A48 28 0 1 0 48 -128 A48 28 0 1 0 -48 -128 Z
+                     M-36 -128 A36 21 0 1 1 36 -128 A36 21 0 1 1 -36 -128 Z"/>
+          </g>
+
+          <!-- 6 · retaining collar -->
+          <g class="part" data-i="6">
+            <path class="vis" d="M-36 -128 A36 21 0 0 0 36 -128 L36 -138 A36 21 0 0 1 -36 -138 Z"/>
+            <path class="vis" fill-rule="evenodd"
+                  d="M-36 -138 A36 21 0 1 0 36 -138 A36 21 0 1 0 -36 -138 Z
+                     M-24 -138 A24 14 0 1 1 24 -138 A24 14 0 1 1 -24 -138 Z"/>
+            <g class="ln-thin" fill="none"><circle cx="0" cy="-138" r="30"/></g>
+          </g>
+
+          <!-- callouts -->
+          <g class="callout">
+            <path class="ln-thin" d="M-150 60 L-236 108 L-300 108"/>
+            <circle cx="-300" cy="108" r="10"/><text x="-300" y="112" text-anchor="middle">1</text>
+            <path class="ln-thin" d="M-118 6 L-236 168 L-300 168"/>
+            <circle cx="-300" cy="168" r="10"/><text x="-300" y="172" text-anchor="middle">2</text>
+            <path class="ln-thin" d="M88 -108 L236 -168 L300 -168"/>
+            <circle cx="300" cy="-168" r="10"/><text x="300" y="-164" text-anchor="middle">3</text>
+            <path class="ln-thin" d="M0 -142 L236 -60 L300 -60"/>
+            <circle cx="300" cy="-60" r="10"/><text x="300" y="-56" text-anchor="middle">5</text>
+            <path class="ln-thin" d="M60 -70 L236 40 L300 40"/>
+            <circle cx="300" cy="40" r="10"/><text x="300" y="44" text-anchor="middle">7</text>
+          </g>
+        </g>
+
+        <text class="lbl" x="20" y="586">All dimensions in millimetres &nbsp;·&nbsp; general tolerance &#177;0.15 &nbsp;·&nbsp; deburr all edges 0.3 &#215; 45&#176;</text>
+      </svg>
+    </div>
+
+    <aside class="side">
+      <p class="cap">Parts schedule</p>
+      <ul class="parts" id="list">
+        <li data-i="1"><i>01</i><span><b>Mounting flange</b><s>EN 1.4305 / forged</s></span></li>
+        <li data-i="2"><i>02</i><span><b>Body shell</b><s>EN 1.4404 / seamless tube</s></span></li>
+        <li data-i="3"><i>03</i><span><b>Stator ring</b><s>High-conductivity copper, 8 windings</s></span></li>
+        <li data-i="4"><i>04</i><span><b>Rotor</b><s>NdFeB N52, epoxy potted</s></span></li>
+        <li data-i="5"><i>05</i><span><b>Bearing race</b><s>Angular contact 7208, 2 off</s></span></li>
+        <li data-i="6"><i>06</i><span><b>Retaining collar</b><s>M56 &#215; 1.5 fine thread</s></span></li>
+        <li data-i="7"><i>07</i><span><b>Inspection port</b><s>G 1/2 BSPP, bonded seal</s></span></li>
+        <li data-i="8"><i>08</i><span><b>Coolant inlet</b><s>Braided PTFE, 12 L/min</s></span></li>
+      </ul>
+      <div class="spec" id="spec">
+        <h3>Hover a part</h3>
+        <p>Isolate any component in the isometric to read its callout. Eight parts, one drawing, no photographs.</p>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="foot">
+    <div><dt>Scale</dt><dd>1:2 &nbsp;/&nbsp; 1:1 iso</dd></div>
+    <div><dt>Sheet</dt><dd>02 of 07</dd></div>
+    <div><dt>Material</dt><dd>316L / Cu / NdFeB</dd></div>
+    <div><dt>Mass</dt><dd>3.42 kg</dd></div>
+    <div><dt>Drawn</dt><dd>H. Vasseur &nbsp;·&nbsp; 04.09</dd></div>
+    <div><dt>Rev</dt><dd>04</dd></div>
+  </footer>
+</div>
+
+<noscript>
+  <p style="position:fixed;left:50%;bottom:44px;transform:translateX(-50%);z-index:9;
+     font:10px/1 'JetBrains Mono',monospace;letter-spacing:.24em;text-transform:uppercase;color:#ffd48a">
+    Part isolation requires JavaScript</p>
+</noscript>
+
+<script>
+(function(){
+  var DATA = {
+    1:{t:'Mounting flange', s:{'Standard':'EN 1.4305 forged','Diameter':'240.0','Thickness':'12.0','Fixing':'M8 &#215; 6 equidistant','Finish':'Bead blasted Ra 3.2'},
+       n:'Carries the whole reaction torque into the bed plate. Bolt circle 180, six holes drilled and tapped to 8M.'},
+    2:{t:'Body shell', s:{'Standard':'EN 1.4404 seamless','Outside dia.':'216.0','Length':'66.0','Wall':'6.0','Finish':'Passivated'},
+       n:'Five external ribs resist hoop stress at speed. The interior is honed to Ra 0.8 to hold the oil wedge.'},
+    3:{t:'Stator ring', s:{'Material':'Cu-ETP, 8 windings','Inside dia.':'120.0','Height':'26.0','Clearance':'0.4 air gap','Duty':'S1 continuous'},
+       n:'The gap is the product. 0.4 mm at the working temperature, measured cold and hot during test.'},
+    4:{t:'Rotor', s:{'Material':'NdFeB N52','Outside dia.':'120.0','Height':'16.0','Run-out':'0.02 TIR','Potting':'Epoxy, glass-filled'},
+       n:'Balanced to G2.5. Magnetisation is graded across the face so the flux bends toward the pole.'},
+    5:{t:'Bearing race', s:{'Type':'Angular contact 7208','Bore':'40.0','Quantity':'2, back to back','Preload':'1.8 kN','Life':'28 000 h'},
+       n:'Preload is set at assembly, not in the drawing. Measure the ring temperature, then set the shim.'},
+    6:{t:'Retaining collar', s:{'Thread':'M56 &#215; 1.5','Outside dia.':'60.0','Height':'10.0','Torque':'140 N&#183;m'},
+       n:'One flat, one drilled hole. Do not use a pipe wrench on this part.'},
+    7:{t:'Inspection port', s:{'Thread':'G 1/2 BSPP','Seal':'Bonded, Viton','Access':'Rotor air gap','Torque':'32 N&#183;m'},
+       n:'The only window into the gap. Fit a boroscope here before you condemn a bearing.'},
+    8:{t:'Coolant inlet', s:{'Line':'PTFE braided 10 mm','Flow':'12 L/min','Entry':'Tangential','Pressure':'max 4 bar'},
+       n:'Enters tangentially so the stream swirls the oil instead of punching a hole in it.'}
+  };
+  var svg = document.getElementById('dwg');
+  var list = document.getElementById('list');
+  var spec = document.getElementById('spec');
+  var parts = Array.prototype.slice.call(svg.querySelectorAll('.part'));
+  var items = Array.prototype.slice.call(list.querySelectorAll('li'));
+  var base = spec.innerHTML;
+
+  function show(i){
+    parts.forEach(function(p){ p.classList.toggle('on', p.getAttribute('data-i') === i); });
+    items.forEach(function(l){ l.classList.toggle('on', l.getAttribute('data-i') === i); });
+    if (!i){ svg.classList.remove('hot'); spec.innerHTML = base; return; }
+    svg.classList.add('hot');
+    var d = DATA[i]; if (!d) return;
+    var rows = '';
+    for (var k in d.s) rows += '<dt>' + k + '</dt><dd>' + d.s[k] + '</dd>';
+    spec.innerHTML = '<h3>' + String(i).padStart(2,'0') + ' &nbsp;' + d.t + '</h3><dl>' + rows + '</dl><p>' + d.n + '</p>';
+  }
+
+  items.forEach(function(l){
+    var i = l.getAttribute('data-i');
+    l.addEventListener('mouseenter', function(){ show(i); });
+    l.addEventListener('mouseleave', function(){ show(null); });
+    l.addEventListener('click', function(){ show(i); });
+  });
+  parts.forEach(function(p){
+    p.style.cursor = 'pointer';
+    p.addEventListener('mouseenter', function(){ show(p.getAttribute('data-i')); });
+    p.addEventListener('mouseleave', function(){ show(null); });
+  });
+  svg.addEventListener('mouseleave', function(){ show(null); });
+})();
+</script>
+</body>
+</html>

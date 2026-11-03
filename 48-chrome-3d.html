@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FIZZ &mdash; Chrome &amp; Candy, Extruded</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800;900&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:#0a0710;color:#f6eefb;overflow:hidden;
+    font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+  .studio{position:absolute;inset:0;overflow:hidden;
+    background:radial-gradient(120% 84% at 50% 8%,#2b1a44 0%,#160c26 44%,#0a0710 78%)}
+  .studio::after{content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(64% 52% at 50% 44%,transparent 40%,rgba(6,3,10,.72) 100%)}
+  .floor{position:absolute;left:0;right:0;bottom:0;height:38%;
+    background:linear-gradient(180deg,rgba(120,80,200,.14),rgba(30,14,54,.55) 40%,rgba(10,6,18,.9));
+    border-top:1px solid rgba(200,150,255,.16)}
+  .rig{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;z-index:4}
+  .rig i{position:absolute;width:46vmax;height:46vmax;margin:-23vmax 0 0 -23vmax;border-radius:99px;
+    transition:opacity .2s;filter:blur(6px)}
+  #lKey{background:radial-gradient(circle,rgba(255,244,220,.42),rgba(255,200,140,.12) 38%,transparent 66%)}
+  #lFill{background:radial-gradient(circle,rgba(150,200,255,.26),rgba(90,140,255,.08) 40%,transparent 68%)}
+  #lRim{background:radial-gradient(circle,rgba(255,120,200,.3),rgba(180,80,255,.1) 40%,transparent 66%)}
+  .wrap{position:absolute;left:50%;top:47%;transform:translate(-50%,-50%);z-index:5;pointer-events:none}
+  .stack{position:relative;font-family:"Poppins",Impact,sans-serif;font-weight:900;
+    font-size:clamp(88px,19vw,268px);line-height:.82;letter-spacing:-.045em;white-space:nowrap}
+  .lay{position:absolute;left:0;top:0;transform:translate3d(calc(var(--x) * 1px),calc(var(--y) * 1px),0);
+    -webkit-background-clip:text;background-clip:text;color:transparent;will-change:transform,background-position}
+  .lay.holo{animation:shim 5.5s linear infinite;background-size:300% 100%}
+  @keyframes shim{from{background-position:0% 50%}to{background-position:300% 50%}}
+  .reflect{position:absolute;left:0;top:100%;transform:scaleY(-1);transform-origin:50% 0;opacity:.28;
+    -webkit-mask-image:linear-gradient(to top,transparent 3%,#000 58%);
+    mask-image:linear-gradient(to top,transparent 3%,#000 58%);filter:blur(2.4px)}
+  .shadow{position:absolute;left:50%;top:58%;width:min(74vw,900px);height:70px;transform:translateX(-50%);
+    background:radial-gradient(closest-side,rgba(4,2,10,.85),transparent 72%);filter:blur(16px);z-index:2}
+  .candy{position:absolute;border-radius:50%;z-index:3;
+    box-shadow:0 18px 30px -14px rgba(0,0,0,.8),inset -6px -8px 18px rgba(0,0,0,.28)}
+  .candy::after{content:"";position:absolute;width:26%;height:18%;border-radius:50%;filter:blur(1px);
+    background:rgba(255,255,255,.92);transform:translate(var(--hx,0px),var(--hy,0px));transition:transform .05s linear}
+  .dust i{position:absolute;border-radius:99px;background:#fff;opacity:0;animation:tw 4s ease-in-out infinite}
+  @keyframes tw{0%,100%{opacity:.1;transform:scale(.6)}50%{opacity:.75;transform:scale(1.15)}}
+  .hdr{position:absolute;left:24px;top:20px;z-index:9}
+  .hdr b{display:block;font-size:12px;letter-spacing:.34em;text-transform:uppercase}
+  .hdr span{display:block;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#8d7ea8;margin-top:6px}
+  .bar{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:9;display:flex;gap:26px;
+    align-items:center;flex-wrap:wrap;justify-content:center}
+  .seg{display:flex;border:1px solid rgba(220,190,255,.3);border-radius:99px;overflow:hidden;
+    background:rgba(20,10,34,.5);backdrop-filter:blur(6px)}
+  .seg button{font:inherit;font-size:10px;letter-spacing:.2em;text-transform:uppercase;padding:9px 18px;
+    border:0;border-right:1px solid rgba(220,190,255,.18);background:transparent;color:#cbb6e8;cursor:pointer;transition:.18s}
+  .seg button:last-child{border-right:0}
+  .seg button.on{background:linear-gradient(180deg,#fff,#c9b4e8);color:#1a0f28;font-weight:500}
+  .rd{display:grid;gap:4px;min-width:150px}
+  .rd div{display:flex;justify-content:space-between;font-size:9px;letter-spacing:.16em;
+    text-transform:uppercase;color:#8d7ea8}
+  .rd div b{color:#e6d8ff;font-weight:400;font-variant-numeric:tabular-nums}
+  .tip{position:absolute;right:24px;top:20px;z-index:9;font-size:9px;letter-spacing:.2em;
+    text-transform:uppercase;color:#7b6c96;text-align:right;line-height:2}
+</style>
+</head>
+<body>
+<div class="studio" id="studio">
+  <div class="floor"></div>
+  <div class="shadow" id="shadow"></div>
+  <div class="wrap" id="wrap">
+    <div class="reflect" id="reflect"></div>
+    <div class="stack" id="stack"></div>
+  </div>
+  <div class="candy" id="c1"></div><div class="candy" id="c2"></div>
+  <div class="candy" id="c3"></div><div class="candy" id="c4"></div>
+  <div class="candy" id="c5"></div>
+  <div class="dust" id="dust"></div>
+  <div class="rig" id="rig"><i id="lKey"></i><i id="lFill"></i><i id="lRim"></i></div>
+</div>
+
+<div class="hdr">
+  <b>Candyworks</b>
+  <span>Three-point rig &middot; extruded 26 slices &middot; studio B</span>
+</div>
+<div class="tip">Move the pointer<br>the key light follows</div>
+
+<div class="bar">
+  <div class="seg" id="seg">
+    <button data-f="chrome" class="on">Chrome</button>
+    <button data-f="gold">Gold</button>
+    <button data-f="holo">Holographic</button>
+  </div>
+  <div class="rd">
+    <div><span>Key</span><b id="rK">0.50 / 0.34</b></div>
+    <div><span>Fill</span><b id="rF">0.50 / 0.66</b></div>
+    <div><span>Rim</span><b id="rR">0.78 / 0.16</b></div>
+    <div><span>Depth</span><b>26 &times; 0.55 px</b></div>
+  </div>
+</div>
+
+<script>
+const WORD = "FIZZ";
+const N = 26, DX = 0.55, DY = 0.48;
+const FINISH = {
+  chrome: { ang: 104, ramp: ["#ffffff", "#93a8c2", "#eaf2fd", "#2f3b4e", "#cfdcee", "#64788f", "#f6fbff"] },
+  gold: { ang: 96, ramp: ["#fff8d8", "#c99a2e", "#ffeaa6", "#63410a", "#ffd45f", "#9c6d16", "#fff0b6"] },
+  holo: { ang: 90, ramp: ["#ff5fa2", "#ffd166", "#8ef6a4", "#5ad2ff", "#a98bff", "#ff8ad8", "#fff2a8"] }
+};
+const stack = document.getElementById("stack"), reflect = document.getElementById("reflect");
+const lays = [];
+for (let k = N - 1; k >= 0; k--) {
+  const d = document.createElement("div");
+  d.className = "lay";
+  d.style.setProperty("--x", (DX * k).toFixed(2));
+  d.style.setProperty("--y", (DY * k).toFixed(2));
+  d.dataset.k = k;
+  d.textContent = WORD;
+  stack.appendChild(d);
+  const r = d.cloneNode(true);
+  reflect.appendChild(r);
+  lays.push({ d, r, k });
+}
+function shade(hex, f) {
+  const n = parseInt(hex.slice(1), 16);
+  const c = [n >> 16 & 255, n >> 8 & 255, n & 255].map(v => Math.round(Math.max(0, Math.min(255, v * f))));
+  return "rgb(" + c.join(",") + ")";
+}
+let finish = "chrome";
+function applyFinish() {
+  const F = FINISH[finish];
+  lays.forEach(o => {
+    const t = o.k / (N - 1);
+    const f = 1 - Math.pow(t, 1.25) * 0.82;
+    const stops = F.ramp.map(c => shade(c, f)).join(",");
+    let g = "linear-gradient(" + (F.ang + (finish === "holo" ? 0 : t * 26)) + "deg," + stops + ")";
+    if (finish === "holo") g = "linear-gradient(90deg," + stops + ")";
+    d_bg(o.d, g, finish);
+    d_bg(o.r, g, finish);
+  });
+  document.querySelectorAll(".lay").forEach(n => n.classList.toggle("holo", finish === "holo"));
+  CANDY.forEach(c => tintCandy(c));
+}
+function d_bg(el, grad, isHolo) {
+  el.style.backgroundImage = grad;
+  el.style.backgroundSize = isHolo === "holo" ? "300% 100%" : "auto";
+  el.style.backgroundRepeat = "no-repeat";
+}
+const CANDY = [
+  { el: document.getElementById("c1"), d: 74, c: ["#ff7ab8", "#e8306f"], x: 11, y: 62 },
+  { el: document.getElementById("c2"), d: 46, c: ["#8ff0ff", "#25a8d8"], x: 84, y: 40 },
+  { el: document.getElementById("c3"), d: 34, c: ["#fff0a8", "#e0a018"], x: 76, y: 74 },
+  { el: document.getElementById("c4"), d: 58, c: ["#c9a0ff", "#7a3ce0"], x: 18, y: 30 },
+  { el: document.getElementById("c5"), d: 26, c: ["#b9ff9a", "#3ec46a"], x: 63, y: 24 }
+];
+function tintCandy(c) {
+  const isPink = finish === "chrome";
+  const a = isPink ? c.c : c.c.map((_, i) => finish === "gold" ? ["#fff0b0", "#c98f18"][i] : ["#b7f4ff", "#6f4ce0"][i]);
+  c.el.style.background = "radial-gradient(circle at 34% 30%," + a[0] + "," + a[1] + " 62%,#2a0f2a 100%)";
+}
+CANDY.forEach(c => {
+  c.el.style.width = c.d + "px"; c.el.style.height = c.d + "px";
+  c.el.style.left = c.x + "%"; c.el.style.top = c.y + "%";
+  tintCandy(c);
+});
+document.getElementById("dust").innerHTML = Array.from({ length: 40 }, () =>
+  '<i style="left:' + (Math.random() * 100).toFixed(1) + '%;top:' + (Math.random() * 84).toFixed(1) + '%;width:' +
+  (1 + Math.random() * 2.4).toFixed(1) + 'px;height:' + (1 + Math.random() * 2.4).toFixed(1) +
+  'px;animation-delay:' + (-Math.random() * 4).toFixed(1) + 's"></i>').join("");
+
+let kx = .5, ky = .34, fx = .5, fy = .66, rx = .78, ry = .16;
+const rig = document.getElementById("rig");
+function placeLights() {
+  const w = innerWidth, h = innerHeight;
+  const set = (id, x, y, o) => {
+    const n = document.getElementById(id);
+    n.style.left = (x * w) + "px"; n.style.top = (y * h) + "px"; n.style.opacity = o;
+  };
+  set("lKey", kx, ky, 1);
+  set("lFill", fx, fy, .95);
+  set("lRim", rx, ry, .9);
+  document.getElementById("rK").textContent = kx.toFixed(2) + " / " + ky.toFixed(2);
+  document.getElementById("rF").textContent = fx.toFixed(2) + " / " + fy.toFixed(2);
+  document.getElementById("rR").textContent = rx.toFixed(2) + " / " + ry.toFixed(2);
+  const gx = (kx - .5) * 100, gy = (ky - .5) * 100;
+  lays.forEach(o => {
+    if (o.k === 0) {
+      const F = FINISH[finish];
+      const stops = F.ramp.join(",");
+      const ang = F.ang;
+      o.d.style.backgroundImage = "radial-gradient(150px 150px at " +
+        (50 + gx * 1.6).toFixed(1) + "% " + (50 + gy * 1.6).toFixed(1) + "%,rgba(255,255,255,.92) 0%," +
+        "rgba(255,255,255,.3) 22%,transparent 52%),linear-gradient(" + ang + "deg," + stops + ")";
+      o.d.style.backgroundSize = "auto, auto";
+    } else {
+      o.d.style.backgroundPosition = (-o.k * 0.9).toFixed(1) + "% 50%";
+      o.r.style.backgroundPosition = o.d.style.backgroundPosition;
+    }
+  });
+  CANDY.forEach(c => {
+    const d = c.d;
+    c.el.style.setProperty("--hx", ((kx - .5) * d * .34 - d * .14).toFixed(1) + "px");
+    c.el.style.setProperty("--hy", ((ky - .5) * d * .3 - d * .18).toFixed(1) + "px");
+  });
+}
+document.getElementById("seg").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  finish = b.dataset.f;
+  document.querySelectorAll("#seg button").forEach(n => n.classList.toggle("on", n === b));
+  applyFinish(); placeLights();
+});
+let sx = .5, sy = .5;
+addEventListener("pointermove", e => {
+  sx = e.clientX / innerWidth; sy = e.clientY / innerHeight;
+  kx += (sx - kx) * .16; ky += (sy - ky) * .16;
+  fx += ((1 - sx) * .8 + .1 - fx) * .06; fy += ((1 - sy) * .7 + .15 - fy) * .06;
+  rx += (Math.min(1, sx * 1.3) - rx) * .05; ry += (Math.max(0, .34 - sy) - ry) * .05;
+  placeLights();
+});
+let idle = 0, t0 = performance.now();
+function loop(now) {
+  const t = (now - t0) / 1000;
+  if (now - lastMove > 2600) {
+    idle += .012;
+    kx = .5 + Math.cos(idle) * .34; ky = .3 + Math.sin(idle * .7) * .16;
+    fx = .5 - Math.cos(idle) * .3; fy = .62 + Math.sin(idle * .6) * .14;
+    rx = .8 - Math.cos(idle) * .12; ry = .14;
+    placeLights();
+  }
+  requestAnimationFrame(loop);
+}
+let lastMove = performance.now();
+addEventListener("pointerdown", () => lastMove = performance.now());
+addEventListener("pointermove", () => lastMove = performance.now());
+applyFinish(); placeLights();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

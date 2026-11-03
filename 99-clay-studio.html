@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Plasticine Department — Clay Studio</title>
+<style>
+  :root{
+    --room-1:#f3ece4; --room-2:#e6ddd2; --room-3:#d8cec2;
+    --floor-1:#efe7dc; --floor-2:#d9cec1;
+    --ink:#3a332c; --ink-2:#7d7266;
+    --line:rgba(58,51,44,.16);
+    --light:135;
+    --lx:32%; --ly:26%;
+    --clay-1:#f7c9b4; --clay-2:#efab8e; --clay-3:#d9825f;
+    --mono:ui-monospace,"DejaVu Sans Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden}
+  body{font-family:var(--mono);color:var(--ink);
+    background:radial-gradient(130% 100% at 50% -10%,var(--room-1) 0%,var(--room-2) 52%,var(--room-3) 100%)}
+
+  .room{position:fixed;inset:0;display:grid;grid-template-rows:auto 1fr auto;overflow:hidden}
+  .room::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.4'/%3E%3C/svg%3E")}
+
+  /* ---------- head ---------- */
+  .head{padding:20px clamp(16px,3vw,34px) 0;display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+  .head h1{margin:0;font:400 clamp(24px,3.2vw,40px)/1 var(--mono);letter-spacing:-.01em}
+  .head h1 em{font-style:normal;color:var(--ink-2)}
+  .head p{margin:7px 0 0;max-width:52ch;font-size:12px;line-height:1.75;color:var(--ink-2)}
+  .head .tag{margin-left:auto;text-align:right;font:500 9px/1.9 var(--mono);letter-spacing:.2em;
+    text-transform:uppercase;color:var(--ink-2)}
+
+  /* ---------- stage ---------- */
+  .stage{position:relative;display:grid;place-items:center;perspective:1100px;perspective-origin:50% 42%;
+    cursor:grab;user-select:none;touch-action:none;min-height:0}
+  .stage.drag{cursor:grabbing}
+  .floor{position:absolute;left:0;right:0;bottom:0;height:52%;
+    background:linear-gradient(180deg,rgba(0,0,0,0) 0%,var(--floor-2) 42%,var(--floor-1) 100%);
+    box-shadow:inset 0 26px 60px -30px rgba(80,60,45,.55)}
+  .floor::after{content:"";position:absolute;inset:0;
+    background:radial-gradient(60% 90% at 50% 0%,rgba(255,255,255,.72),transparent 70%)}
+  .sweep{position:absolute;left:0;right:0;bottom:0;height:52%;pointer-events:none;
+    background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.55) 45%,transparent 90%);
+    transform:translateX(-40%);animation:sweep 11s ease-in-out infinite;mix-blend-mode:screen;opacity:.45}
+  @keyframes sweep{0%{transform:translateX(-50%)}55%,100%{transform:translateX(130%)}}
+
+  .table{position:relative;width:min(94vw,880px);height:min(56vh,410px);
+    transform-style:preserve-3d;transform:rotateX(-13deg) rotateY(var(--spin,0deg));
+    transition:transform .09s linear}
+  .disc{position:absolute;left:50%;bottom:-16px;width:76%;height:24%;transform:translateX(-50%);
+    transform-style:preserve-3d}
+  .disc .top{position:absolute;inset:0 0 24% 0;border-radius:50%;
+    background:
+      radial-gradient(60% 60% at var(--lx) var(--ly),rgba(255,255,255,.9),transparent 62%),
+      linear-gradient(180deg,var(--floor-1),var(--floor-2));
+    box-shadow:0 30px 60px -30px rgba(90,66,48,.55),0 4px 10px -4px rgba(90,66,48,.3),
+      inset 0 2px 2px rgba(255,255,255,.8)}
+  .disc .edge{position:absolute;left:0;right:0;top:72%;height:32%;border-radius:0 0 50% 50%/0 0 30% 30%;
+    background:linear-gradient(180deg,var(--floor-2),#c3b6a7)}
+
+  /* ---------- clay primitives ---------- */
+  .obj{position:absolute;transform-style:preserve-3d;left:50%;top:50%}
+  .shadow{position:absolute;left:50%;transform:translate(-50%,0);border-radius:50%;
+    background:radial-gradient(closest-side,rgba(84,60,44,.5),rgba(84,60,44,.2) 55%,transparent 78%);
+    filter:blur(7px)}
+
+  .clay{position:absolute;inset:0;border-radius:50%;
+    background-image:
+      radial-gradient(circle at var(--lx) var(--ly),rgba(255,255,255,.95) 0%,rgba(255,255,255,.28) 18%,transparent 46%),
+      linear-gradient(calc(var(--light) * 1deg),var(--clay-1) 0%,var(--clay-2) 46%,var(--clay-3) 100%);
+    box-shadow:
+      inset 7px 9px 18px rgba(255,255,255,.72),
+      inset -7px -11px 20px rgba(150,92,66,.48),
+      0 24px 38px -22px rgba(94,66,48,.65),
+      0 6px 12px -6px rgba(94,66,48,.4);
+  }
+  .mat-matte .clay{
+    background-image:
+      radial-gradient(120% 120% at var(--lx) var(--ly),rgba(255,255,255,.62) 0%,transparent 58%),
+      linear-gradient(calc(var(--light) * 1deg),var(--clay-1),var(--clay-2) 52%,var(--clay-3));
+    box-shadow:
+      inset 9px 11px 22px rgba(255,255,255,.55),
+      inset -11px -15px 26px rgba(150,92,66,.40),
+      0 22px 34px -24px rgba(94,66,48,.55);
+    filter:saturate(.9)}
+  .mat-gloss .clay{
+    background-image:
+      radial-gradient(20% 16% at calc(var(--lx) - 4%) calc(var(--ly) - 7%),rgba(255,255,255,.98),transparent 62%),
+      radial-gradient(90% 80% at var(--lx) var(--ly),rgba(255,255,255,.40),transparent 56%),
+      radial-gradient(28% 22% at 78% 86%,rgba(255,255,255,.32),transparent 60%),
+      linear-gradient(calc(var(--light) * 1deg),var(--clay-1),var(--clay-2) 44%,var(--clay-3));
+    box-shadow:
+      inset 6px 8px 14px rgba(255,255,255,.85),
+      inset -9px -13px 22px rgba(140,84,58,.52),
+      0 26px 40px -22px rgba(94,66,48,.68);
+    filter:saturate(1.06) contrast(1.02)}
+  .mat-metal .clay{--clay-1:#eef1f4;--clay-2:#a9b4bf;--clay-3:#5d6a76;
+    background-image:
+      linear-gradient(calc(var(--light) * 1deg) 0deg,
+        #fdfefe 0%,#cfd8de 16%,#7d8b97 30%,#e8eef2 42%,#8b98a4 56%,#4c5862 74%,#c3ced6 100%),
+      radial-gradient(70% 60% at var(--lx) var(--ly),rgba(255,255,255,.45),transparent 60%);
+    box-shadow:
+      inset 3px 4px 8px rgba(255,255,255,.65),
+      inset -5px -7px 12px rgba(30,40,50,.55),
+      0 26px 40px -22px rgba(30,40,50,.55);
+    filter:saturate(.3)}
+  .mat-glass .clay{--clay-1:rgba(255,255,255,.5);--clay-2:rgba(206,226,236,.30);--clay-3:rgba(140,175,196,.22);
+    background-image:
+      radial-gradient(16% 13% at calc(var(--lx) - 3%) calc(var(--ly) - 8%),rgba(255,255,255,1),transparent 60%),
+      radial-gradient(80% 70% at var(--lx) var(--ly),rgba(255,255,255,.28),transparent 58%),
+      linear-gradient(calc(var(--light) * 1deg),rgba(255,255,255,.20),rgba(190,214,228,.10) 55%,rgba(120,160,184,.20));
+    box-shadow:
+      inset 10px 12px 18px rgba(255,255,255,.55),
+      inset -12px -14px 20px rgba(90,130,155,.32),
+      inset 0 0 0 1px rgba(255,255,255,.5),
+      0 26px 40px -24px rgba(60,90,110,.45);
+    backdrop-filter:blur(3px) saturate(1.4);-webkit-backdrop-filter:blur(3px) saturate(1.4)}
+
+  .torus .clay{-webkit-mask:radial-gradient(circle at 50% 50%,transparent 0 33%,#000 34%);
+    mask:radial-gradient(circle at 50% 50%,transparent 0 33%,#000 34%)}
+  .torus .inner{position:absolute;inset:0;border-radius:50%;pointer-events:none;
+    background:radial-gradient(circle at 50% 50%,rgba(120,80,60,.45) 0 29%,rgba(120,80,60,.16) 33%,transparent 40%)}
+  .capsule .clay{border-radius:50%/26%}
+
+  .word{position:absolute;left:50%;transform:translateX(-50%);bottom:8%;display:flex;gap:.01em;
+    transform-style:preserve-3d}
+  .letter{position:relative;font:700 var(--fs,120px)/0.82 var(--mono);letter-spacing:-.05em;
+    transform-style:preserve-3d}
+  .letter span{position:absolute;left:0;top:0;display:block;backface-visibility:hidden}
+  .wordbox{position:absolute;left:50%;top:50%;transform-style:preserve-3d}
+
+  /* ---------- console ---------- */
+  .console{position:relative;z-index:5;border-top:1px solid var(--line);
+    background:linear-gradient(180deg,rgba(255,255,255,.45),rgba(255,255,255,.10));
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    padding:12px clamp(12px,3vw,30px) 16px;display:flex;gap:clamp(12px,2.4vw,30px);
+    align-items:center;flex-wrap:wrap}
+  .grp{display:flex;flex-direction:column;gap:7px}
+  .grp>label{font:600 8.5px/1 var(--mono);letter-spacing:.22em;text-transform:uppercase;color:var(--ink-2)}
+  .seg{display:flex;gap:3px}
+  .seg button{font:600 9.5px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;
+    border:1px solid var(--line);background:rgba(255,255,255,.42);color:var(--ink-2);
+    padding:8px 11px;border-radius:99px;cursor:pointer;transition:.16s}
+  .seg button:hover{color:var(--ink);border-color:rgba(58,51,44,.34)}
+  .seg button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#f6f0e8}
+  .sw{display:flex;gap:5px}
+  .sw button{width:30px;height:30px;border-radius:50%;border:2px solid transparent;cursor:pointer;
+    box-shadow:0 3px 8px -3px rgba(90,66,48,.55),inset 0 2px 3px rgba(255,255,255,.7);transition:.16s}
+  .sw button[aria-pressed="true"]{border-color:var(--ink);transform:scale(1.06)}
+  .dial{display:flex;align-items:center;gap:10px}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:clamp(100px,15vw,180px);height:4px;
+    border-radius:3px;background:linear-gradient(90deg,#f7c9b4,#d9825f);outline:0;cursor:ew-resize}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+    background:#fff;border:2px solid var(--ink);box-shadow:0 2px 6px rgba(80,60,45,.5);cursor:ew-resize}
+  input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#fff;
+    border:2px solid var(--ink);cursor:ew-resize}
+  .lamp{width:15px;height:15px;border-radius:50%;flex:0 0 auto;
+    background:radial-gradient(circle at 34% 30%,#fff,var(--clay-2) 58%,var(--clay-3));
+    box-shadow:0 0 14px 2px rgba(255,255,255,.65),0 2px 5px rgba(120,90,70,.5)}
+  .readout{margin-left:auto;text-align:right;font:500 9px/1.9 var(--mono);letter-spacing:.16em;
+    text-transform:uppercase;color:var(--ink-2)}
+  .readout b{color:var(--ink);font-weight:600}
+
+  @media (max-width:760px){
+    .head .tag{display:none}
+    .console{gap:12px;padding:10px 12px 12px}
+    .readout{margin-left:0;width:100%;text-align:left}
+    .table{height:min(44vh,310px)}
+  }
+</style>
+</head>
+<body>
+<div class="room">
+  <div class="head">
+    <div>
+      <h1>Plasticine <em>Department</em></h1>
+      <p>Soft bodies rendered with layered CSS gradients only — no canvas, no WebGL, no images.
+        Every shape on the table is a <code>div</code> with a light direction, an ambient
+        occlusion term and a contact shadow on the floor.</p>
+    </div>
+    <div class="tag">Studio B · 9 objects<br>Cast in place since 09:00</div>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="floor"></div>
+    <div class="sweep"></div>
+    <div class="table mat-matte" id="table">
+      <div class="disc"><div class="top"></div><div class="edge"></div></div>
+      <div id="objects"></div>
+    </div>
+  </div>
+
+  <div class="console">
+    <div class="grp">
+      <label>Material</label>
+      <div class="seg" id="mat">
+        <button data-m="matte" aria-pressed="true">Matte</button>
+        <button data-m="gloss" aria-pressed="false">Gloss</button>
+        <button data-m="metal" aria-pressed="false">Metal</button>
+        <button data-m="glass" aria-pressed="false">Glass</button>
+      </div>
+    </div>
+    <div class="grp">
+      <label>Batch colour</label>
+      <div class="sw" id="pal">
+        <button data-p="0" aria-pressed="true" style="background:linear-gradient(140deg,#f7c9b4,#d9825f)" title="Terracotta"></button>
+        <button data-p="1" aria-pressed="false" style="background:linear-gradient(140deg,#cfe0d3,#8fb59a)" title="Sage"></button>
+        <button data-p="2" aria-pressed="false" style="background:linear-gradient(140deg,#d7d2ea,#9c93c4)" title="Lilac"></button>
+        <button data-p="3" aria-pressed="false" style="background:linear-gradient(140deg,#f4dfc0,#d0ac74)" title="Ochre"></button>
+      </div>
+    </div>
+    <div class="grp">
+      <label>Light direction</label>
+      <div class="dial">
+        <span class="lamp" id="lamp"></span>
+        <input id="sun" type="range" min="0" max="359" value="135" aria-label="Light direction">
+        <b id="sunv" style="font:600 10px/1 var(--mono);min-width:36px">135°</b>
+      </div>
+    </div>
+    <div class="grp">
+      <label>Turntable</label>
+      <div class="seg">
+        <button id="auto" aria-pressed="true">Auto</button>
+        <button id="reset">Front</button>
+      </div>
+    </div>
+    <div class="readout">
+      Light <b id="ro-l">135°</b> · Spin <b id="ro-s">0°</b><br>
+      Shading: layered gradients · AO: inset · Contact: blurred
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const table=$("#table"), objs=$("#objects"), stage=$("#stage");
+let spin=0, vel=0, auto=true, drag=false, lastX=0, idleT=0;
+
+/* ================= the arrangement on the turntable ================= */
+const ARR=[
+  {t:"sphere",  x:-300, y:-136, w:130, h:130, z:-46, rx:0,   ry:0,   rz:0,   lift:72},
+  {t:"sphere",  x:-134, y:-184, w:72,  h:72,  z:26,  rx:0,   ry:0,   rz:0,   lift:130},
+  {t:"capsule", x:-186, y:-92,  w:188, h:74,  z:34,  rx:-58, ry:16,  rz:-14, lift:44},
+  {t:"torus",   x:46,   y:-126, w:174, h:174, z:6,   rx:-72, ry:0,   rz:8,   lift:56},
+  {t:"sphere",  x:238,  y:-156, w:102, h:102, z:-14, rx:0,   ry:0,   rz:0,   lift:110},
+  {t:"capsule", x:308,  y:-84,  w:130, h:56,  z:-8,  rx:-64, ry:-22, rz:20,  lift:38},
+  {t:"sphere",  x:-268, y:-56,  w:56,  h:56,  z:60,  rx:0,   ry:0,   rz:0,   lift:148},
+  {t:"torus",   x:160,  y:-72,  w:84,  h:84,  z:54,  rx:-76, ry:0,   rz:-10, lift:102},
+  {t:"word",    x:0,    y:-118, z:44, rx:-18, ry:0,   rz:0,   lift:0,  text:"C"}
+];
+
+function build(){
+  objs.innerHTML="";
+  ARR.forEach(o=>{
+    const g=document.createElement("div");
+    g.className="obj "+o.t;
+    g.style.transform="translate3d("+o.x+"px,"+o.y+"px,"+o.z+"px) rotateX("+o.rx+
+      "deg) rotateY("+o.ry+"deg) rotateZ("+o.rz+"deg)";
+
+    const sh=document.createElement("div");
+    sh.className="shadow";
+    sh.style.width=(o.w?o.w*0.94:170)+"px";
+    sh.style.height=(o.w?o.w*0.34:62)+"px";
+    sh.style.bottom=(-o.lift-6)+"px";
+    sh.style.opacity=String(Math.max(.16,0.6-o.lift/280));
+    g.appendChild(sh);
+
+    if(o.t==="word"){
+      const box=document.createElement("div");
+      box.className="wordbox";
+      const word=document.createElement("div");
+      word.className="word";
+      const letter=document.createElement("div");
+      letter.className="letter";
+      letter.style.setProperty("--fs","132px");
+      const layers=15;
+      for(let l=layers;l>=0;l--){
+        const span=document.createElement("span");
+        span.textContent=o.text;
+        span.style.transform="translateZ("+(l*3.4).toFixed(1)+"px)";
+        const d=(layers-l)/layers;
+        span.style.color="rgb("+Math.round(240-d*100)+","+Math.round(170-d*105)+","+Math.round(132-d*80)+")";
+        letter.appendChild(span);
+      }
+      word.appendChild(letter);
+      box.appendChild(word);
+      g.appendChild(box);
+    } else {
+      const clay=document.createElement("div");
+      clay.className="clay";
+      clay.style.width=o.w+"px";clay.style.height=o.h+"px";
+      g.appendChild(clay);
+      if(o.t==="torus"){
+        const inner=document.createElement("div");
+        inner.className="inner";g.appendChild(inner);
+      }
+    }
+    objs.appendChild(g);
+  });
+}
+build();
+
+/* ================= light direction ================= */
+const sun=$("#sun");
+function applyLight(){
+  const a=+sun.value, r=a*Math.PI/180;
+  const st=document.documentElement.style;
+  st.setProperty("--light",a);
+  st.setProperty("--lx",(50+Math.cos(r)*33).toFixed(1)+"%");
+  st.setProperty("--ly",(50-Math.sin(r)*33).toFixed(1)+"%");
+  $("#sunv").textContent=a+"°";
+  $("#ro-l").textContent=a+"°";
+  const lamp=$("#lamp");
+  lamp.style.background="radial-gradient(circle at 34% 30%,#fff,"+
+    (a<180?"var(--clay-2)":"var(--clay-3)")+" 58%,rgba(120,90,70,.6))";
+}
+sun.addEventListener("input",applyLight);
+applyLight();
+
+/* ================= palettes ================= */
+const PALS=[
+  ["#f7c9b4","#efab8e","#d9825f"],
+  ["#cfe0d3","#a8c6b3","#7fa48d"],
+  ["#d7d2ea","#b6aed8","#8f86b8"],
+  ["#f4dfc0","#e3c08d","#c99c5f"]
+];
+document.querySelectorAll("#pal button").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("#pal button").forEach(o=>o.setAttribute("aria-pressed",String(o===b)));
+  const p=PALS[+b.dataset.p], r=document.documentElement.style;
+  r.setProperty("--clay-1",p[0]);r.setProperty("--clay-2",p[1]);r.setProperty("--clay-3",p[2]);
+}));
+
+/* ================= material ================= */
+document.querySelectorAll("#mat button").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("#mat button").forEach(o=>o.setAttribute("aria-pressed",String(o===b)));
+  table.className="table mat-"+b.dataset.m;
+}));
+
+/* ================= drag to spin ================= */
+stage.addEventListener("pointerdown",e=>{
+  drag=true;lastX=e.clientX;stage.classList.add("drag");
+  stage.setPointerCapture(e.pointerId);
+  auto=false;$("#auto").setAttribute("aria-pressed","false");
+});
+stage.addEventListener("pointermove",e=>{
+  if(!drag)return;
+  const dx=e.clientX-lastX;lastX=e.clientX;
+  spin+=dx*0.42;vel=dx*0.42;idleT=0;
+});
+["pointerup","pointercancel"].forEach(t=>stage.addEventListener(t,()=>{
+  drag=false;stage.classList.remove("drag");
+}));
+stage.addEventListener("wheel",e=>{
+  e.preventDefault();spin+=e.deltaY*0.28;
+  auto=false;$("#auto").setAttribute("aria-pressed","false");
+},{passive:false});
+$("#auto").addEventListener("click",function(){
+  auto=!auto;this.setAttribute("aria-pressed",String(auto));
+  if(auto)vel=0;
+});
+$("#reset").addEventListener("click",()=>{
+  const from=spin, to=Math.round(from/360)*360, t0=performance.now();
+  (function step(now){
+    const u=Math.min(1,(now-t0)/620), e=1-Math.pow(1-u,3);
+    spin=from+(to-from)*e;
+    if(u<1)requestAnimationFrame(step);
+  })(t0);
+  auto=false;$("#auto").setAttribute("aria-pressed","false");
+});
+
+/* ================= loop ================= */
+let last=performance.now();
+function frame(now){
+  const dt=Math.min(.05,(now-last)/1000);last=now;
+  idleT+=dt;
+  if(drag){ /* the pointer is driving */ }
+  else if(auto){
+    spin+=dt*10;if(spin>360)spin-=360;
+  } else {
+    spin+=vel;vel*=0.94;
+    if(Math.abs(vel)<0.02)vel=0;
+    if(idleT>7){auto=true;$("#auto").setAttribute("aria-pressed","true");}
+  }
+  spin=((spin%360)+360)%360;
+  table.style.setProperty("--spin",spin.toFixed(2)+"deg");
+  $("#ro-s").textContent=Math.round(spin)+"°";
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DUSK RIOT — Two-Ink Duotone Proof</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --pink:#ff5fb0; --blue:#2f3fc0; --over:#2b2590;
+    --paper:#f0e9dc; --ink:#1b1712; --press:#171410;
+  }
+  html,body{min-height:100%}
+  body{background:var(--press);color:#e8e0d2;
+    font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+    background-image:radial-gradient(80% 60% at 50% 0%,#2a251d 0%,#100e0b 70%);
+    display:grid;grid-template-columns:320px 1fr;min-height:100vh}
+  aside{border-right:1px solid #37312a;padding:26px 22px 40px;display:flex;flex-direction:column;gap:22px;
+    background:linear-gradient(180deg,#1c1814,#141210)}
+  .brand{display:flex;align-items:baseline;gap:9px}
+  .brand b{font-family:"Archivo Black",Impact,sans-serif;font-size:19px;letter-spacing:-.02em}
+  .brand i{font-style:normal;font-size:10px;letter-spacing:.24em;color:#8d8375}
+  .grp h3{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:#8d8375;font-weight:600;
+    padding-bottom:7px;border-bottom:1px solid #322c25;margin-bottom:12px;display:flex;justify-content:space-between}
+  .plate{display:grid;gap:7px;margin-bottom:14px}
+  .prow{display:flex;align-items:center;gap:9px;font-size:11.5px}
+  .sw{width:15px;height:15px;border-radius:3px;flex:0 0 auto;border:1px solid rgba(255,255,255,.18)}
+  .prow b{font-weight:500;letter-spacing:.05em}
+  .prow code{margin-left:auto;font-size:10.5px;color:#b6a894;font-variant-numeric:tabular-nums}
+  .hintline{font-size:10px;line-height:1.6;color:#6f665a;letter-spacing:.04em}
+  .knob{margin-bottom:15px}
+  .knob label{display:flex;justify-content:space-between;font-size:10.5px;letter-spacing:.14em;
+    text-transform:uppercase;color:#9c9182;margin-bottom:6px}
+  .knob label span{color:#e8e0d2;font-variant-numeric:tabular-nums}
+  input[type=range]{-webkit-appearance:none;width:100%;height:3px;background:#3a332b;border-radius:9px;outline:0}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:99px;
+    background:#e8e0d2;border:3px solid #171410;box-shadow:0 0 0 1px #6b6152;cursor:grab}
+  input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:99px;background:#e8e0d2;
+    border:3px solid #171410;box-shadow:0 0 0 1px #6b6152;cursor:grab}
+  button{font:inherit;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;cursor:pointer;
+    padding:10px 12px;width:100%;border-radius:4px;border:1px solid #4a4238;background:#241f1a;color:#e8e0d2;transition:.16s}
+  button:hover{background:#312a23;border-color:#6b6152}
+  .legend{display:flex;gap:8px;margin-top:4px}
+  .legend div{flex:1;text-align:center}
+  .legend i{display:block;height:34px;border-radius:3px;border:1px solid rgba(0,0,0,.5)}
+  .legend span{display:block;font-size:8.5px;letter-spacing:.14em;color:#8d8375;margin-top:5px;text-transform:uppercase}
+  .sidefoot{margin-top:auto;font-size:9.5px;line-height:1.7;color:#5f574d;letter-spacing:.06em}
+
+  main{padding:40px 30px 60px;display:grid;place-items:start center}
+  .sheet{position:relative;width:min(640px,94vw);aspect-ratio:2/3;background:var(--paper);color:var(--ink);
+    box-shadow:0 40px 90px -34px #000,0 0 0 1px rgba(0,0,0,.4);
+    padding:34px 34px 26px;display:flex;flex-direction:column;overflow:hidden}
+  .fibers{position:absolute;inset:0;pointer-events:none;opacity:.5;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72 0.4' numOctaves='4'/%3E%3CfeColorMatrix values='0 0 0 0 0.12 0 0 0 0 0.1 0 0 0 0 0.08 0 0 0 0.5 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23f)'/%3E%3C/svg%3E")}
+  .roller{position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;opacity:.55;
+    background:repeating-linear-gradient(91deg,rgba(60,50,40,.09) 0 1px,transparent 1px 5px),
+      repeating-linear-gradient(89deg,rgba(60,50,40,.05) 0 1px,transparent 1px 13px),
+      linear-gradient(93deg,transparent 0 18%,rgba(70,58,46,.07) 26%,transparent 34%),
+      linear-gradient(93deg,transparent 0 62%,rgba(70,58,46,.06) 68%,transparent 78%)}
+  .crop{position:absolute;width:16px;height:16px;border:1px solid rgba(27,23,18,.35)}
+  .crop.tl{top:12px;left:12px;border-right:0;border-bottom:0}
+  .crop.tr{top:12px;right:12px;border-left:0;border-bottom:0}
+  .crop.bl{bottom:12px;left:12px;border-right:0;border-top:0}
+  .crop.br{bottom:12px;right:12px;border-left:0;border-top:0}
+
+  .topline{display:flex;justify-content:space-between;align-items:baseline;font-size:9px;
+    letter-spacing:.3em;text-transform:uppercase;border-bottom:1px solid var(--ink);padding-bottom:7px;position:relative}
+  .platewrap{position:relative;margin:16px 0 0}
+  .headline{position:relative;margin:14px 0 0;line-height:.82}
+  .hl{font-family:"Archivo Black",Impact,sans-serif;font-size:clamp(46px,7.2vw,82px);letter-spacing:-.035em;
+    line-height:.8;text-transform:uppercase;mix-blend-mode:multiply;will-change:transform;user-select:none}
+  .hl.p{color:var(--pink)}
+  .hl.b{color:var(--blue)}
+  .tagline{font-size:10px;letter-spacing:.24em;text-transform:uppercase;margin:10px 0 0;
+    display:flex;justify-content:space-between;gap:12px}
+
+  .plate{position:relative;margin-top:14px;aspect-ratio:700/430;border:1px solid rgba(27,23,18,.55);
+    background:#e9e1d2;overflow:hidden;cursor:grab;touch-action:none}
+  .plate.drag{cursor:grabbing}
+  .plate canvas{position:absolute;left:0;top:0;width:100%;height:100%;mix-blend-mode:multiply;will-change:transform}
+  .plate canvas.b{pointer-events:none}
+  .reg{position:absolute;width:15px;height:15px;pointer-events:none;mix-blend-mode:multiply}
+  .reg::before,.reg::after{content:"";position:absolute;background:currentColor}
+  .reg::before{left:7px;top:0;width:1px;height:15px}
+  .reg::after{top:7px;left:0;height:1px;width:15px}
+  .reg.tl{left:8px;top:8px}.reg.tr{right:8px;top:8px}.reg.bl{left:8px;bottom:8px}.reg.br{right:8px;bottom:8px}
+  .handle{position:absolute;top:10px;display:flex;align-items:center;gap:6px;padding:5px 9px;border-radius:3px;
+    font-size:9px;letter-spacing:.2em;color:#fff;z-index:4;cursor:grab;user-select:none;
+    box-shadow:0 4px 12px -4px rgba(0,0,0,.6)}
+  .handle::after{content:"";width:5px;height:5px;border-radius:99px;background:rgba(255,255,255,.85)}
+  .handle.p{left:32px;background:var(--pink)}
+  .handle.b{right:32px;background:var(--blue)}
+  .platefoot{display:flex;justify-content:space-between;font-size:8.5px;letter-spacing:.22em;
+    text-transform:uppercase;margin-top:6px;color:#4a4238}
+
+  .lineup{margin-top:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:0 16px;flex:1;min-height:0}
+  .col h4{font-size:8.5px;letter-spacing:.26em;color:var(--blue);text-transform:uppercase;
+    border-bottom:1px solid rgba(27,23,18,.3);padding-bottom:4px;margin-bottom:7px}
+  .col ul{list-style:none;display:grid;gap:3px}
+  .col li{font-size:10px;line-height:1.22;letter-spacing:.01em;display:flex;gap:6px}
+  .col li b{font-weight:500}
+  .col li i{font-style:normal;font-size:8.5px;color:#6b6152;margin-left:auto;letter-spacing:.06em}
+  .col li.hl2{color:var(--pink);font-family:"Archivo Black",Impact,sans-serif;font-size:11px}
+  .dates{margin-top:16px;display:flex;gap:14px;align-items:flex-end;border-top:1px solid var(--ink);padding-top:10px}
+  .dates .d{font-family:"Archivo Black",Impact,sans-serif;font-size:26px;line-height:.9;letter-spacing:-.02em}
+  .dates .m{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#4a4238;padding-bottom:4px}
+  .barcode{margin-left:auto;display:flex;gap:2px;align-items:flex-end;height:30px}
+  .barcode i{width:2px;background:var(--ink)}
+  .foot{margin-top:10px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .foot p{font-size:8.5px;letter-spacing:.12em;line-height:1.55;color:#4a4238;text-transform:uppercase}
+  .control{display:flex;height:16px;border:1px solid var(--ink);width:132px;flex:0 0 auto}
+  .control i{flex:1;border-right:1px solid var(--ink)}
+  .control i:last-child{border-right:0}
+  .control i:nth-child(1){background:var(--pink)}
+  .control i:nth-child(2){background:var(--blue)}
+  .control i:nth-child(3){background:var(--over)}
+  .control i:nth-child(4){background:linear-gradient(90deg,var(--paper) 50%,#4a4238 50%)}
+  .control i:nth-child(5){background:linear-gradient(90deg,var(--paper) 25%,#4a4238 25% 50%,var(--paper) 50% 75%,#4a4238 75%)}
+  .overprint{margin-top:10px;height:18px;border:1px solid var(--ink);position:relative;overflow:hidden;
+    background:repeating-linear-gradient(45deg,rgba(255,95,176,.85) 0 4px,rgba(47,63,192,.85) 4px 8px);
+    opacity:.9}
+  .overprint span{position:absolute;inset:0;display:flex;align-items:center;padding-left:8px;font-size:8px;
+    letter-spacing:.2em;color:#fff;text-transform:uppercase;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+</style>
+</head>
+<body>
+
+<aside>
+  <div class="brand"><b>HAND &amp; EYE</b><i>RISOGRAPH</i></div>
+  <div class="grp">
+    <h3>Plate control <i id="stamp">unregistered</i></h3>
+    <div class="plate">
+      <div class="prow"><span class="sw" style="background:var(--pink)"></span><b>Fluorescent Pink</b><code id="ro_p">+0.0 / +0.0</code></div>
+      <div class="prow"><span class="sw" style="background:var(--blue)"></span><b>Federal Blue</b><code id="ro_b">+0.0 / +0.0</code></div>
+      <p class="hintline">Drag anywhere on the image to shift the nearer plate. Or grab a tab. Arrow keys nudge the selected plate, 0.5&nbsp;mm.</p>
+    </div>
+    <div class="knob"><label>Ink density &mdash; pink <span id="v_dp">92%</span></label><input id="dp" type="range" min="30" max="100" value="92"></div>
+    <div class="knob"><label>Ink density &mdash; blue <span id="v_db">90%</span></label><input id="db" type="range" min="30" max="100" value="90"></div>
+    <div class="knob"><label>Screen ruling <span id="v_lpi">42 lpi</span></label><input id="lpi" type="range" min="4" max="11" step="0.5" value="5.6"></div>
+    <button id="reset">Re-register plates</button>
+  </div>
+  <div class="grp">
+    <h3>Overprint</h3>
+    <div class="legend">
+      <div><i style="background:var(--pink)"></i><span>1C plate</span></div>
+      <div><i style="background:var(--blue)"></i><span>2C plate</span></div>
+      <div><i style="background:var(--over)"></i><span>Overprint</span></div>
+    </div>
+    <p class="hintline" style="margin-top:12px">Two inks cannot make a third. Misregistration makes one anyway: where both screens land on the same fibre, the inks multiply into a violet that exists nowhere on the press.</p>
+  </div>
+  <div class="grp">
+    <h3>Job</h3>
+    <p class="hintline">Dusk Riot, edition 04.<br>Run of 250, 118&nbsp;gsm recycled board.<br>Screen angles 45&deg; / 15&deg;.<br>Ink pulled 09:41, 21&nbsp;&deg;C.</p>
+  </div>
+  <div class="sidefoot">RISO RZ stencil duplicator &middot; drum 1180&nbsp;rpm &middot; operator J.&nbsp;Hand</div>
+</aside>
+
+<main>
+  <div class="sheet" id="sheet">
+    <div class="crop tl"></div><div class="crop tr"></div><div class="crop bl"></div><div class="crop br"></div>
+
+    <div class="topline"><span>Dusk Riot &mdash; edition 04</span><span>Two inks only</span><span>Deptford, London</span></div>
+
+    <div class="headline" id="headline">
+      <div class="hl p" id="hlp">Dusk</div>
+      <div class="hl b" id="hlb">Riot</div>
+    </div>
+    <div class="tagline"><span>Two nights of noise &amp; slowcore</span><span>Riverside Works</span></div>
+
+    <div class="plate" id="plate">
+      <canvas id="cp"></canvas>
+      <canvas id="cb" class="b"></canvas>
+      <div class="reg p tl" id="rp1"></div><div class="reg p tr" id="rp2"></div>
+      <div class="reg p bl" id="rp3"></div><div class="reg p br" id="rp4"></div>
+      <div class="reg b tl" id="rb1"></div><div class="reg b tr" id="rb2"></div>
+      <div class="reg b bl" id="rb3"></div><div class="reg b br" id="rb4"></div>
+      <div class="handle p" id="hp">Plate 1</div>
+      <div class="handle b" id="hb">Plate 2</div>
+    </div>
+    <div class="platefoot"><span>Duotone: fluorescent pink / federal blue</span><span id="offread">offset 0.0 mm</span></div>
+
+    <div class="lineup">
+      <div class="col">
+        <h4>Friday &middot; 14 June</h4>
+        <ul>
+          <li class="hl2"><b>Kilo Static</b></li>
+          <li><b>Marigold Hours</b><i>22:10</i></li>
+          <li><b>The Long Now Band</b><i>23:00</i></li>
+          <li><b>Petra Voss</b><i>00:15</i></li>
+          <li><b>Glass Taxonomy</b><i>01:00</i></li>
+          <li><b>Nil Draught</b><i>02:00</i></li>
+          <li><b>Slow Combustion Unit</b><i>03:00</i></li>
+        </ul>
+      </div>
+      <div class="col">
+        <h4>Saturday &middot; 15 June</h4>
+        <ul>
+          <li class="hl2"><b>Pale Architect</b></li>
+          <li><b>Hana &amp; the Five</b><i>21:30</i></li>
+          <li><b>Ohm Sweet Ohm</b><i>22:30</i></li>
+          <li><b>Low Tide Choir</b><i>23:30</i></li>
+          <li><b>Concrete Orchard</b><i>00:30</i></li>
+          <li><b>S-Freq</b><i>01:30</i></li>
+          <li><b>Marta Beleza</b><i>02:30</i></li>
+        </ul>
+      </div>
+      <div class="col">
+        <h4>Both nights &middot; the yard</h4>
+        <ul>
+          <li><b>Print swap</b><i>Sat 14:00</i></li>
+          <li><b>Zine fair</b><i>Sat 16:00</i></li>
+          <li><b>Duotone clinic</b><i>Sun 11:00</i></li>
+          <li><b>Riso machine teardown</b><i>Sun 13:00</i></li>
+          <li><b>Tape loop surgery</b><i>Sun 15:00</i></li>
+          <li><b>Late canteen</b><i>daily</i></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="dates">
+      <div class="d">14&ndash;15<br>JUNE</div>
+      <div class="m">Doors 19:00 &middot; Riverside Works<br>12&ndash;14 Deptford High St, SE8<br>£14 advance / £18 on the gate</div>
+      <div class="barcode" id="bc"></div>
+    </div>
+
+    <div class="foot">
+      <p>Printed on 118&nbsp;gsm recycled board by Hand &amp; Eye Risograph, Deptford.<br>Set in Archivo Black &amp; IBM Plex Mono. No third ink was harmed.</p>
+      <div class="control"><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+    <div class="overprint"><span>Overprint test &mdash; 50% / 50% / 100%</span></div>
+  </div>
+  <div class="fibers" style="position:fixed;inset:0;pointer-events:none"></div>
+</main>
+
+<script>
+const PW = 700, PH = 430;
+const cp = document.getElementById("cp"), cb = document.getElementById("cb");
+cp.width = PW; cp.height = PH; cb.width = PW; cb.height = PH;
+const sheetW = document.getElementById("plate").clientWidth || 560;
+const scale = PW / sheetW;
+const state = {
+  p: { x: 0, y: 0 }, b: { x: 0, y: 0 },
+  dp: .92, db: .90, cell: 5.6, sel: "p"
+};
+
+function inkArt(kind) {
+  const s = document.createElement("canvas"); s.width = PW; s.height = PH;
+  const g = s.getContext("2d");
+  g.fillStyle = "#fff"; g.fillRect(0, 0, PW, PH);
+  if (kind === "p") {
+    const halo = g.createRadialGradient(PW * .52, PH * .3, 20, PW * .52, PH * .3, PH * .78);
+    halo.addColorStop(0, "#0a0a0a"); halo.addColorStop(.34, "#4a4a4a");
+    halo.addColorStop(.62, "#c8c8c8"); halo.addColorStop(1, "#ffffff");
+    g.fillStyle = halo; g.fillRect(0, 0, PW, PH);
+    g.globalCompositeOperation = "multiply";
+    for (let i = 0; i < 26; i++) {
+      g.strokeStyle = "rgba(255,255,255," + (0.5 - i * 0.015) + ")";
+      g.lineWidth = 2 + i * 1.6;
+      g.beginPath(); g.arc(PW * .52, PH * .3, 60 + i * 13, 0, 6.2832); g.stroke();
+    }
+    g.globalCompositeOperation = "source-over";
+    g.fillStyle = "#000";
+    g.beginPath(); g.arc(PW * .52, PH * .3, 74, 0, 6.2832); g.fill();
+    g.fillStyle = "#0d0d0d"; g.fillRect(0, PH * .74, PW, PH * .26);
+    for (let i = 0; i < 46; i++) {
+      const x = i * 16 + Math.sin(i * 1.7) * 5, r = 15 + Math.abs(Math.sin(i * 2.3)) * 8;
+      const y = PH * .78 + Math.sin(i * .9) * 9;
+      g.beginPath(); g.arc(x, y, r, Math.PI, 0); g.fill();
+      g.beginPath(); g.arc(x, y + 6, r * .52, 0, 6.2832); g.fill();
+      g.fillRect(x - r, y, r * 2, 26);
+    }
+  } else {
+    g.fillStyle = "#fdfdfd"; g.fillRect(0, 0, PW, PH);
+    g.fillStyle = "#111";
+    g.beginPath(); g.moveTo(PW * .46, 0); g.lineTo(PW, 0); g.lineTo(PW, PH * .58);
+    g.lineTo(PW * .58, PH * .58); g.closePath(); g.fill();
+    g.fillStyle = "#2a2a2a";
+    for (let i = 0; i < 8; i++) {
+      g.beginPath();
+      g.moveTo(0, PH * .6 + i * 20);
+      g.bezierCurveTo(PW * .3, PH * .6 + i * 20 - 16, PW * .6, PH * .6 + i * 20 + 18, PW, PH * .6 + i * 20 - 4);
+      g.lineWidth = 4; g.strokeStyle = i % 3 === 0 ? "#151515" : "#3a3a3a"; g.stroke();
+    }
+    g.fillStyle = "#e9e9e9"; g.fillRect(0, PH * .6, PW, PH * .4);
+    for (let i = 0; i < 20; i++) {
+      g.strokeStyle = "rgba(20,20,20,.85)"; g.lineWidth = 2.4;
+      g.beginPath();
+      const y0 = PH * .62 + i * 17;
+      g.moveTo(0, y0);
+      g.bezierCurveTo(PW * .25, y0 - 9, PW * .55, y0 + 11, PW, y0 - 3);
+      g.stroke();
+    }
+    g.fillStyle = "#0b0b0b";
+    g.fillRect(PW * .07, PH * .1, 16, PH * .58);
+    for (let i = 0; i < 6; i++) g.fillRect(PW * .07, PH * .1 + i * 44, 52, 9);
+    g.fillRect(PW * .07, PH * .04, 52, PH * .1);
+    g.fillStyle = "#6a6a6a";
+    g.beginPath(); g.moveTo(PW * .3, PH * .66); g.lineTo(PW * .46, PH * .66);
+    g.lineTo(PW * .4, PH * .74); g.lineTo(PW * .34, PH * .74); g.closePath(); g.fill();
+  }
+  return s;
+}
+const art = { p: inkArt("p"), b: inkArt("b") };
+
+function halftone(src, color, angle, cell, density) {
+  const out = document.createElement("canvas"); out.width = PW; out.height = PH;
+  const c = out.getContext("2d");
+  const sd = src.getContext("2d").getImageData(0, 0, PW, PH).data;
+  const cos = Math.cos(angle), sin = Math.sin(angle);
+  const R = Math.ceil(Math.hypot(PW, PH) / cell) + 2;
+  c.fillStyle = color;
+  for (let i = -R; i <= R; i++) {
+    for (let j = -R; j <= R; j++) {
+      const x = i * cell * cos - j * cell * sin + PW / 2;
+      const y = i * cell * sin + j * cell * cos + PH / 2;
+      if (x < -cell || x > PW + cell || y < -cell || y > PH + cell) continue;
+      const px = x < 0 ? 0 : x > PW - 1 ? PW - 1 : x | 0;
+      const py = y < 0 ? 0 : y > PH - 1 ? PH - 1 : y | 0;
+      const o = (py * PW + px) * 4;
+      const v = 1 - (sd[o] * .299 + sd[o + 1] * .587 + sd[o + 2] * .114) / 255;
+      if (v <= .035) continue;
+      const r = Math.sqrt(v) * cell * .74;
+      c.globalAlpha = Math.min(1, .3 + v * .8) * density;
+      c.beginPath(); c.arc(x, y, r, 0, 6.2832); c.fill();
+    }
+  }
+  return out;
+}
+function render() {
+  const a = halftone(art.p, "#ff5fb0", Math.PI / 4, state.cell, state.dp);
+  const b = halftone(art.b, "#2f3fc0", Math.PI / 12, state.cell, state.db);
+  const A = cp.getContext("2d"), B = cb.getContext("2d");
+  A.clearRect(0, 0, PW, PH); A.drawImage(a, 0, 0);
+  B.clearRect(0, 0, PW, PH); B.drawImage(b, 0, 0);
+  apply();
+}
+function apply() {
+  cp.style.transform = "translate(" + state.p.x + "px," + state.p.y + "px)";
+  cb.style.transform = "translate(" + state.b.x + "px," + state.b.y + "px)";
+  hlp.style.transform = "translate(" + state.p.x + "px," + state.p.y + "px)";
+  hlb.style.transform = "translate(" + state.b.x + "px," + state.b.y + "px)";
+  const pw = document.getElementById("plate").clientWidth || 560;
+  [rp1, rp2, rp3, rp4].forEach(r => { r.style.transform = "translate(" + state.p.x + "px," + state.p.y + "px)"; });
+  [rb1, rb2, rb3, rb4].forEach(r => { r.style.transform = "translate(" + state.b.x + "px," + state.b.y + "px)"; });
+  hp.style.transform = "translate(" + state.p.x + "px," + state.p.y + "px)";
+  hb.style.transform = "translate(" + state.b.x + "px," + state.b.y + "px)";
+  const mm = v => (v * 0.14).toFixed(1);
+  ro_p.textContent = (state.p.x >= 0 ? "+" : "") + mm(state.p.x) + " / " + (state.p.y >= 0 ? "+" : "") + mm(state.p.y);
+  ro_b.textContent = (state.b.x >= 0 ? "+" : "") + mm(state.b.x) + " / " + (state.b.y >= 0 ? "+" : "") + mm(state.b.y);
+  const d = Math.hypot(state.p.x - state.b.x, state.p.y - state.b.y);
+  offread.textContent = "offset " + (d * 0.14).toFixed(1) + " mm";
+  stamp.textContent = d < .6 ? "registered" : d < 7 ? "light misregister" : d < 18 ? "visible misregister" : "badly out of register";
+}
+const hlp = document.getElementById("hlp"), hlb = document.getElementById("hlb");
+const rp1 = document.getElementById("rp1"), rp2 = document.getElementById("rp2"),
+      rp3 = document.getElementById("rp3"), rp4 = document.getElementById("rp4");
+const rb1 = document.getElementById("rb1"), rb2 = document.getElementById("rb2"),
+      rb3 = document.getElementById("rb3"), rb4 = document.getElementById("rb4");
+const hp = document.getElementById("hp"), hb = document.getElementById("hb");
+const ro_p = document.getElementById("ro_p"), ro_b = document.getElementById("ro_b"),
+      offread = document.getElementById("offread"), stamp = document.getElementById("stamp");
+
+const plateEl = document.getElementById("plate");
+let drag = null;
+function pick(e) {
+  const r = plateEl.getBoundingClientRect();
+  const x = e.clientX - r.left - r.width / 2, y = e.clientY - r.top - r.height / 2;
+  const dp = Math.hypot(x - state.p.x, y - state.p.y), db = Math.hypot(x - state.b.x, y - state.b.y);
+  return dp <= db ? "p" : "b";
+}
+function down(e, which) {
+  const forced = which || pick(e);
+  state.sel = forced;
+  drag = { k: forced, sx: e.clientX, sy: e.clientY, ox: state[forced].x, oy: state[forced].y };
+  plateEl.classList.add("drag");
+  plateEl.setPointerCapture(e.pointerId);
+  e.preventDefault();
+}
+function move(e) {
+  if (!drag) return;
+  state[drag.k].x = Math.max(-46, Math.min(46, drag.ox + e.clientX - drag.sx));
+  state[drag.k].y = Math.max(-46, Math.min(46, drag.oy + e.clientY - drag.sy));
+  apply();
+}
+function up() { drag = null; plateEl.classList.remove("drag"); }
+plateEl.addEventListener("pointerdown", e => down(e, null));
+plateEl.addEventListener("pointermove", move);
+plateEl.addEventListener("pointerup", up);
+plateEl.addEventListener("pointercancel", up);
+hp.addEventListener("pointerdown", e => { e.stopPropagation(); down(e, "p"); });
+hb.addEventListener("pointerdown", e => { e.stopPropagation(); down(e, "b"); });
+addEventListener("keydown", e => {
+  const k = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+  if (!k) return;
+  e.preventDefault();
+  state[state.sel].x = Math.max(-46, Math.min(46, state[state.sel].x + k[0] * 2));
+  state[state.sel].y = Math.max(-46, Math.min(46, state[state.sel].y + k[1] * 2));
+  apply();
+});
+document.getElementById("dp").oninput = e => { state.dp = e.target.value / 100; document.getElementById("v_dp").textContent = e.target.value + "%"; render(); };
+document.getElementById("db").oninput = e => { state.db = e.target.value / 100; document.getElementById("v_db").textContent = e.target.value + "%"; render(); };
+document.getElementById("lpi").oninput = e => {
+  state.cell = +e.target.value;
+  document.getElementById("v_lpi").textContent = Math.round(150 / state.cell) + " lpi";
+  render();
+};
+document.getElementById("reset").onclick = () => { state.p = { x: 0, y: 0 }; state.b = { x: 0, y: 0 }; apply(); };
+
+const bc = document.getElementById("bc");
+for (let i = 0; i < 42; i++) { const b = document.createElement("i"); b.style.height = (18 + (i * 7 % 12)) + "px"; bc.appendChild(b); }
+state.cell = 5.6;
+render();
+let rt;
+addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(render, 260); });
+</script>
+</body>
+</html>

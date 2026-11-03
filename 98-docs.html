@@ -1,0 +1,821 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quill — a reactive state primitive · Documentation</title>
+<style>
+/* ============================================================
+   Quill documentation theme
+   ============================================================ */
+:root[data-theme="light"]{
+  --bg:#fbfaf8; --bg-2:#f3f1ed; --bg-3:#eae7e1;
+  --fg:#1b1a18; --fg-2:#4d4a45; --fg-3:#7c7770;
+  --line:#e2ded6; --line-2:#cfcabf;
+  --accent:#2f5bd0; --accent-soft:#e7edfb;
+  --code-bg:#f4f2ee; --code-line:#e7e3da;
+  --note:#2f6f4f; --note-bg:#eaf5ef;
+  --warn:#8a5a08; --warn-bg:#fbf1de;
+  --tip:#5a3fa8;  --tip-bg:#f0ebfb;
+  --shadow:0 1px 2px rgba(30,25,15,.05),0 8px 28px -18px rgba(30,25,15,.4);
+  --sel:#cfe0ff;
+}
+:root[data-theme="dark"]{
+  --bg:#0e0f12; --bg-2:#14161a; --bg-3:#1b1e23;
+  --fg:#e7e4dd; --fg-2:#a8a49b; --fg-3:#75716a;
+  --line:#24272d; --line-2:#33373f;
+  --accent:#7ea2ff; --accent-soft:#18203a;
+  --code-bg:#14171c; --code-line:#22262d;
+  --note:#5cc294; --note-bg:#12241c;
+  --warn:#e0a44a; --warn-bg:#251c0e;
+  --tip:#a894f0;  --tip-bg:#1b1630;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 28px -18px #000;
+  --sel:#2c4470;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:86px}
+body{margin:0;background:var(--bg);color:var(--fg);
+  font:16px/1.68 ui-sans-serif,-apple-system,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+::selection{background:var(--sel)}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ---------- top bar ---------- */
+.top{position:sticky;top:0;z-index:60;height:56px;display:flex;align-items:center;gap:14px;
+  padding:0 clamp(12px,2.4vw,28px);background:var(--bg);
+  background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:blur(14px) saturate(1.4);-webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:9px;font-weight:700;letter-spacing:-.01em;color:var(--fg)}
+.brand i{width:18px;height:18px;position:relative;display:block;flex:0 0 auto}
+.brand i::before,.brand i::after{content:"";position:absolute;background:var(--accent)}
+.brand i::before{left:8px;top:0;width:2px;height:18px}
+.brand i::after{top:8px;left:0;height:2px;width:18px;background:var(--fg)}
+.brand .v{font:500 11px/1 var(--mono);color:var(--fg-3);padding:3px 6px;border:1px solid var(--line);
+  border-radius:99px;letter-spacing:.02em}
+.vsep{width:1px;height:22px;background:var(--line);flex:0 0 auto}
+.crumbs{font:500 12px/1 var(--mono);color:var(--fg-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.crumbs b{color:var(--fg-2);font-weight:500}
+.search{margin-left:auto;position:relative;width:min(340px,34vw)}
+.search input{width:100%;height:34px;border:1px solid var(--line);background:var(--bg-2);color:var(--fg);
+  border-radius:8px;padding:0 62px 0 34px;font:400 13px/1 inherit;outline:0;transition:.16s}
+.search input:focus{border-color:var(--accent);background:var(--bg);box-shadow:0 0 0 3px var(--accent-soft)}
+.search .ico{position:absolute;left:11px;top:9px;width:15px;height:15px;color:var(--fg-3)}
+.search kbd{position:absolute;right:8px;top:7px;font:600 10px/1 var(--mono);color:var(--fg-3);
+  border:1px solid var(--line-2);border-bottom-width:2px;border-radius:5px;padding:4px 6px;background:var(--bg)}
+.search .count{position:absolute;right:8px;top:9px;font:600 10px/1 var(--mono);color:var(--accent);display:none}
+.tbtn{height:34px;padding:0 11px;border:1px solid var(--line);background:var(--bg-2);color:var(--fg-2);
+  border-radius:8px;cursor:pointer;font:600 11px/1 var(--mono);transition:.16s;white-space:nowrap}
+.tbtn:hover{border-color:var(--line-2);color:var(--fg)}
+
+/* ---------- layout ---------- */
+.shell{display:grid;grid-template-columns:262px minmax(0,1fr) 232px;gap:0;max-width:1560px;margin:0 auto}
+.side{border-right:1px solid var(--line);padding:22px 14px 60px;position:sticky;top:56px;align-self:start;
+  height:calc(100vh - 56px);overflow:auto;scrollbar-width:thin}
+.side h4{margin:0 0 8px;padding:0 10px;font:700 10px/1 var(--mono);letter-spacing:.14em;
+  text-transform:uppercase;color:var(--fg-3)}
+.side .grp{margin-bottom:20px}
+.side .grp.hide{display:none}
+.side a{display:flex;align-items:center;gap:7px;padding:5px 10px;border-radius:6px;color:var(--fg-2);
+  font-size:13.5px;line-height:1.4;transition:.12s}
+.side a:hover{background:var(--bg-2);color:var(--fg);text-decoration:none}
+.side a.active{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.side a .dot{width:5px;height:5px;border-radius:50%;background:var(--fg-3);opacity:0;flex:0 0 auto}
+.side a.active .dot{opacity:1;background:var(--accent)}
+.side a.new{position:relative}
+.side a.new::after{content:"1.4";font:700 9px/1 var(--mono);color:var(--fg-3);margin-left:auto}
+.side .none{display:none;padding:8px 10px;font:400 12px/1.5 var(--mono);color:var(--fg-3)}
+.side .empty .none{display:block}
+.side .empty .grp.hide{display:none}
+
+/* ---------- prose ---------- */
+main{padding:34px clamp(18px,4vw,60px) 120px;min-width:0}
+.lede{font-size:19px;line-height:1.6;color:var(--fg-2);max-width:68ch;margin:0 0 8px}
+article{max-width:68ch}
+h1{font-size:clamp(32px,4.4vw,46px);line-height:1.06;letter-spacing:-.028em;margin:0 0 12px;font-weight:700}
+h2{font-size:clamp(22px,2.4vw,28px);line-height:1.2;letter-spacing:-.018em;margin:52px 0 12px;
+  font-weight:650;scroll-margin-top:80px;display:flex;align-items:baseline;gap:10px}
+h2 .anchor{color:var(--fg-3);opacity:0;font-size:.72em;transition:.15s;text-decoration:none}
+h2:hover .anchor{opacity:1}
+h3{font-size:17.5px;line-height:1.3;letter-spacing:-.01em;margin:30px 0 8px;font-weight:650;
+  scroll-margin-top:80px}
+p{margin:0 0 18px}
+ul,ol{margin:0 0 18px;padding-left:22px}
+li{margin:0 0 6px}
+hr{border:0;border-top:1px solid var(--line);margin:44px 0}
+code:not(pre code){font:500 .875em/1 var(--mono);background:var(--bg-3);padding:.16em .4em;
+  border-radius:5px;border:1px solid var(--line)}
+a code{color:inherit}
+pre{position:relative;margin:0 0 22px;background:var(--code-bg);border:1px solid var(--line);
+  border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
+pre .bar{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid var(--code-line);
+  font:600 10px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--fg-3)}
+pre .bar .dot{width:8px;height:8px;border-radius:50%;background:var(--line-2)}
+pre .bar .copy{margin-left:auto;background:transparent;border:1px solid var(--line);color:var(--fg-3);
+  font:600 10px/1 var(--mono);letter-spacing:.08em;padding:4px 7px;border-radius:5px;cursor:pointer;
+  text-transform:uppercase;transition:.14s}
+pre .bar .copy:hover{color:var(--fg);border-color:var(--line-2);background:var(--bg-2)}
+pre .bar .copy.ok{color:var(--note);border-color:currentColor}
+pre code{display:block;padding:14px 16px;overflow:auto;font:400 12.9px/1.72 var(--mono);
+  color:var(--fg);tab-size:2}
+pre code::-webkit-scrollbar{height:9px}
+pre code::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:9px}
+
+.tok-com{color:var(--fg-3);font-style:italic}
+.tok-str{color:var(--note)}
+.tok-num{color:#b3532e}
+.tok-kw{color:#8250df;font-weight:600}
+.tok-fn{color:var(--accent)}
+.tok-prop{color:#0a6f74}
+.tok-tag{color:#8250df}
+.tok-attr{color:#0a6f74}
+.tok-sel{color:#8250df}
+.tok-flag{color:var(--warn)}
+.tok-punc{color:var(--fg-3)}
+:root[data-theme="dark"] .tok-num{color:#f0885c}
+:root[data-theme="dark"] .tok-prop,
+:root[data-theme="dark"] .tok-attr{color:#4fc4c9}
+:root[data-theme="dark"] .tok-kw,
+:root[data-theme="dark"] .tok-tag,
+:root[data-theme="dark"] .tok-sel{color:#c4a1ff}
+
+/* callouts */
+.call{border:1px solid var(--line);border-left:3px solid var(--accent);background:var(--bg-2);
+  border-radius:10px;padding:14px 16px;margin:0 0 22px;font-size:15px}
+.call .tag{display:flex;align-items:center;gap:8px;font:700 10px/1 var(--mono);letter-spacing:.16em;
+  text-transform:uppercase;margin-bottom:8px;color:var(--accent)}
+.call .tag i{width:16px;height:16px;border-radius:50%;display:grid;place-items:center;font:700 9px/1 var(--mono);
+  font-style:normal;color:var(--bg);background:var(--accent)}
+.call p:last-child{margin-bottom:0}
+.call p{margin:0 0 10px}
+.call.note{border-left-color:var(--note);background:var(--note-bg)}
+.call.note .tag,.call.note .tag i{color:var(--note)}
+.call.note .tag i{background:var(--note)}
+.call.warn{border-left-color:var(--warn);background:var(--warn-bg)}
+.call.warn .tag,.call.warn .tag i{color:var(--warn)}
+.call.warn .tag i{background:var(--warn)}
+.call.tip{border-left-color:var(--tip);background:var(--tip-bg)}
+.call.tip .tag,.call.tip .tag i{color:var(--tip)}
+.call.tip .tag i{background:var(--tip)}
+
+/* signature block */
+.sig{font:400 12.5px/1.6 var(--mono);background:var(--bg-2);border:1px solid var(--line);
+  border-radius:10px;padding:12px 14px;margin:0 0 20px;overflow:auto}
+.sig b{color:var(--accent);font-weight:600}
+.sig em{color:var(--tip);font-style:normal}
+
+/* table */
+table{width:100%;border-collapse:collapse;margin:0 0 24px;font-size:14px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:700 10px/1.4 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--fg-3)}
+td code{white-space:nowrap}
+
+/* ---------- right rail ---------- */
+.toc{border-left:1px solid var(--line);padding:24px 16px 60px;position:sticky;top:56px;align-self:start;
+  height:calc(100vh - 56px);overflow:auto;scrollbar-width:thin}
+.toc h5{margin:0 0 10px;font:700 10px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--fg-3)}
+.toc ol{list-style:none;margin:0;padding:0;border-left:1px solid var(--line)}
+.toc li a{display:block;padding:4px 0 4px 12px;margin-left:-1px;border-left:2px solid transparent;
+  color:var(--fg-3);font-size:12.8px;line-height:1.45;transition:.12s}
+.toc li a:hover{color:var(--fg);text-decoration:none}
+.toc li a.active{color:var(--accent);border-left-color:var(--accent);font-weight:600}
+.toc .shorts{margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}
+.toc .shorts p{margin:0 0 7px;font-size:12.4px;color:var(--fg-3);display:flex;justify-content:space-between;gap:10px}
+.kbd{font:600 10.5px/1 var(--mono);border:1px solid var(--line-2);border-bottom-width:2px;border-radius:5px;
+  padding:3px 5px;color:var(--fg-2);background:var(--bg-2)}
+.help{margin-top:26px;padding-top:16px;border-top:1px solid var(--line)}
+.help p{font-size:12.8px;color:var(--fg-2);margin:0 0 10px}
+.help .row{display:flex;gap:6px}
+.help button{flex:1;height:30px;border:1px solid var(--line);background:var(--bg-2);color:var(--fg-2);
+  border-radius:7px;cursor:pointer;font:500 12px/1 inherit;transition:.14s}
+.help button:hover{border-color:var(--accent);color:var(--accent)}
+.help .done{font:400 12.6px/1.6 var(--mono);color:var(--note);display:none}
+.help.answered button{display:none}
+.help.answered .done{display:block}
+
+/* overlay */
+.scrim{position:fixed;inset:0;background:rgba(10,9,7,.5);backdrop-filter:blur(3px);z-index:80;
+  display:none;align-items:center;justify-content:center;padding:20px}
+.scrim.on{display:flex}
+.sheetbox{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:26px;
+  max-width:520px;width:100%;box-shadow:var(--shadow)}
+.sheetbox h3{margin:0 0 4px;font-size:20px}
+.sheetbox > p{color:var(--fg-3);font:400 12px/1.6 var(--mono);margin:0 0 18px}
+.klist{display:grid;gap:2px}
+.klist div{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;border-radius:8px}
+.klist div:nth-child(odd){background:var(--bg-2)}
+.klist span{font-size:14px;color:var(--fg-2)}
+.klist em{font-style:normal;display:flex;gap:4px}
+.sheetbox .close{position:absolute;top:0;right:0;transform:translate(14%,-14%)}
+
+.foot{border-top:1px solid var(--line);margin-top:70px;padding-top:22px;display:flex;
+  justify-content:space-between;gap:16px;flex-wrap:wrap;font:400 12px/1.8 var(--mono);color:var(--fg-3)}
+.pager{display:flex;gap:10px;margin-top:34px;flex-wrap:wrap}
+.pager a{flex:1;min-width:200px;border:1px solid var(--line);border-radius:10px;padding:12px 14px;
+  color:var(--fg-2);font-size:13.5px;transition:.15s}
+.pager a:hover{border-color:var(--accent);text-decoration:none;color:var(--fg)}
+.pager a span{display:block;font:600 9.5px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;
+  color:var(--fg-3);margin-bottom:6px}
+.pager a.next{text-align:right}
+
+@media (max-width:1180px){.shell{grid-template-columns:240px minmax(0,1fr)}.toc{display:none}}
+@media (max-width:860px){
+  .shell{grid-template-columns:1fr}
+  .side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);
+    max-height:none;padding:16px}
+  .search{width:100%;order:3;margin-left:0}
+  .top{flex-wrap:wrap;height:auto;padding:10px 12px;gap:8px}
+  .crumbs{display:none}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <span class="brand"><i></i>Quill <span class="v">v1.4.2</span></span>
+  <span class="vsep"></span>
+  <span class="crumbs" id="crumbs">Docs / <b>Overview</b></span>
+  <div class="search">
+    <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+    <input id="q" type="search" placeholder="Filter the navigation…" aria-label="Filter navigation" spellcheck="false">
+    <kbd>/</kbd><span class="count" id="count"></span>
+  </div>
+  <button class="tbtn" id="theme" title="Toggle theme (t)">◐ Dark</button>
+  <button class="tbtn" id="helpbtn" title="Keyboard shortcuts (?)">?</button>
+</header>
+
+<div class="shell">
+  <!-- ============ LEFT NAV ============ -->
+  <nav class="side" id="side" aria-label="Documentation">
+    <div class="grp">
+      <h4>Getting started</h4>
+      <a href="#overview" class="active"><span class="dot"></span>Overview</a>
+      <a href="#install"><span class="dot"></span>Installation</a>
+      <a href="#first-store"><span class="dot"></span>Your first store</a>
+    </div>
+    <div class="grp">
+      <h4>Core</h4>
+      <a href="#derived"><span class="dot"></span>Derived state</a>
+      <a href="#effects"><span class="dot"></span>Effects &amp; cleanup</a>
+      <a href="#middleware"><span class="dot"></span>Middleware</a>
+      <a href="#batching" class="new"><span class="dot"></span>Batching</a>
+    </div>
+    <div class="grp">
+      <h4>Async</h4>
+      <a href="#resources"><span class="dot"></span>Resources</a>
+      <a href="#cancellation"><span class="dot"></span>Cancellation</a>
+    </div>
+    <div class="grp">
+      <h4>Integration</h4>
+      <a href="#styling"><span class="dot"></span>Design tokens</a>
+      <a href="#ssr"><span class="dot"></span>Server rendering</a>
+      <a href="#types"><span class="dot"></span>TypeScript</a>
+    </div>
+    <div class="grp">
+      <h4>Reference</h4>
+      <a href="#errors"><span class="dot"></span>Error handling</a>
+      <a href="#api"><span class="dot"></span>API surface</a>
+      <a href="#migration"><span class="dot"></span>Migrating from v1.3</a>
+      <a href="#trouble"><span class="dot"></span>Troubleshooting</a>
+    </div>
+    <p class="none">No section matches that.</p>
+  </nav>
+
+  <!-- ============ PROSE ============ -->
+  <main>
+    <p class="lede">Quill is a 2.1&nbsp;kB reactive state primitive. It holds a value, tells you
+      when it changes, and gets out of the way. No virtual DOM, no context, no provider tree —
+      and nothing at all to unmount.</p>
+
+    <article>
+      <h1>Overview</h1>
+      <p>Quill exists because the two common answers to shared state are both too large. React's
+        context forces a re-render of everything below a provider. A global event bus makes data
+        flow impossible to follow. Quill takes the third option: a single mutable cell with a
+        subscription list, one equality function, and a batching boundary.</p>
+      <p>The whole library is one function, <code>createStore</code>, and four helpers that exist
+        only to make call sites readable. It has no dependencies, no build step, and no opinion
+        about how you render.</p>
+
+      <h2 id="install">Installation<a class="anchor" href="#install">#</a></h2>
+      <p>Install from npm, or drop the ESM build on the page. Quill ships ESM, CommonJS and a
+        single-file IIFE for a <code>&lt;script&gt;</code> tag.</p>
+      <pre><code class="lang-sh" data-title="terminal">npm install @quill/state
+# or, with no build step at all
+curl -o quill.js https://esm.sh/@quill/state@1.4.2</code></pre>
+      <div class="call note">
+        <span class="tag"><i>i</i>Note</span>
+        <p>Quill targets ES2019 and above. If you need ES5, use <code>@quill/state/legacy</code>,
+          which is 3.4&nbsp;kB and drops <code>WeakRef</code> support.</p>
+      </div>
+
+      <h2 id="first-store">Your first store<a class="anchor" href="#first-store">#</a></h2>
+      <p>Create a store with an initial value and, optionally, an equality function. Read with
+        <code>get</code>, write with <code>set</code>, and observe with <code>subscribe</code>.</p>
+      <div class="sig"><b>createStore</b>&lt;T&gt;(<em>initial</em>: T | (() =&gt; T), <em>options</em>?: { equals?: (a: T, b: T) =&gt; boolean, name?: string, devtools?: boolean }) =&gt; Store&lt;T&gt;</div>
+      <pre><code class="lang-js" data-title="cart.js">import { createStore } from '@quill/state'
+
+export const cart = createStore(
+  { lines: [], total: 0 },
+  { name: 'cart', devtools: true }
+)
+
+// read
+cart.get().total            // 0
+
+// write — shallow merge
+cart.update((state) => ({
+  ...state,
+  lines: [...state.lines, { sku: 'AX-9', qty: 2 }],
+  total: 41.8
+}))
+
+// observe; the callback returns an unsubscribe function
+const stop = cart.subscribe((next, previous) => {
+  console.log('cart went from', previous.total, 'to', next.total)
+})</code></pre>
+      <div class="call tip">
+        <span class="tag"><i>t</i>Tip</span>
+        <p>Always pass a function to <code>update</code>, never a value. Quill cannot tell a value
+          from a function, so a bare function is treated as a lazy initialiser on
+          <code>createStore</code> and as a producer on <code>update</code>.</p>
+      </div>
+
+      <h2 id="derived">Derived state<a class="anchor" href="#derived">#</a></h2>
+      <p><code>derive</code> memoises a computation against one or more stores. It recomputes only
+        when a dependency actually changes under the equality function, and it re-runs lazily on
+        read — there is no eager graph to keep warm.</p>
+      <pre><code class="lang-js" data-title="totals.js">import { createStore, derive } from '@quill/state'
+import { cart } from './cart.js'
+import { taxRate } from './config.js'
+
+export const totals = derive([cart, taxRate], ([cart, rate]) => {
+  const net = cart.lines.reduce((n, l) => n + l.qty * l.price, 0)
+  return {
+    net,
+    tax: Math.round(net * rate * 100) / 100,
+    shipping: net > 120 ? 0 : 7.5
+  }
+})
+
+totals.get()   // { net: 0, tax: 0, shipping: 7.5 }
+totals.get()   // cached — no recomputation</code></pre>
+      <p>A derived store is a full store: you can subscribe to it, and you can use it as a source
+        for another <code>derive</code>. The chain is depth-first, so a diamond dependency resolves
+        once, not twice.</p>
+
+      <h2 id="effects">Effects and cleanup<a class="anchor" href="#effects">#</a></h2>
+      <p>Effects are the only place Quill touches the outside world. <code>effect</code> runs
+        immediately, then again whenever a dependency changes, and it must return a cleanup
+        function. Cleanup runs before the next run and on <code>dispose()</code>.</p>
+      <pre><code class="lang-js" data-title="clock.js">import { effect, createStore } from '@quill/state'
+
+export const elapsed = createStore(0, { name: 'elapsed' })
+
+const timer = effect(() => {
+  const start = performance.now()
+  const id = setInterval(() => elapsed.set(performance.now() - start), 250)
+
+  return () => clearInterval(id)   // runs before every re-run and on dispose
+})
+
+// elsewhere
+timer.dispose()</code></pre>
+      <div class="call warn">
+        <span class="tag"><i>!</i>Warning</span>
+        <p>An effect that returns nothing cannot be stopped. If you allocate anything — a timer, a
+          listener, an observer — return a function that releases it. Quill calls
+          <code>dispose()</code> on the store's <code>disposeAll()</code> hook, but it cannot
+          guess what your cleanup should do.</p>
+      </div>
+
+      <h2 id="middleware">Middleware<a class="anchor" href="#middleware">#</a></h2>
+      <p>A middleware is a function that receives every write before it lands. Use it for logging,
+        persistence, validation, or devtools. The order of the chain is the order of registration.</p>
+      <pre><code class="lang-js" data-title="persist.js">import { persist } from '@quill/state/middleware'
+
+persist(cart, {
+  key: 'quill.cart.v1',
+  // throttle writes, never reads
+  throttle: 400,
+  serialize: (s) => JSON.stringify(s.lines),
+  deserialize: (raw) => ({ lines: JSON.parse(raw), total: 0 }),
+  onError: (err, key) => console.warn('[quill] persist failed', key, err)
+})</code></pre>
+
+      <h2 id="batching">Batching<a class="anchor" href="#batching">#</a></h2>
+      <p>New in 1.4. Writes made inside a batch notify subscribers exactly once, after the batch
+        closes, with the final value. This is the difference between 200 renders and 2 when you
+        are hydrating from a server payload.</p>
+      <pre><code class="lang-js" data-title="hydrate.js">import { batch } from '@quill/state'
+
+batch(() => {
+  for (const row of payload.rows) {
+    cart.update((s) => ({ ...s, lines: [...s.lines, row] }))
+  }
+  session.set(payload.session)
+})
+
+// subscribers run once, with the finished state</code></pre>
+
+      <h2 id="resources">Async resources<a class="anchor" href="#resources">#</a></h2>
+      <p>A resource is a store whose value carries its own lifecycle:
+        <code>idle</code>, <code>loading</code>, <code>success</code> or <code>error</code>. This
+        removes the two booleans and the <code>undefined</code> that every hand-rolled fetch hook
+        eventually grows.</p>
+      <pre><code class="lang-js" data-title="profile.js">import { resource } from '@quill/state'
+
+export const profile = resource(async (userId, { signal }) => {
+  const res = await fetch(`/api/users/${userId}`, { signal })
+  if (!res.ok) throw new HttpError(res.status, res.statusText)
+  return res.json()
+})
+
+profile.load('u_8842')
+
+profile.get()
+// { status: 'loading', previous: undefined }
+// then
+// { status: 'success', value: { name: 'Ines' } }
+// or
+// { status: 'error', error: HttpError { status: 404 } }</code></pre>
+
+      <h2 id="cancellation">Cancellation<a class="anchor" href="#cancellation">#</a></h2>
+      <p>Every resource receives an <code>AbortSignal</code> and aborts it when a new load
+        supersedes the old one or when the resource is disposed. You never have to write a
+        <code>let cancelled = false</code> flag again.</p>
+      <div class="call note">
+        <span class="tag"><i>i</i>Note</span>
+        <p>An abort is not an error. <code>resource</code> discards aborted rejections, so
+          <code>status</code> stays at its previous value while the next load is in flight.</p>
+      </div>
+
+      <h2 id="styling">Design tokens<a class="anchor" href="#styling">#</a></h2>
+      <p>State is rarely the only thing that needs to live in CSS. <code>quill/tokens.css</code>
+        exposes every store on <code>:root</code> as a custom property, so a stylesheet can react
+        to state without a re-render.</p>
+      <pre><code class="lang-css" data-title="tokens.css">@import '@quill/state/tokens.css';
+
+:root {
+  --quill-cart-total: 0;
+  --quill-session: none;
+  --quill-theme: light;
+}
+
+/* purely declarative — no JavaScript touches this rule */
+.checkout[data-busy='true'] {
+  cursor: progress;
+  opacity: 0.55;
+  transition: opacity 180ms ease-out;
+}
+
+.checkout__total::after {
+  content: counter(total, decimal);
+  font-variant-numeric: tabular-nums;
+}</code></pre>
+      <p>Tokens are written on a microtask, coalesced, and only when the serialised value actually
+        changed. A store that settles on the same string writes nothing.</p>
+
+      <h2 id="ssr">Server rendering<a class="anchor" href="#ssr">#</a></h2>
+      <p>Quill runs unchanged on the server. There is one rule: create stores once per request, and
+        never at module scope if the value is user-specific.</p>
+      <pre><code class="lang-js" data-title="page.jsx">import { createStore, renderToString } from '@quill/state/ssr'
+
+export function render(request) {
+  // per-request, never module scope
+  const session = createStore(readSession(request), { name: 'session' })
+
+  const html = renderToString(() => &lt;App store={{ session }} /&gt;, {
+    // values that must be present in the first paint
+    hydrate: { session: session.get() },
+    // consumed once on the client, then disposed
+    onHydrated: (hydrated) => setTimeout(() => hydrated.dispose(), 0)
+  })
+
+  return html
+}</code></pre>
+      <div class="call warn">
+        <span class="tag"><i>!</i>Warning</span>
+        <p>A store created at module scope in a server process is shared by every request that
+          runs after it. This is the most common Quill bug in production, and it always looks like
+          a caching problem.</p>
+      </div>
+
+      <h2 id="types">TypeScript<a class="anchor" href="#types">#</a></h2>
+      <p>Types ship with the package. The store type is invariant, so a store of
+        <code>number</code> cannot be assigned where a store of <code>number | null</code> is
+        expected.</p>
+      <pre><code class="lang-js" data-title="types.ts">import type { Store, Derived, Resource } from '@quill/state'
+
+type Listener&lt;T&gt; = (next: T, previous: T) =&gt; void
+
+interface Store&lt;T&gt; {
+  get(): T
+  set(value: T): void
+  update(producer: (state: T) =&gt; T): void
+  subscribe(listener: Listener&lt;T&gt;): () =&gt; void
+  dispose(): void
+}
+
+type Derived&lt;T&gt; = Omit&lt;Store&lt;T&gt;, 'set' | 'update'&gt;
+
+type Resource&lt;T, A extends unknown[]&gt; = Store&lt;ResourceState&lt;T&gt;&gt; &amp; {
+  load(...args: A): Promise&lt;T&gt;
+  invalidate(): void
+}</code></pre>
+
+      <h2 id="errors">Error handling<a class="anchor" href="#errors">#</a></h2>
+      <p>A thrown error inside an effect propagates to <code>effect()</code>'s error handler and
+        cancels that effect. In development, Quill also logs the dependency list that caused the
+        run, which is usually enough to find the cycle.</p>
+      <pre><code class="lang-js" data-title="onError.js">effect(() => {
+  const chart = mount(chartEl, { data: derived.get() })
+  return () => chart.destroy()
+}, {
+  onError(err, deps) {
+    report(err, { dependencies: deps.map(String) })
+  }
+})</code></pre>
+
+      <h2 id="api">API surface<a class="anchor" href="#api">#</a></h2>
+      <table>
+        <thead><tr><th>Export</th><th>Kind</th><th>Summary</th></tr></thead>
+        <tbody>
+          <tr><td><code>createStore</code></td><td>function</td><td>Create a writable cell with an optional equality function.</td></tr>
+          <tr><td><code>derive</code></td><td>function</td><td>Memoise a computation over one or more stores.</td></tr>
+          <tr><td><code>effect</code></td><td>function</td><td>Run a side effect and re-run it on dependency change.</td></tr>
+          <tr><td><code>resource</code></td><td>function</td><td>Wrap an async function in a lifecycle-carrying store.</td></tr>
+          <tr><td><code>batch</code></td><td>function</td><td>Coalesce writes into one notification.</td></tr>
+          <tr><td><code>subscribe</code></td><td>function</td><td>Observe any store or derived value; returns an unsubscribe function.</td></tr>
+          <tr><td><code>unwrap</code></td><td>function</td><td>Read a store synchronously and opt out of tracking.</td></tr>
+          <tr><td><code>devtools</code></td><td>function</td><td>Attach a store to a devtools timeline by name.</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="migration">Migrating from 1.3<a class="anchor" href="#migration">#</a></h2>
+      <p>Two changes affect almost every call site. First, <code>subscribe</code> now passes
+        <code>(next, previous)</code> instead of a single object. Second, <code>store.set</code>
+        no longer accepts a producer function — use <code>store.update</code>.</p>
+      <pre><code class="lang-js" data-title="codemod">npx @quill/codemod v1.4 ./src
+
+// manual fixes the codemod cannot see:
+//  · store.set(fn)  →  store.update(fn)
+//  · subscribe(v)   →  subscribe((next, prev) => …)</code></pre>
+
+      <h2 id="trouble">Troubleshooting<a class="anchor" href="#trouble">#</a></h2>
+      <h3>A subscriber runs twice on mount</h3>
+      <p>Effects run once when they are created. If you are seeing two runs, the effect is being
+        created twice — usually because a component body re-executed without disposing the
+        previous effect. Wrap creation in <code>effect()</code> and keep the handle.</p>
+      <h3>Reads inside a batch do not see the write</h3>
+      <p>This is correct behaviour. A batch stages writes; <code>get()</code> inside the batch
+        returns the pre-batch value. If you need the final value mid-batch, read after the batch
+        closes, or use <code>batch.peek()</code>.</p>
+      <h3>My equality function is being ignored</h3>
+      <p><code>equals</code> is only consulted for derived values and for resources. A store's
+        <code>set</code> always notifies. Put the comparison in the producer instead.</p>
+    </article>
+
+    <div class="pager">
+      <a href="#install"><span>Next</span>Installation →</a>
+      <a class="next" href="#api" style="text-align:right"><span>Jump to</span>API surface →</a>
+    </div>
+
+    <div class="foot">
+      <span>Quill v1.4.2 · MIT · 2.1 kB min+gzip</span>
+      <span>This documentation, the library and the restaurant two files up are all fiction.</span>
+    </div>
+  </main>
+
+  <!-- ============ RIGHT RAIL ============ -->
+  <aside class="toc">
+    <h5>On this page</h5>
+    <ol id="toc"></ol>
+
+    <div class="shorts">
+      <h5>Shortcuts</h5>
+      <p><span>Search</span><span class="kbd">/</span></p>
+      <p><span>Theme</span><span class="kbd">t</span></p>
+      <p><span>Shortcuts</span><span class="kbd">?</span></p>
+      <p><span>Top of page</span><span class="kbd">Home</span></p>
+    </div>
+
+    <div class="help" id="help">
+      <p>Was this page useful?</p>
+      <div class="row"><button data-a="yes">Yes</button><button data-a="no">Not really</button></div>
+      <span class="done" id="helpdone">Thanks — noted. This is a demo, so nothing was sent.</span>
+    </div>
+  </aside>
+</div>
+
+<div class="scrim" id="scrim">
+  <div class="sheetbox" style="position:relative">
+    <button class="tbtn close" id="close">Esc</button>
+    <h3>Keyboard</h3>
+    <p>Quill docs · v1.4.2</p>
+    <div class="klist">
+      <div><span>Focus the search box</span><em><span class="kbd">/</span></em></div>
+      <div><span>Toggle light / dark</span><em><span class="kbd">t</span></em></div>
+      <div><span>Open this panel</span><em><span class="kbd">?</span></em></div>
+      <div><span>Close the panel</span><em><span class="kbd">Esc</span></em></div>
+      <div><span>Jump to the first heading</span><em><span class="kbd">Home</span></em></div>
+      <div><span>Next / previous section</span><em><span class="kbd">j</span><span class="kbd">k</span></em></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+
+/* ================= theme, persisted ================= */
+const root=document.documentElement;
+const saved=localStorage.getItem("quill.theme");
+const sysDark=matchMedia("(prefers-color-scheme: dark)").matches;
+setTheme(saved||(sysDark?"dark":"light"));
+function setTheme(t){
+  root.dataset.theme=t;
+  $("#theme").textContent=t==="dark"?"◑ Light":"◐ Dark";
+  localStorage.setItem("quill.theme",t);
+}
+
+/* ================= hand-rolled syntax highlighter ================= */
+const RULES={
+  js:[
+    ["com",/\/\/[^\n]*|\/\*[\s\S]*?\*\//],
+    ["str",/`(?:\\\\[\\s\\S]|[^\\\\\`])*\`|"(?:\\\\.|[^"\\\\])*"|'(?:\\\\.|[^'\\\\])*'/],
+    ["num",/\b0[xX][\da-fA-F]+\b|\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b/],
+    ["kw",/\b(?:const|let|var|function|return|if|else|for|while|of|in|new|class|extends|implements|import|export|from|as|default|async|await|try|catch|finally|throw|typeof|instanceof|null|undefined|true|false|this|super|static|get|set|interface|type|declare|enum|yield)\b/],
+    ["kw",/=>|\.{3}|\?\?|\?\.|&&|\|\||[!=<>]=|[+\-*/%]=|<<|>>>?/],
+    ["fn",/[A-Za-z_$][\w$]*(?=\s*\()/],
+    ["prop",/(?<=\.)[A-Za-z_$][\w$]*/],
+    ["tag",/[A-Z][A-Za-z0-9_]*/],
+    ["punc",/[{}()[\].,;:]|\b(?<=\s)in\b/]
+  ],
+  ts:null,
+  css:[
+    ["com",/\/\*[\s\S]*?\*\//],
+    ["str",/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/],
+    ["kw",/@[\w-]+|--[\w-]+|\$[-\w]+/],
+    ["num",/#[0-9a-fA-F]{3,8}\b|-?\b\d*\.?\d+(?:px|rem|em|%|vh|vw|ch|fr|s|ms|deg|turn)?\b/],
+    ["prop",/[a-z-]+(?=\s*:)/i],
+    ["fn",/[\w-]+(?=\()/],
+    ["sel",/[.#&][\w-]+|::?[a-z-]+|\[[^\]]*\]/],
+    ["punc",/[{};:(),>~+]/]
+  ],
+  html:[
+    ["com",/<!--[\s\S]*?-->/],
+    ["tag",/<\/?[\w-]+|\/?>|[A-Za-z]+\/>/],
+    ["str",/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/],
+    ["attr",/\b[\w-]+(?==)/],
+    ["punc",/[={}]/]
+  ],
+  sh:[
+    ["com",/(^|\s)#[^\n]*/],
+    ["str",/"(?:\\.|[^"\\])*"|'[^']*'/],
+    ["kw",/\b(?:npm|pnpm|yarn|bun|npx|node|install|add|remove|run|dev|build|cd|git|curl|echo|export)\b/],
+    ["flag",/--?[a-zA-Z][\w-]*/],
+    ["punc",/[|&;<>]/]
+  ]
+};
+RULES.ts=RULES.js;
+RULES.jsx=RULES.html;
+RULES.tsx=[].concat(RULES.html,RULES.js);
+
+function escapeHTML(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function highlight(code,lang){
+  const rules=RULES[lang]||RULES.js;
+  // normalise every inner group to non-capturing so group indices stay stable
+  const src=rules.map(r=>"("+r[1].source.replace(/\((?!\?)/g,"(?:")+")").join("|");
+  const re=new RegExp(src,"g");
+  let out="",last=0,m;
+  while((m=re.exec(code))){
+    if(m.index>last)out+=escapeHTML(code.slice(last,m.index));
+    let cls="tok-punc";
+    for(let i=1;i<=rules.length;i++){
+      if(m[i]!==undefined){cls="tok-"+rules[i-1][0];break;}
+    }
+    out+='<span class="'+cls+'">'+escapeHTML(m[0])+"</span>";
+    last=re.lastIndex;
+    if(m[0].length===0)re.lastIndex++;
+  }
+  out+=escapeHTML(code.slice(last));
+  return out;
+}
+
+$$("pre").forEach(pre=>{
+  const code=pre.querySelector("code");
+  const lang=(code.className.match(/lang-(\w+)/)||[])[1]||"js";
+  const title=code.dataset.title||lang.toUpperCase();
+  code.innerHTML=highlight(code.textContent,lang);
+  const bar=document.createElement("div");
+  bar.className="bar";
+  bar.innerHTML='<span class="dot"></span><span class="t">'+title+"</span>";
+  const btn=document.createElement("button");
+  btn.className="copy";btn.textContent="Copy";
+  btn.addEventListener("click",()=>{
+    const text=code.textContent;
+    (navigator.clipboard?navigator.clipboard.writeText(text):Promise.reject())
+      .then(()=>{btn.textContent="Copied";btn.classList.add("ok");
+        setTimeout(()=>{btn.textContent="Copy";btn.classList.remove("ok");},1600);})
+      .catch(()=>{
+        const ta=document.createElement("textarea");
+        ta.value=text;document.body.appendChild(ta);ta.select();
+        document.execCommand("copy");ta.remove();
+        btn.textContent="Copied";btn.classList.add("ok");
+        setTimeout(()=>{btn.textContent="Copy";btn.classList.remove("ok");},1600);
+      });
+  });
+  bar.appendChild(btn);
+  pre.insertBefore(bar,code);
+});
+
+/* ================= sticky table of contents ================= */
+const heads=$$("article h2");
+const toc=$("#toc");
+heads.forEach(h=>{
+  const li=document.createElement("li");
+  li.innerHTML='<a href="#'+h.id+'">'+h.childNodes[0].textContent.trim()+"</a>";
+  toc.appendChild(li);
+});
+const tocLinks=$$("#toc a");
+const spy=new IntersectionObserver(es=>{
+  es.forEach(e=>{
+    if(!e.isIntersecting)return;
+    tocLinks.forEach(a=>a.classList.toggle("active",a.getAttribute("href")==="#"+e.target.id));
+    const label=e.target.childNodes[0].textContent.trim();
+    $("#crumbs").innerHTML="Docs / <b>"+label+"</b>";
+  });
+},{rootMargin:"-72px 0px -70% 0px",threshold:0});
+heads.forEach(h=>spy.observe(h));
+
+// side nav active state
+const sideLinks=$$("#side a");
+const sideSpy=new IntersectionObserver(es=>{
+  es.forEach(e=>{
+    if(!e.isIntersecting)return;
+    sideLinks.forEach(a=>a.classList.toggle("active",a.getAttribute("href")==="#"+e.target.id));
+  });
+},{rootMargin:"-72px 0px -80% 0px",threshold:0});
+heads.forEach(h=>sideSpy.observe(h));
+
+/* ================= nav filter ================= */
+const q=$("#q"), groups=$$("#side .grp"), none=$("#side .none");
+q.addEventListener("input",()=>{
+  const v=q.value.trim().toLowerCase();
+  let total=0;
+  groups.forEach(g=>{
+    let hits=0;
+    $$("a",g).forEach(a=>{
+      const ok=!v||a.textContent.toLowerCase().includes(v);
+      a.style.display=ok?"":"none";
+      if(ok)hits++;
+    });
+    g.classList.toggle("hide",hits===0);
+    total+=hits;
+  });
+  $("#side").classList.toggle("empty",total===0);
+  const c=$("#count");
+  if(v){c.style.display="block";c.textContent=total;}
+  else c.style.display="none";
+});
+
+/* ================= keyboard ================= */
+const scrim=$("#scrim");
+function togglePanel(on){scrim.classList.toggle("on",on===undefined?!scrim.classList.contains("on"):on);}
+$("#helpbtn").addEventListener("click",()=>togglePanel(true));
+$("#close").addEventListener("click",()=>togglePanel(false));
+scrim.addEventListener("click",e=>{if(e.target===scrim)togglePanel(false);});
+$("#theme").addEventListener("click",()=>setTheme(root.dataset.theme==="dark"?"light":"dark"));
+addEventListener("keydown",e=>{
+  const typing=/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName);
+  if(e.key==="Escape"){togglePanel(false);q.blur();return;}
+  if(typing)return;
+  if(e.key==="/"){e.preventDefault();q.focus();q.select();}
+  if(e.key==="t"){setTheme(root.dataset.theme==="dark"?"light":"dark");}
+  if(e.key==="?"){e.preventDefault();togglePanel();}
+  if(e.key==="Home"){e.preventDefault();scrollTo({top:0,behavior:"smooth"});}
+  if(e.key==="j"||e.key==="k"){
+    e.preventDefault();
+    const y=scrollY+10;
+    const i=heads.findIndex(h=>h.getBoundingClientRect().top>y-90);
+    const target=heads[e.key==="j"?Math.max(0,i):Math.max(0,i-1)];
+    if(target)target.scrollIntoView({behavior:"smooth",block:"start"});
+  }
+});
+
+/* ================= helpful widget ================= */
+$("#help").addEventListener("click",e=>{
+  const b=e.target.closest("button");
+  if(!b)return;
+  $("#help").classList.add("answered");
+  $("#helpdone").textContent=b.dataset.a==="yes"
+    ?"Thanks — noted. This is a demo, so nothing was sent."
+    :"Noted. The demo keeps no feedback store, which is itself a design decision.";
+});
+})();
+</script>
+</body>
+</html>

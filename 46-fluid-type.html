@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MELT POUR SET — Liquid Type Study 07</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:#05060c;color:#e9eef8;font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+    overflow:hidden}
+  .caustic{position:absolute;inset:-10%;z-index:0;opacity:.5;filter:blur(0px);
+    background:radial-gradient(52% 46% at 24% 26%,rgba(122,92,240,.20),transparent 70%),
+      radial-gradient(46% 44% at 80% 70%,rgba(58,214,208,.16),transparent 70%),
+      radial-gradient(70% 60% at 50% 50%,rgba(255,120,80,.09),transparent 72%)}
+  .caustic2{position:absolute;inset:0;z-index:1;opacity:.42;pointer-events:none;mix-blend-mode:screen;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.0055 0.011' numOctaves='2' seed='3'/%3E%3CfeColorMatrix values='0.7 0 0 0 -0.1 0 0.35 0 0 -0.05 0 0 0.9 0 0.15 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation:drift 26s ease-in-out infinite alternate}
+  @keyframes drift{from{transform:scale(1) translate(0,0)}to{transform:scale(1.12) translate(-2%,1.5%)}}
+  #liquid{position:absolute;inset:0;z-index:2;width:100%;height:100%;display:block}
+  .vign{position:absolute;inset:0;z-index:3;pointer-events:none;
+    background:radial-gradient(70% 62% at 50% 46%,transparent 42%,rgba(3,4,9,.6) 82%,rgba(2,2,6,.95) 100%)}
+  .head{position:absolute;left:24px;top:22px;z-index:6}
+  .head h1{font-size:11px;letter-spacing:.34em;text-transform:uppercase;font-weight:500;color:#cfd8ea}
+  .head p{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:#6b7690;margin-top:6px}
+  .foot{position:absolute;right:24px;bottom:22px;z-index:6;width:250px}
+  .foot .row{display:flex;justify-content:space-between;align-items:center;font-size:9.5px;letter-spacing:.16em;
+    text-transform:uppercase;color:#8a95ad;margin-bottom:6px}
+  .foot .row b{color:#dfe7f5;font-weight:500;font-variant-numeric:tabular-nums}
+  input[type=range]{-webkit-appearance:none;width:100%;height:2px;background:#39415a;outline:0}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:99px;
+    background:#dfe7f5;box-shadow:0 0 10px 2px rgba(160,200,255,.4);cursor:ew-resize}
+  input[type=range]::-moz-range-thumb{width:10px;height:10px;border:0;border-radius:99px;background:#dfe7f5;cursor:ew-resize}
+  .meters{display:flex;gap:3px;height:26px;align-items:flex-end;margin-top:12px}
+  .meters i{flex:1;background:linear-gradient(0deg,#2b3550,#7b5cf0);border-radius:2px 2px 0 0;height:6%}
+  .blurb{position:absolute;left:24px;bottom:22px;z-index:6;max-width:290px}
+  .blurb p{font-size:11px;line-height:1.75;color:#8b96ae}
+  .blurb em{font-style:normal;color:#dfe7f5}
+  .tag{position:absolute;left:50%;transform:translateX(-50%);bottom:16px;z-index:6;font-size:9px;
+    letter-spacing:.3em;text-transform:uppercase;color:#59637b;white-space:nowrap}
+  .warn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:7;text-align:center;
+    font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#6b7690;display:none}
+  @media (max-width:760px){.blurb{display:none}}
+</style>
+</head>
+<body>
+<div class="caustic"></div>
+<div class="caustic2"></div>
+<svg id="liquid" viewBox="0 0 1200 720" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="liq" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0"    stop-color="#3ad6d0"/>
+      <stop offset=".13"  stop-color="#7b5cf0"/>
+      <stop offset=".29"  stop-color="#d8407f"/>
+      <stop offset=".44"  stop-color="#ff6a4d"/>
+      <stop offset=".58"  stop-color="#ffc46b"/>
+      <stop offset=".72"  stop-color="#fff3d4"/>
+      <stop offset=".86"  stop-color="#8fe8ff"/>
+      <stop offset="1"    stop-color="#3ad6d0"/>
+    </linearGradient>
+    <linearGradient id="liq1" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0"    stop-color="#5fe0c8"/>
+      <stop offset=".16"  stop-color="#5b7cf0"/>
+      <stop offset=".33"  stop-color="#a44fc0"/>
+      <stop offset=".5"   stop-color="#ff7a3d"/>
+      <stop offset=".66"  stop-color="#ffd07a"/>
+      <stop offset=".82"  stop-color="#fff0c0"/>
+      <stop offset="1"    stop-color="#63d8ff"/>
+    </linearGradient>
+    <linearGradient id="liq2" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0"    stop-color="#7cf0ff"/>
+      <stop offset=".2"   stop-color="#4a6cf0"/>
+      <stop offset=".42"  stop-color="#b04090"/>
+      <stop offset=".62"  stop-color="#ff5f6a"/>
+      <stop offset=".82"  stop-color="#ffc06a"/>
+      <stop offset="1"    stop-color="#d8fff0"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0"   stop-color="#fff" stop-opacity="0"/>
+      <stop offset=".42" stop-color="#fff" stop-opacity="0"/>
+      <stop offset=".5"  stop-color="#fff" stop-opacity=".85"/>
+      <stop offset=".58" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="1"   stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="f0" x="-20%" y="-45%" width="140%" height="190%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.0072 0.016" numOctaves="1" seed="11" result="n0"/>
+      <feGaussianBlur in="n0" stdDeviation="0" result="b0"/>
+      <feDisplacementMap in="SourceGraphic" in2="b0" scale="0" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="f1" x="-20%" y="-45%" width="140%" height="190%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.0051 0.0125" numOctaves="1" seed="27" result="n1"/>
+      <feGaussianBlur in="n1" stdDeviation="0" result="b1"/>
+      <feDisplacementMap in="SourceGraphic" in2="b1" scale="0" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="f2" x="-20%" y="-45%" width="140%" height="190%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.0036 0.0092" numOctaves="1" seed="43" result="n2"/>
+      <feGaussianBlur in="n2" stdDeviation="0" result="b2"/>
+      <feDisplacementMap in="SourceGraphic" in2="b2" scale="0" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+  <g id="L0" filter="url(#f0)" font-family="Anton, Impact, sans-serif" font-weight="400"
+     text-anchor="middle" letter-spacing="-6">
+    <text x="600" y="250" font-size="236" fill="url(#liq)">MELT</text>
+  </g>
+  <g id="L1" filter="url(#f1)" font-family="Anton, Impact, sans-serif" font-weight="400"
+     text-anchor="middle" letter-spacing="-6">
+    <text x="600" y="450" font-size="236" fill="url(#liq1)">POUR</text>
+  </g>
+  <g id="L2" filter="url(#f2)" font-family="Anton, Impact, sans-serif" font-weight="400"
+     text-anchor="middle" letter-spacing="-6">
+    <text x="600" y="650" font-size="236" fill="url(#liq2)">SET</text>
+  </g>
+  <g id="S0" font-family="Anton, Impact, sans-serif" text-anchor="middle" letter-spacing="-6" pointer-events="none"></g>
+</svg>
+<div class="vign"></div>
+
+<div class="head">
+  <h1>Halden Glass &mdash; Liquid Type Study 07</h1>
+  <p>Anthias Sans, displaced &middot; 1200 &times; 720 &middot; live turbulence</p>
+</div>
+
+<div class="blurb">
+  <p>Every letter here is a real <em>feDisplacementMap</em> sampling a fractal noise field that never stops
+    recomputing. Move the pointer quickly and the surface answers; hold still and it settles back to glass.</p>
+</div>
+
+<div class="foot">
+  <div class="row"><span>Viscosity</span><b id="vVisc">0.34</b></div>
+  <input id="sVisc" type="range" min="2" max="100" value="34">
+  <div class="row" style="margin-top:12px"><span>Surface tension</span><b id="vTens">0.010</b></div>
+  <input id="sTens" type="range" min="20" max="180" value="100">
+  <div class="row" style="margin-top:12px"><span>Pointer energy</span><b id="vAmp">0</b></div>
+  <div class="meters" id="meters"></div>
+</div>
+<div class="tag">Drag the pointer across the type</div>
+<div class="warn" id="warn">Loading display face&hellip;</div>
+
+<script>
+const svg = document.getElementById("liquid");
+const groups = [
+  { g: document.getElementById("L0"), f: document.getElementById("f0"), t: svg.querySelector("#L0 text"), turb: svg.querySelector("#f0 feTurbulence"), blur: svg.querySelector("#f0 feGaussianBlur"), disp: svg.querySelector("#f0 feDisplacementMap"), ph: 0, amp: 0 },
+  { g: document.getElementById("L1"), f: document.getElementById("f1"), t: svg.querySelector("#L1 text"), turb: svg.querySelector("#f1 feTurbulence"), blur: svg.querySelector("#f1 feGaussianBlur"), disp: svg.querySelector("#f1 feDisplacementMap"), ph: 2.1, amp: 0 },
+  { g: document.getElementById("L2"), f: document.getElementById("f2"), t: svg.querySelector("#L2 text"), turb: svg.querySelector("#f2 feTurbulence"), blur: svg.querySelector("#f2 feGaussianBlur"), disp: svg.querySelector("#f2 feDisplacementMap"), ph: 4.4, amp: 0 }
+];
+const shine = svg.querySelector("#shine");
+const meters = document.getElementById("meters");
+for (let i = 0; i < 14; i++) meters.appendChild(document.createElement("i"));
+const bars = [...meters.children];
+groups.forEach((o, i) => {
+  const t = o.t, x = t.getAttribute("x"), y = t.getAttribute("y"), s = t.getAttribute("font-size");
+  const g2 = document.createElementNS("http://www.w3.org/2000/svg", "text");
+  g2.setAttribute("x", x); g2.setAttribute("y", y); g2.setAttribute("font-size", s);
+  g2.setAttribute("fill", "url(#shine)"); g2.setAttribute("opacity", ".55");
+  g2.textContent = t.textContent;
+  const g3 = document.createElementNS("http://www.w3.org/2000/svg", "text");
+  g3.setAttribute("x", x); g3.setAttribute("y", y); g3.setAttribute("font-size", s);
+  g3.setAttribute("fill", "#fff"); g3.setAttribute("opacity", ".1");
+  g3.setAttribute("filter", "blur(16px)");
+  g3.textContent = t.textContent;
+  o.g.insertBefore(g3, t);
+  o.g.insertBefore(g2, t);
+  o.shine = g2; o.glow = g3;
+});
+let visc = .34, tens = .010, amp = 0, energy = 0;
+let px = 0, py = 0, lastMove = 0;
+addEventListener("pointermove", e => {
+  const dx = e.clientX - px, dy = e.clientY - py;
+  px = e.clientX; py = e.clientY;
+  const v = Math.hypot(dx, dy);
+  energy = Math.min(1, energy + v * 0.022);
+  lastMove = performance.now();
+});
+addEventListener("pointerdown", () => { energy = Math.min(1, energy + .45); });
+document.getElementById("sVisc").oninput = e => {
+  visc = e.target.value / 100;
+  document.getElementById("vVisc").textContent = visc.toFixed(2);
+};
+document.getElementById("sTens").oninput = e => {
+  tens = e.target.value / 1000;
+  document.getElementById("vTens").textContent = tens.toFixed(3);
+};
+let t0 = performance.now(), smooth = 0;
+function frame(now) {
+  const T = (now - t0) / 1000;
+  const idle = now - lastMove > 260 ? 0 : 1;
+  smooth += (energy * idle - smooth) * (0.04 + (1 - visc) * 0.34);
+  energy *= (0.93 + visc * 0.06);
+  amp = 5 + smooth * 78 * (1 - visc * 0.42);
+  document.getElementById("vAmp").textContent = Math.round(amp);
+  for (let i = 0; i < bars.length; i++) {
+    const h = 6 + 92 * Math.abs(Math.sin(T * 2.1 + i * .42)) * (0.25 + smooth * 0.95);
+    bars[i].style.height = Math.min(100, h) + "%";
+    bars[i].style.background = i / bars.length > .7 ? "linear-gradient(0deg,#2b3550,#ff6a4d)" : "linear-gradient(0deg,#2b3550,#7b5cf0)";
+  }
+  groups.forEach((o, i) => {
+    const w = Math.sin(T * (.42 + i * .13) + o.ph) * .5 + .5;
+    o.amp += (amp * (0.72 + w * 0.5) - o.amp) * (0.06 + visc * 0.2);
+    const fx = tens * (1 + i * 0.28) * (1 + Math.sin(T * .31 + o.ph) * 0.14);
+    const fy = tens * 2.05 * (1 + Math.cos(T * .27 + o.ph * 1.3) * 0.16);
+    o.turb.setAttribute("baseFrequency", fx.toFixed(5) + " " + fy.toFixed(5));
+    o.blur.setAttribute("stdDeviation", (visc * 2.6).toFixed(2));
+    o.disp.setAttribute("scale", o.amp.toFixed(1));
+    o.shine.setAttribute("opacity", (0.35 + smooth * 0.5).toFixed(2));
+  });
+  const sp = ((T * 0.26) % 1) * 2.6 - 1.3;
+  shine.setAttribute("gradientTransform", "translate(" + sp.toFixed(3) + " 0)");
+  shine.setAttribute("x1", "0"); shine.setAttribute("x2", "0.55");
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => {
+  document.getElementById("warn").style.display = "none";
+});
+setTimeout(() => document.getElementById("warn").style.display = "none", 2500);
+</script>
+</body>
+</html>

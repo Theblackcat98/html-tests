@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>THE NORTHERN PLATE — Circumpolar Chart No. 07, Cassiopeia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Spectral:ital,wght@0,300;0,400;1,300&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* THE NORTHERN PLATE — azimuthal-equidistant chart of the north celestial pole.
+   Canvas 2D + hand-entered J2000 catalogue; milky-way haze composited on an
+   offscreen canvas (additive light, then dust lanes carved out).
+   Skeleton: full-bleed plate + fixed left instrument rail. */
+:root{--void:#04060f;--ink:#eaeffb;--dim:rgba(234,239,251,.52);--faint:rgba(234,239,251,.24);
+ --line:rgba(150,178,255,.16);--gold:#f0c88a;--cyan:#8fd4ff;
+ --display:"Cinzel","Optima","Palatino Linotype","Times New Roman",serif;
+ --serif:"Spectral",Georgia,"Times New Roman",serif;--mono:"Space Mono",ui-monospace,Menlo,Consolas,monospace}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--void);color:var(--ink);font-family:var(--serif);font-weight:300;
+ min-height:100dvh;overflow:hidden;-webkit-font-smoothing:antialiased}
+#plate{position:fixed;inset:0;z-index:0;display:block;width:100%;height:100%;cursor:grab;touch-action:none}
+#plate.dragging{cursor:grabbing}
+.frame{position:fixed;inset:18px;z-index:4;pointer-events:none;border:1px solid var(--line)}
+.frame::before{content:"";position:absolute;inset:9px;border:1px solid rgba(150,178,255,.07)}
+.frame i{position:absolute;width:16px;height:16px;border:1px solid rgba(240,200,138,.5)}
+.frame i:nth-child(1){top:-1px;left:-1px;border-right:0;border-bottom:0}
+.frame i:nth-child(2){top:-1px;right:-1px;border-left:0;border-bottom:0}
+.frame i:nth-child(3){bottom:-1px;left:-1px;border-right:0;border-top:0}
+.frame i:nth-child(4){bottom:-1px;right:-1px;border-left:0;border-top:0}
+.vig{position:fixed;inset:0;z-index:2;pointer-events:none;
+ background:radial-gradient(130% 100% at 62% 46%,transparent 40%,rgba(3,5,12,.5) 76%,rgba(2,3,8,.9) 100%)}
+.rail{position:fixed;top:0;left:0;bottom:0;z-index:6;width:min(31vw,340px);
+ padding:clamp(26px,4vh,52px) clamp(22px,2.4vw,38px);display:flex;flex-direction:column;
+ gap:clamp(15px,2.3vh,28px);background:linear-gradient(90deg,rgba(4,6,15,.9) 40%,rgba(4,6,15,0));pointer-events:none}
+.rail>*{pointer-events:auto}
+.kicker{font-family:var(--mono);font-size:10px;letter-spacing:.34em;color:var(--gold);
+ text-transform:uppercase;display:flex;align-items:center;gap:10px}
+.kicker::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(240,200,138,.5),transparent)}
+h1{font-family:var(--display);font-weight:500;line-height:.98;font-size:clamp(28px,4.4vw,52px);letter-spacing:.02em}
+h1 em{display:block;font-style:normal;font-size:.36em;letter-spacing:.42em;color:var(--dim);
+ margin-top:1.1em;font-family:var(--mono);font-weight:400}
+.lede{font-size:clamp(13px,1.05vw,15px);line-height:1.66;color:var(--dim);max-width:34ch}
+.lede b{color:var(--ink);font-weight:400;font-style:italic}
+.idx{list-style:none;display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.idx li{border-bottom:1px solid var(--line)}
+.idx button{width:100%;background:none;border:0;cursor:pointer;color:inherit;display:grid;
+ grid-template-columns:26px 1fr;align-items:baseline;gap:12px;padding:10px 2px;
+ font-family:var(--display);font-size:13.5px;letter-spacing:.16em;text-transform:uppercase;
+ color:var(--dim);text-align:left;transition:color .4s ease,padding .4s cubic-bezier(.2,.7,.2,1)}
+.idx button:hover,.idx button:focus-visible{color:var(--ink);padding-left:10px;outline:none}
+.idx button.on{color:var(--gold)}
+.idx button span{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--faint)}
+.idx button:hover span,.idx button.on span{color:var(--gold)}
+.idx .cyr{font-size:11px;font-style:italic;font-family:var(--serif);text-transform:none;
+ letter-spacing:0;color:var(--faint);display:block;margin-top:2px}
+.read{border:1px solid var(--line);border-left:1px solid rgba(240,200,138,.55);
+ padding:14px 16px 15px;min-height:130px;background:rgba(9,14,36,.5)}
+.read .lbl{font-family:var(--mono);font-size:9px;letter-spacing:.3em;color:var(--faint);text-transform:uppercase;margin-bottom:8px}
+.read .nm{font-family:var(--display);font-size:clamp(19px,1.7vw,25px);font-weight:500;line-height:1.1;letter-spacing:.02em}
+.read .meta{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--gold);margin-top:6px}
+.read .sub{font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:var(--dim);margin-top:9px;line-height:1.75}
+.read .sub i{color:var(--faint);font-style:normal}
+.foot{margin-top:auto;font-family:var(--mono);font-size:9.5px;line-height:1.9;letter-spacing:.13em;
+ color:var(--faint);text-transform:uppercase}
+.foot kbd{border:1px solid var(--line);padding:1px 5px;font-size:9px;color:var(--dim)}
+.hud{position:fixed;z-index:6;right:clamp(24px,3vw,46px);bottom:clamp(24px,3.4vh,44px);text-align:right;
+ pointer-events:none;font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--faint)}
+.hud .big{font-size:clamp(19px,2.1vw,27px);letter-spacing:.1em;color:var(--cyan);font-weight:700;
+ margin-bottom:7px;text-shadow:0 0 22px rgba(143,212,255,.35)}
+.hud .row{display:flex;justify-content:flex-end;gap:9px;margin-top:4px}
+.hud .row b{color:var(--dim);font-weight:400}
+#tip{position:fixed;z-index:9;pointer-events:none;opacity:0;transform:translate(14px,-50%);
+ transition:opacity .18s ease;background:rgba(6,9,22,.93);border:1px solid rgba(240,200,138,.4);
+ padding:9px 13px;min-width:150px;box-shadow:0 18px 40px rgba(0,0,0,.6)}
+#tip .t{font-family:var(--display);font-size:15px;letter-spacing:.06em}
+#tip .g{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;color:var(--gold);text-transform:uppercase;margin-top:4px}
+#tip.on{opacity:1}
+.noscript{position:fixed;inset:auto 0 0 0;z-index:20;padding:16px;text-align:center;background:#0a1030;
+ font-family:var(--mono);font-size:11px;letter-spacing:.1em}
+@media (max-width:860px){
+ .rail{position:relative;width:100%;min-height:100dvh;background:linear-gradient(180deg,rgba(4,6,15,.94) 62%,rgba(4,6,15,0))}
+ .idx,.foot{display:none}.hud{right:16px;bottom:16px}body{overflow:auto}}
+</style>
+</head>
+<body>
+<canvas id="plate" role="img" aria-label="Interactive star chart of the northern circumpolar sky, centred on the pole with Cassiopeia, Cepheus and Ursa Minor drawn"></canvas>
+<div class="vig" aria-hidden="true"></div>
+<div class="frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
+<header class="rail">
+  <div class="kicker">Atlas Sheet 07 &nbsp;·&nbsp; 90° North</div>
+  <h1>The Northern<br>Plate<em>Circa Polaris</em></h1>
+  <p class="lede">An azimuthal equidistant projection centred on the <b>north celestial
+  pole</b>. The pole sits in the middle; <b>right ascension</b> turns anticlockwise around it
+  and <b>declination</b> falls away as concentric circles. Everything within 34° of the pole
+  never sets — the whole plate is a country of permanent night.</p>
+  <ul class="idx" id="idx"></ul>
+  <div class="read" id="read"></div>
+  <div class="foot">Drag to pan the sphere &nbsp;·&nbsp; scroll to zoom<br>
+    <kbd>Hover</kbd> a catalogue star for magnitude data</div>
+</header>
+
+<aside class="hud" aria-hidden="true">
+  <div class="big" id="lst">00:00:00</div>
+  <div>Greenwich mean sidereal time</div>
+  <div class="row"><span>Plate scale</span><b id="zs">1.00×</b></div>
+  <div class="row"><span>Cursor</span><b id="cr">—</b></div>
+</aside>
+<div id="tip" role="status" aria-live="polite"></div>
+<noscript><p class="noscript">This plate is drawn with a canvas. Enable JavaScript to see the
+catalogue, the constellation figures and the live sidereal clock.</p></noscript>
+
+<script>
+const D2R=Math.PI/180, SPAN=56;   // plate radius spans 56° of polar distance
+const STARS=[
+ {n:'Caph',b:'β',c:'Cas',m:2.28,sp:'B9 III',ra:0.1529,dec:59.15,col:'#cfe2ff'},
+ {n:'Schedar',b:'α',c:'Cas',m:2.24,sp:'K0 III',ra:0.6751,dec:56.54,col:'#ffe0b8'},
+ {n:'Navi',b:'γ',c:'Cas',m:2.47,sp:'B0 IV',ra:0.9451,dec:60.72,col:'#bed4ff'},
+ {n:'Ruchbah',b:'δ',c:'Cas',m:2.68,sp:'A5 III',ra:1.4303,dec:60.24,col:'#eaf1ff'},
+ {n:'Segin',b:'ε',c:'Cas',m:3.35,sp:'B3 III',ra:1.9066,dec:63.67,col:'#d5e4ff'},
+ {n:'Alderamin',b:'α',c:'Cep',m:2.45,sp:'A7 IV',ra:21.3097,dec:62.59,col:'#e9efff'},
+ {n:'Alfirk',b:'β',c:'Cep',m:3.23,sp:'B1 III',ra:21.4777,dec:70.56,col:'#bed4ff'},
+ {n:'Errai',b:'γ',c:'Cep',m:3.21,sp:'K1 III',ra:23.6558,dec:77.63,col:'#ffd6a6'},
+ {n:'Iota Cephei',b:'ι',c:'Cep',m:3.52,sp:'K0 III',ra:22.4947,dec:66.20,col:'#ffe0b8'},
+ {n:'Zeta Cephei',b:'ζ',c:'Cep',m:3.35,sp:'K1 III',ra:22.1809,dec:58.20,col:'#ffd6a6'},
+ {n:'Polaris',b:'α',c:'UMi',m:1.98,sp:'F7 Ib',ra:2.5303,dec:89.26,col:'#fff6e6',spike:1},
+ {n:'Yildun',b:'δ',c:'UMi',m:4.36,sp:'A1 III',ra:17.5369,dec:86.59,col:'#e6efff'},
+ {n:'Epsilon UMi',b:'ε',c:'UMi',m:4.21,sp:'G5 III',ra:16.7661,dec:82.04,col:'#fff1da'},
+ {n:'Zeta UMi',b:'ζ',c:'UMi',m:4.32,sp:'A3 III',ra:15.7343,dec:77.79,col:'#eaf1ff'},
+ {n:'Kochab',b:'β',c:'UMi',m:2.08,sp:'K4 III',ra:14.8451,dec:74.16,col:'#ffcb93'},
+ {n:'Pherkad',b:'γ',c:'UMi',m:3.05,sp:'A3 III',ra:15.3455,dec:71.83,col:'#eaf1ff'},
+ {n:'Eta UMi',b:'η',c:'UMi',m:4.95,sp:'F5 IV',ra:16.2918,dec:75.76,col:'#fdf5e8'},
+ {n:'Vega',b:'α',c:'Lyr',m:0.03,sp:'A0 V',ra:18.6156,dec:38.78,col:'#e9f0ff',spike:1},
+ {n:'Deneb',b:'α',c:'Cyg',m:1.25,sp:'A2 Ia',ra:20.6906,dec:45.28,col:'#e6eeff',spike:1},
+ {n:'Capella',b:'α',c:'Aur',m:0.08,sp:'G8 III',ra:5.2781,dec:46.00,col:'#fff0d2',spike:1}];
+const CATS={
+ Cas:{full:'Cassiopeia',cyr:'regina borealis',hero:1,lab:[1,60,-16],note:'The Queen. Five bright stars in a W — three of them variable giants that brighten and fade together as a group.',
+  lines:[['Caph','Schedar'],['Schedar','Navi'],['Navi','Ruchbah'],['Ruchbah','Segin']]},
+ Cep:{full:'Cepheus',cyr:'rex aethiopicus',lab:[5,4,-70],note:'The King. His roof-shaped figure holds Delta Cephei, the prototype Cepheid — the yardstick by which other galaxies were once measured.',
+  lines:[['Alderamin','Alfirk'],['Alfirk','Errai'],['Errai','Iota Cephei'],['Iota Cephei','Zeta Cephei'],['Zeta Cephei','Alderamin']]},
+ UMi:{full:'Ursa Minor',cyr:'ursa minor',lab:[15.2,30,4],note:'The Little Bear. Polaris caps the handle; the bowl of Kochab and Pherkad points north.',
+  lines:[['Polaris','Yildun'],['Yildun','Epsilon UMi'],['Epsilon UMi','Zeta UMi'],['Zeta UMi','Kochab'],['Kochab','Pherkad'],['Pherkad','Eta UMi'],['Eta UMi','Zeta UMi']]},
+ Lyr:{full:'Lyra',cyr:'lyra',lines:[],lab:[17,-30,0],note:'The Lyre. Vega, the zero-magnitude standard on which the whole magnitude scale rests.'},
+ Cyg:{full:'Cygnus',cyr:'cygnus',lines:[],lab:[20,-36,0],note:'The Swan. Deneb marks the tail, on the Milky Way itself.'},
+ Aur:{full:'Auriga',cyr:'auriga',lines:[],lab:[5,36,0],note:'The Charioteer. Capella is a close pair of yellow giants that the eye cannot split.'}};
+// galactic plane crossings used for the haze and the star density
+const BAND=[[20.4,52.5],[21.4,56.5],[22.5,60.5],[23.4,63],[0.6,63.6],[1.7,64.4],[2.7,66.5],[3.7,70],[4.7,74.5],[5.8,79],[6.9,84],[8,88.5]];
+const BAND2=[[20.4,52.5],[19.4,47],[18.6,41],[18.2,35]];
+
+const cv=document.getElementById('plate'), ctx=cv.getContext('2d');
+const view={panX:0,panY:0,zoom:1,cx:0,cy:0,R:300};
+let W=0,H=0,DPR=1,field=[],haze=null,hover=null,sel='Cas',tw=null;
+const byName=Object.fromEntries(STARS.map(s=>[s.n,s]));
+const idxEl=document.getElementById('idx'), readEl=document.getElementById('read'),
+      tip=document.getElementById('tip'), zEl=document.getElementById('zs'),
+      crEl=document.getElementById('cr'), lstEl=document.getElementById('lst');
+const pad2=n=>n<10?'0'+n:''+n;
+
+function resize(){
+  DPR=Math.min(devicePixelRatio||1,2); W=innerWidth; H=innerHeight;
+  cv.width=W*DPR; cv.height=H*DPR; cv.style.width=W+'px'; cv.style.height=H+'px';
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  const rail=W>860?Math.min(W*0.31,340):0;
+  view.cx=rail+(W-rail)/2; view.cy=H*0.5;
+  view.R=Math.max(104,Math.min((W-rail)-64,H-150)/2);
+  buildField();
+}
+function proj(ra,dec){
+  const pd=90-dec, th=ra*15*D2R, r=(pd/SPAN)*view.R*view.zoom;
+  return [view.cx+view.panX+Math.cos(th)*r, view.cy+view.panY-Math.sin(th)*r];
+}
+const rad=m=>Math.max(0.9,Math.min(7.5,6.2*Math.pow(1.62,3.1-m)*(0.72+0.28*view.zoom)));
+const fieldXY=f=>{const r=(f.pd/SPAN)*view.R*view.zoom;
+  return [view.cx+view.panX+Math.cos(f.th)*r, view.cy+view.panY-Math.sin(f.th)*r];};
+
+/* faint field: a uniform halo plus an unresolved population along the plane */
+function buildField(){
+  let s=20260926; const rnd=()=>((s=s*16807%2147483647)/2147483647);
+  const gauss=()=>(rnd()+rnd()+rnd()+rnd()-2);
+  field=[];
+  for(let i=0;i<520;i++) field.push({pd:Math.sqrt(rnd())*SPAN*1.02,th:rnd()*6.2832,
+    mag:4.6+rnd()*2.6,ph:rnd()*6.28,b:0.55+rnd()*0.5});
+  for(let i=0;i<780;i++){
+    const band=i%2?BAND:BAND2, seg=band.length-1, t=rnd()*seg, k=Math.min(seg-1,Math.floor(t)), f=t-k;
+    const ra=band[k][0]+(band[k+1][0]-band[k][0])*f+gauss()*0.5,
+          dec=band[k][1]+(band[k+1][1]-band[k][1])*f+gauss()*0.7;
+    field.push({pd:90-dec,th:((ra%24)+24)%24*15*D2R,mag:5.4+rnd()*2.2,ph:rnd()*6.28,b:0.3+rnd()*0.45});
+  }
+}
+/* haze: additive blobs, then dust lanes subtracted with destination-out */
+function buildHaze(){
+  haze=document.createElement('canvas');
+  const d=Math.ceil(view.R*2.7*DPR); haze.width=d; haze.height=d;
+  const h=haze.getContext('2d'); h.scale(DPR,DPR);
+  const ox=d/(2*DPR);
+  const blob=(path,col,size,alpha)=>{
+    for(let k=0;k<path.length-1;k++) for(let j=0;j<9;j++){
+      const t=j/9, ra=path[k][0]+(path[k+1][0]-path[k][0])*t, dec=path[k][1]+(path[k+1][1]-path[k][1])*t;
+      const pd=90-dec, th=ra*15*D2R, r=pd/SPAN*view.R;
+      const x=ox+Math.cos(th)*r, y=ox-Math.sin(th)*r, rr=size*(0.75+0.5*Math.sin(k*2.1+j));
+      const g=h.createRadialGradient(x,y,0,x,y,rr);
+      g.addColorStop(0,col.replace('A',alpha)); g.addColorStop(1,col.replace('A','0'));
+      h.fillStyle=g; h.beginPath(); h.arc(x,y,rr,0,6.2832); h.fill();
+    }
+  };
+  h.globalCompositeOperation='lighter';
+  blob(BAND,'rgba(70,92,168,A)',view.R*0.34,0.5);
+  blob(BAND,'rgba(150,168,224,A)',view.R*0.17,0.32);
+  blob(BAND2,'rgba(96,110,180,A)',view.R*0.24,0.32);
+  h.globalCompositeOperation='destination-out';
+  for(let k=0;k<28;k++){
+    const i=Math.floor(Math.random()*(BAND.length-1)), f=Math.random();
+    const ra=BAND[i][0]+(BAND[i+1][0]-BAND[i][0])*f,
+          dec=BAND[i][1]+(BAND[i+1][1]-BAND[i][1])*f-0.6-Math.random()*1.3;
+    const pd=90-dec, th=ra*15*D2R, r=pd/SPAN*view.R;
+    h.save(); h.translate(ox+Math.cos(th)*r, ox-Math.sin(th)*r); h.rotate(th+1.2);
+    const g=h.createRadialGradient(0,0,0,0,0,view.R*0.13);
+    g.addColorStop(0,'rgba(0,0,0,.5)'); g.addColorStop(1,'rgba(0,0,0,0)');
+    h.fillStyle=g; h.beginPath(); h.ellipse(0,0,view.R*0.17,view.R*0.05,0,0,6.2832); h.fill(); h.restore();
+  }
+}
+
+function draw(now){
+  const T=(now-T0)/1000, R=view.R*view.zoom, cx=view.cx+view.panX, cy=view.cy+view.panY;
+  ctx.clearRect(0,0,W,H);
+  const bg=ctx.createLinearGradient(0,0,W*0.4,H);
+  bg.addColorStop(0,'#070b1c'); bg.addColorStop(.55,'#0a1030'); bg.addColorStop(1,'#05070f');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+  ctx.save(); ctx.translate(cx,cy); ctx.font='9px "Space Mono",monospace'; ctx.textBaseline='middle';
+  for(let pd=15;pd<=45;pd+=15){
+    ctx.strokeStyle='rgba(143,180,255,.13)'; ctx.beginPath();
+    ctx.arc(0,0,pd/SPAN*R,0,6.2832); ctx.stroke();
+    ctx.fillStyle='rgba(234,239,251,.28)'; ctx.textAlign='left';
+    ctx.fillText('PD '+pd+'°',5,-pd/SPAN*R-6);
+  }
+  for(let h=0;h<24;h+=2){
+    const a=h*15*D2R;
+    ctx.strokeStyle=h%6===0?'rgba(143,180,255,.2)':'rgba(143,180,255,.07)';
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(Math.cos(a)*R,-Math.sin(a)*R); ctx.stroke();
+    ctx.save(); ctx.translate(Math.cos(a)*(R-17),-Math.sin(a)*(R-17)); ctx.rotate(a);
+    ctx.fillStyle='rgba(240,200,138,.5)'; ctx.textAlign='center'; ctx.fillText(h+'ʰ',0,0); ctx.restore();
+  }
+  ctx.strokeStyle='rgba(240,200,138,.34)'; ctx.beginPath(); ctx.arc(0,0,R,0,6.2832); ctx.stroke();
+  ctx.strokeStyle='rgba(240,200,138,.18)'; ctx.beginPath(); ctx.arc(0,0,R+7,0,6.2832); ctx.stroke();
+  for(let d=0;d<360;d+=2){ const a=d*D2R, L=d%30===0?13:d%10===0?8:4.5;
+    ctx.strokeStyle=d%30===0?'rgba(240,200,138,.55)':'rgba(240,200,138,.2)';
+    ctx.beginPath(); ctx.moveTo(Math.cos(a)*R,-Math.sin(a)*R);
+    ctx.lineTo(Math.cos(a)*(R+L),-Math.sin(a)*(R+L)); ctx.stroke(); }
+  ctx.restore();
+  if(!haze) buildHaze();
+  ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.globalAlpha=0.62;
+  const hd=haze.width/(2*DPR); ctx.drawImage(haze,cx-hd,cy-hd,hd*2,hd*2); ctx.restore();
+  for(const f of field){
+    const [x,y]=fieldXY(f); if(x<-20||x>W+20||y<-20||y>H+20) continue;
+    ctx.globalAlpha=Math.min(1,f.b*(0.72+0.28*Math.sin(T*1.6+f.ph)));
+    ctx.fillStyle=f.mag>5.6?'#a8bce8':'#eef3ff';
+    ctx.beginPath(); ctx.arc(x,y,Math.max(0.32,f.mag>5.6?0.4:0.7)*Math.min(1.7,0.5+view.zoom*0.45),0,6.2832); ctx.fill();
+  }
+  ctx.globalAlpha=1;
+  for(const k in CATS){
+    const cat=CATS[k], act=sel===k, hot=hover&&hover.c===k;
+    if(cat.lines.length){
+      ctx.strokeStyle=act?'rgba(143,212,255,.62)':hot?'rgba(240,200,138,.5)':'rgba(160,196,255,.26)';
+      ctx.lineWidth=act?1.25:0.9; ctx.setLineDash(act?[]:[3,5]);
+      for(const pair of cat.lines){
+        const A=proj(byName[pair[0]].ra,byName[pair[0]].dec), B=proj(byName[pair[1]].ra,byName[pair[1]].dec);
+        ctx.beginPath(); ctx.moveTo(A[0],A[1]); ctx.lineTo(B[0],B[1]); ctx.stroke();
+      }
+      ctx.setLineDash([]);
+    }
+    const first=STARS.find(s=>s.c===k), p=proj(first.ra,first.dec), d=cat.lab, s=R/320;
+    ctx.save(); ctx.translate(p[0]+d[0]*s,p[1]+d[1]*s); ctx.textAlign='center';
+    ctx.font=(cat.hero?'600 ':'400 ')+Math.max(10,11*s)+'px "Cinzel",Optima,serif';
+    ctx.letterSpacing='0.24em';
+    ctx.fillStyle=act?'rgba(143,212,255,.92)':'rgba(234,239,251,.4)';
+    ctx.fillText(cat.full.toUpperCase(),0,0); ctx.restore();
+  }
+  STARS.forEach((s,i)=>{
+    const [x,y]=proj(s.ra,s.dec), r=rad(s.mag), hov=hover===s, tw2=0.86+0.14*Math.sin(T*2.1+i*1.7);
+    if(s.spike&&view.zoom>0.9){
+      ctx.strokeStyle='rgba(255,255,255,'+(0.15*tw2)+')'; ctx.lineWidth=0.8; const L=r*5.2;
+      ctx.beginPath(); ctx.moveTo(x-L,y); ctx.lineTo(x+L,y); ctx.moveTo(x,y-L); ctx.lineTo(x,y+L); ctx.stroke();
+    }
+    const g=ctx.createRadialGradient(x,y,0,x,y,r*3.4);
+    g.addColorStop(0,s.col); g.addColorStop(.24,s.col); g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.globalAlpha=(hov?1:0.9)*tw2; ctx.fillStyle=g;
+    ctx.beginPath(); ctx.arc(x,y,r*3.4,0,6.2832); ctx.fill();
+    ctx.globalAlpha=hov?1:0.92; ctx.fillStyle='#fff';
+    ctx.beginPath(); ctx.arc(x,y,r*0.42,0,6.2832); ctx.fill();
+    if(hov){
+      ctx.globalAlpha=1; ctx.strokeStyle='rgba(240,200,138,.9)'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.arc(x,y,r*3.4+7,0,6.2832); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x-9,y); ctx.lineTo(x-16,y); ctx.moveTo(x+9,y); ctx.lineTo(x+16,y);
+      ctx.moveTo(x,y-9); ctx.lineTo(x,y-16); ctx.moveTo(x,y+9); ctx.lineTo(x,y+16); ctx.stroke();
+    }
+  });
+  ctx.globalAlpha=1;
+  const P=proj(0,90);
+  ctx.strokeStyle='rgba(240,200,138,.75)'; ctx.lineWidth=1; ctx.beginPath();
+  ctx.arc(P[0],P[1],13,0,6.2832); ctx.moveTo(P[0]-19,P[1]); ctx.lineTo(P[0]-13,P[1]);
+  ctx.moveTo(P[0]+13,P[1]); ctx.lineTo(P[0]+19,P[1]); ctx.moveTo(P[0],P[1]-19); ctx.lineTo(P[0],P[1]-13);
+  ctx.moveTo(P[0],P[1]+13); ctx.lineTo(P[0],P[1]+19); ctx.stroke();
+  ctx.beginPath(); ctx.arc(P[0],P[1],3,0,6.2832); ctx.fillStyle='#f0c88a'; ctx.fill();
+  ctx.font='9px "Space Mono",monospace'; ctx.textAlign='center'; ctx.fillStyle='rgba(240,200,138,.8)';
+  ctx.fillText('NCP  90° 00′',P[0],P[1]-25);
+  zEl.textContent=view.zoom.toFixed(2)+'×';
+  requestAnimationFrame(draw);
+}
+
+const raHMS=ra=>{const h=Math.floor(ra),m=Math.floor((ra-h)*60);
+  return pad2(h)+'ʰ'+pad2(m)+'ᵐ'+pad2(Math.round((((ra-h)*60)-m)*60))+'ˢ';};
+const decDMS=d=>{const a=Math.abs(d);
+  return (d<0?'−':'+')+pad2(Math.floor(a))+'°'+pad2(Math.floor((a%1)*60))+'′';};
+function paint(s){
+  readEl.innerHTML='<div class="lbl">Selected object</div><div class="nm">'+s.n+
+    '</div><div class="meta">'+s.b+' '+s.c+' &nbsp;·&nbsp; MAG '+s.m.toFixed(2)+
+    '</div><div class="sub">Spectral <i>'+s.sp+'</i><br>RA <i>'+raHMS(s.ra)+'</i> &nbsp; DEC <i>'+
+    decDMS(s.dec)+'</i><br>'+(CATS[s.c]?CATS[s.c].note:'')+'</div>';
+}
+function tween(tx,ty,tz){
+  const s={x:view.panX,y:view.panY,z:view.zoom}, t0=performance.now();
+  (function step(now){
+    if(!tw) return;
+    const t=1-Math.pow(1-Math.min(1,(now-t0)/900),3);
+    view.panX=s.x+(tx-s.x)*t; view.panY=s.y+(ty-s.y)*t; view.zoom=s.z+(tz-s.z)*t;
+    if(t<1) requestAnimationFrame(step); else tw=null;
+  })(t0);
+}
+function setSel(k,focus){
+  sel=k;
+  document.querySelectorAll('#idx button').forEach(b=>b.classList.toggle('on',b.dataset.k===k));
+  const cs=STARS.filter(s=>s.c===k).sort((a,b)=>a.m-b.m);
+  if(!cs.length) return;
+  paint(cs[0]);
+  if(focus===false) return;
+  const ra=cs.reduce((a,s)=>a+s.ra,0)/cs.length,
+        pd=cs.reduce((a,s)=>a+(90-s.dec),0)/cs.length*1.2, t=proj(ra,90-pd);
+  tween(view.panX+view.cx-t[0], view.panY+view.cy-t[1], 1.75);
+}
+function pick(mx,my){
+  let best=null,bd=1e9;
+  for(const s of STARS){
+    const [x,y]=proj(s.ra,s.dec), d=Math.hypot(mx-x,my-y), rr=Math.max(13,rad(s.m)*3.4+7);
+    if(d<rr&&d<bd){bd=d;best=s;}
+  }
+  return best;
+}
+const drag={on:false,x:0,y:0,px:0,py:0};
+cv.addEventListener('pointermove',e=>{
+  crEl.textContent=e.clientX+' , '+e.clientY;
+  if(drag.on){
+    const k=Math.max(140,view.R*0.5)*0.0022/view.zoom;
+    view.panX=Math.max(-W*0.55,Math.min(W*0.55,drag.px+(e.clientX-drag.x)*k));
+    view.panY=Math.max(-H*0.5,Math.min(H*0.5,drag.py+(e.clientY-drag.y)*k));
+    return;
+  }
+  const s=pick(e.clientX,e.clientY);
+  if(s!==hover){
+    hover=s;
+    if(s){paint(s); tip.classList.add('on');
+      tip.innerHTML='<div class="t">'+s.n+'</div><div class="g">'+s.b+' '+s.c+' &nbsp;·&nbsp; MAG '+
+        s.m.toFixed(2)+'</div>';}
+    else tip.classList.remove('on');
+  }
+  if(s){tip.style.left=e.clientX+'px'; tip.style.top=e.clientY+'px';}
+});
+cv.addEventListener('pointerdown',e=>{drag.on=true;tw=null;drag.x=e.clientX;drag.y=e.clientY;
+  drag.px=view.panX;drag.py=view.panY;cv.classList.add('dragging');cv.setPointerCapture(e.pointerId);});
+addEventListener('pointerup',()=>{drag.on=false;cv.classList.remove('dragging');});
+cv.addEventListener('wheel',e=>{e.preventDefault();
+  view.zoom=Math.max(0.72,Math.min(4.2,view.zoom*(e.deltaY>0?0.9:1.11)));},{passive:false});
+addEventListener('keydown',e=>{
+  if(e.key==='='||e.key==='+'){view.zoom=Math.min(4.2,view.zoom*1.15);haze=null;}
+  if(e.key==='-'||e.key==='_'){view.zoom=Math.max(0.72,view.zoom/1.15);haze=null;}
+  const k={1:'Cas',2:'Cep',3:'UMi',4:'Lyr',5:'Cyg',6:'Aur'}[e.key]; if(k){setSel(k);haze=null;}
+  if(e.key==='0') tween(0,0,1);
+});
+Object.keys(CATS).forEach((k,i)=>{
+  const li=document.createElement('li');
+  li.innerHTML='<button data-k="'+k+'" class="'+(k==='Cas'?'on':'')+'"><span>'+pad2(i+1)+'</span>'+
+    CATS[k].full+'<em class="cyr">'+CATS[k].cyr+'</em></button>';
+  li.querySelector('button').onclick=()=>{setSel(k);haze=null;};
+  idxEl.appendChild(li);
+});
+function clock(){
+  const g=((18.697374558+24.06570982441908*(Date.now()/864e5-10957.5))%24+24)%24;
+  lstEl.textContent=pad2(Math.floor(g))+':'+pad2(Math.floor(g%1*60))+':'+pad2(Math.floor(g*60%1*60));
+}
+const T0=performance.now();
+resize(); setSel('Cas',false); clock(); setInterval(clock,1000);
+addEventListener('resize',()=>{resize();haze=null;});
+requestAnimationFrame(draw);
+</script>
+</body>
+</html>

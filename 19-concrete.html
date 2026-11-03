@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MONOLITH 14 — A Concrete Building Cast In Place</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Archivo:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --g0:#4d4c49;
+    --g1:#6a6965;
+    --g2:#83827d;
+    --g3:#9c9b95;
+    --g4:#b4b3ac;
+    --grain:rgba(30,30,28,.5);
+    --px:50%;
+    --py:34%;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:#3b3a38; color:var(--g4); overflow:hidden;
+    font-family:"Archivo","Helvetica Neue",Arial,sans-serif;
+  }
+  .shell{position:fixed;inset:0;z-index:0;
+    background:
+      radial-gradient(120% 90% at 20% 0%, #7b7a76 0%, #5d5c58 48%, #434240 100%);}
+  /* the slab: board-formed concrete */
+  .slab{
+    position:fixed; inset:0; z-index:1;
+    background:
+      /* board seams, 46 mm boards */
+      repeating-linear-gradient(180deg,
+        rgba(0,0,0,.30) 0 1.5px, rgba(255,255,255,.055) 1.5px 2.6px, transparent 2.6px 47px),
+      /* formwork panel joints */
+      repeating-linear-gradient(90deg,
+        rgba(0,0,0,.22) 0 1.5px, rgba(255,255,255,.04) 1.5px 2.4px, transparent 2.4px 268px),
+      /* pour lines, slight tonal banding */
+      repeating-linear-gradient(180deg,
+        rgba(255,255,255,.022) 0 60px, rgba(0,0,0,.03) 60px 140px, rgba(255,255,255,.018) 140px 300px),
+      /* aggregate blotching */
+      radial-gradient(38% 26% at 18% 22%, rgba(255,255,255,.05), transparent 70%),
+      radial-gradient(30% 40% at 78% 64%, rgba(0,0,0,.10), transparent 72%),
+      radial-gradient(22% 18% at 54% 88%, rgba(0,0,0,.08), transparent 70%),
+      linear-gradient(158deg, #8a8984 0%, #74736e 52%, #5c5b57 100%);
+  }
+  .slab::after{
+    content:""; position:absolute; inset:0; opacity:.62; mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' seed='31'/%3E%3CfeColorMatrix values='0 0 0 0 0.3 0 0 0 0 0.3 0 0 0 0 0.28 0 0 0 0.62 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  /* exposed tie holes, on the formwork grid */
+  .ties{position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.85;
+    background-image:
+      radial-gradient(circle at 50% 50%, rgba(0,0,0,.5) 0 3.4px, rgba(0,0,0,.12) 3.4px 4.2px,
+        rgba(255,255,255,.16) 4.2px 5px, transparent 5.4px);
+    background-size:268px 47px;
+    background-position:22px 8px;
+  }
+  .ties::after{
+    content:""; position:absolute; inset:0; opacity:.5;
+    background-image:radial-gradient(circle at 50% 50%, rgba(0,0,0,.34) 0 2.4px, transparent 3.2px);
+    background-size:268px 47px; background-position:22px 31px;
+  }
+
+  /* chamfered mass */
+  .mass{
+    position:fixed; z-index:3; pointer-events:none;
+    left:0; right:0; bottom:0; height:38dvh;
+    background:linear-gradient(180deg, #4e4d4a 0%, #3a3936 55%, #2b2a28 100%);
+    clip-path:polygon(0 62px, 62px 0, 100% 0, 100% 100%, 0 100%);
+    box-shadow:0 -2px 0 rgba(255,255,255,.12) inset;
+  }
+  .mass::before{
+    content:""; position:absolute; left:0; right:0; top:0; height:3px;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);
+  }
+
+  /* recessed type */
+  .type{position:fixed; z-index:5; left:clamp(14px,3.4vw,64px); top:50%;
+    transform:translateY(-58%); pointer-events:none}
+  .type .l1{
+    font-family:"Archivo Black","Arial Black",Impact,sans-serif;
+    font-size:clamp(56px,15.5vw,236px); line-height:.8; letter-spacing:-.035em;
+    display:block;
+  }
+  .type .l2{
+    font-family:"Archivo Black","Arial Black",Impact,sans-serif;
+    font-size:clamp(30px,7.6vw,118px); line-height:.86; letter-spacing:.02em;
+    display:block; margin-top:.04em;
+  }
+  .carve{
+    color:transparent;
+    background-image:radial-gradient(58vmin 46vmin at var(--px) var(--py),
+      #cfcec6 0%, #a3a29a 34%, #74736d 66%, #3c3b37 100%);
+    -webkit-background-clip:text; background-clip:text;
+    text-shadow:
+      1px 2px 1px rgba(16,16,14,.62),
+      3px 5px 6px rgba(16,16,14,.30),
+      -1px -2px 2px rgba(255,255,255,.16);
+  }
+  .carve.deeper{
+    background-image:radial-gradient(58vmin 46vmin at var(--px) var(--py),
+      #deddd4 0%, #aeada4 30%, #6f6e69 62%, #333230 100%);
+  }
+
+  /* the raking light + its hard shadow */
+  .pool{
+    position:fixed; inset:0; z-index:4; pointer-events:none; mix-blend-mode:soft-light;
+    background:radial-gradient(46vmin 34vmin at var(--px) var(--py),
+      rgba(255,252,240,.95), rgba(255,252,240,.18) 46%, transparent 74%);
+  }
+  .cast{
+    position:fixed; inset:0; z-index:6; pointer-events:none; mix-blend-mode:multiply;
+    background:
+      linear-gradient(var(--castang,116deg),
+        transparent 0 48%, rgba(24,24,22,.30) 48.4% 52%, rgba(24,24,22,.14) 52.4% 56%, transparent 56.4%);
+    transform:translate(calc((50% - var(--px)) * -0.11), calc((50% - var(--py)) * -0.07));
+    transition:transform .12s linear;
+  }
+  .cast2{
+    position:fixed; inset:0; z-index:6; pointer-events:none; mix-blend-mode:multiply;
+    background:radial-gradient(30vmin 30vmin at calc(var(--px) - 9vmin) calc(var(--py) + 7vmin),
+      rgba(18,18,16,.34) 0 92%, transparent 93%);
+  }
+  .edge{position:fixed;inset:0;z-index:7;pointer-events:none;
+    box-shadow:inset 0 0 220px 40px rgba(16,16,14,.55), inset 0 0 0 1px rgba(255,255,255,.06)}
+
+  /* furniture */
+  .idx{position:fixed;left:clamp(14px,3.4vw,64px);top:clamp(14px,3vh,40px);z-index:8;
+    font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.26em;
+    text-transform:uppercase;color:rgba(190,189,182,.62);line-height:2.1}
+  .idx b{color:#dedcd3;font-weight:500;letter-spacing:.34em}
+  .note{position:fixed;right:clamp(14px,3.4vw,64px);top:clamp(14px,3vh,40px);z-index:8;
+    text-align:right;max-width:min(34ch,40vw)}
+  .note p{font-size:clamp(11.5px,1.02vw,14px);line-height:1.82;font-weight:300;
+    color:rgba(196,195,188,.68)}
+  .note p b{color:#e2e0d7;font-weight:500}
+  .data{position:fixed;right:clamp(14px,3.4vw,64px);bottom:calc(38dvh - clamp(26px,4vh,58px));z-index:8;
+    display:grid;grid-template-columns:auto auto;gap:2px 18px;text-align:right;
+    font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.2em;
+    text-transform:uppercase;color:rgba(190,189,182,.55)}
+  .data dt{color:rgba(190,189,182,.42)}
+  .data dd{color:#dedcd3}
+  .foot{position:fixed;left:clamp(14px,3.4vw,64px);bottom:clamp(12px,2.4vh,26px);z-index:8;
+    font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.24em;
+    text-transform:uppercase;color:rgba(190,189,182,.44)}
+  .hint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(38dvh - clamp(26px,4vh,58px));z-index:8;
+    font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.28em;
+    text-transform:uppercase;color:rgba(190,189,182,.5);white-space:nowrap}
+  .hint::after{content:"";display:block;height:1px;margin-top:8px;background:rgba(190,189,182,.3)}
+  @media (max-width:900px){
+    .note{max-width:52vw;font-size:11.5px}
+    .data{grid-template-columns:auto auto;font-size:9px;gap:2px 12px}
+    .mass{height:30dvh}
+    .hint{bottom:calc(30dvh - 44px)}
+    .data{bottom:calc(30dvh - 44px)}
+  }
+  @media (max-width:620px){
+    .type{top:46%}
+    .note{max-width:74vw;top:auto;bottom:calc(30dvh + 14px)}
+    .note p{font-size:11px;line-height:1.7}
+    .data{display:none}
+    .idx{font-size:9px}
+  }
+</style>
+</head>
+<body>
+<div class="shell" aria-hidden="true"></div>
+<div class="slab" aria-hidden="true"></div>
+<div class="ties" aria-hidden="true"></div>
+<div class="pool" aria-hidden="true"></div>
+<div class="cast" aria-hidden="true"></div>
+<div class="cast2" aria-hidden="true"></div>
+
+<div class="mass" aria-hidden="true"></div>
+
+<div class="type" id="type" role="img"
+     aria-label="The words MONOLITH FOURTEEN, deeply cast into a board-formed concrete wall and revealed by a raking light.">
+  <span class="l1 carve">MONOLITH</span>
+  <span class="l2 carve deeper">FOURTEEN</span>
+</div>
+
+<div class="edge" aria-hidden="true"></div>
+
+<div class="idx">
+  <b>Block 14</b><br>
+  In-situ concrete<br>
+  Board formed, 220 mm<br>
+  Pour 04 — 11 days
+</div>
+
+<div class="note">
+  <p>Forty-one loads of ready-mix, one continuous pour, and no shutter that opened once
+     until the form was full. The boards you can read across the wall are the same boards
+     that held the concrete; the <b>ties were plugged, not filled</b>, because a building
+     should admit where it was held together.</p>
+</div>
+
+<dl class="data">
+  <dt>Volume</dt><dd>2 140 m³</dd>
+  <dt>Slump</dt><dd>140 mm</dd>
+  <dt>Cube 28d</dt><dd>52.4 N/mm²</dd>
+  <dt>Max bar</dt><dd>32 mm</dd>
+  <dt>Cover</dt><dd>55 mm</dd>
+</dl>
+
+<p class="hint">Move the pointer — the light rakes the face</p>
+<p class="foot">Nordahl &amp; Sørvik &nbsp;·&nbsp; Harbour Works &nbsp;·&nbsp; Drawing 14-C</p>
+
+<noscript>
+  <p style="position:fixed;left:50%;bottom:12px;transform:translateX(-50%);z-index:9;
+     font:10px/1 'IBM Plex Mono',monospace;letter-spacing:.28em;text-transform:uppercase;color:#9c9b95">
+    Raking light disabled &mdash; the casting is shown flat</p>
+</noscript>
+
+<script>
+(function(){
+  var root = document.documentElement;
+  var tx = 50, ty = 34, cx = 50, cy = 34, ang = 116;
+  var tAng = 116, idle = true, t = 0;
+
+  function move(e){
+    var w = window.innerWidth, h = window.innerHeight;
+    var nx = (e.clientX / w) * 100;
+    var ny = (e.clientY / h) * 100;
+    /* keep the light above the horizon: it always comes from the top of the frame */
+    cx = tx = Math.max(18, Math.min(82, nx));
+    cy = ty = Math.max(12, Math.min(62, ny));
+    tAng = 78 + (cx - 18) * 1.05;
+    idle = false;
+  }
+  window.addEventListener('pointermove', move, {passive:true});
+  window.addEventListener('pointerdown', move, {passive:true});
+  window.addEventListener('mouseleave', function(){ idle = true; });
+
+  function loop(){
+    if (idle){
+      t += 0.0024;
+      tx = 50 + Math.sin(t) * 26;
+      ty = 30 + Math.cos(t * 0.77) * 14;
+      tAng = 100 + Math.sin(t * 0.6) * 20;
+    }
+    ang += (tAng - ang) * 0.06;
+    root.style.setProperty('--px', tx.toFixed(2) + '%');
+    root.style.setProperty('--py', ty.toFixed(2) + '%');
+    root.style.setProperty('--castang', ang.toFixed(2) + 'deg');
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

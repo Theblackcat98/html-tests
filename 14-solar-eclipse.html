@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TOTALITY — A Minimal Solar Eclipse, 14:32:07</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400&family=Cormorant+Garamond:ital,wght@0,200;0,300;1,200&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#000000;
+    --paper:#efece2;
+    --glow:#f4f0e4;
+    --sx:0px;
+    --sy:0px;
+    --reveal:0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--ink); color:var(--paper);
+    font-family:"Jost","Futura","Century Gothic",Arial,sans-serif;
+    display:grid; place-items:center; overflow:hidden;
+    cursor:none;
+  }
+  .void{position:fixed;inset:0;background:#000}
+  .stage{position:fixed;inset:0;display:grid;place-items:center;z-index:2}
+
+  /* ---- the disc: one occulting body, nothing else ---- */
+  .corona{
+    position:relative; width:min(74vmin,660px); aspect-ratio:1;
+    transform:translate3d(var(--sx),var(--sy),0);
+    will-change:transform;
+  }
+  /* layered radial gradients = streamers of the outer corona */
+  .halo{
+    position:absolute; inset:-26%; border-radius:50%; pointer-events:none;
+    background:
+      radial-gradient(circle, rgba(0,0,0,0) 26.2%, rgba(226,224,212,.30) 26.5%, rgba(0,0,0,0) 30%),
+      radial-gradient(circle, rgba(0,0,0,0) 27.4%, rgba(244,240,228,.16) 27.8%, rgba(0,0,0,0) 34%),
+      radial-gradient(circle, rgba(0,0,0,0) 29.2%, rgba(198,206,222,.13) 29.6%, rgba(0,0,0,0) 42%),
+      radial-gradient(circle, rgba(0,0,0,0) 31.5%, rgba(244,240,228,.09) 32.4%, rgba(0,0,0,0) 52%);
+    animation:breathe 24s ease-in-out infinite;
+  }
+  @keyframes breathe{
+    0%,100%{transform:scale(1);opacity:.9}
+    50%{transform:scale(1.035);opacity:1}
+  }
+  /* ring of fire — a single, almost perfect edge */
+  .ring{
+    position:absolute; inset:26%; border-radius:50%;
+    box-shadow:
+      0 0 1px 0 rgba(255,255,255,.95),
+      0 0 6px 1px rgba(238,236,226,.7),
+      0 0 22px 6px rgba(214,220,236,.28),
+      0 0 70px 24px rgba(190,200,224,.12);
+    background:radial-gradient(circle, #000 0 72%, rgba(255,255,255,.16) 78%, rgba(0,0,0,0) 84%);
+  }
+  .moon{
+    position:absolute; inset:26.4%; border-radius:50%;
+    background:radial-gradient(c at 42% 38%, #0a0a0a 0%, #000 62%, #000 100%);
+  }
+  /* subtle rotating shimmer built from conic + annulus mask */
+  .shimmer{
+    position:absolute; inset:-30%; border-radius:50%; pointer-events:none; opacity:.32;
+    background:repeating-conic-gradient(from 0deg at 50% 50%,
+      rgba(255,255,255,.5) 0deg 0.5deg, rgba(255,255,255,0) 0.5deg 5deg,
+      rgba(190,206,232,.4) 5deg 5.4deg, rgba(0,0,0,0) 5.4deg 13deg);
+    -webkit-mask-image:radial-gradient(circle, transparent 30%, #000 33.5%, #000 56%, transparent 64%);
+            mask-image:radial-gradient(circle, transparent 30%, #000 33.5%, #000 56%, transparent 64%);
+    animation:shim 78s linear infinite;
+  }
+  @keyframes shim{to{transform:rotate(360deg)}}
+  .prom{
+    position:absolute; inset:20%; border-radius:50%; pointer-events:none; mix-blend-mode:screen;
+    background:conic-gradient(from 90deg at 50% 50%,
+      rgba(255,255,255,.55), rgba(0,0,0,0) 22%, rgba(160,190,255,.35) 52%,
+      rgba(0,0,0,0) 74%, rgba(255,240,220,.45));
+    -webkit-mask-image:radial-gradient(circle, transparent 31%, #000 33%, #000 40%, transparent 52%);
+            mask-image:radial-gradient(circle, transparent 31%, #000 33%, #000 40%, transparent 52%);
+    animation:shim 41s linear infinite reverse;
+  }
+  /* the inscription — a ring of faint text around the light */
+  .insc{position:absolute; inset:-16%; opacity:calc(.05 + var(--reveal) * .55); transition:opacity .5s ease}
+  .insc svg{width:100%;height:100%;overflow:visible}
+  .insc text{
+    font-family:"Jost",Arial,sans-serif; font-size:5.2px; letter-spacing:1.55px;
+    fill:#cfd6e2; text-transform:uppercase;
+  }
+  .insc .two{font-size:4px;letter-spacing:2.6px;fill:#9aa3b4}
+
+  /* ---- hairlines ---- */
+  .hair{position:fixed;left:50%;transform:translateX(-50%);width:min(1180px,88vw);height:1px;
+    background:linear-gradient(90deg,transparent,rgba(239,236,226,.26),transparent);z-index:4}
+  .hair.top{top:clamp(18px,5vh,64px)}
+  .hair.bot{bottom:clamp(18px,5vh,64px)}
+
+  .cap{
+    position:fixed; z-index:5; font-size:10px; letter-spacing:.46em; text-transform:uppercase;
+    color:rgba(239,236,226,.5);
+  }
+  .cap.tl{left:clamp(16px,4vw,52px);top:calc(clamp(18px,5vh,64px) + 16px)}
+  .cap.tr{right:clamp(16px,4vw,52px);top:calc(clamp(18px,5vh,64px) + 16px);text-align:right}
+  .cap.bl{left:clamp(16px,4vw,52px);bottom:calc(clamp(18px,5vh,64px) + 16px)}
+  .cap.br{right:clamp(16px,4vw,52px);bottom:calc(clamp(18px,5vh,64px) + 16px);text-align:right}
+  .cap b{display:block;font-weight:300;color:rgba(239,236,226,.82);margin-top:6px;letter-spacing:.3em}
+
+  .lead{
+    position:relative; z-index:5; text-align:center; margin-top:clamp(20px,5vh,54px);
+  }
+  .lead h1{
+    font-family:"Cormorant Garamond",Georgia,serif; font-weight:200;
+    font-size:clamp(11px,1.05vw,14px); letter-spacing:.72em; text-transform:uppercase;
+    color:rgba(239,236,226,.86); text-indent:.72em;
+  }
+  .lead p{
+    font-size:clamp(9px,.8vw,10.5px); letter-spacing:.4em; text-transform:uppercase;
+    color:rgba(239,236,226,.36); margin-top:12px;
+  }
+  .lead em{font-family:"Cormorant Garamond",Georgia,serif; font-style:italic;
+    letter-spacing:.1em; text-transform:none; font-size:1.15em; color:rgba(239,236,226,.5)}
+  .dot{
+    position:fixed; left:0; top:0; z-index:9; width:34px; height:34px; margin:-17px 0 0 -17px;
+    border-radius:50%; border:1px solid rgba(239,236,226,.28); pointer-events:none;
+    transition:transform .18s cubic-bezier(.2,.8,.2,1), opacity .3s; opacity:0;
+  }
+  .dot::after{content:"";position:absolute;left:50%;top:50%;width:2px;height:2px;margin:-1px;
+    background:rgba(239,236,226,.9);border-radius:50%}
+  @media (max-width:700px){
+    .cap.tr,.cap.br{display:none}
+    .corona{width:min(84vw,520px)}
+    .insc{inset:-8%}
+    .insc text{font-size:5.6px;letter-spacing:1.8px}
+  }
+</style>
+</head>
+<body>
+<div class="void" aria-hidden="true"></div>
+
+<main class="stage" id="stage">
+  <div class="corona" id="corona" role="img"
+       aria-label="A perfect solar eclipse: a black disc ringed by a thin white corona against total darkness.">
+    <div class="halo" aria-hidden="true"></div>
+    <div class="ring" aria-hidden="true"></div>
+    <div class="moon" aria-hidden="true"></div>
+    <div class="prom" aria-hidden="true"></div>
+    <div class="shimmer" aria-hidden="true"></div>
+    <div class="insc" id="insc" aria-hidden="true">
+      <svg viewBox="0 0 200 200">
+        <defs>
+          <path id="ringpath" d="M100,100 m-86,0 a86,86 0 1,1 172,0 a86,86 0 1,1 -172,0" fill="none"/>
+          <path id="ringpath2" d="M100,100 m-100,0 a100,100 0 1,1 200,0 a100,100 0 1,1 -200,0" fill="none"/>
+        </defs>
+        <text><textPath href="#ringpath" startOffset="0">UMBRA 4 MIN 12 SEC ·
+          DIAMETER 267 KM · FIRST CONTACT 13:41:08 · SECOND CONTACT 14:29:55 ·
+          MAXIMUM 14:32:07 · THIRD CONTACT 14:34:19 · FOURTH CONTACT 15:26:44 ·
+          ALTITUDE 14.2° · AZIMUTH 218.6° · SOLAR MAGNITUDE 1.079 ·
+          SAROS 145 · LUNUMBRA MOVES EAST AT 2.4 KM PER SECOND ·</textPath></text>
+        <text class="two"><textPath href="#ringpath2" startOffset="6">OBSERVED AT
+          HIGH DESERT OBSERVATORY · CLEAR SKY · SEEING 1.5 ARCSECONDS ·
+          EXPOSURE 1/500 AT ISO 200 · NO GLASS · NO LIES ·</textPath></text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="lead">
+    <h1>Totality</h1>
+    <p><em>Everything that is left of the sun</em> is this thin ring.</p>
+  </div>
+</main>
+
+<div class="hair top" aria-hidden="true"></div>
+<div class="hair bot" aria-hidden="true"></div>
+
+<p class="cap tl">Observation 04<b>High Desert, 1,480 m</b></p>
+<p class="cap tr">Local 14:32:07<b>29 August 2026</b></p>
+<p class="cap bl">Move the pointer<b>The corona answers</b></p>
+<p class="cap br">Phase<b>Second to third</b></p>
+
+<div class="dot" id="dot" aria-hidden="true"></div>
+
+<noscript>
+  <p style="position:fixed;left:50%;bottom:10px;transform:translateX(-50%);z-index:9;
+     font:9px/1 'Jost',Arial,sans-serif;letter-spacing:.32em;text-transform:uppercase;color:#6d7482">
+    Static totality &mdash; the inscription requires JavaScript</p>
+</noscript>
+
+<script>
+(function(){
+  var root = document.documentElement;
+  var corona = document.getElementById('corona');
+  var dot = document.getElementById('dot');
+  var tx = 0, ty = 0, cx = 0, cy = 0, txr = 0, cyr = 0, near = 0, tnear = 0;
+  var px = window.innerWidth/2, py = window.innerHeight/2;
+  var idle = true, t = 0;
+
+  function move(e){
+    px = e.clientX; py = e.clientY;
+    var w = window.innerWidth, h = window.innerHeight;
+    var nx = (px / w - .5), ny = (py / h - .5);
+    tx = nx * 46;
+    ty = ny * 34;
+    txr = nx * 1.5;
+    cyr = ny * 1.5;
+    tnear = 1;
+    idle = false;
+    dot.style.opacity = '1';
+    dot.style.transform = 'translate3d(' + px + 'px,' + py + 'px,0)';
+  }
+  window.addEventListener('pointermove', move, {passive:true});
+  window.addEventListener('pointerdown', move, {passive:true});
+
+  function loop(){
+    if (idle){
+      t += 0.0022;
+      tx = Math.sin(t) * 12;
+      ty = Math.cos(t*0.8) * 9;
+      txr = Math.sin(t*0.6) * 1.1;
+      cyr = Math.cos(t*0.5) * 1.1;
+      tnear = 0.32 + (Math.sin(t*0.42)*0.5+0.5)*0.3;
+    }
+    cx += (tx - cx) * 0.045;
+    cy += (ty - cy) * 0.045;
+    txr += ((tx - txr) - txr) * 0.05;
+    cyr += ((ty - cyr) - cyr) * 0.05;
+    near += (tnear - near) * 0.05;
+    root.style.setProperty('--sx', cx.toFixed(2) + 'px');
+    root.style.setProperty('--sy', cy.toFixed(2) + 'px');
+    root.style.setProperty('--reveal', near.toFixed(3));
+    corona.style.transform = 'translate3d(' + cx.toFixed(2) + 'px,' + cy.toFixed(2) + 'px,0) rotate(' +
+      (cyr).toFixed(2) + 'deg) skewX(' + (txr*0.4).toFixed(2) + 'deg)';
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+  document.addEventListener('mouseleave', function(){ idle = true; dot.style.opacity = '0'; });
+})();
+</script>
+</body>
+</html>

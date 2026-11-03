@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HALLOWAY &amp; SONS — Weave Study No. 4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--warp:#4a4a52;--weft:#c9889a;--ink:#1b1917;--paper:#efe9dd}
+  html,body{min-height:100%}
+  body{background:#191713;color:#e9e2d4;font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+  .top{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;padding:22px 26px 16px;
+    border-bottom:1px solid #35302a;flex-wrap:wrap}
+  .top h1{font-family:"Playfair Display",Georgia,serif;font-size:27px;font-weight:600;letter-spacing:.01em}
+  .top h1 small{display:block;font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:.26em;
+    text-transform:uppercase;color:#8d8574;margin-top:8px;font-weight:400}
+  .spec{display:flex;gap:24px;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#8d8574}
+  .spec b{display:block;color:#e9e2d4;font-size:11px;letter-spacing:.06em;margin-top:4px;font-weight:400;
+    font-variant-numeric:tabular-nums}
+  .main{display:grid;grid-template-columns:1fr 392px;gap:26px;padding:24px 26px 34px;align-items:start}
+  .board{position:relative;border:1px solid #35302a;background:#100e0c;padding:22px;overflow:hidden}
+  .board::after{content:"";position:absolute;inset:0;pointer-events:none;
+    box-shadow:inset 0 0 70px rgba(0,0,0,.7)}
+  #cloth{width:100%;display:block;cursor:crosshair;border-radius:2px}
+  .loupe{position:absolute;width:188px;height:188px;border-radius:99px;pointer-events:none;z-index:6;
+    box-shadow:0 0 0 2px rgba(255,255,255,.75),0 0 0 5px rgba(0,0,0,.55),0 22px 44px -14px #000;
+    transform:translate(-50%,-50%);opacity:0;transition:opacity .18s;background:#000}
+  .loupe.on{opacity:1}
+  .loupe::after{content:"";position:absolute;inset:0;border-radius:99px;pointer-events:none;
+    background:radial-gradient(circle at 32% 26%,rgba(255,255,255,.22),transparent 46%)}
+  .readout{position:absolute;left:34px;bottom:34px;z-index:7;font-size:9px;letter-spacing:.14em;
+    text-transform:uppercase;color:#a49a86;pointer-events:none;line-height:1.9}
+  .readout b{color:#f0e6d2;font-weight:400}
+  .fringe{position:absolute;right:34px;bottom:34px;z-index:7;font-size:9px;letter-spacing:.16em;
+    text-transform:uppercase;color:#8d8574;text-align:right;line-height:1.9}
+  .side{display:grid;gap:18px}
+  .panel{border:1px solid #35302a;padding:16px;background:rgba(255,255,255,.02)}
+  .panel h2{font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:#8d8574;margin-bottom:14px}
+  .knob{margin-bottom:16px}
+  .knob label{display:flex;justify-content:space-between;font-size:9.5px;letter-spacing:.14em;
+    text-transform:uppercase;color:#a49a86;margin-bottom:7px}
+  .knob label b{color:#f0e6d2;font-weight:400;font-variant-numeric:tabular-nums}
+  input[type=range]{-webkit-appearance:none;width:100%;height:2px;background:#3b352d;outline:0}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:99px;
+    background:#e9e2d4;cursor:ew-resize}
+  input[type=range]::-moz-range-thumb{width:12px;height:12px;border:0;border-radius:99px;background:#e9e2d4}
+  .seg{display:flex;gap:5px;flex-wrap:wrap}
+  .seg button{font:inherit;font-size:9px;letter-spacing:.16em;text-transform:uppercase;padding:8px 11px;
+    background:transparent;border:1px solid #3b352d;color:#a49a86;cursor:pointer;transition:.15s}
+  .seg button.on{background:#e9e2d4;color:#191713;border-color:#e9e2d4}
+  .ways{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+  .way{border:1px solid #3b352d;padding:0;cursor:pointer;background:transparent;transition:.15s;overflow:hidden}
+  .way:hover{border-color:#8d8574}
+  .way.on{border-color:#f0e6d2;box-shadow:0 0 0 1px #f0e6d2}
+  .way i{display:block;height:44px}
+  .way span{display:block;font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:6px 4px;color:#a49a86}
+  .label{position:relative;padding:20px 18px 18px;background:var(--weft);
+    background-image:
+      repeating-linear-gradient(90deg,rgba(255,255,255,.12) 0 2px,rgba(0,0,0,.12) 2px 4px),
+      repeating-linear-gradient(0deg,rgba(0,0,0,.14) 0 2px,rgba(255,255,255,.1) 2px 4px),
+      linear-gradient(140deg,rgba(255,255,255,.18),rgba(0,0,0,.22));
+    border:1px solid #3b352d;color:#1b1917;overflow:hidden}
+  .label::before{content:"";position:absolute;inset:8px;border:1.5px dashed rgba(27,25,23,.45)}
+  .label::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.25;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2'/%3E%3C/filter%3E%3Crect width='90' height='90' filter='url(%23g)'/%3E%3C/svg%3E")}
+  .mono-wrap{position:relative;width:62px;height:62px;border-radius:99px;border:2px solid #1b1917;
+    display:grid;place-items:center;margin-bottom:14px;background:rgba(255,255,255,.22)}
+  .mono-wrap b{font-family:"Playfair Display",Georgia,serif;font-size:30px;line-height:1;font-weight:600}
+  .label h3{font-family:"Playfair Display",Georgia,serif;font-size:20px;font-weight:600;line-height:1.05;position:relative}
+  .label p{font-size:9px;letter-spacing:.2em;text-transform:uppercase;margin-top:7px;position:relative;opacity:.8}
+  .label .care{margin-top:16px;font-size:8.5px;line-height:1.9;letter-spacing:.06em;position:relative;
+    border-top:1px solid rgba(27,25,23,.35);padding-top:10px;opacity:.86}
+  .tag{position:absolute;right:20px;top:20px;background:#1b1917;color:#efe9dd;font-size:8px;letter-spacing:.2em;
+    text-transform:uppercase;padding:5px 9px;transform:rotate(3deg);z-index:3}
+  .note{font-size:10px;line-height:1.85;color:#8d8574}
+  .note b{color:#c9bfa9;font-weight:400}
+  footer{border-top:1px solid #35302a;padding:16px 26px;display:flex;justify-content:space-between;gap:18px;
+    flex-wrap:wrap;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#6e6758}
+  @media (max-width:980px){.main{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>Halloway &amp; Sons<small>Warp-weighted weavers &middot; Norwich &middot; since 1974</small></h1>
+  <div class="spec">
+    <div>Study<b>No. 4</b></div>
+    <div>Structure<b id="s_struct">Plain weave</b></div>
+    <div>Ends &amp; picks<b id="s_epi">14 &times; 14 / cm</b></div>
+    <div>Cloth<b>68 cm loom</b></div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="board" id="board">
+    <canvas id="cloth"></canvas>
+    <canvas class="loupe" id="loupe" width="188" height="188"></canvas>
+    <div class="readout" id="read">Hover the cloth to inspect the interlace</div>
+    <div class="fringe">Warp ends loose at selvedge<br>Hand-loomed, single width</div>
+  </div>
+
+  <div class="side">
+    <div class="label">
+      <div class="tag" id="tag">Ash Rose</div>
+      <div class="mono-wrap"><b>H</b></div>
+      <h3>Halloway<br>&amp; Sons</h3>
+      <p>Warp-weighted cloth &middot; est. 1974</p>
+      <div class="care">58% lambswool, 42% wet-spun linen. Loom-state, 68 cm wide, 11.4 m on the roll. Wet finish, milled once. Cold hand wash, dry flat, never press the twill.</div>
+    </div>
+
+    <div class="panel">
+      <h2>Weave</h2>
+      <div class="knob">
+        <label>Thread count <b id="v_thr">22 / cm</b></label>
+        <input id="s_thr" type="range" min="8" max="40" value="22">
+      </div>
+      <div class="seg" id="seg">
+        <button data-w="plain" class="on">Plain 1/1</button>
+        <button data-w="twill22">Twill 2/2</button>
+        <button data-w="twill31">Twill 3/1</button>
+        <button data-w="basket">Basket 2/2</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Weft yarn</h2>
+      <div class="ways" id="ways"></div>
+      <p class="note" style="margin-top:14px"><b>Warp</b> is always undyed lambswool in natural grey; only the weft is dyed. Four colourways in the winter run, one of which is nearly always ash rose, because it hides the fact that we buy the same bobbin lot every year.</p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <span>Unit 4, Stoke Holy Cross Mill, Norwich NR14</span>
+  <span>Weft study generated in the browser &middot; no two lengths identical</span>
+  <span>Pattern book ref. WS-04</span>
+</footer>
+
+<script>
+const WAYS = [
+  { id: "ash", n: "Ash Rose", w: "#4c4a50", f: "#c98a9b" },
+  { id: "flax", n: "Flax & Ink", w: "#1e2a38", f: "#dccaa4" },
+  { id: "ochre", n: "Ochre Field", w: "#6d5220", f: "#e5b24c" },
+  { id: "sea", n: "Sea Glass", w: "#16454a", f: "#7fcdc0" }
+];
+let way = 0, weave = "plain", threads = 22;
+const cv = document.getElementById("cloth"), ctx = cv.getContext("2d");
+const loupe = document.getElementById("loupe"), lctx = loupe.getContext("2d");
+let dpr = Math.min(2, devicePixelRatio || 1);
+const hover = { on: false, x: 0, y: 0 };
+
+function hash(i, s) { const v = Math.sin(i * 12.9898 + s * 78.233) * 43758.5453; return v - Math.floor(v); }
+function shade(hex, f) {
+  const A = parseInt(hex.slice(1), 16);
+  return "#" + [16, 8, 0].map(s => Math.round(Math.max(0, Math.min(255, ((A >> s) & 255) * f)))
+    .toString(16).padStart(2, "0")).join("");
+}
+function threadShade(hex, i) { return shade(hex, 0.86 + hash(i, 3) * 0.3); }
+function isWarpOver(i, j) {
+  if (weave === "plain") return ((i + j) % 2) === 0;
+  if (weave === "twill22") return ((i + j) % 4) < 2;
+  if (weave === "twill31") return ((i + j) % 4) < 3;
+  const b = ((Math.floor(i / 2) + Math.floor(j / 2)) % 2) === 0;
+  return ((i + j) % 2 === 0) ? b : !b;
+}
+const NAMES = { plain: "Plain weave 1/1", twill22: "Twill 2/2, right hand", twill31: "Twill 3/1, warp faced", basket: "Basket 2/2" };
+
+function render() {
+  const box = cv.parentElement.getBoundingClientRect();
+  const W = Math.max(240, Math.floor(box.width - 44));
+  const H = Math.min(W, Math.floor(window.innerHeight * 0.62));
+  cv.width = W * dpr; cv.height = H * dpr;
+  cv.style.height = H + "px";
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const Wc = WAYS[way];
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = "#141210"; ctx.fillRect(0, 0, W, H);
+  const FR = 34;
+  const iw = W - FR * 2, ih = H - FR * 2;
+  const cell = iw / threads;
+  const cols = threads, rows = Math.round(ih / cell);
+  ctx.save();
+  ctx.beginPath(); ctx.rect(FR, FR, iw, ih); ctx.clip();
+  const weftW = cell * 0.94, warpW = cell * 0.94;
+  for (let j = 0; j < rows; j++) {
+    const y = FR + j * cell + cell / 2;
+    const col = threadShade(Wc.f, j);
+    const g = ctx.createLinearGradient(0, y - weftW / 2, 0, y + weftW / 2);
+    g.addColorStop(0, shade(Wc.f, 0.5));
+    g.addColorStop(.22, col);
+    g.addColorStop(.42, shade(col, 1.24));
+    g.addColorStop(.62, col);
+    g.addColorStop(1, shade(Wc.f, 0.46));
+    ctx.fillStyle = g;
+    ctx.fillRect(FR, y - weftW / 2, iw, weftW);
+    ctx.fillStyle = "rgba(0,0,0,.16)";
+    ctx.fillRect(FR, y + weftW / 2 - 1, iw, 1.4);
+  }
+  for (let i = 0; i < cols; i++) {
+    const x = FR + i * cell + cell / 2;
+    const col = threadShade(Wc.w, i);
+    for (let j = 0; j < rows; j++) {
+      if (!isWarpOver(i, j)) continue;
+      const y = FR + j * cell + cell / 2;
+      const slub = 0.88 + hash(i * 3.1 + j, 7) * 0.2;
+      const w = warpW * slub;
+      ctx.fillStyle = "rgba(0,0,0,.34)";
+      ctx.fillRect(x - w / 2 + 1.6, y - cell / 2 + 1.4, w, cell);
+      const g = ctx.createLinearGradient(x - w / 2, 0, x + w / 2, 0);
+      g.addColorStop(0, shade(Wc.w, 0.44));
+      g.addColorStop(.2, col);
+      g.addColorStop(.4, shade(col, 1.3));
+      g.addColorStop(.66, col);
+      g.addColorStop(1, shade(Wc.w, 0.42));
+      ctx.fillStyle = g;
+      ctx.fillRect(x - w / 2, y - cell / 2 - .6, w, cell + 1.2);
+      ctx.fillStyle = "rgba(255,255,255,.14)";
+      ctx.fillRect(x - w / 2 + w * .28, y - cell / 2 - .6, Math.max(1, w * .1), cell + 1.2);
+    }
+  }
+  const sheen = ctx.createLinearGradient(FR, FR, FR + iw, FR + ih);
+  sheen.addColorStop(0, "rgba(255,240,210,.14)");
+  sheen.addColorStop(.42, "rgba(255,255,255,0)");
+  sheen.addColorStop(1, "rgba(0,0,0,.22)");
+  ctx.fillStyle = sheen; ctx.fillRect(FR, FR, iw, ih);
+  ctx.restore();
+  ctx.strokeStyle = "rgba(0,0,0,.5)"; ctx.lineWidth = 1;
+  ctx.strokeRect(FR + .5, FR + .5, iw - 1, ih - 1);
+  for (let i = 0; i <= cols; i++) {
+    const x = FR + i * cell;
+    ctx.strokeStyle = "rgba(0,0,0,.5)"; ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(x, FR); ctx.lineTo(x, FR + ih); ctx.stroke();
+    const wv = cell * 0.5 * (0.5 + hash(i, 11) * 0.8);
+    const col = threadShade(Wc.w, i);
+    const g = ctx.createLinearGradient(x - wv / 2, 0, x + wv / 2, 0);
+    g.addColorStop(0, "rgba(0,0,0,0)");
+    g.addColorStop(.5, col);
+    g.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = g;
+    for (const yy of [FR, FR + ih]) {
+      const dir = yy === FR ? -1 : 1;
+      ctx.beginPath();
+      ctx.moveTo(x - wv / 2, yy);
+      for (let s = 0; s <= 10; s++) {
+        const t = s / 10, wob = Math.sin(t * 5 + i) * 3.4 * t;
+        ctx.lineTo(x - wv / 2 + wv * t + wob, yy + dir * 30 * t);
+      }
+      for (let s = 10; s >= 0; s--) {
+        const t = s / 10, wob = Math.sin(t * 5 + i) * 3.4 * t;
+        ctx.lineTo(x + wv / 2 + wob, yy + dir * 30 * t);
+      }
+      ctx.closePath(); ctx.fill();
+    }
+  }
+  document.getElementById("v_thr").textContent = threads + " / cm";
+  document.getElementById("s_epi").textContent = threads + " × " + threads + " / cm";
+  document.getElementById("s_struct").textContent = NAMES[weave];
+  document.documentElement.style.setProperty("--weft", Wc.f);
+  document.documentElement.style.setProperty("--warp", Wc.w);
+  if (hover.on) drawLoupe();
+}
+const waysEl = document.getElementById("ways");
+WAYS.forEach((w, i) => {
+  const b = document.createElement("button");
+  b.className = "way" + (i === 0 ? " on" : "");
+  b.innerHTML = '<i style="background:linear-gradient(120deg,' + w.f + ' 0 50%,' + w.w + ' 50% 100%)"></i><span>' + w.n + '</span>';
+  b.onclick = () => {
+    way = i;
+    waysEl.querySelectorAll(".way").forEach(n => n.classList.remove("on"));
+    b.classList.add("on");
+    document.getElementById("tag").textContent = w.n;
+    render();
+  };
+  waysEl.appendChild(b);
+});
+document.getElementById("seg").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  weave = b.dataset.w;
+  document.querySelectorAll("#seg button").forEach(n => n.classList.toggle("on", n === b));
+  render();
+});
+document.getElementById("s_thr").oninput = e => { threads = +e.target.value; render(); };
+document.getElementById("tag").textContent = WAYS[0].n;
+
+const ZOOM = 3.4;
+function drawLoupe() {
+  const Z = ZOOM, R = 188;
+  const sx = (hover.x - R / 2 / Z), sy = (hover.y - R / 2 / Z);
+  lctx.fillStyle = "#141210";
+  lctx.fillRect(0, 0, R, R);
+  lctx.imageSmoothingEnabled = true;
+  lctx.drawImage(cv, sx * dpr, sy * dpr, (R / Z) * dpr, (R / Z) * dpr, 0, 0, R, R);
+  lctx.strokeStyle = "rgba(255,255,255,.28)"; lctx.lineWidth = 1;
+  lctx.beginPath(); lctx.moveTo(R / 2, 0); lctx.lineTo(R / 2, R); lctx.moveTo(0, R / 2); lctx.lineTo(R, R / 2); lctx.stroke();
+  lctx.strokeStyle = "rgba(0,0,0,.5)";
+  lctx.strokeRect(.5, .5, R - 1, R - 1);
+}
+cv.addEventListener("pointermove", e => {
+  const r = cv.getBoundingClientRect();
+  hover.on = true; hover.x = e.clientX - r.left; hover.y = e.clientY - r.top;
+  loupe.classList.add("on");
+  loupe.style.left = hover.x + 22 + "px";
+  loupe.style.top = hover.y + 22 + "px";
+  const cell = (cv.clientWidth - 68) / threads;
+  const i = Math.floor((hover.x - 34) / cell), j = Math.floor((hover.y - 34) / cell);
+  document.getElementById("read").innerHTML =
+    "Ends across <b>" + threads + "</b> &nbsp; Picks down <b>" + Math.round((cv.clientHeight - 68) / cell) + "</b><br>" +
+    "At pointer &nbsp; end <b>" + (i + 1) + "</b>, pick <b>" + (j + 1) + "</b> &mdash; warp " +
+    (isWarpOver(i, j) ? "over" : "under") + " &middot; &times;" + ZOOM + " zoom";
+  drawLoupe();
+});
+cv.addEventListener("pointerleave", () => { hover.on = false; loupe.classList.remove("on"); });
+let rt;
+addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(render, 180); });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(render);
+render();
+</script>
+</body>
+</html>

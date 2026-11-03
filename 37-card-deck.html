@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Meridian &amp; Ash — Selected Works, Thirty Covers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;1,9..144,300&family=Barlow+Condensed:wght@400;500;600&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void-1:#0d1018; --void-2:#070910; --void-3:#030408;
+    --ink:#eef1f6; --ink-2:#9aa3b2; --ink-3:#5d6674;
+    --spot:rgba(150,180,255,.10);
+    --serif:"Fraunces",Georgia,serif;
+    --cond:"Barlow Condensed","Arial Narrow",sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:var(--void-3);color:var(--ink)}
+  body{-webkit-font-smoothing:antialiased}
+
+  .space{position:fixed;inset:0;overflow:hidden;
+    background:
+      radial-gradient(70% 60% at 50% 34%,#141a26 0%,var(--void-1) 40%,var(--void-2) 74%,var(--void-3) 100%)}
+  .stars{position:absolute;inset:0;opacity:.55;
+    background-image:
+      radial-gradient(1.4px 1.4px at 12% 18%,#fff,transparent),
+      radial-gradient(1px 1px at 28% 62%,#cfe0ff,transparent),
+      radial-gradient(1.6px 1.6px at 44% 12%,#fff,transparent),
+      radial-gradient(1px 1px at 58% 78%,#9fb8e8,transparent),
+      radial-gradient(1.2px 1.2px at 71% 34%,#fff,transparent),
+      radial-gradient(1px 1px at 84% 62%,#d8e4ff,transparent),
+      radial-gradient(1.5px 1.5px at 92% 22%,#fff,transparent),
+      radial-gradient(1px 1px at 8% 84%,#b9cbe8,transparent),
+      radial-gradient(1px 1px at 38% 92%,#fff,transparent),
+      radial-gradient(1.2px 1.2px at 64% 52%,#e6eeff,transparent);
+    animation:twinkle 11s ease-in-out infinite}
+  @keyframes twinkle{0%,100%{opacity:.42}50%{opacity:.72}}
+  .spot{position:absolute;left:50%;top:34%;width:120vmax;height:90vmax;
+    transform:translate(-50%,-50%);pointer-events:none;
+    background:radial-gradient(closest-side,var(--spot),transparent 68%)}
+  .floorgrid{position:absolute;left:-30%;right:-30%;bottom:-6%;height:44%;
+    transform:perspective(600px) rotateX(74deg);transform-origin:50% 100%;
+    background-image:
+      linear-gradient(rgba(120,160,255,.10) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(120,160,255,.07) 1px,transparent 1px);
+    background-size:64px 64px;
+    -webkit-mask-image:linear-gradient(180deg,transparent,#000 40%,transparent);
+    mask-image:linear-gradient(180deg,transparent,#000 40%,transparent)}
+  .grain{position:absolute;inset:0;pointer-events:none;opacity:.5;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23g)' opacity='.32'/%3E%3C/svg%3E")}
+
+  /* ---------------- layout ---------------- */
+  .shell{position:fixed;inset:0;z-index:3;display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(280px,26vw);grid-template-rows:auto 1fr auto;
+    padding:clamp(14px,2.2vw,30px);gap:clamp(12px,1.6vw,22px);pointer-events:none}
+  .shell > *{pointer-events:auto}
+
+  .head{grid-column:1/3;display:flex;justify-content:space-between;align-items:flex-end;
+    gap:18px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,.09)}
+  .head .m{font-family:var(--cond);font-size:clamp(9px,.85vw,11px);letter-spacing:.34em;
+    text-transform:uppercase;color:var(--ink-3)}
+  .head h1{margin:6px 0 0;font-family:var(--serif);font-weight:300;
+    font-size:clamp(24px,3.2vw,44px);line-height:1;letter-spacing:-.015em}
+  .head h1 em{font-style:italic;font-weight:500;color:#9db4e8}
+  .head .r{text-align:right;font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;
+    color:var(--ink-3);line-height:2;text-transform:uppercase}
+  .head .r b{font-weight:400;color:var(--ink-2)}
+
+  .stage{position:fixed;inset:0;z-index:2;cursor:grab;touch-action:none;user-select:none}
+  .stage.drag{cursor:grabbing}
+  .deck3d{
+    position:absolute;left:50%;top:50%;width:0;height:0;
+    transform-style:preserve-3d;perspective:1500px;perspective-origin:50% 50%;
+    transform:rotateX(var(--cx,10deg)) rotateY(var(--cy,-16deg)) translate3d(var(--dx,0px),var(--dy,0px),0)
+  }
+
+  .detail{grid-column:2/3;grid-row:2/4;align-self:end;position:relative;
+    border-top:1px solid rgba(255,255,255,.14);padding-top:14px;
+    display:flex;flex-direction:column;gap:0}
+  .detail .no{font-family:var(--mono);font-size:9px;letter-spacing:.26em;color:var(--ink-3)}
+  .detail h2{margin:10px 0 0;font-family:var(--serif);font-weight:300;
+    font-size:clamp(26px,3vw,42px);line-height:1.02;letter-spacing:-.015em}
+  .detail .sub{margin:8px 0 0;font-family:var(--cond);font-size:clamp(11px,1vw,14px);
+    letter-spacing:.2em;text-transform:uppercase;color:#9db4e8}
+  .detail p{margin:14px 0 0;font-family:var(--serif);font-size:clamp(13px,1.1vw,16px);
+    line-height:1.65;color:var(--ink-2);max-width:36ch}
+  .meta{margin-top:16px;display:grid;gap:0;border-top:1px solid rgba(255,255,255,.09)}
+  .meta div{display:grid;grid-template-columns:6.6em 1fr;gap:10px;padding:7px 0;
+    border-bottom:1px solid rgba(255,255,255,.06);
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;line-height:1.6}
+  .meta .k{color:var(--ink-3);text-transform:uppercase;letter-spacing:.18em;font-size:8.5px;padding-top:1px}
+  .swatches{display:flex;gap:6px;margin-top:16px}
+  .swatches i{width:26px;height:26px;border-radius:2px;box-shadow:0 0 0 1px rgba(255,255,255,.12)}
+  .hint{margin:16px 0 0;font-family:var(--mono);font-size:9px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--ink-3);line-height:1.9}
+  .hint b{color:#9db4e8;font-weight:400}
+
+  .bar{grid-column:1/3;grid-row:3;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  button.mo{font-family:var(--cond);font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;
+    color:var(--ink-2);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.16);
+    padding:9px 16px;cursor:pointer;transition:all .2s ease}
+  button.mo:hover{background:rgba(157,180,232,.16);color:#fff;border-color:rgba(157,180,232,.5)}
+  button.mo[aria-pressed="true"]{background:#9db4e8;color:#0b0e15;border-color:transparent}
+  .strip{display:flex;gap:3px;align-items:flex-end;height:22px}
+  .strip b{width:3px;background:rgba(157,180,232,.5);border-radius:1px;transition:height .1s,background .2s}
+  .strip b.on{background:#e8eeff;box-shadow:0 0 8px #9db4e8}
+  .bar .ct{margin-left:auto;font-family:var(--mono);font-size:9px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--ink-3)}
+  .bar .ct b{color:var(--ink-2);font-weight:400}
+
+  /* ---------------- the cards ---------------- */
+  .card{
+    position:absolute;width:196px;height:274px;margin:-137px 0 0 -98px;
+    transform-style:preserve-3d;cursor:pointer;
+    will-change:transform,opacity;
+  }
+  .face{position:absolute;inset:0;border-radius:3px;overflow:hidden;
+    background:#12151d;box-shadow:0 18px 34px -18px #000,0 0 0 1px rgba(255,255,255,.09);
+    backface-visibility:hidden}
+  .face.back{transform:rotateY(180deg);
+    background:linear-gradient(160deg,#171b25,#0c0f15);
+    box-shadow:0 18px 34px -18px #000,0 0 0 1px rgba(255,255,255,.07)}
+  .face.back .mk{position:absolute;inset:0;display:grid;place-items:center;
+    font-family:var(--cond);font-size:11px;letter-spacing:.4em;color:#39414f;text-transform:uppercase}
+  .face.back .mk span{writing-mode:vertical-rl;transform:rotate(180deg)}
+  .art{position:absolute;inset:0}
+  .grain2{position:absolute;inset:0;opacity:.4;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23c)' opacity='.3'/%3E%3C/svg%3E")}
+  .lbl{position:absolute;left:14px;right:14px;bottom:12px;z-index:3}
+  .lbl .t{font-family:var(--serif);font-weight:300;font-size:19px;line-height:1.05;letter-spacing:-.01em;
+    color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.7)}
+  .lbl .y{font-family:var(--mono);font-size:8px;letter-spacing:.24em;color:rgba(255,255,255,.62);
+    margin-top:5px;display:block}
+  .num{position:absolute;left:14px;top:12px;z-index:3;font-family:var(--mono);font-size:8px;
+    letter-spacing:.2em;color:rgba(255,255,255,.55)}
+  .edge{position:absolute;inset:0;z-index:4;border-radius:3px;pointer-events:none;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.14),inset 0 -22px 34px -22px rgba(0,0,0,.8)}
+  .card.hot .face{box-shadow:0 30px 60px -22px #000,0 0 0 1px rgba(157,180,232,.55),
+    0 0 42px -6px rgba(157,180,232,.35)}
+
+  @media (max-width:980px){
+    .shell{position:relative;grid-template-columns:1fr;min-height:100dvh;padding:12px}
+    .head{grid-column:1}
+    .stage{position:relative;height:56vh;inset:auto}
+    .detail{grid-column:1;grid-row:auto;padding-bottom:20px}
+    .bar{grid-column:1;grid-row:auto;padding-bottom:16px}
+    .card{width:150px;height:210px;margin:-105px 0 0 -75px}
+    .lbl .t{font-size:15px}
+    .head .r{text-align:left}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="space" aria-hidden="true">
+  <div class="stars"></div>
+  <div class="spot" id="spot"></div>
+  <div class="floorgrid"></div>
+  <div class="grain"></div>
+</div>
+
+<div class="stage" id="stage" aria-label="Card deck. Drag to spin, hover a card to inspect.">
+  <div class="deck3d" id="deck"></div>
+</div>
+
+<div class="shell">
+  <div class="head">
+    <div>
+      <div class="m">Meridian &amp; Ash &middot; studio archive</div>
+      <h1>Thirty covers, <em>one deck</em></h1>
+    </div>
+    <div class="r">
+      Selected work <b>2014 &ndash; 2026</b><br>
+      Identity &middot; editorial &middot; wayfinding<br>
+      Nothing here was a template
+    </div>
+  </div>
+
+  <div></div>
+
+  <aside class="detail" id="detail" aria-live="polite">
+    <div class="no" id="dNo">INDEX 01 / 30</div>
+    <h2 id="dT">Kestrel Quarterly</h2>
+    <div class="sub" id="dS">Issue cover &middot; 2019</div>
+    <p id="dB">A quarterly about birds that do not migrate. The masthead is set in the same weight as the body, because the editor argued for two hours and won.</p>
+    <div class="meta">
+      <div><span class="k">Client</span><span id="dC">Kestrel Trust</span></div>
+      <div><span class="k">Discipline</span><span id="dD">Editorial</span></div>
+      <div><span class="k">Format</span><span id="dF">210 &times; 297 mm, 32 pp</span></div>
+      <div><span class="k">Palette</span><span id="dP">4 inks, 1 blind</span></div>
+    </div>
+    <div class="swatches" id="dS2"></div>
+    <p class="hint"><b>Drag</b> the deck to spin it &middot; <b>hover</b> a card to bring it forward<br>
+      <b>Scatter</b> throws the deck out; click any card to pin it open</p>
+  </aside>
+
+  <div class="bar">
+    <button class="mo" id="mo" type="button" aria-pressed="false">Scatter</button>
+    <button class="mo" id="mo2" type="button" aria-pressed="true">Fan</button>
+    <div class="strip" id="strip" aria-hidden="true"></div>
+    <div class="ct">Showing <b id="cT">01</b> of 30 &middot; drag horizontally</div>
+  </div>
+</div>
+
+<noscript><p style="position:fixed;left:0;right:0;bottom:0;margin:0;padding:12px;background:#0d1018;color:#eef1f6;font:12px monospace;text-align:center">The full contents list is above. Turning the cards needs JavaScript, and turning cards is the whole point.</p></noscript>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ------------------------------------------------ 30 real works */
+  var WORKS = [
+    ["Kestrel Quarterly","Issue cover","2019","Kestrel Trust","Editorial","210 x 297 mm, 32 pp","4 inks, 1 blind",
+     "A quarterly about birds that do not migrate. The masthead is set at the same weight as the body, because the editor argued for two hours and then won."],
+    ["Hollow Coast","Wayfinding","2021","North Sea Authority","Environmental","14 signs, 300 m span","2 inks, anodised",
+     "Fourteen signs along a cliff path. The type is set into the cliff face with no backing plate, which meant chiselling by hand for eleven weeks."],
+    ["Salt & Static","Festival identity","2024","Static Week","Culture","Poster, 6 sheet","3 spot colours",
+     "A festival about transmission, noise and the coast. The identity is a single mark that decays slightly further each time it is used."],
+    ["Paper Radio","Transit journal","2018","Kansai Rail","Wayfinding","A5, 24 pp","1 ink, uncoated",
+     "Read on the move. One ink, no gloss, because gloss on a train is a lie about a train. The cover is a single letterpress impression."],
+    ["Aperture 12","Photo book","2020","Tomo Aihara","Editorial","240 x 300 mm, 112 pp","Duotone",
+     "Twelve photographers, one aperture. The book is bound so that the gutter swallows half of every spread, which is what a 12 mm lens does anyway."],
+    ["Low Tide Atlas","Field guide","2022","Estuary Trust","Cartography","180 x 240 mm, 64 pp","2 inks + fold-out",
+     "Every map is drawn from a walk at low water. The cover folds out into the tide table, which is either useful or a nuisance depending on the reader."],
+    ["Ferrous","Type foundry","2017","Foundry Nine","Identity","Specimen, 48 pp","Black only",
+     "A specimen for a foundry that only makes one weight. The whole book is set in it, including the parts that complain."],
+    ["Tessellate","Architecture biennale","2023","Venice ARB","Identity","Catalogue, 210 pp","4 spot colours",
+     "The identity is a rule, not a logo: any two lines that meet at ninety degrees form the mark. It appears 214 times across the catalogue."],
+    ["Grain Table","Restaurant","2016","Nami Dining","Identity","Menu, reprint 9x","2 inks, foil",
+     "The menu changes daily and the identity must not. We built a rule set and then got out of the way."],
+    ["Meridian","Wayfinding","2015","Meridian & Ash","Identity","Sign family, 22 units","1 ink, aluminium",
+     "Our own studio. The first sign we ever specified, and still the only one we look at without embarrassment."],
+    ["Nightbloom","Botanical","2024","Ashgrove Gardens","Editorial","140 x 200 mm, 48 pp","3 inks",
+     "A book about plants that flower after dark. It has to be read in the dark, so the type is set larger than looks sensible on paper."],
+    ["Ferrous & Ash","Archive","2018","Meridian & Ash","Identity","Archive box, 12 folders","1 ink",
+     "An archive identity that had to survive being photocopied, thumbed and stored badly. It is entirely one ink because of that."],
+    ["Quiet Machine","Sound art","2022","Halle Null","Culture","Poster + programme","2 spot colours",
+     "A poster for an evening of near silence. The only graphic device is a rule that thins until it disappears."],
+    ["Slipway","Housing","2021","Coastal Housing Co","Identity","Site signage, 40 units","3 spot colours",
+     "Signs for a housing site on a former shipyard. The metal is left to rust in the same pattern as the slipway it replaced."],
+    ["Ink Ribbon","Stationery","2017","Vellum Press","Identity","Letterhead, card, seal","1 ink + blind",
+     "The ampersand is the identity. Everything else stays out of its way, which took four rounds of arguing."],
+    ["Lichen Survey","Field guide","2023","Northern Survey","Cartography","Six panel fold-out","2 inks",
+     "Six panels, one per lichen type. The maps are square because lichen grows in squares of air, not in squares of paper."],
+    ["Harbour Light","Restaurant","2020","Cove 12","Identity","Menu, card, awning","2 inks, neon",
+     "The awning and the menu share one rule. The rule is a horizon. It took a long time to agree where the horizon should be."],
+    ["Broken Season","Photography","2022","Ida Berg","Editorial","200 x 260 mm, 88 pp","Black and white",
+     "Eighty-eight pages, no captions. The captions are in the index at the back, which is where a novel would put them."],
+    ["Fold No. 7","Stationery","2016","Dobashi Kiln","Identity","Card, pattern sheet","1 ink",
+     "An identity made entirely of fold lines. Every piece of paper carries a crease pattern that is also a drawing."],
+    ["Dusk Economy","Economics","2025","Civic Ledger","Editorial","A4, 20 pp weekly","2 spot colours",
+     "A weekly broadsheet about the hour between closing time and last orders. Set in a condensed face so the numbers fit."],
+    ["Concrete Season","Architecture","2018","Brut Annual","Identity","Annual, 300 pp","Black, white + 1",
+     "A brutalist annual that we set in a face with no serifs because the buildings have none."],
+    ["Lantern Wall","Identity","2024","Yoiyamacho 3","Culture","Signage, 6 units","Neon",
+     "Six signs for a bar that only opens after dark. One has a bad contact and we have been asked, kindly, not to fix it."],
+    ["Ash Studio","Rebrand","2026","Ash Studio","Identity","Full system","1 ink + spot",
+     "A studio called Ash, which made the brief slightly awkward. We solved it by printing the wordmark in ash grey and nothing else."],
+    ["Winter Orchard","Packaging","2021","Coldhouse","Identity","Carton, 12 sizes","2 inks, varnish",
+     "Twelve carton sizes from one die. The orchard is drawn once and re-cropped, which is how a season actually looks."],
+    ["Interval","Editorial","2019","Interval Press","Identity","Journal, 96 pp","1 ink, 2 colours",
+     "A journal about the space between two things. The gutter is set wider than the page, on purpose, and we lost an argument about it."],
+    ["North Sea Pool","Signage","2023","Ferry Authority","Wayfinding","Pier signage, 8 units","Reflective, 1 ink",
+     "Reflective type on a black pier at night. Read it at four hundred metres, in rain, while a ferry is arriving."],
+    ["Paper Crane","Stationery","2017","Kozo Mill","Identity","Card, fold kit","1 ink",
+     "A fold kit that ships flat. The instructions are printed on the inside, where you will read them while folding."],
+    ["Lowlight","Photography","2022","Ruth Abiodun","Editorial","170 x 240 mm, 96 pp","Duotone",
+     "Ninety-six pages photographed in the hour before dawn. The ink is mixed so that the blacks stay brown when the light comes up."],
+    ["Harbourmaster","Signage","2015","Port Authority","Wayfinding","Building identity","1 ink, vinyl",
+     "A building name, cut in one piece of vinyl, applied once. It has been replaced twice and the ghost is still legible."],
+    ["Small Hours","Radio","2026","Midnight Line","Identity","Station idents, 12","Gradient",
+     "A station ident for a radio show that runs from one until five. The gradient is timed to the length of the hour."]
+  ];
+
+  /* ------------------------------------------------ seeded generator for cover art */
+  function rng(seed){
+    var s = seed >>> 0 || 1;
+    return function(){
+      s ^= s << 13; s >>>= 0;
+      s ^= s >> 17;
+      s ^= s << 5;  s >>>= 0;
+      return s / 4294967296;
+    };
+  }
+  var HUES = [[8,26],[28,44],[52,66],[140,168],[186,206],[214,232],[268,290],[330,350],[196,168],[40,18]];
+  function cover(i){
+    var R = rng(i * 7919 + 13);
+    var pal = HUES[Math.floor(R() * HUES.length)];
+    var h1 = pal[0] + R() * (pal[1] - pal[0]);
+    var h2 = pal[0] + R() * (pal[1] - pal[0]);
+    var dark = 8 + R() * 12;
+    var a = "hsl(" + h1.toFixed(0) + " " + (46 + R() * 26).toFixed(0) + "% " + (56 + R() * 18).toFixed(0) + "%)";
+    var b = "hsl(" + h2.toFixed(0) + " " + (40 + R() * 30).toFixed(0) + "% " + (24 + R() * 16).toFixed(0) + "%)";
+    var c = "hsl(" + ((h1 + 180) % 360).toFixed(0) + " " + (20 + R() * 30).toFixed(0) + "% " + (10 + R() * 8).toFixed(0) + "%)";
+    var kind = Math.floor(R() * 6);
+    var g = "";
+    var s1 = (14 + R() * 26).toFixed(0) + "%";
+    if (kind === 0){
+      g = "repeating-linear-gradient(" + (R() * 180).toFixed(0) + "deg," + c + " 0 " + s1 + "," + a + " " + s1 + " " + (s1 * 2) + ")";
+    } else if (kind === 1){
+      g = "radial-gradient(circle at " + (20 + R() * 60).toFixed(0) + "% " + (20 + R() * 50).toFixed(0) + "%," +
+          a + " 0 " + (16 + R() * 16).toFixed(0) + "%,transparent " + (52 + R() * 22).toFixed(0) + "%)," +
+          "linear-gradient(" + (R() * 360).toFixed(0) + "deg," + b + "," + c + ")";
+    } else if (kind === 2){
+      g = "conic-gradient(from " + (R() * 360).toFixed(0) + "deg at " + (30 + R() * 40).toFixed(0) + "% " + (34 + R() * 30).toFixed(0) + "%," +
+          a + "," + b + "," + c + "," + a + ")";
+    } else if (kind === 3){
+      g = "linear-gradient(" + (60 + R() * 60).toFixed(0) + "deg," + c + " 0 34%," + a + " 34% 66%," + b + " 66%)";
+    } else if (kind === 4){
+      g = "radial-gradient(" + (28 + R() * 26).toFixed(0) + "% " + (16 + R() * 20).toFixed(0) + "% at " + (40 + R() * 40).toFixed(0) + "% " + (30 + R() * 40).toFixed(0) + "%," +
+          "hsl(0 0% 96%) 0 3%,transparent 4%)," +
+          "radial-gradient(" + (34 + R() * 22).toFixed(0) + "% " + (20 + R() * 18).toFixed(0) + "% at " + (20 + R() * 60).toFixed(0) + "% " + (24 + R() * 50).toFixed(0) + "%," +
+          a + ",transparent 72%),linear-gradient(" + (R() * 180).toFixed(0) + "deg," + b + "," + c + ")";
+    } else {
+      g = "repeating-conic-gradient(from " + (R() * 90).toFixed(0) + "deg at 50% 50%," +
+          a + " 0 6deg," + b + " 6deg 13deg," + c + " 13deg 21deg)";
+    }
+    /* every cover also gets one generated shape on top */
+    var shp = "", sn = Math.floor(R() * 4);
+    var px = (18 + R() * 64).toFixed(0), py = (16 + R() * 60).toFixed(0);
+    var sz = (16 + R() * 26).toFixed(0);
+    if (sn === 0) shp = "<div style='position:absolute;left:" + px + "%;top:" + py +
+      "%;width:" + sz + "%;aspect-ratio:1;border-radius:50%;background:hsl(0 0% 100% / .16);mix-blend-mode:screen'></div>";
+    else if (sn === 1) shp = "<div style='position:absolute;left:" + px + "%;top:" + py +
+      "%;width:" + sz + "%;height:1.5px;background:hsl(0 0% 100% / .5);box-shadow:0 7px 0 hsl(0 0% 100% / .22),0 14px 0 hsl(0 0% 100% / .12)'></div>";
+    else if (sn === 2) shp = "<div style='position:absolute;left:" + px + "%;top:" + py +
+      "%;width:" + sz + "%;aspect-ratio:1;background:hsl(0 0% 4% / .34);clip-path:polygon(50% 0,100% 100%,0 100%)'></div>";
+    else shp = "<div style='position:absolute;right:-14%;bottom:-10%;width:64%;aspect-ratio:1;border:1.5px solid hsl(0 0% 100% / .3);border-radius:50%'></div>";
+    return { css: g, shape: shp, pal: [a, b, c] };
+  }
+
+  /* ------------------------------------------------ build the deck */
+  var deck = document.getElementById("deck");
+  var strip = document.getElementById("strip");
+  var cards = [];
+  for (var i = 0; i < 30; i++){
+    (function(i){
+      var w = WORKS[i];
+      var cv = cover(i);
+      var el = document.createElement("div");
+      el.className = "card";
+      el.setAttribute("data-i", i);
+      el.setAttribute("role", "listitem");
+      el.setAttribute("tabindex", "0");
+      el.setAttribute("aria-label", w[0] + ", " + w[1] + ", " + w[2]);
+      el.innerHTML =
+        '<div class="face front">' +
+          '<div class="art" style="background:' + cv.css + '"></div>' + cv.shape +
+          '<div class="grain2"></div>' +
+          '<div class="num">MA / ' + ("0" + (i + 1)).slice(-2) + '</div>' +
+          '<div class="lbl"><span class="t">' + w[0] + '</span><span class="y">' + w[1].toUpperCase() +
+            ' &middot; ' + w[2] + '</span></div>' +
+          '<div class="edge"></div>' +
+        '</div>' +
+        '<div class="face back"><div class="mk"><span>Meridian &amp; Ash</span></div></div>';
+      el.addEventListener("pointerenter", function(){ hot = i; });
+      el.addEventListener("click", function(){ pinned = (pinned === i ? -1 : i); show(pinned < 0 ? i : pinned); });
+      el.addEventListener("keydown", function(e){
+        if (e.key === "Enter" || e.key === " "){ e.preventDefault(); pinned = i; show(i); }
+      });
+      deck.appendChild(el);
+      cards.push(el);
+
+      var bar = document.createElement("b");
+      bar.style.height = (4 + (i % 7) * 2) + "px";
+      strip.appendChild(bar);
+    })(i);
+  }
+
+  /* ------------------------------------------------ detail panel */
+  var D = {
+    no: document.getElementById("dNo"), t: document.getElementById("dT"),
+    s: document.getElementById("dS"), b: document.getElementById("dB"),
+    c: document.getElementById("dC"), dg: document.getElementById("dD"),
+    f: document.getElementById("dF"), p: document.getElementById("dP"),
+    sw: document.getElementById("dS2")
+  };
+  function show(i){
+    var w = WORKS[i];
+    D.no.textContent = "INDEX " + ("0" + (i + 1)).slice(-2) + " / 30";
+    D.t.textContent = w[0];
+    D.s.textContent = w[1] + " \u00b7 " + w[2];
+    D.b.textContent = w[7];
+    D.c.textContent = w[3];
+    D.dg.textContent = w[4];
+    D.f.textContent = w[5];
+    D.p.textContent = w[6];
+    var cv = cover(i);
+    D.sw.innerHTML = "";
+    cv.pal.forEach(function(c){
+      var s = document.createElement("i"); s.style.background = c; D.sw.appendChild(s);
+    });
+    document.getElementById("cT").textContent = ("0" + (i + 1)).slice(-2);
+    [].forEach.call(strip.children, function(b, j){ b.classList.toggle("on", Math.abs(j - i) < 3); });
+  }
+  show(0);
+
+  /* ------------------------------------------------ interaction */
+  var stage = document.getElementById("stage");
+  var hot = 0, pinned = -1, spread = false;
+  var off = 0, voff = 0, dragging = false, sx = 0, moved = 0;
+  var cx = 10, cy = -16, vcx = 0, vcy = 0;
+
+  stage.addEventListener("pointerdown", function(e){
+    dragging = true; moved = 0; sx = e.clientX;
+    stage.classList.add("drag"); stage.setPointerCapture(e.pointerId);
+  });
+  stage.addEventListener("pointermove", function(e){
+    if (!dragging) return;
+    var dx = e.clientX - sx; sx = e.clientX; moved += Math.abs(dx);
+    off += dx * 0.52; voff = dx * 0.52;
+    pinned = -1;
+  });
+  function up(){
+    if (!dragging) return;
+    dragging = false; stage.classList.remove("drag");
+  }
+  stage.addEventListener("pointerup", up);
+  stage.addEventListener("pointercancel", up);
+  stage.addEventListener("pointerleave", up);
+
+  addEventListener("pointermove", function(e){
+    var px = (e.clientX / innerWidth - 0.5) * 2, py = (e.clientY / innerHeight - 0.5) * 2;
+    vcy = px * 12; vcx = -py * 8;
+  }, {passive:true});
+
+  var mo = document.getElementById("mo"), mo2 = document.getElementById("mo2");
+  mo.addEventListener("click", function(){
+    spread = !spread;
+    mo.setAttribute("aria-pressed", spread ? "true" : "false");
+    mo.textContent = spread ? "Collect" : "Scatter";
+    mo2.setAttribute("aria-pressed", spread ? "false" : "true");
+  });
+  mo2.addEventListener("click", function(){
+    spread = false; mo.setAttribute("aria-pressed", "false"); mo.textContent = "Scatter";
+    mo2.setAttribute("aria-pressed", "true");
+  });
+
+  /* ------------------------------------------------ layout the deck */
+  function layout(){
+    var vp = Math.min(innerWidth, innerHeight);
+    var scale = Math.max(0.44, Math.min(1, (vp * 0.62) / 300));
+    var n = 30, SW = 15 * scale, ANG = 2.05;
+    for (var i = 0; i < n; i++){
+      var raw = (i - off + n * 3) % n;
+      var a = (raw < 0 ? raw + n : raw);
+      var d = a - n / 2;
+      var el = cards[i];
+      if (spread){
+        var R = rng(i * 31 + 7);
+        var ang = (i / n) * Math.PI * 2 + R() * 0.7;
+        var rad = (60 + R() * 210) * scale;
+        el.style.transform =
+          "translate3d(" + (Math.cos(ang) * rad).toFixed(1) + "px," +
+          (Math.sin(ang) * rad * 0.5 - 30 * scale).toFixed(1) + "px," +
+          ((R() * 260 - 130) * scale).toFixed(1) + "px) rotate(" +
+          (((R() * 90 - 45)).toFixed(1)) + "deg) rotateY(" + (((R() * 70 - 35)).toFixed(1)) +
+          "deg) scale(" + (0.86).toFixed(2) + ")";
+        el.style.opacity = Math.abs(d) < 15 ? "1" : ".45";
+        el.style.pointerEvents = "auto";
+      } else {
+        var x = d * SW;
+        var ar = d * ANG;
+        var z = 170 - Math.abs(d) * 5.2;
+        el.style.transform =
+          "translate3d(" + x.toFixed(1) + "px," + (-Math.abs(d) * 1.4 - 6).toFixed(1) + "px," +
+          z.toFixed(1) + "px) rotateZ(" + ar.toFixed(2) + "deg) rotateY(" + (-d * 1.05).toFixed(2) +
+          "deg) scale(" + scale.toFixed(3) + ")";
+        el.style.opacity = Math.abs(d) > 13.6 ? "0" : "1";
+        el.style.pointerEvents = Math.abs(d) < 9 ? "auto" : "none";
+        el.style.zIndex = String(1000 - Math.round(Math.abs(d) * 10));
+      }
+      el.classList.toggle("hot", spread ? false : (i === hot));
+    }
+    deck.style.setProperty("--cx", cx.toFixed(2) + "deg");
+    deck.style.setProperty("--cy", cy.toFixed(2) + "deg");
+  }
+
+  (function loop(){
+    if (!dragging){
+      off += voff; voff *= 0.94;
+      if (Math.abs(voff) < 0.004) voff = 0;
+    }
+    cx += vcx + (10 - cx) * 0.012; vcx *= 0.86;
+    cy += vcy; vcy *= 0.9;
+    layout();
+    requestAnimationFrame(loop);
+  })();
+
+  layout();
+  setTimeout(function(){ cy = -34; }, 60);
+})();
+</script>
+</body>
+</html>

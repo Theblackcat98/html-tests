@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plate XIV — Lanterna abyssi · Atlas der Tiefsee-Formen, 1871</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Cormorant+SC:wght@400;600&family=Spectral:ital,wght@0,300;0,400;1,300&display=swap">
+<style>
+/* ============================================================
+   PLATE XIV — LANTERNA ABYSSI
+   Technique: SVG engraving — multi-angle hatch patterns, stipple
+   fields, deckle edge by feDisplacementMap, hand-lettered leaders.
+   Skeleton: framed artwork on a plaster wall, horizontal key strip.
+   ============================================================ */
+:root{
+  --wall:#232019;
+  --wall2:#100e0b;
+  --paper:#e6dcc2;
+  --paper2:#d6c9a9;
+  --ink:#2b2318;
+  --ink2:#5a4d3a;
+  --red:#a83a24;
+  --gold:#b99a55;
+  --depth:.15;
+  --hl:rgba(168,58,36,0);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:
+    radial-gradient(70% 55% at 50% -6%, #3b352a 0%, #26221b 40%, var(--wall2) 100%);
+  color:var(--paper);
+  font-family:"Spectral",Georgia,"Times New Roman",serif;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+/* plaster wall */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.45;
+  background:
+    radial-gradient(2px 2px at 18% 22%, rgba(255,255,255,.05), transparent),
+    radial-gradient(2px 2px at 72% 62%, rgba(0,0,0,.10), transparent),
+    radial-gradient(3px 3px at 44% 84%, rgba(255,255,255,.04), transparent),
+    repeating-linear-gradient(103deg, rgba(255,255,255,.012) 0 3px, transparent 3px 9px);
+  background-size:180px 190px, 240px 210px, 150px 170px, 100% 100%;
+}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------------- header ---------------- */
+.hd{
+  position:relative;z-index:5;display:flex;flex-wrap:wrap;
+  justify-content:space-between;align-items:baseline;gap:.4rem 1.5rem;
+  padding:clamp(1rem,2.4vw,1.6rem) clamp(1rem,4vw,3rem) .6rem;
+  border-bottom:1px solid rgba(230,220,194,.14);
+  font-size:.62rem;letter-spacing:.3em;text-transform:uppercase;color:#8d8571;
+}
+.hd b{color:var(--gold);font-weight:400}
+
+/* ---------------- gallery ---------------- */
+.gallery{
+  position:relative;z-index:2;
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto;
+  gap:clamp(.8rem,2.4vw,2.2rem);align-items:center;
+  padding:clamp(1.6rem,4vw,3.4rem) clamp(1rem,4vw,3rem);
+  min-height:calc(100dvh - 60px);
+}
+@media (max-width:900px){ .gallery{grid-template-columns:1fr} }
+
+/* picture light */
+.lampbar{
+  position:absolute;top:clamp(.6rem,2vw,1.4rem);left:50%;transform:translateX(-50%);
+  width:min(320px,64%);height:12px;border-radius:6px;
+  background:linear-gradient(180deg,#5b5340,#2a2519);
+  box-shadow:0 3px 8px rgba(0,0,0,.7);
+  z-index:4;
+}
+.lampbar::after{
+  content:"";position:absolute;left:-6%;right:-6%;top:100%;height:620px;
+  background:linear-gradient(180deg, rgba(255,232,180,.20), transparent 62%);
+  clip-path:polygon(6% 0, 94% 0, 100% 100%, 0 100%);
+  pointer-events:none;mix-blend-mode:screen;
+}
+
+/* the frame */
+.frame{
+  position:relative;grid-column:2;justify-self:center;
+  padding:clamp(9px,1.4vw,16px);
+  background:linear-gradient(150deg,#3b3122,#211b12 48%,#4a3c26);
+  box-shadow:
+    0 34px 70px -26px rgba(0,0,0,.9),
+    inset 0 1px 0 rgba(224,196,132,.35),
+    inset 0 -1px 0 rgba(0,0,0,.6);
+  max-width:min(100%,640px);
+}
+.frame::before{ /* gilt slip */
+  content:"";position:absolute;inset:clamp(4px,.7vw,8px);
+  border:1px solid rgba(185,154,85,.4);pointer-events:none;
+}
+.plate{position:relative;line-height:0;background:var(--paper);box-shadow:0 4px 18px rgba(0,0,0,.5)}
+.plate svg{width:100%;height:auto;display:block}
+
+/* wall label */
+.walllabel{
+  grid-column:1;grid-row:1;align-self:center;max-width:230px;
+  background:linear-gradient(180deg,#efe9da,#ded6c2);
+  color:var(--ink);padding:.85rem .95rem 1rem;border-radius:1px;
+  box-shadow:0 16px 30px -18px rgba(0,0,0,.9), inset 0 0 0 1px rgba(0,0,0,.08);
+  transform:rotate(-.5deg);
+}
+.walllabel h2{font-family:"Cormorant SC","Cormorant SC",Georgia,serif;font-size:1.02rem;
+  font-weight:600;letter-spacing:.05em;margin-bottom:.15rem}
+.walllabel .lat{font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;
+  font-size:.9rem;color:var(--ink2);margin-bottom:.55rem}
+.walllabel p{font-size:.7rem;line-height:1.6;color:var(--ink2)}
+.walllabel .cred{margin-top:.6rem;padding-top:.5rem;border-top:1px solid rgba(43,35,24,.18);
+  font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:#7c6d53}
+.sidetag{
+  grid-column:3;grid-row:1;writing-mode:vertical-rl;
+  font-size:.6rem;letter-spacing:.4em;text-transform:uppercase;color:#6f6857;
+}
+@media (max-width:900px){
+  .walllabel{max-width:none;transform:none;order:3}
+  .sidetag{display:none}
+}
+
+/* ---------------- key strip ---------------- */
+.key{
+  position:relative;z-index:3;
+  background:linear-gradient(180deg,#151310,#0d0b09);
+  border-top:1px solid rgba(230,220,194,.14);
+  padding:clamp(1.6rem,3.4vw,2.8rem) clamp(1rem,4vw,3rem) clamp(2rem,4vw,3rem);
+  display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.65fr);
+  gap:clamp(1.2rem,3vw,2.6rem);
+}
+@media (max-width:860px){ .key{grid-template-columns:1fr} }
+.key h3{
+  font-family:"Cormorant SC",Georgia,serif;font-weight:600;
+  font-size:clamp(1.2rem,2.4vw,1.7rem);letter-spacing:.04em;margin-bottom:.2rem;
+}
+.key .sub{font-size:.66rem;letter-spacing:.24em;text-transform:uppercase;color:#8d8571;margin-bottom:1.2rem}
+.keylist{display:grid;gap:1px;background:rgba(230,220,194,.14);
+  grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+  border:1px solid rgba(230,220,194,.14)}
+.keylist button{
+  all:unset;display:grid;grid-template-columns:1.6rem 1fr;gap:.5rem .6rem;
+  background:#14120f;padding:.7rem .8rem .8rem;cursor:pointer;
+  transition:background .2s,box-shadow .2s;
+}
+.keylist button:hover,.keylist button.on{background:#1d1a15;box-shadow:inset 2px 0 0 var(--red)}
+.keylist button i{font-style:normal;font-family:"Cormorant SC",serif;font-size:.86rem;
+  color:var(--gold);letter-spacing:.04em}
+.keylist button .n{font-size:.78rem;color:var(--paper);line-height:1.3;display:block}
+.keylist button .d{grid-column:2;font-size:.66rem;color:#8d8571;line-height:1.5;display:block;margin-top:.15rem}
+.keylist button i,.keylist button .n{pointer-events:none}
+
+.panel{border:1px solid rgba(230,220,194,.16);background:#14120f;padding:1rem 1.05rem 1.15rem}
+.panel h4{font-family:"Cormorant SC",serif;font-weight:600;font-size:.9rem;
+  letter-spacing:.06em;color:var(--gold);margin-bottom:.7rem}
+.panel p{font-size:.76rem;line-height:1.7;color:#b3aa95}
+.panel p + p{margin-top:.6rem}
+.ctl{margin-top:1.1rem}
+.ctl label{display:flex;justify-content:space-between;font-size:.6rem;letter-spacing:.22em;
+  text-transform:uppercase;color:#8d8571;margin-bottom:.5rem}
+.ctl output{color:var(--red)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:2px;
+  background:linear-gradient(90deg,#5c5342,var(--gold));outline:none;cursor:ew-resize}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:18px;
+  background:#e6dcc2;box-shadow:0 0 0 2px var(--red)}
+input[type=range]::-moz-range-thumb{width:14px;height:18px;background:#e6dcc2;border:0;border-radius:0;
+  box-shadow:0 0 0 2px var(--red)}
+.readout{margin-top:.9rem;padding-top:.8rem;border-top:1px solid rgba(230,220,194,.16);
+  min-height:4.4em}
+.readout .rn{font-family:"Cormorant Garamond",Georgia,serif;font-style:italic;
+  font-size:1rem;color:var(--paper)}
+.readout .rd{font-size:.7rem;line-height:1.6;color:#8d8571;margin-top:.2rem}
+.stat{display:grid;grid-template-columns:auto 1fr;gap:.3rem .9rem;font-size:.66rem;
+  letter-spacing:.1em;text-transform:uppercase;margin-top:.8rem}
+.stat dt{color:#6f6857} .stat dd{text-align:right;color:#b3aa95}
+.ft{border-top:1px solid rgba(230,220,194,.14);padding:1rem clamp(1rem,4vw,3rem);
+  display:flex;flex-wrap:wrap;gap:.4rem 2rem;justify-content:space-between;
+  font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:#5f5949}
+
+/* ============================================================
+   ENGRAVING STYLES ON THE PLATE
+   ============================================================ */
+.st{transition:opacity .35s ease, filter .2s ease;cursor:pointer}
+.st .hl{opacity:0;transition:opacity .2s;pointer-events:none}
+.st:hover .hl,.st.on .hl{opacity:1}
+.st:hover,.st.on{filter:drop-shadow(0 0 5px rgba(200,110,70,.55))}
+.st, .lab{opacity:1}
+.lead{stroke:var(--ink);stroke-width:.8;fill:none;opacity:.72;transition:opacity .3s}
+.lab{font-family:"Cormorant SC",serif;font-size:12.5px;letter-spacing:.06em;fill:var(--ink);
+  transition:opacity .3s}
+.lab .it{font-style:italic;font-family:"Cormorant Garamond",serif;font-size:11.5px;fill:var(--ink2)}
+.lab.on{fill:var(--red);font-weight:600}
+.lab.on i{fill:var(--red)}
+.hatchA{fill:url(#hA)} .hatchB{fill:url(#hB)} .hatchC{fill:url(#hC)}
+.hatchD{fill:url(#hD)} .dots{fill:url(#hDots)} .flat{fill:var(--paper2)}
+.clear{fill:none;stroke:var(--ink);stroke-width:1.6}
+@media (prefers-reduced-motion:reduce){ *{transition-duration:.01ms !important} }
+</style>
+</head>
+<body>
+
+<noscript>
+  <p style="padding:1.2rem;line-height:1.7;max-width:62ch">
+    This plate is an SVG engraving and is drawn without JavaScript. With scripting off
+    the structures cannot be isolated or dissected, but the plate, the key and the
+    full descriptive text are all present.
+  </p>
+</noscript>
+
+<header class="hd">
+  <span><b>Atlas der Tiefsee-Formen</b> · Plate XIV</span>
+  <span>Abyssal Series, part the third · Vienna, 1871</span>
+  <span>Drawn H. Vogelsang · Engraved J. Preiss</span>
+</header>
+
+<section class="gallery">
+  <div class="lampbar" aria-hidden="true"></div>
+
+  <aside class="walllabel">
+    <h2>Plate XIV</h2>
+    <div class="lat">Lanterna abyssi</div>
+    <p>
+      Taken at 1 640 fathoms on the 14th of March, 1869, from the sounding cup of
+      the <em>Isabella</em>. The light in the animal is its own; the plate is
+      reproduced in the position in which it was found, alive.
+    </p>
+    <div class="cred">Museum of Comparative Oceanography · acc. 1871.114</div>
+  </aside>
+
+  <figure class="frame">
+    <div class="plate">
+      <svg viewBox="0 0 900 1200" role="img" aria-labelledby="plateTitle plateDesc">
+        <title id="plateTitle">Lanterna abyssi, anatomical plate</title>
+        <desc id="plateDesc">Cross-hatched engraving of a deep-sea lantern organism
+          with ten labelled structures, a scale bar in Zoll, and a Latin binomial.</desc>
+        <defs>
+          <!-- engraved hatch sets at four angles -->
+          <pattern id="hA" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(38)">
+            <rect width="5" height="5" fill="#e6dcc2"/>
+            <line x1="0" y1="0" x2="0" y2="5" stroke="#2b2318" stroke-width=".9"/>
+          </pattern>
+          <pattern id="hB" width="4.5" height="4.5" patternUnits="userSpaceOnUse" patternTransform="rotate(-42)">
+            <rect width="4.5" height="4.5" fill="#e6dcc2"/>
+            <line x1="0" y1="0" x2="0" y2="4.5" stroke="#2b2318" stroke-width="1.1"/>
+          </pattern>
+          <pattern id="hC" width="6" height="6" patternUnits="userSpaceOnUse">
+            <rect width="6" height="6" fill="#e6dcc2"/>
+            <line x1="0" y1="0" x2="0" y2="6" stroke="#2b2318" stroke-width=".7"/>
+            <line x1="0" y1="0" x2="6" y2="0" stroke="#2b2318" stroke-width=".4"/>
+          </pattern>
+          <pattern id="hD" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(14)">
+            <rect width="7" height="7" fill="#e6dcc2"/>
+            <line x1="0" y1="0" x2="0" y2="7" stroke="#2b2318" stroke-width=".55"/>
+          </pattern>
+          <!-- stipple field -->
+          <pattern id="hDots" width="9" height="9" patternUnits="userSpaceOnUse">
+            <rect width="9" height="9" fill="#e6dcc2"/>
+            <circle cx="2" cy="2" r=".8" fill="#2b2318"/>
+            <circle cx="6.5" cy="5" r=".65" fill="#2b2318"/>
+            <circle cx="4" cy="7.5" r=".5" fill="#2b2318"/>
+          </pattern>
+          <!-- deckle: displace the plate edge with fractal noise -->
+          <filter id="deckle" x="-4%" y="-4%" width="108%" height="108%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves="4" seed="8" result="d"/>
+            <feDisplacementMap in="SourceGraphic" in2="d" scale="7" xChannelSelector="R" yChannelSelector="G"/>
+          </filter>
+          <filter id="foxing" x="-10%" y="-10%" width="120%" height="120%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="3" seed="41"/>
+            <feColorMatrix type="matrix" values="0 0 0 0 0.45  0 0 0 0 0.32  0 0 0 0 0.14  0 0 0 -1.5 0.72"/>
+          </filter>
+        </defs>
+
+        <!-- paper with a torn deckle edge -->
+        <rect x="26" y="26" width="848" height="1148" fill="#e6dcc2" filter="url(#deckle)"/>
+        <rect x="26" y="26" width="848" height="1148" fill="#e6dcc2" filter="url(#foxing)" opacity=".5"/>
+        <!-- laid lines -->
+        <g stroke="#b9a982" stroke-width=".5" opacity=".5">
+          <g id="laid"></g>
+        </g>
+        <!-- double rule -->
+        <rect x="48" y="48" width="804" height="1104" fill="none" stroke="#2b2318" stroke-width="2.2"/>
+        <rect x="58" y="58" width="784" height="1084" fill="none" stroke="#2b2318" stroke-width=".8"/>
+
+        <!-- ============ plate head ============ -->
+        <text x="76" y="96" class="lab" style="font-size:13px;letter-spacing:.22em">TABULA XIV</text>
+        <text x="824" y="96" class="lab" text-anchor="end" style="font-size:13px;letter-spacing:.22em">ORDO III</text>
+        <line x1="76" y1="110" x2="824" y2="110" stroke="#2b2318" stroke-width=".9"/>
+        <text x="450" y="152" text-anchor="middle" class="lab"
+              style="font-size:23px;letter-spacing:.2em;font-family:'Cormorant SC',serif">LANTERNA ABYSSI</text>
+        <text x="450" y="178" text-anchor="middle" class="lab i"
+              style="font-size:13px;letter-spacing:.1em">Vogelsang del. · Preiss sculp. · 1871</text>
+        <line x1="76" y1="196" x2="824" y2="196" stroke="#2b2318" stroke-width=".5"/>
+
+        <!-- ============ the animal ============ -->
+        <g id="figure">
+
+          <!-- I. corona analis (outer fringe, thinnest, appears first) -->
+          <g class="st" id="st10" data-rom="I" data-name="Corona analis" data-latin="corona analis"
+             data-d="0" tabindex="0" role="button" aria-label="I. Corona analis — the anal fringe">
+            <g stroke="#2b2318" stroke-width="1.1" fill="none">
+              <path d="M812 578 C 844 552 872 546 896 556"/>
+              <path d="M814 586 C 848 570 878 568 900 574"/>
+              <path d="M815 594 C 850 588 880 590 900 594"/>
+              <path d="M814 602 C 848 610 878 614 898 616"/>
+              <path d="M812 610 C 844 630 872 640 894 644"/>
+            </g>
+          </g>
+
+          <!-- II. caudal lobe -->
+          <g class="st" id="st9" data-rom="II" data-name="Lobus caudalis" data-latin="lobus caudalis"
+             data-d="0" tabindex="0" role="button" aria-label="II. Caudal lobe">
+            <path class="hatchD" d="M700 592 C 756 546 812 546 850 588 C 812 632 756 638 700 592 Z"/>
+            <path class="clear" d="M700 592 C 756 546 812 546 850 588 C 812 632 756 638 700 592 Z"/>
+            <g stroke="#2b2318" stroke-width=".7" fill="none" opacity=".6">
+              <path d="M716 586 C 760 566 806 566 838 584"/>
+              <path d="M716 600 C 760 620 806 620 838 600"/>
+            </g>
+          </g>
+
+          <!-- III. mantle pallium (the skin; dissolved by deep dissection) -->
+          <g class="st" id="st1" data-rom="III" data-name="Pallium" data-latin="pallium"
+             data-d="0" data-skin="1" tabindex="0" role="button" aria-label="III. Mantle pallium">
+            <path class="hatchC" d="M170 600 C 170 468 262 376 386 370 C 520 364 618 428 706 498
+                                    C 740 526 752 560 752 592 C 752 624 740 658 706 686
+                                    C 618 756 520 820 386 814 C 262 808 170 732 170 600 Z"/>
+            <g stroke="#2b2318" stroke-width="1.5" fill="none">
+              <path d="M170 600 C 170 468 262 376 386 370 C 520 364 618 428 706 498
+                       C 740 526 752 560 752 592 C 752 624 740 658 706 686
+                       C 618 756 520 820 386 814 C 262 808 170 732 170 600 Z"/>
+            </g>
+            <!-- shadowed underside, stippled -->
+            <path class="dots" opacity=".8"
+                  d="M186 654 C 240 754 344 806 430 800 C 540 794 640 736 712 668
+                     C 660 700 580 700 500 672 C 400 638 300 620 186 654 Z"/>
+            <!-- surface striations -->
+            <g stroke="#2b2318" stroke-width=".55" fill="none" opacity=".55">
+              <path d="M214 540 C 320 470 470 442 640 508"/>
+              <path d="M206 570 C 320 502 470 476 646 536"/>
+              <path d="M204 604 C 320 540 476 514 650 566"/>
+              <path d="M212 638 C 330 582 480 556 648 600"/>
+              <path d="M228 672 C 340 622 484 598 636 638"/>
+            </g>
+          </g>
+
+          <!-- IV. dorsal ray -->
+          <g class="st" id="st8" data-rom="IV" data-name="Radius dorsalis" data-latin="radius dorsalis"
+             data-d="0.08" tabindex="0" role="button" aria-label="VIII. Dorsal ray">
+            <path class="hatchB" d="M296 402 C 366 336 470 316 552 356 L 536 404
+                                    C 462 366 372 382 316 438 Z"/>
+            <path class="clear" d="M296 402 C 366 336 470 316 552 356 L 536 404
+                                    C 462 366 372 382 316 438 Z"/>
+            <g stroke="#2b2318" stroke-width=".7" fill="none" opacity=".7">
+              <path d="M330 424 L 342 366"/><path d="M368 412 L 380 352"/>
+              <path d="M406 404 L 418 344"/><path d="M444 398 L 456 342"/>
+              <path d="M482 398 L 494 344"/><path d="M518 402 L 530 352"/>
+            </g>
+          </g>
+
+          <!-- V. ramus ophthalmicus -->
+          <g class="st" id="st3" data-rom="V" data-name="Ramus ophthalmicus" data-latin="ramus ophthalmicus"
+             data-d="0.18" tabindex="0" role="button" aria-label="V. Ramus ophthalmicus">
+            <path class="clear" d="M292 546 C 336 560 372 580 404 604"/>
+            <g fill="#2b2318">
+              <circle cx="316" cy="558" r="2.6"/><circle cx="346" cy="572" r="2.2"/>
+              <circle cx="374" cy="590" r="2"/>
+            </g>
+          </g>
+
+          <!-- VI. lens corneae -->
+          <g class="st" id="st2" data-rom="VI" data-name="Lens corneae" data-latin="lens corneae"
+             data-d="0.24" tabindex="0" role="button" aria-label="VI. Corneal lens">
+            <circle class="hatchA" cx="252" cy="546" r="48"/>
+            <circle class="clear" cx="252" cy="546" r="48"/>
+            <circle class="clear" cx="252" cy="546" r="30" stroke-width="1.1"/>
+            <circle cx="252" cy="546" r="17" fill="#2b2318"/>
+            <circle class="clear" cx="252" cy="546" r="17" stroke-width=".8"/>
+            <path d="M226 524 A 34 34 0 0 1 268 516" stroke="#e6dcc2" stroke-width="2.4" fill="none"/>
+          </g>
+
+          <!-- VII. ganglion circumoesophageum -->
+          <g class="st" id="st5" data-rom="VII" data-name="Ganglion circumoesophageum" data-latin="ganglion circumoesophageum"
+             data-d="0.30" tabindex="0" role="button" aria-label="VII. Circumoesophageal ganglion">
+            <circle class="flat" cx="418" cy="612" r="34" opacity=".85"/>
+            <circle class="clear" cx="418" cy="612" r="34"/>
+            <circle class="hatchD" cx="418" cy="612" r="15"/>
+            <g stroke="#2b2318" stroke-width="1" fill="none">
+              <path d="M418 578 L 418 646"/><path d="M384 612 L 452 612"/>
+              <path d="M394 588 L 442 636"/><path d="M442 588 L 394 636"/>
+            </g>
+          </g>
+
+          <!-- VIII. arbor branchialis -->
+          <g class="st" id="st6" data-rom="VIII" data-name="Arbor branchialis" data-latin="arbor branchialis"
+             data-d="0.36" tabindex="0" role="button" aria-label="VIII. Branchial arbor">
+            <g class="hatchA">
+              <path d="M236 682 C 268 640 306 640 330 676 C 304 706 264 706 236 682 Z"/>
+              <path d="M242 726 C 276 686 316 688 340 724 C 312 754 270 754 242 726 Z"/>
+              <path d="M254 770 C 290 734 330 736 352 770 C 324 800 282 800 254 770 Z"/>
+            </g>
+            <g class="clear">
+              <path d="M236 682 C 268 640 306 640 330 676 C 304 706 264 706 236 682 Z"/>
+              <path d="M242 726 C 276 686 316 688 340 724 C 312 754 270 754 242 726 Z"/>
+              <path d="M254 770 C 290 734 330 736 352 770 C 324 800 282 800 254 770 Z"/>
+            </g>
+            <g stroke="#2b2318" stroke-width=".6" fill="none" opacity=".75">
+              <path d="M250 682 L 316 678"/><path d="M256 726 L 324 722"/>
+              <path d="M268 770 L 336 768"/>
+            </g>
+          </g>
+
+          <!-- IX. viscus massae -->
+          <g class="st" id="st7" data-rom="IX" data-name="Massa viscerum" data-latin="massa viscerum"
+             data-d="0.42" tabindex="0" role="button" aria-label="IX. Visceral mass">
+            <path class="hatchB" d="M330 566 C 402 514 522 510 598 552 C 666 588 678 664 640 708
+                                    C 592 762 448 766 372 730 C 306 698 282 600 330 566 Z"/>
+            <path class="clear" d="M330 566 C 402 514 522 510 598 552 C 666 588 678 664 640 708
+                                    C 592 762 448 766 372 730 C 306 698 282 600 330 566 Z"/>
+            <g stroke="#2b2318" stroke-width=".7" fill="none" opacity=".6">
+              <path d="M360 600 C 430 562 540 560 620 596"/>
+              <path d="M352 646 C 428 610 546 610 632 646"/>
+              <path d="M366 692 C 440 662 546 664 620 692"/>
+            </g>
+          </g>
+
+          <!-- X. ductus haemocoelicus -->
+          <g class="st" id="st4" data-rom="X" data-name="Ductus haemocoelicus" data-latin="ductus haemocoelicus"
+             data-d="0.5" tabindex="0" role="button" aria-label="X. Haemocoelic duct">
+            <path d="M596 606 C 656 596 716 590 786 592 L 786 616 C 716 614 656 622 600 636 Z"
+                  fill="#e6dcc2" stroke="#2b2318" stroke-width="1.2"/>
+            <path d="M604 616 C 660 606 718 600 782 602" stroke="#2b2318" stroke-width="3"
+                  fill="none" opacity=".8"/>
+            <g fill="#2b2318">
+              <circle cx="640" cy="608" r="3"/><circle cx="690" cy="602" r="3"/>
+              <circle cx="740" cy="598" r="3"/>
+            </g>
+          </g>
+
+          <!-- XI. photophores -->
+          <g class="st" id="st11" data-rom="XI" data-name="Photophora" data-latin="photophora serialis"
+             data-d="0.56" tabindex="0" role="button" aria-label="XI. Photophore series">
+            <g fill="#e6dcc2" stroke="#2b2318" stroke-width="1.1">
+              <circle cx="318" cy="506" r="8"/><circle cx="366" cy="486" r="9"/>
+              <circle cx="418" cy="474" r="8"/><circle cx="470" cy="470" r="9"/>
+              <circle cx="522" cy="476" r="8"/><circle cx="572" cy="490" r="9"/>
+              <circle cx="618" cy="512" r="8"/><circle cx="656" cy="540" r="7"/>
+              <circle cx="300" cy="546" r="7"/><circle cx="296" cy="588" r="6"/>
+            </g>
+            <g fill="#2b2318" opacity=".8">
+              <circle cx="366" cy="486" r="3"/><circle cx="470" cy="470" r="3"/>
+              <circle cx="572" cy="490" r="3"/>
+            </g>
+          </g>
+
+          <!-- XII. carina terminalis -->
+          <g class="st" id="st12" data-rom="XII" data-name="Carina terminalis" data-latin="carina terminalis"
+             data-d="0.62" tabindex="0" role="button" aria-label="XII. Terminal keel">
+            <path d="M226 470 C 306 404 438 378 548 414" stroke="#2b2318" stroke-width="7"
+                  fill="none" stroke-linecap="round" opacity=".85"/>
+            <path d="M226 470 C 306 404 438 378 548 414" stroke="#e6dcc2" stroke-width="1.6"
+                  fill="none" stroke-linecap="round" opacity=".7"/>
+            <g stroke="#2b2318" stroke-width=".9" fill="none">
+              <path d="M262 448 L 250 428"/><path d="M312 424 L 302 402"/>
+              <path d="M368 404 L 362 380"/><path d="M428 396 L 426 372"/>
+              <path d="M486 400 L 490 376"/>
+            </g>
+          </g>
+        </g>
+
+        <!-- ============ leader lines + hand lettering ============ -->
+        <g id="labels">
+          <g class="lb" data-for="st1">
+            <path class="lead" d="M300 452 L 148 430 L 108 430"/>
+            <text class="lab" x="104" y="426" text-anchor="end">III. <tspan class="it">Pallium</tspan></text>
+          </g>
+          <g class="lb" data-for="st2">
+            <path class="lead" d="M228 512 L 132 480 L 100 480"/>
+            <text class="lab" x="96" y="476" text-anchor="end">VI. <tspan class="it">Lens corneae</tspan></text>
+          </g>
+          <g class="lb" data-for="st3">
+            <path class="lead" d="M356 576 L 176 560 L 104 560"/>
+            <text class="lab" x="100" y="556" text-anchor="end">V. <tspan class="it">Ramus ophthalmicus</tspan></text>
+          </g>
+          <g class="lb" data-for="st4">
+            <path class="lead" d="M700 606 L 776 560 L 806 560"/>
+            <text class="lab" x="810" y="556">X. <tspan class="it">Ductus haemocoelicus</tspan></text>
+          </g>
+          <g class="lb" data-for="st5">
+            <path class="lead" d="M418 646 L 356 704 L 300 704"/>
+            <text class="lab" x="296" y="700" text-anchor="end">VII. <tspan class="it">Ganglion circumoesophageum</tspan></text>
+          </g>
+          <g class="lb" data-for="st6">
+            <path class="lead" d="M268 748 L 176 800 L 104 800"/>
+            <text class="lab" x="100" y="796" text-anchor="end">VIII. <tspan class="it">Arbor branchialis</tspan></text>
+          </g>
+          <g class="lb" data-for="st7">
+            <path class="lead" d="M470 760 L 470 800 L 420 800"/>
+            <text class="lab" x="416" y="806" text-anchor="end">IX. <tspan class="it">Massa viscerum</tspan></text>
+          </g>
+          <g class="lb" data-for="st8">
+            <path class="lead" d="M360 356 L 300 300 L 240 300"/>
+            <text class="lab" x="236" y="296" text-anchor="end">IV. <tspan class="it">Radius dorsalis</tspan></text>
+          </g>
+          <g class="lb" data-for="st9">
+            <path class="lead" d="M800 604 L 760 700 L 690 700"/>
+            <text class="lab" x="686" y="696" text-anchor="end">II. <tspan class="it">Lobus caudalis</tspan></text>
+          </g>
+          <g class="lb" data-for="st10">
+            <path class="lead" d="M870 560 L 760 470 L 690 470"/>
+            <text class="lab" x="686" y="466" text-anchor="end">I. <tspan class="it">Corona analis</tspan></text>
+          </g>
+          <g class="lb" data-for="st11">
+            <path class="lead" d="M470 462 L 560 336 L 640 336"/>
+            <text class="lab" x="644" y="332">XI. <tspan class="it">Photophora</tspan></text>
+          </g>
+          <g class="lb" data-for="st12">
+            <path class="lead" d="M226 470 L 130 388 L 100 388"/>
+            <text class="lab" x="96" y="384" text-anchor="end">XII. <tspan class="it">Carina terminalis</tspan></text>
+          </g>
+        </g>
+
+        <!-- ============ scale bar ============ -->
+        <g transform="translate(76,860)">
+          <text class="lab" x="0" y="-16" style="font-size:12px;letter-spacing:.18em">MAASSSTAB</text>
+          <rect x="0" y="0" width="80" height="11" fill="#2b2318"/>
+          <rect x="80" y="0" width="80" height="11" fill="#e6dcc2" stroke="#2b2318" stroke-width="1"/>
+          <rect x="160" y="0" width="80" height="11" fill="#2b2318"/>
+          <text class="lab" x="0" y="28" style="font-size:11px">0</text>
+          <text class="lab" x="238" y="28" style="font-size:11px" text-anchor="end">2 ZOLL</text>
+          <text class="lab" x="120" y="46" text-anchor="middle" style="font-size:10.5px"
+                font-style="italic">Länge des thierkörpers 5 Zoll 4 Linien</text>
+        </g>
+
+        <!-- ============ foot ============ -->
+        <line x1="76" y1="950" x2="824" y2="950" stroke="#2b2318" stroke-width=".9"/>
+        <text x="76" y="986" class="lab" style="font-size:13.5px;letter-spacing:.02em">
+          <tspan font-style="italic" font-size="15">Lanterna abyssi</tspan> Vogelsangii, 1869.
+        </text>
+        <text x="76" y="1010" class="lab" style="font-size:12.5px;fill:#5a4d3a">
+          Aus der Tiefe von 1 640 Klaftern gezogen, den 14. März 1869.
+        </text>
+        <text x="76" y="1036" class="lab" style="font-size:12.5px;fill:#5a4d3a">
+          Das Leuchtthier ist getrennt gehalten und bei Seite 331 beschrieben.
+        </text>
+        <text x="824" y="986" class="lab" text-anchor="end" style="font-size:11.5px;fill:#5a4d3a">
+          Taf. XIV · Plate XIV
+        </text>
+        <text x="824" y="1010" class="lab" text-anchor="end" style="font-size:11.5px;fill:#5a4d3a">
+          Druck v. k. k. Hoflieferant
+        </text>
+        <text x="824" y="1036" class="lab" text-anchor="end" style="font-size:11.5px;fill:#5a4d3a">
+          Wien, 1871
+        </text>
+        <line x1="76" y1="1062" x2="824" y2="1062" stroke="#2b2318" stroke-width=".5"/>
+        <text x="76" y="1092" class="lab i" style="font-size:12px;fill:#5a4d3a">
+          Zoolog. Museum, Vergleichende Sammlung · Accession 1871.114
+        </text>
+        <text x="824" y="1092" class="lab" text-anchor="end" style="font-size:12px;fill:#5a4d3a">
+          Sign. J. P. 1871 / 14
+        </text>
+      </svg>
+    </div>
+  </figure>
+
+  <div class="sidetag">Museum of Comparative Oceanography · Gallery II</div>
+</section>
+
+<section class="key">
+  <div>
+    <h3>Explanation of the plate</h3>
+    <p class="sub">Twelve structures · hover to isolate · the depth control opens the body from the outside in</p>
+    <div class="keylist" id="keyList"></div>
+  </div>
+
+  <div class="panel">
+    <h4>Bench notes</h4>
+    <p>
+      <em>Lanterna abyssi</em> was drawn from a single specimen brought up in the
+      sounding cup of the <em>Isabella</em> and still burning when it reached the
+      deck. The engraver has been trusted with the surface striations and not with
+      the light, which cannot be cut.
+    </p>
+    <p>
+      The photophore series runs from behind the lens to the anal fringe in a single
+      line, and does not branch. Vogelsang noted this as the character by which the
+      genus is separated from <em>Photocorynus</em>, whose series always doubles
+      before the tail.
+    </p>
+
+    <div class="ctl">
+      <label for="depth">Dissection depth <output id="depthOut">SKIN</output></label>
+      <input type="range" id="depth" min="0" max="100" step="1" value="15">
+    </div>
+
+    <div class="readout">
+      <div class="rn" id="roName">Pallium — the outer skin</div>
+      <div class="rd" id="roDesc">Move the pointer across the plate, or use the key below it.</div>
+    </div>
+
+    <dl class="stat">
+      <dt>Depth of capture</dt><dd>1 640 fathoms</dd>
+      <dt>Body length</dt><dd>5 in. 4 lin.</dd>
+      <dt>Preserved in</dt><dd>Spirit, No. 14</dd>
+      <dt>Plate engraved</dt><dd>J. Preiss, 1871</dd>
+      <dt>Lamp observed</dt><dd>41 minutes</dd>
+    </dl>
+  </div>
+</section>
+
+<footer class="ft">
+  <span>Atlas der Tiefsee-Formen · Vienna · 1871</span>
+  <span>Hatching, stipple and deckle generated in SVG — no image files</span>
+  <span>Hover, focus or press 1 – 9</span>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  var root = document.documentElement;
+  var depth = document.getElementById('depth');
+  var depthOut = document.getElementById('depthOut');
+  var roName = document.getElementById('roName');
+  var roDesc = document.getElementById('roDesc');
+  var keyList = document.getElementById('keyList');
+
+  var DESC = {
+    st1:  ['Pallium — the outer skin',
+           'A single seamless layer of chitinous scale over a layer of fat. It is opaque in life and shows the animal as dark. At this depth on the control it dissolves, and what is under it is what the plate is actually for.'],
+    st2:  ['Lens corneae — the corneal lens',
+           'Fifty-eight millimetres across and cut from a single carbonate button, thicker at the rim than at the centre. It focuses the animal\'s own light back through the retina and is the only part of the body that is genuinely transparent.'],
+    st3:  ['Ramus ophthalmicus — the eye branch',
+           'A nerve trunk of unusual thickness, running from the lens directly into the oesophageal ganglion without a relay. The reflex arc is about four centimetres long, which at this size means the animal flinches in under a second.'],
+    st4:  ['Ductus haemocoelicus — the haemocoelic duct',
+           'The main body channel, running the full length of the animal to the tail. It is empty in the plate because the blood was drawn before the animal was photographed, which is the ordinary practice and the reason plates lie.'],
+    st5:  ['Ganglion circumoesophageum — the girdle ganglion',
+           'A ring of nerve around the gullet with four commissures. Everything the animal decides, it decides here: the direction of the light, the rate of the pulse, whether to leave the place it has found.'],
+    st6:  ['Arbor branchialis — the branchial arbor',
+           'Three comb-like plates, not gills in any sense we would recognise. They take nothing from the water. They pump it, for the same reason a radiator pumps: to carry a temperature.'],
+    st7:  ['Massa viscerum — the visceral mass',
+           'The whole of the interior organ in one envelope. It is a single chamber, undivided, and the engraving shows four bands of fibre in it because Vogelsang saw four bands of fibre in it.'],
+    st8:  ['Radius dorsalis — the dorsal ray',
+           'The supporting fin. It is not used for steering. In every specimen the animal has so far caught, it was held exactly vertical and entirely still.'],
+    st9:  ['Lobus caudalis — the caudal lobe',
+           'A flattened paddle, used almost exclusively as a hood. Folded over the corona it seals the animal against water that is a thousand degrees colder than it is.'],
+    st10: ['Corona analis — the anal fringe',
+           'Twenty-two filaments in life; six are drawn, because twenty-two would be indistinguishable at this magnification. They are the only part of the animal that is still luminous forty minutes after it surfaced.'],
+    st11: ['Photophora serialis — the photophore series',
+           'Eleven organs in an unbranched line from behind the lens to the tail. Each is a sac of luminous material behind a lens of the same carbonate as the eye, which is how the animal can aim.'],
+    st12: ['Carina terminalis — the terminal keel',
+           'A low ridge of clear tissue along the dorsal line. Vogelsang believed it was a sensory surface and admits in the text that he has no evidence. It is included because he drew it, and he saw it on three specimens.']
+  };
+
+  /* ---- build the key ---- */
+  var ORDER = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
+  var all = Array.prototype.slice.call(document.querySelectorAll('.st'));
+  var sts = all.slice().sort(function(a,b){
+    return ORDER.indexOf(a.getAttribute('data-rom')) - ORDER.indexOf(b.getAttribute('data-rom'));
+  });
+  sts.forEach(function(el, i){
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('data-for', el.id);
+    b.innerHTML = '<i>' + el.getAttribute('data-rom') + '</i><span class="n">' + el.getAttribute('data-name') +
+      '</span><span class="d"><em>' + el.getAttribute('data-latin') + '</em></span>';
+    b.addEventListener('pointerenter', function(){ focusSt(el); });
+    b.addEventListener('focus', function(){ focusSt(el); });
+    b.addEventListener('click', function(){ focusSt(el); });
+    keyList.appendChild(b);
+  });
+
+  /* ---- build highlight clones ---- */
+  sts.forEach(function(el){
+    var clone = el.cloneNode(true);
+    clone.removeAttribute('id');
+    clone.removeAttribute('class');
+    clone.setAttribute('class', 'hl');
+    clone.setAttribute('fill', 'rgba(168,58,36,.34)');
+    clone.setAttribute('stroke', '#a83a24');
+    clone.style.stroke = '#a83a24';
+    Array.prototype.slice.call(clone.querySelectorAll('*')).forEach(function(n){
+      n.setAttribute('fill', 'rgba(168,58,36,.30)');
+      n.setAttribute('stroke', 'none');
+      n.removeAttribute('class');
+    });
+    el.appendChild(clone);
+  });
+
+  var active = null;
+  function focusSt(el){
+    var id = el.getAttribute('id');
+    if (active) active.classList.remove('on');
+    Array.prototype.slice.call(document.querySelectorAll('.lab')).forEach(function(t){ t.classList.remove('on'); });
+    el.classList.add('on');
+    active = el;
+    var lb = document.querySelector('.lb[data-for="' + id + '"] .lab');
+    if (lb) lb.classList.add('on');
+    var d = DESC[id];
+    roName.textContent = d ? d[0] : el.getAttribute('data-name');
+    roDesc.textContent = d ? d[1] : '';
+    Array.prototype.slice.call(keyList.children).forEach(function(b){
+      b.classList.toggle('on', b.getAttribute('data-for') === id);
+    });
+  }
+  sts.forEach(function(el){
+    el.addEventListener('pointerenter', function(){ focusSt(el); });
+    el.addEventListener('focus', function(){ focusSt(el); });
+    el.addEventListener('click', function(){ focusSt(el); });
+  });
+
+  /* ---- dissection depth ---- */
+  var SKIN_FADE = 1;  /* skin fully gone by 85 % */
+  function applyDepth(){
+    var d = +depth.value / 100;
+    root.style.setProperty('--depth', d.toFixed(3));
+    sts.forEach(function(el){
+      var t = parseFloat(el.getAttribute('data-d'));
+      var a = Math.max(0, Math.min(1, (d - t + 0.16) / 0.16));
+      if (el.getAttribute('data-skin')){
+        var b = Math.max(0, Math.min(1, (0.92 - d) / 0.34));
+        el.style.opacity = a * b;
+      } else {
+        el.style.opacity = a;
+      }
+      /* labels follow their structure */
+      var lb = document.querySelector('.lb[data-for="' + el.id + '"]');
+      if (lb) lb.style.opacity = String(0.22 + a * 0.78);
+    });
+    var word = d < 0.1 ? 'SKIN' : d < 0.28 ? 'PALLIUM' : d < 0.46 ? 'CUT 1'
+             : d < 0.66 ? 'CUT 2' : d < 0.86 ? 'CUT 3' : 'DEEP PLATE';
+    depthOut.textContent = word;
+  }
+  depth.addEventListener('input', applyDepth);
+  applyDepth();
+
+  /* ---- number keys walk the key list ---- */
+  document.addEventListener('keydown', function(e){
+    var n = parseInt(e.key, 10);
+    if (!n || n < 1 || n > sts.length) return;
+    keyList.children[n - 1].focus();
+  });
+
+  /* ---- generated laid lines (paper) ---- */
+  var laid = document.getElementById('laid');
+  if (laid){
+    var s = '';
+    for (var y = 30; y < 1170; y += 9) s += '<line x1="30" y1="' + y + '" x2="870" y2="' + y + '"/>';
+    laid.innerHTML = s;
+  }
+})();
+</script>
+</body>
+</html>

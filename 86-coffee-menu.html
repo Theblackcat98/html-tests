@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marrow Lane Roastery — the house menu, roasted Tuesdays and Fridays</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,500;0,6..96,700;1,6..96,400&family=Caveat:wght@500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   MARROW LANE ROASTERY — MENU CARD
+   Technique: letterpress-feel paper stock, dotted leaders, a
+   stamped roast date, and hover rows that unfold tasting detail.
+   Skeleton: single-sheet editorial, two text columns.
+   ============================================================ */
+:root{
+  --paper:#f4efe4; --paper2:#e9e1d2; --ink:#231f1c; --ink2:#4a4239; --dim:#8a8073;
+  --rule:rgba(35,31,28,.16); --seal:#96331f; --gold:#a8823c;
+  --disp:"Bodoni Moda","Didot","Bodoni MT",Georgia,serif;
+  --body:"Inter","Helvetica Neue",Arial,sans-serif;
+  --hand:"Caveat","Segoe Script","Bradley Hand",cursive;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:#2a2622;color:var(--ink);font-family:var(--body);-webkit-font-smoothing:antialiased;
+  min-height:100dvh;padding:clamp(1rem,3.5vw,3rem) 1rem;
+  background-image:radial-gradient(120% 80% at 50% 0%,#3a342e,#221f1b 70%);
+}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- the sheet ---------- */
+.sheet{
+  position:relative;max-width:940px;margin:0 auto;padding:clamp(1.6rem,4vw,3.4rem) clamp(1.3rem,4.4vw,3.6rem) clamp(1.4rem,3vw,2.6rem);
+  background:
+    linear-gradient(178deg,rgba(255,255,255,.5),rgba(255,255,255,0) 18%),
+    radial-gradient(90% 60% at 50% 0%,#f8f4ea,#f2ecdf 55%,#e8e0cf 100%);
+  box-shadow:0 40px 90px -40px #000,0 0 0 1px rgba(0,0,0,.35),0 1px 0 rgba(255,255,255,.5) inset;
+  overflow:hidden;
+}
+/* paper fibre + letterpress bite */
+.sheet::before{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.28'/%3E%3C/svg%3E");
+}
+.sheet::after{ /* the debossed inner edge of the plate */
+  content:"";position:absolute;inset:10px;pointer-events:none;border:1px solid rgba(35,31,28,.13);
+  box-shadow:0 0 0 3px rgba(255,255,255,.35);
+}
+.deck{position:relative;z-index:2}
+
+/* ---------- masthead ---------- */
+.top{display:grid;grid-template-columns:1fr auto;gap:1.4rem;align-items:end;
+  border-bottom:1.5px solid var(--ink);padding-bottom:1rem}
+.top h1{font-family:var(--disp);font-weight:500;font-size:clamp(2rem,6.2vw,3.5rem);line-height:.92;
+  letter-spacing:-.015em;font-optical-sizing:auto}
+.top h1 em{display:block;font-style:italic;font-weight:400;font-size:.36em;letter-spacing:.02em;
+  color:var(--ink2);margin-top:.5rem}
+.top .side{text-align:right;font-size:10.5px;line-height:1.9;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
+.top .side b{color:var(--ink);font-weight:600}
+.engrave{width:clamp(90px,13vw,132px);height:auto;opacity:.9;margin-bottom:.4rem}
+
+.rule{height:1px;background:var(--rule);margin:1.1rem 0}
+.rule.double{height:3px;background:none;border-top:1px solid var(--ink);border-bottom:1px solid var(--ink)}
+
+/* ---------- stamp ---------- */
+.stamp{position:absolute;right:clamp(1.3rem,4.4vw,3.6rem);top:clamp(4.6rem,9vw,7rem);z-index:4;
+  width:clamp(88px,11vw,116px);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;
+  text-align:center;color:var(--seal);transform:rotate(-11deg);mix-blend-mode:multiply;opacity:.8;
+  font-size:8px;letter-spacing:.16em;text-transform:uppercase;line-height:1.6;pointer-events:none}
+.stamp::before{content:"";position:absolute;inset:0;border:1.5px solid currentColor;border-radius:50%}
+.stamp::after{content:"";position:absolute;inset:5px;border:1px dashed currentColor;border-radius:50%;opacity:.7}
+.stamp b{display:block;font-size:9.5px;letter-spacing:.14em;font-weight:600}
+.stamp i{display:block;font-style:normal;font-size:7px;opacity:.8}
+.stamp .sp{position:absolute;inset:0}
+
+/* ---------- toolbar ---------- */
+.tools{display:flex;gap:1rem;align-items:center;flex-wrap:wrap;padding:.9rem 0 .2rem;
+  font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+.seg{display:flex;gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:99px;overflow:hidden}
+.seg button{background:none;border:0;padding:.42rem .85rem;font-size:10px;letter-spacing:.16em;
+  text-transform:uppercase;cursor:pointer;color:var(--ink2);font-family:var(--body);transition:.22s;white-space:nowrap}
+.seg button+button{border-left:1px solid var(--rule)}
+.seg button.on{background:var(--ink);color:var(--paper)}
+.seg button:hover:not(.on){background:rgba(35,31,28,.07)}
+.tools .cnt{margin-left:auto;font-variant-numeric:tabular-nums}
+
+/* ---------- columns ---------- */
+.cols{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(1.4rem,3.4vw,3rem);
+  padding-top:1.1rem}
+@media (max-width:820px){.cols{grid-template-columns:1fr}}
+.sec{margin-bottom:1.9rem}
+.sec>h2{font-family:var(--body);font-size:10.5px;letter-spacing:.3em;text-transform:uppercase;
+  font-weight:600;color:var(--ink);display:flex;align-items:center;gap:.7rem;margin-bottom:.3rem}
+.sec>h2::after{content:"";flex:1;height:1px;background:var(--ink);opacity:.35}
+.sec>h2 span{font-family:var(--disp);font-style:italic;font-size:12px;letter-spacing:.02em;
+  text-transform:none;color:var(--seal);font-weight:400}
+
+/* ---------- menu rows ---------- */
+.row{position:relative;padding:.5rem .55rem .5rem .5rem;margin:0 -.55rem;border-radius:3px;
+  transition:background .3s,transform .3s cubic-bezier(.2,.9,.3,1)}
+.row.hide{display:none}
+.row+.row{border-top:1px solid rgba(35,31,28,.09)}
+.topline{display:flex;align-items:baseline;gap:.5rem}
+.nm{font-family:var(--disp);font-size:clamp(15px,1.5vw,17px);font-weight:500;letter-spacing:.005em;
+  text-shadow:0 .5px 0 rgba(255,255,255,.55),0 -0.3px 0 rgba(35,31,28,.16)}
+.leader{flex:1;height:0;border-bottom:1.5px dotted rgba(35,31,28,.4);transform:translateY(-.28em)}
+.pr{font-family:var(--body);font-weight:500;font-size:13.5px;font-variant-numeric:tabular-nums;
+  letter-spacing:.02em;min-width:3.4em;text-align:right}
+.tag{font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:#fff;background:var(--seal);
+  padding:.18em .5em .22em;border-radius:2px;vertical-align:.18em;margin-left:.4em;font-weight:500}
+.tag.d{background:#5c5a4a}
+.notes{font-size:12.5px;line-height:1.65;color:var(--ink2);margin-top:.15rem;letter-spacing:.005em}
+.notes em{font-family:var(--disp);font-style:italic;color:var(--ink)}
+
+/* the unfolded detail */
+.detail{display:grid;grid-template-rows:0fr;opacity:0;
+  transition:grid-template-rows .42s cubic-bezier(.2,.8,.2,1),opacity .3s}
+.row:hover .detail,.row:focus-within .detail{grid-template-rows:1fr;opacity:1}
+.detail>div{overflow:hidden}
+.detail dl{display:grid;grid-template-columns:auto 1fr;gap:.1rem .8rem;margin:.7rem 0 .2rem;
+  font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.detail dt{font-weight:600;color:var(--ink2)}
+.detail dd{text-align:right;font-variant-numeric:tabular-nums}
+.roastbar{height:4px;border-radius:2px;background:linear-gradient(90deg,#d9c39a,#7a4a26,#3a2013);
+  margin-top:.35rem;position:relative}
+.roastbar i{position:absolute;top:-3px;width:1px;height:10px;background:var(--ink)}
+.row:hover,.row.open{background:rgba(255,255,255,.5);transform:translateX(3px);
+  box-shadow:-6px 0 0 -4px var(--gold)}
+@media (hover:none){.row .detail{transition:none}}
+
+/* ---------- handwritten specials note ---------- */
+.note{margin-top:.4rem;position:relative;padding:1.4rem 1.2rem .9rem;
+  background:linear-gradient(#fdf6e2,#f7edd6);border:1px solid rgba(168,130,60,.35);
+  transform:rotate(-.7deg);box-shadow:2px 3px 10px -6px rgba(80,60,20,.4)}
+.note::before,.note::after{content:"";position:absolute;width:74px;height:20px;top:-10px;
+  background:rgba(226,215,180,.6);border-left:1px solid rgba(0,0,0,.06);border-right:1px solid rgba(0,0,0,.06);
+  box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.note::before{left:14%;transform:rotate(-4deg)}
+.note::after{right:12%;transform:rotate(3deg)}
+.note h3{font-family:var(--hand);font-size:1.5rem;line-height:1.1;color:#3b3226;margin-bottom:.3rem}
+.note p{font-family:var(--hand);font-size:1.22rem;line-height:1.35;color:#4a4034;letter-spacing:.005em}
+.note .sig{font-family:var(--hand);font-size:1.35rem;color:var(--seal);text-align:right;margin-top:.2rem}
+
+/* ---------- footer ---------- */
+.foot{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;border-top:1.5px solid var(--ink);
+  margin-top:1.4rem;padding-top:.9rem;font-size:10.5px;line-height:1.9;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink2)}
+@media (max-width:640px){.foot{grid-template-columns:1fr;gap:.7rem}}
+.foot b{display:block;color:var(--ink);letter-spacing:.2em;font-size:9.5px;margin-bottom:.2rem}
+.foot .sig{font-family:var(--disp);font-style:italic;font-size:1.35rem;text-transform:none;
+  letter-spacing:.01em;color:var(--ink);line-height:1.2}
+</style>
+</head>
+<body>
+<main class="sheet">
+  <div class="stamp" aria-hidden="true">
+    <span class="sp" id="sp"></span>
+    <b>Roasted<br>14 · 03 · 26</b>
+    <i>Tuesday batch</i>
+    <i>No. 1,208</i>
+  </div>
+
+  <div class="deck">
+    <div class="top">
+      <div>
+        <h1>Marrow&nbsp;Lane<em>Roastery &amp; Coffee Bar</em></h1>
+        <div class="rule"></div>
+        <p style="font-size:11px;letter-spacing:.1em;color:var(--dim);line-height:1.9;max-width:46ch">
+          A former ironmonger's shop, one room, two roasters, eleven days between green
+          buying and the bag you carry home. Everything below is on the board today.
+        </p>
+      </div>
+      <div class="side">
+        <svg class="engrave" viewBox="0 0 120 150" fill="none" stroke="currentColor" stroke-width="1.1" aria-hidden="true">
+          <path d="M60 18c-9 22-9 40-4 56 4 12 2 22-4 30"/>
+          <path d="M60 18c9 22 9 40 4 56-4 12-2 22 4 30" opacity=".55"/>
+          <path d="M56 74c-14-6-26-4-34 4 8 9 22 11 34 5z"/>
+          <path d="M64 74c14-6 26-4 34 4-8 9-22 11-34 5z"/>
+          <path d="M56 100c-15-4-27 0-33 9 9 7 23 7 33 0z"/>
+          <path d="M64 100c15-4 27 0 33 9-9 7-23 7-33 0z"/>
+          <path d="M60 18c-4-8-2-14 2-18 6 4 8 11 4 18z"/>
+          <path d="M56 52c-11-2-19 1-24 7 6 6 16 7 24 3z" opacity=".7"/>
+          <path d="M64 52c11-2 19 1 24 7-6 6-16 7-24 3z" opacity=".7"/>
+          <path d="M46 104c-6 12-8 26-6 40M74 104c6 12 8 26 6 40" opacity=".5"/>
+          <ellipse cx="60" cy="130" rx="22" ry="6" opacity=".4"/>
+          <ellipse cx="60" cy="128" rx="14" ry="4" opacity=".3"/>
+        </svg>
+        <b>14 Marrow Lane</b><br>Bristol BS1 4QD<br>Tue – Sun, 7 till 4
+      </div>
+    </div>
+
+    <div class="tools">
+      <div class="seg" role="group" aria-label="Filter the menu">
+        <button class="on" data-f="all">Everything</button>
+        <button data-f="single">Single origin</button>
+        <button data-f="decaf">Decaf only</button>
+      </div>
+      <span>Hover a line to read the whole story.</span>
+      <span class="cnt" id="cnt">18 on the board</span>
+    </div>
+
+    <div class="cols">
+      <!-- ============ left column ============ -->
+      <div>
+        <section class="sec">
+          <h2>The Bar <span>— hot</span></h2>
+          <div class="row" data-tag="single">
+            <div class="topline"><span class="nm">Flat White</span><span class="leader"></span><span class="pr">3.40</span></div>
+            <p class="notes">Double ristretto, <em>Marrow Lane House</em> — Brazil &amp; Rwanda, milk at 63 °C.</p>
+            <div class="detail"><div><dl>
+              <dt>Espresso</dt><dd>18 g in, 38 g out, 27 s</dd>
+              <dt>Milk</dt><dd>Whole, 130 ml, 63 °C</dd>
+              <dt>Cup</dt><dd>160 ml bone china</dd>
+            </dl></div></div>
+          </div>
+          <div class="row" data-tag="single">
+            <div class="topline"><span class="nm">Cortado</span><span class="leader"></span><span class="pr">3.10</span></div>
+            <p class="notes">Equal parts. 90 ml, no ceremony.</p>
+            <div class="detail"><div><dl>
+              <dt>Espresso</dt><dd>18 g in, 34 g out, 26 s</dd>
+              <dt>Milk</dt><dd>Whole, 45 ml, 63 °C</dd>
+              <dt>Glass</dt><dd>90 ml, warmed</dd>
+            </dl></div></div>
+          </div>
+          <div class="row">
+            <div class="topline"><span class="nm">Macchiato</span><span class="leader"></span><span class="pr">2.80</span></div>
+            <p class="notes">A spoon of foam, marked on the surface.</p>
+            <div class="detail"><div><dl>
+              <dt>Espresso</dt><dd>9 g single, 20 g out</dd>
+              <dt>Milk</dt><dd>Foam only, 15 ml</dd>
+              <dt>Served</dt><dd>Demitasse, 90 ml</dd>
+            </dl></div></div>
+          </div>
+          <div class="row" data-tag="single">
+            <div class="topline"><span class="nm">Filter of the Day <span class="tag">Ask</span></span><span class="leader"></span><span class="pr">3.60</span></div>
+            <p class="notes">V60, three minutes, <em>the batch we are proudest of this week.</em></p>
+            <div class="detail"><div><dl>
+              <dt>Origin</dt><dd>Written on the board each morning</dd>
+              <dt>Dose</dt><dd>16 g : 250 g, 3:00</dd>
+              <dt>Grind</dt><dd>Medium-fine, 22 clicks</dd>
+            </dl></div></div>
+          </div>
+          <div class="row">
+            <div class="topline"><span class="nm">Hot Chocolate <span class="tag d">Not coffee</span></span><span class="leader"></span><span class="pr">4.00</span></div>
+            <p class="notes">70 % Ghana, steamed milk, sea salt on the rim.</p>
+            <div class="detail"><div><dl>
+              <dt>Base</dt><dd>Single-origin Ghana, 70 %</dd>
+              <dt>Method</dt><dd>Steamed, no powder</dd>
+              <dt>Finish</dt><dd>Flake salt, cocoa nib</dd>
+            </dl></div></div>
+          </div>
+        </section>
+
+        <section class="sec">
+          <h2>The Bar <span>— cold</span></h2>
+          <div class="row">
+            <div class="topline"><span class="nm">Cold Brew, Black</span><span class="leader"></span><span class="pr">3.90</span></div>
+            <p class="notes">Eighteen hours, still water, cut with one ice cube.</p>
+            <div class="detail"><div><dl>
+              <dt>Steep</dt><dd>18 h, ambient, no agitation</dd>
+              <dt>Ratio</dt><dd>1 : 8 by weight</dd>
+              <dt>Service</dt><dd>300 ml, single ice</dd>
+            </dl></div></div>
+          </div>
+          <div class="row">
+            <div class="topline"><span class="nm">Iced Latte</span><span class="leader"></span><span class="pr">4.20</span></div>
+            <p class="notes">Espresso over cold milk. Not a milkshake, promise.</p>
+            <div class="detail"><div><dl>
+              <dt>Espresso</dt><dd>Doubled, 36 g out</dd>
+              <dt>Milk</dt><dd>Cold whole, 180 ml</dd>
+              <dt>Glass</dt><dd>450 ml, one clear cube</dd>
+            </dl></div></div>
+          </div>
+          <div class="row">
+            <div class="topline"><span class="nm">Espresso Tonic</span><span class="leader"></span><span class="pr">4.40</span></div>
+            <p class="notes">Quinine, grapefruit peel, a long spoon of espresso.</p>
+            <div class="detail"><div><dl>
+              <dt>Tonic</dt><dd>Fever-Tree, 150 ml</dd>
+              <dt>Garnish</dt><dd>Grapefruit peel, expressed</dd>
+              <dt>Build</dt><dd>Tonic first, espresso last</dd>
+            </dl></div></div>
+          </div>
+        </section>
+
+        <section class="sec">
+          <h2>Tea <span>— loose leaf</span></h2>
+          <div class="row"><div class="topline"><span class="nm">Uji Sencha</span><span class="leader"></span><span class="pr">2.60</span></div>
+            <p class="notes">Steamed green, 70 °C, second infusion onwards.</p>
+            <div class="detail"><div><dl><dt>Leaf</dt><dd>Shizuoka, 2025</dd><dt>Pot</dt><dd>180 ml, stone</dd></dl></div></div></div>
+          <div class="row"><div class="topline"><span class="nm">Second Flush Assam</span><span class="leader"></span><span class="pr">2.60</span></div>
+            <p class="notes">Mango, malt, very strong. Take milk if you must.</p>
+            <div class="detail"><div><dl><dt>Leaf</dt><dd>Halmari, 2025</dd><dt>Pot</dt><dd>180 ml, glazed</dd></dl></div></div></div>
+          <div class="row"><div class="topline"><span class="nm">Rooibos &amp; Rose</span><span class="leader"></span><span class="pr">2.80</span></div>
+            <p class="notes">Caffeine free, faintly sweet, good with the dog.</p>
+            <div class="detail"><div><dl><dt>Blend</dt><dd>Cederberg, our own</dd><dt>Pot</dt><dd>220 ml, glass</dd></dl></div></div></div>
+        </section>
+      </div>
+
+      <!-- ============ right column ============ -->
+      <div>
+        <section class="sec">
+          <h2>Small Batch <span>— 250 g, roasted here</span></h2>
+          <div class="row" data-tag="single">
+            <div class="topline"><span class="nm">Uraga, Guji</span><span class="leader"></span><span class="pr">13.50</span></div>
+            <p class="notes">Peach, jasmine, black tea. <em>Ethiopia, washed, 2,050 m</em></p>
+            <div class="detail"><div><dl>
+              <dt>Producer</dt><dd>Uraga Smallholders</dd>
+              <dt>Varietal</dt><dd>Heirloom landrace</dd>
+              <dt>Process</dt><dd>Washed, 36 h ferment</dd>
+              <dt>Roast</dt><dd>Light 3 of 6</dd>
+            </dl><div class="roastbar"><i style="left:22%"></i></div></div></div>
+          </div>
+          <div class="row" data-tag="single">
+            <div class="topline"><span class="nm">Konga, Yirgacheffe</span><span class="leader"></span><span class="pr">12.80</span></div>
+            <p class="notes">Blueberry, bergamot, syrup. <em>Natural, dried on raised beds</em></p>
+            <div class="detail"><div><dl>
+              <dt>Producer</dt><dd>Konga Washing Station</dd>
+              <dt>Varietal</dt><dd>74110, 74112</dd>
+              <dt>Process</dt><dd>Natural, 21 days</dd>
+              <dt>Roast</dt><dd>Light 2 of 6</dd>
+            </dl><div class="roastbar"><i style="left:14%"></i></div></div></div>
+          </div>
+          <div class="row" data-tag="single">
+            <div class="topline"><span class="nm">Chelbesa, Gedeb</span><span class="leader"></span><span class="pr">15.00</span></div>
+            <p class="notes">Apricot, chamomile, long. <em>The one people queue for</em></p>
+            <div class="detail"><div><dl>
+              <dt>Producer</dt><dd>Chelbesa Station</dd>
+              <dt>Varietal</dt><dd>Local selection</dd>
+              <dt>Process</dt><dd>Washed, raised bed</dd>
+              <dt>Roast</dt><dd>Light 3 of 6</dd>
+            </dl><div class="roastbar"><i style="left:26%"></i></div></div></div>
+          </div>
+          <div class="row" data-tag="single">
+            <div class="topline"><span class="nm">El Paraíso, Cauca</span><span class="leader"></span><span class="pr">16.40</span></div>
+            <p class="notes">Raspberry, cocoa nib, cane. <em>Thermal shock washed</em></p>
+            <div class="detail"><div><dl>
+              <dt>Producer</dt><dd>Diego Bermúdez</dd>
+              <dt>Varietal</dt><dd>Caturra, Castillo</dd>
+              <dt>Process</dt><dd>Thermal shock washed</dd>
+              <dt>Roast</dt><dd>Light 3 of 6</dd>
+            </dl><div class="roastbar"><i style="left:24%"></i></div></div></div>
+          </div>
+          <div class="row" data-tag="single">
+            <div class="topline"><span class="nm">La Palma, Huila</span><span class="leader"></span><span class="pr">14.20</span></div>
+            <p class="notes">Red apple, toffee, a clean citrus edge.</p>
+            <div class="detail"><div><dl>
+              <dt>Producer</dt><dd>Finca La Palma y El Tucán</dd>
+              <dt>Varietal</dt><dd>Pink Bourbon</dd>
+              <dt>Process</dt><dd>Washed, 24 h</dd>
+              <dt>Roast</dt><dd>Light 3 of 6</dd>
+            </dl><div class="roastbar"><i style="left:26%"></i></div></div></div>
+          </div>
+          <div class="row" data-tag="single">
+            <div class="topline"><span class="nm">Gitesi Hills, Karongi</span><span class="leader"></span><span class="pr">12.40</span></div>
+            <p class="notes">Plum, black tea, brown sugar. Gentle and round.</p>
+            <div class="detail"><div><dl>
+              <dt>Producer</dt><dd>Gitesi Washing Station</dd>
+              <dt>Varietal</dt><dd>Red Bourbon</dd>
+              <dt>Process</dt><dd>Washed, 18 h</dd>
+              <dt>Roast</dt><dd>Medium-light 4 of 6</dd>
+            </dl><div class="roastbar"><i style="left:44%"></i></div></div></div>
+          </div>
+          <div class="row" data-tag="single">
+            <div class="topline"><span class="nm">Kayanza, Burundi</span><span class="leader"></span><span class="pr">13.00</span></div>
+            <p class="notes">Grapefruit, almond, a savoury finish.</p>
+            <div class="detail"><div><dl>
+              <dt>Producer</dt><dd>Kayanza commune lots</dd>
+              <dt>Varietal</dt><dd>Red Bourbon</dd>
+              <dt>Process</dt><dd>Double washed</dd>
+              <dt>Roast</dt><dd>Medium-light 4 of 6</dd>
+            </dl><div class="roastbar"><i style="left:42%"></i></div></div></div>
+          </div>
+          <div class="row" data-tag="single">
+            <div class="topline"><span class="nm">El Injerto, Huehue</span><span class="leader"></span><span class="pr">11.60</span></div>
+            <p class="notes">Milk chocolate, orange peel. Our house filter.</p>
+            <div class="detail"><div><dl>
+              <dt>Producer</dt><dd>Finca El Injerto</dd>
+              <dt>Varietal</dt><dd>Caturra, Bourbon</dd>
+              <dt>Process</dt><dd>Washed, patio dried</dd>
+              <dt>Roast</dt><dd>Medium 4 of 6</dd>
+            </dl><div class="roastbar"><i style="left:48%"></i></div></div></div>
+          </div>
+          <div class="row" data-tag="decaf">
+            <div class="topline"><span class="nm">Popayán <span class="tag d">Decaf</span></span><span class="leader"></span><span class="pr">13.20</span></div>
+            <p class="notes">Cocoa, stewed plum, thick. <em>Sugarcane process, Colombia</em></p>
+            <div class="detail"><div><dl>
+              <dt>Producer</dt><dd>Popayán regional blend</dd>
+              <dt>Varietal</dt><dd>Caturra, Castillo</dd>
+              <dt>Process</dt><dd>EA sugarcane</dd>
+              <dt>Roast</dt><dd>Medium 4 of 6</dd>
+            </dl><div class="roastbar"><i style="left:50%"></i></div></div></div>
+          </div>
+        </section>
+
+        <div class="note">
+          <h3>Today's note, pinned to the board</h3>
+          <p>The Uraga came off the roaster this morning at 06:40 and it is the best
+          thing we have put on this bar all year. If you only try one thing this week,
+          ask for it by name and have the roaster pour it for you.</p>
+          <p class="sig">— Ines, head roaster</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="foot">
+      <div><b>Wholesale</b>Trade accounts open Tuesdays.<br>Minimum four bags, delivered<br>within 12 miles of the shop.</div>
+      <div><b>Roast days</b>Tuesday and Friday, 06:00.<br>Green buying every second<br>Wednesday, by the sack.</div>
+      <div class="sig">Brew it strong.<br>Drink it slowly.</div>
+    </div>
+  </div>
+</main>
+
+<noscript><p style="color:#c9c0b2;text-align:center;font-family:monospace;font-size:12px;padding:2rem">
+The menu is written in full above. JavaScript adds the row-unfold and the filter.</p></noscript>
+
+<script>
+(function(){
+"use strict";
+/* stamp speckle — a rubber stamp never prints clean */
+var sp=document.getElementById('sp'),h='';
+for(var i=0;i<70;i++){
+  var a=Math.random()*6.283,r=38+Math.random()*10;
+  h+='<span style="position:absolute;left:50%;top:50%;width:'+(1+Math.random()*3).toFixed(1)+'px;height:'+
+    (1+Math.random()*3).toFixed(1)+'px;margin:'+(-(1+Math.random()*3)/2).toFixed(1)+'px 0 0 -'+(1+Math.random()*3)/2+
+    'px;background:currentColor;opacity:'+(0.5+Math.random()*0.5).toFixed(2)+';border-radius:'+
+    (Math.random()>.5?'50%':'20%')+';transform:rotate('+(a*57)+'deg) translate('+(Math.cos(a)*r)+'px,'+(Math.sin(a)*r)+'px)"></span>';
+}
+sp.innerHTML=h;
+
+/* filter */
+var rows=[].slice.call(document.querySelectorAll('.row')),cnt=document.getElementById('cnt');
+[].forEach.call(document.querySelectorAll('.seg button'),function(b){
+  b.onclick=function(){
+    [].forEach.call(document.querySelectorAll('.seg button'),function(x){x.classList.remove('on');});
+    b.classList.add('on');
+    var f=b.dataset.f,shown=0;
+    rows.forEach(function(r,idx){
+      var t=r.dataset.tag||'bar';
+      var ok=(f==='all')||(f==='single'&&t==='single')||(f==='decaf'&&t==='decaf');
+      r.classList.toggle('hide',!ok);
+      if(ok)shown++;
+    });
+    cnt.textContent=shown+(shown===1?' line on the board':' lines on the board');
+  };
+});
+/* touch: tap to unfold */
+rows.forEach(function(r){
+  r.setAttribute('tabindex','0');
+  r.addEventListener('click',function(){r.classList.toggle('open');});
+});
+addEventListener('keydown',function(e){if(e.key==='Escape')rows.forEach(function(r){r.classList.remove('open');});});
+})();
+</script>
+</body>
+</html>

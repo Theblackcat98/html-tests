@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>神奈川沖浪裏 — The Great Wave Off Kanagawa · Ukiyo-e Print Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@400;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+  :root{
+    --prussian:#16324f;
+    --prussian-deep:#0d2136;
+    --indigo:#2b5a86;
+    --foam:#f4f1e8;
+    --paper:#e9e2cd;
+    --paper-warm:#f6f2e6;
+    --seal:#b23a2e;
+    --mx:0px;
+    --my:0px;
+    --drift:0px;
+  }
+
+  html,body{height:100%}
+  body{
+    font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif;
+    color:var(--prussian-deep);
+    background:var(--paper);
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ── seigaiha (青海波) staggered-scale field ─────────────────── */
+  .seigaiha{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-color:var(--paper);
+    background-image:
+      radial-gradient(circle at 50% 100%, rgba(22,50,79,0) 0 17%, rgba(22,50,79,.085) 17% 24%, rgba(22,50,79,0) 24% 100%),
+      radial-gradient(circle at 50% 100%, rgba(22,50,79,0) 0 35%, rgba(22,50,79,.085) 35% 42%, rgba(22,50,79,0) 42% 100%),
+      radial-gradient(circle at 50% 100%, rgba(22,50,79,0) 0 53%, rgba(22,50,79,.085) 53% 60%, rgba(22,50,79,0) 60% 100%),
+      radial-gradient(circle at 50% 100%, rgba(22,50,79,0) 0 17%, rgba(22,50,79,.085) 17% 24%, rgba(22,50,79,0) 24% 100%),
+      radial-gradient(circle at 50% 100%, rgba(22,50,79,0) 0 35%, rgba(22,50,79,.085) 35% 42%, rgba(22,50,79,0) 42% 100%),
+      radial-gradient(circle at 50% 100%, rgba(22,50,79,0) 0 53%, rgba(22,50,79,.085) 53% 60%, rgba(22,50,79,0) 60% 100%);
+    background-size:132px 66px;
+    background-position:0 0, 0 0, 0 0, 66px 33px, 66px 33px, 66px 33px;
+    opacity:.9;
+  }
+  .seigaiha::after{
+    content:""; position:absolute; inset:0;
+    background:radial-gradient(120% 90% at 50% 42%, rgba(246,242,230,0) 22%, rgba(233,226,205,.86) 74%);
+  }
+
+  /* ── museum plate ──────────────────────────────────────────── */
+  .plate{
+    position:relative; z-index:2;
+    width:min(1320px, 94vw);
+    margin:clamp(18px,3.2vw,48px) auto;
+    padding:clamp(14px,1.5vw,22px);
+    background:linear-gradient(180deg,var(--paper-warm),var(--paper));
+    box-shadow:
+      0 1px 0 rgba(255,255,255,.7) inset,
+      0 30px 70px -28px rgba(13,33,54,.55),
+      0 2px 10px rgba(13,33,54,.14);
+  }
+  .plate::before{
+    content:""; position:absolute; inset:7px; pointer-events:none;
+    border:1px solid rgba(22,50,79,.24);
+  }
+
+  .mat{
+    position:relative;
+    overflow:hidden;
+    aspect-ratio:1200/760;
+    background:linear-gradient(180deg,#f7f3e7,#d6cdae);
+  }
+
+  .art{
+    position:absolute; inset:-3%;
+    width:106%; height:106%;
+    mix-blend-mode:multiply;
+    transform:translate3d(calc(var(--mx) * 0.42), calc(var(--my) * 0.42), 0) translate3d(0,var(--drift),0);
+    animation:drift 26s ease-in-out infinite alternate;
+  }
+  @keyframes drift{
+    0%{ --drift:-6px }
+    100%{ --drift:8px }
+  }
+  .art .far{ transform:translate3d(calc(var(--mx) * -0.16), calc(var(--my) * -0.16), 0); transition:transform .28s cubic-bezier(.22,.61,.36,1); }
+  .art .mid{ transform:translate3d(calc(var(--mx) * 0.55), calc(var(--my) * 0.55), 0); transition:transform .2s cubic-bezier(.22,.61,.36,1); }
+  .art .near{ transform:translate3d(calc(var(--mx) * 1), calc(var(--my) * 1), 0); transition:transform .14s linear; }
+
+  /* ── overlaid title lockup ─────────────────────────────────── */
+  .lockup{
+    position:absolute; left:clamp(20px,4.4vw,72px); top:clamp(16px,3.4vw,52px);
+    z-index:4; pointer-events:none; mix-blend-mode:multiply;
+  }
+  .lockup__eyebrow{
+    font-size:clamp(.56rem,.72vw,.72rem);
+    letter-spacing:.44em; text-transform:uppercase;
+    font-weight:500; color:var(--prussian);
+    padding-bottom:.9rem;
+    border-bottom:1px solid rgba(22,50,79,.45);
+    display:inline-block;
+  }
+  .lockup__jp{
+    font-family:"Zen Old Mincho","Hiragino Mincho ProN","Yu Mincho",serif;
+    font-weight:900;
+    font-size:clamp(2.4rem,8.4vw,7.4rem);
+    line-height:.94;
+    letter-spacing:.02em;
+    color:var(--prussian-deep);
+    margin:.6rem 0 .34rem;
+  }
+  .lockup__en{
+    font-size:clamp(.66rem,1.42vw,1.16rem);
+    letter-spacing:.36em; text-transform:uppercase; font-weight:400;
+    color:var(--prussian);
+  }
+  .lockup__note{
+    margin-top:.9rem; max-width:34ch;
+    font-family:"Cormorant Garamond",Georgia,serif;
+    font-style:italic; font-size:clamp(.9rem,1.2vw,1.12rem);
+    line-height:1.45; color:rgba(13,33,54,.78);
+  }
+
+  /* vermilion seal */
+  .seal{
+    position:absolute; right:clamp(16px,2.6vw,40px); bottom:clamp(16px,2.6vw,40px);
+    z-index:4; width:clamp(46px,4.6vw,64px); aspect-ratio:1;
+    background:var(--seal); color:#f7f3e7;
+    display:grid; grid-template-columns:1fr 1fr; place-items:center;
+    font-family:"Zen Old Mincho",serif; font-weight:700;
+    font-size:clamp(.62rem,.95vw,.86rem); line-height:1;
+    padding:6px; gap:0;
+    transform:rotate(-2.5deg);
+    box-shadow:0 6px 16px -8px rgba(13,33,54,.8);
+    mix-blend-mode:multiply;
+  }
+  .seal span:nth-child(1){grid-row:1;grid-column:1}
+  .seal span:nth-child(2){grid-row:1;grid-column:2}
+  .seal span:nth-child(3){grid-row:2;grid-column:1}
+  .seal span:nth-child(4){grid-row:2;grid-column:2}
+
+  /* ── vertical strip ────────────────────────────────────────── */
+  .strip{
+    position:fixed; z-index:6;
+    right:clamp(8px,1.6vw,26px); top:50%;
+    transform:translateY(-50%);
+    writing-mode:vertical-rl; text-orientation:upright;
+    font-family:"Zen Old Mincho",serif;
+    font-size:clamp(.66rem,.82vw,.82rem);
+    letter-spacing:.42em;
+    color:rgba(13,33,54,.72);
+    pointer-events:none;
+  }
+  .strip--alt{ right:auto; left:clamp(8px,1.6vw,26px); color:rgba(22,50,79,.55); }
+
+  /* ── caption row ───────────────────────────────────────────── */
+  .caption{
+    position:relative; z-index:3;
+    display:grid; gap:clamp(10px,1.6vw,26px);
+    grid-template-columns:1.4fr 1fr 1fr 1fr;
+    padding:clamp(14px,1.7vw,24px) clamp(2px,.4vw,8px) 2px;
+  }
+  .caption__cell{border-top:2px solid var(--prussian-deep); padding-top:.62rem}
+  .caption__cell dt{
+    font-size:.56rem; letter-spacing:.3em; text-transform:uppercase;
+    color:rgba(13,33,54,.6); font-weight:500; margin-bottom:.42rem;
+  }
+  .caption__cell dd{
+    font-size:clamp(.72rem,.92vw,.86rem); line-height:1.55;
+    color:rgba(13,33,54,.9);
+  }
+  .caption__cell dd b{font-weight:500; color:var(--prussian-deep)}
+
+  .colophon{
+    position:relative; z-index:3;
+    display:flex; justify-content:space-between; align-items:baseline; gap:16px;
+    padding:clamp(12px,1.5vw,20px) clamp(2px,.4vw,8px) 0;
+    font-size:.58rem; letter-spacing:.26em; text-transform:uppercase;
+    color:rgba(13,33,54,.55);
+    border-top:1px solid rgba(22,50,79,.22);
+    margin-top:clamp(10px,1.4vw,18px);
+  }
+  .colophon b{font-weight:500; color:var(--prussian)}
+
+  /* ── hover reveal on the print ─────────────────────────────── */
+  .mat::after{
+    content:"HENRIK ØSTERGAARD · 2026";
+    position:absolute; z-index:5; right:0; bottom:0;
+    padding:.5rem .8rem;
+    background:var(--prussian-deep); color:var(--foam);
+    font-size:.54rem; letter-spacing:.3em; text-transform:uppercase;
+    opacity:0; transform:translateY(6px);
+    transition:opacity .3s ease, transform .3s cubic-bezier(.22,.61,.36,1);
+  }
+  .mat:hover::after{opacity:1; transform:translateY(0)}
+
+  @media (max-width:900px){
+    .caption{grid-template-columns:1fr 1fr}
+    .strip{display:none}
+  }
+  @media (max-width:560px){
+    .caption{grid-template-columns:1fr}
+    .colophon{flex-direction:column; gap:6px}
+    .lockup__note{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .art{animation:none}
+    .art .far,.art .mid,.art .near{transition:none}
+  }
+</style>
+</head>
+<body>
+<noscript>
+  <div style="padding:24px;font-family:Georgia,serif;max-width:60ch;margin:0 auto">
+    <h1>The Great Wave off Kanagawa</h1>
+    <p>This print study draws its wave in inline SVG and reacts to pointer movement. Enable JavaScript to see the layered foam and parallax; the artwork itself is fully rendered as vector paths.</p>
+  </div>
+</noscript>
+
+<div class="seigaiha" aria-hidden="true"></div>
+<div class="strip strip--alt" aria-hidden="true">冨嶽三十六景 ・ 序之巻</div>
+<div class="strip" aria-hidden="true">葛飾北斎 ・ 冨嶽三十六景 ・ 神奈川沖浪裏 ・ 天保二年</div>
+
+<main class="plate">
+  <div class="mat">
+    <svg class="art" viewBox="0 0 1200 760" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Stylised woodblock print of a towering blue wave with white foam claws over Mount Fuji and three fishing boats.">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#f8f4e8"/>
+          <stop offset=".48" stop-color="#ece5d1"/>
+          <stop offset="1" stop-color="#d4caab"/>
+        </linearGradient>
+        <linearGradient id="gDeep" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#25567f"/>
+          <stop offset="1" stop-color="#0d2136"/>
+        </linearGradient>
+        <linearGradient id="gMid" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#33689a"/>
+          <stop offset="1" stop-color="#16324f"/>
+        </linearGradient>
+        <linearGradient id="gBack" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#6c8ba6"/>
+          <stop offset="1" stop-color="#3d5f80"/>
+        </linearGradient>
+        <radialGradient id="hollow" cx="50%" cy="50%" r="50%">
+          <stop offset="0" stop-color="#f2ecdb"/>
+          <stop offset="1" stop-color="#dfd5b8"/>
+        </radialGradient>
+      </defs>
+
+      <rect width="1200" height="760" fill="url(#sky)"/>
+
+      <g class="far">
+        <!-- cloud bars -->
+        <g fill="#fdfaf1" opacity=".85">
+          <rect x="60" y="120" width="220" height="16" rx="8"/>
+          <rect x="96" y="152" width="150" height="11" rx="5.5"/>
+          <rect x="880" y="96" width="260" height="18" rx="9"/>
+          <rect x="940" y="130" width="170" height="12" rx="6"/>
+          <rect x="300" y="212" width="180" height="10" rx="5"/>
+        </g>
+
+        <!-- Mount Fuji -->
+        <path d="M636 478 C 690 424 748 342 792 274 C 838 344 896 426 950 478 Z" fill="#b3bfc4"/>
+        <path d="M747 352 C 766 326 781 294 792 274 C 804 294 819 328 838 352 C 813 343 771 343 747 352 Z" fill="#fbf8ef"/>
+        <path d="M636 478 C 690 424 748 342 792 274 C 838 344 896 426 950 478" fill="none" stroke="#16324f" stroke-width="2.6" opacity=".5"/>
+
+        <!-- distant shore -->
+        <path d="M0 486 C 90 470 160 478 240 484 C 330 491 420 470 520 476 C 640 483 760 470 880 478 C 990 485 1090 476 1200 484 L1200 560 L0 560 Z" fill="#8ba2b4" opacity=".62"/>
+
+        <!-- far swell bands -->
+        <g fill="none" stroke="#3d5f80" stroke-width="3" opacity=".7">
+          <path d="M0 528 C 140 512 260 536 400 524 C 540 512 660 536 800 526 C 940 516 1060 534 1200 522"/>
+          <path d="M0 566 C 150 550 280 574 430 562 C 580 550 700 574 850 564 C 990 554 1100 570 1200 560"/>
+        </g>
+      </g>
+
+      <g class="mid">
+        <!-- the hollow (negative space) inside the curl -->
+        <path d="M470 470 C 486 384 540 316 610 292 C 664 274 716 296 740 340 C 756 370 752 406 732 428 C 714 448 686 450 668 430 C 648 408 634 386 610 368 C 580 346 540 348 514 374 C 492 396 478 432 470 470 Z" fill="url(#hollow)" opacity=".95"/>
+
+        <!-- the great wave body -->
+        <path d="M0 760 L0 634
+                 C 44 602 92 558 148 498
+                 C 226 414 288 312 372 242
+                 C 424 198 486 174 546 180
+                 C 622 188 690 242 726 312
+                 C 750 358 752 404 730 430
+                 C 712 452 682 452 664 432
+                 C 646 412 636 386 614 366
+                 C 588 342 552 336 520 346
+                 C 464 364 424 412 404 474
+                 C 378 556 368 640 366 760 Z"
+              fill="url(#gDeep)"/>
+
+        <!-- stylised internal water lines -->
+        <g fill="none" stroke="#0d2136" stroke-width="4" opacity=".55" stroke-linecap="round">
+          <path d="M60 690 C 120 656 200 640 268 648"/>
+          <path d="M110 728 C 180 694 250 682 320 692"/>
+          <path d="M170 596 C 220 566 268 556 316 566"/>
+          <path d="M300 486 C 344 448 386 428 430 428"/>
+          <path d="M236 640 C 300 606 372 598 438 612"/>
+        </g>
+        <g fill="none" stroke="#3f74a2" stroke-width="3" opacity=".5" stroke-linecap="round">
+          <path d="M60 672 C 124 638 202 624 272 632"/>
+          <path d="M180 578 C 230 550 276 542 320 552"/>
+        </g>
+      </g>
+
+      <g class="near">
+        <!-- right-hand swell -->
+        <path d="M598 760 C 640 660 720 588 830 566 C 940 544 1060 578 1140 646 C 1180 680 1200 718 1200 760 Z" fill="url(#gMid)"/>
+        <!-- foreground trough -->
+        <path d="M0 760 L0 706 C 120 686 250 692 370 712 C 500 734 620 748 760 760 Z" fill="#123049"/>
+
+        <!-- three boats -->
+        <g fill="#12283c">
+          <g>
+            <path d="M792 622 c 40 18 92 22 146 10 c 46 -10 78 -6 96 4 c -34 14 -84 16 -134 4 c -48 -12 -80 -16 -108 -18 Z"/>
+            <path d="M1030 604 c 36 16 84 20 132 8 c 42 -10 72 -6 88 4 c -32 12 -78 14 -124 2 c -44 -11 -74 -14 -96 -14 Z"/>
+            <g stroke="#f4f1e8" stroke-width="2.6" stroke-linecap="round" opacity=".9">
+              <path d="M812 606 l 10 -18 M 838 610 l 10 -20 M 866 612 l 10 -20 M 896 612 l 10 -18"/>
+              <path d="M1046 592 l 9 -16 M 1070 596 l 9 -17 M 1096 598 l 9 -16 M 1122 598 l 9 -14"/>
+            </g>
+          </g>
+        </g>
+
+        <!-- foam: crest band, claw fingers, lip, and trough edges -->
+        <g fill="none" stroke="#fbf9f2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8 628 C 52 596 100 552 154 494 C 232 410 292 310 376 240 C 428 196 490 172 550 178" stroke-width="15"/>
+          <path d="M518 196 C 588 196 652 226 702 270" stroke-width="14"/>
+          <path d="M566 234 C 632 248 688 284 724 334" stroke-width="13"/>
+          <path d="M606 288 C 658 308 694 346 714 390" stroke-width="12"/>
+          <path d="M732 430 C 712 444 686 434 668 410 C 650 386 634 362 604 344" stroke-width="10"/>
+          <path d="M604 758 C 644 662 722 592 832 570 C 942 548 1060 582 1142 650" stroke-width="10"/>
+          <path d="M6 702 C 126 682 254 688 372 708 C 500 730 620 744 756 756" stroke-width="7"/>
+          <path d="M300 486 C 344 450 388 430 428 428" stroke-width="7"/>
+          <path d="M58 668 C 122 634 202 620 272 628" stroke-width="6"/>
+        </g>
+        <!-- carve the fingers apart -->
+        <g fill="none" stroke="#16324f" stroke-width="5" stroke-linecap="round" opacity=".9">
+          <path d="M556 184 C 602 194 644 214 678 242"/>
+          <path d="M604 222 C 646 238 678 260 702 288"/>
+          <path d="M640 278 C 670 296 690 320 702 346"/>
+        </g>
+      </g>
+    </svg>
+
+    <div class="lockup">
+      <div class="lockup__eyebrow">Plate 01 &nbsp;·&nbsp; Ukiyo-e &nbsp;·&nbsp; Edo period</div>
+      <h1 class="lockup__jp">神奈川沖浪裏</h1>
+      <div class="lockup__en">The Great Wave off Kanagawa</h1>
+      <p class="lockup__note">Hokusai watched the swell from a fishing boat off the village of Kanagawa and cut it into wood. The blue is <em>bero-ai</em> — Prussian blue, imported, and dearer than gold.</p>
+    </div>
+
+    <div class="seal" aria-hidden="true">
+      <span>北</span><span>斎</span><span>画</span><span>印</span>
+    </div>
+  </div>
+
+  <dl class="caption">
+    <div class="caption__cell">
+      <dt>Print</dt>
+      <dd><b>Kanagawa-oki nami ura</b>, from the series <i>Thirty-six Views of Mount Fuji</i>. Katsushika Hokusai, c. 1831 (Tenpō 2).</dd>
+    </div>
+    <div class="caption__cell">
+      <dt>Technique</dt>
+      <dd>Colour woodblock: keyblock carved in relief, two colour blocks, <i>bokashi</i> gradation for the sky and the hollow of the wave.</dd>
+    </div>
+    <div class="caption__cell">
+      <dt>Provenance</dt>
+      <dd>Museum accession <b>MG.1954.312</b>. Longest surviving impression; a fine vertical grain from the keyblock, as seen in the sky.</dd>
+    </div>
+    <div class="caption__cell">
+      <dt>On this plate</dt>
+      <dd>Vector reconstruction. Foam claws are stroked paths, spray is generated along the crest, parallax is driven by the pointer.</dd>
+    </div>
+  </dl>
+
+  <div class="colophon">
+    <span><b>Study 02</b> &nbsp;—&nbsp; Layered inline SVG &amp; pointer parallax</span>
+    <span>Move the pointer across the print</span>
+  </div>
+</main>
+
+<script>
+(function(){
+  var root = document.documentElement;
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* pointer parallax ------------------------------------------------ */
+  var tx = 0, ty = 0, cx = 0, cy = 0;
+  if(!reduce){
+    window.addEventListener('pointermove', function(e){
+      var w = window.innerWidth, h = window.innerHeight;
+      tx = (e.clientX / w - 0.5) * -30;
+      ty = (e.clientY / h - 0.5) * -20;
+    }, {passive:true});
+
+    (function loop(){
+      cx += (tx - cx) * 0.055;
+      cy += (ty - cy) * 0.055;
+      root.style.setProperty('--mx', cx.toFixed(2) + 'px');
+      root.style.setProperty('--my', cy.toFixed(2) + 'px');
+      requestAnimationFrame(loop);
+    })();
+  }
+
+  /* foam spray along the crest ------------------------------------- */
+  var NS = 'http://www.w3.org/2000/svg';
+  var svg = document.querySelector('.art');
+  if(!svg) return;
+
+  /* crest polyline, in viewBox units — spray is scattered around it */
+  var crest = [
+    [26,612],[72,586],[118,548],[158,506],[196,462],[238,412],[278,358],
+    [318,306],[358,264],[398,228],[440,202],[482,186],[524,180],[566,184]
+  ];
+
+  var seed = 1831;
+  function rnd(){ seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
+
+  var frag = document.createDocumentFragment();
+  for(var i=0;i<190;i++){
+    var p = crest[(rnd() * crest.length) | 0];
+    var spread = 14 + rnd() * rnd() * 96;
+    var ang = -Math.PI * 0.94 + rnd() * Math.PI * 0.62;
+    var x = p[0] + Math.cos(ang) * spread * 0.85;
+    var y = p[1] + Math.sin(ang) * spread;
+    if(x < -20 || x > 1220 || y < 40 || y > 700) continue;
+    var c = document.createElementNS(NS, 'circle');
+    c.setAttribute('cx', x.toFixed(1));
+    c.setAttribute('cy', y.toFixed(1));
+    var r = 1.1 + rnd() * rnd() * 6.4;
+    c.setAttribute('r', r.toFixed(2));
+    c.setAttribute('fill', '#fbf9f2');
+    c.setAttribute('opacity', (0.35 + rnd() * 0.6).toFixed(2));
+    frag.appendChild(c);
+  }
+
+  /* a handful of larger detached droplets above the claw */
+  for(var j=0;j<26;j++){
+    var a = -Math.PI * 0.98 + rnd() * Math.PI * 0.5;
+    var d = 120 + rnd() * 190;
+    var c2 = document.createElementNS(NS, 'circle');
+    c2.setAttribute('cx', (470 + Math.cos(a) * d * 0.95).toFixed(1));
+    c2.setAttribute('cy', (208 + Math.sin(a) * d * 0.7).toFixed(1));
+    c2.setAttribute('r', (1.4 + rnd() * 3.4).toFixed(2));
+    c2.setAttribute('fill', '#fbf9f2');
+    c2.setAttribute('opacity', (0.4 + rnd() * 0.5).toFixed(2));
+    frag.appendChild(c2);
+  }
+  svg.appendChild(frag);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AURORA-7 Field Terminal — CRT Diagnostic Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box}
+  :root{
+    --phos:#5bff9a;
+    --phos-dim:#1f6b3f;
+    --amber:#ffb62e;
+    --amber-dim:#7a5210;
+    --room:#0a0f0b;
+    --mono:'VT323','Share Tech Mono',ui-monospace,'DejaVu Sans Mono','Courier New',monospace;
+  }
+  body.amber{--phos:var(--amber);--phos-dim:var(--amber-dim)}
+  html,body{min-height:100%}
+  body{
+    margin:0;
+    min-height:100dvh;
+    padding:clamp(10px,2vw,30px);
+    display:grid;
+    place-items:center;
+    color:var(--phos);
+    font-family:var(--mono);
+    background:
+      radial-gradient(130% 90% at 50% 0%, #17251b 0%, #0b110c 44%, #040705 100%);
+    overflow-x:hidden;
+    transition:color .5s ease;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:9;
+    background:repeating-linear-gradient(90deg, rgba(255,255,255,.022) 0 1px, transparent 1px 4px);
+    mix-blend-mode:overlay;
+  }
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:10;
+    background:radial-gradient(120% 100% at 50% 50%, transparent 52%, rgba(0,0,0,.72) 100%);
+  }
+  .rig{
+    position:relative;z-index:2;
+    width:min(1280px,100%);
+    display:grid;grid-template-columns:minmax(0,1fr) 254px;gap:clamp(12px,1.6vw,22px);
+    align-items:start;
+  }
+
+  /* ---------- RACK MODULES (left column) ---------- */
+  .rack{display:grid;gap:9px;padding-top:34px}
+  .mod{
+    position:relative;
+    padding:11px 12px 12px;
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:5px;
+    background:linear-gradient(180deg,#20241f,#101309 55%,#0a0d07);
+    box-shadow:0 16px 26px -18px #000, inset 0 1px 0 rgba(255,255,255,.09);
+  }
+  .mod::before,.mod::after{
+    content:"";position:absolute;top:50%;width:5px;height:5px;margin-top:-2.5px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#8d9c8a,#22271f);
+    box-shadow:inset 0 0 2px #000;
+  }
+  .mod::before{left:4px}.mod::after{right:4px}
+  .mod h3{
+    margin:0 0 8px;font-size:12px;letter-spacing:.24em;font-weight:400;
+    color:var(--phos);opacity:.78;text-transform:uppercase;
+  }
+  .mod .val{font-size:clamp(20px,2.1vw,27px);line-height:1;letter-spacing:.05em;
+    text-shadow:0 0 3px currentColor,0 0 12px var(--phos-dim);}
+  .mod .sub{margin-top:5px;font-size:12px;letter-spacing:.13em;opacity:.5}
+  .seg{display:flex;gap:3px;margin-top:8px}
+  .seg i{flex:1;height:9px;border-radius:1px;background:rgba(255,255,255,.07);
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.5);transition:background .3s,box-shadow .3s}
+  .seg i.on{background:var(--phos);box-shadow:0 0 6px var(--phos),0 0 14px var(--phos-dim)}
+  .array{display:grid;grid-template-columns:repeat(9,1fr);gap:3px;margin-top:9px}
+  .array i{aspect-ratio:1;border-radius:50%;background:rgba(255,255,255,.06);transition:background .22s,box-shadow .22s}
+  .array i.on{background:var(--phos);box-shadow:0 0 7px var(--phos)}
+  .wave{display:flex;align-items:flex-end;gap:3px;height:34px;margin-top:9px}
+  .wave i{flex:1;background:linear-gradient(180deg,var(--phos),var(--phos-dim));box-shadow:0 0 7px var(--phos-dim);transition:height .18s linear}
+  .lamp{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px;background:var(--phos);
+    box-shadow:0 0 8px var(--phos);animation:pulse 1.9s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.18}}
+
+  /* ---------- MONITOR ---------- */
+  .monitor{--rx:0deg;--ry:0deg;transition:transform .5s cubic-bezier(.2,.9,.25,1)}
+  .monitor.live{transform:perspective(1500px) rotateX(var(--rx)) rotateY(var(--ry)) scale(1.012)}
+  .bezel{
+    position:relative;padding:clamp(12px,1.4vw,22px);padding-top:clamp(30px,3.2vw,46px);
+    border-radius:clamp(20px,2.4vw,30px);background:linear-gradient(180deg,#333830 0%,#1a1e16 34%,#0d1009 100%);
+    box-shadow:0 50px 90px -34px #000,0 6px 0 -1px #070906,inset 0 1px 0 rgba(255,255,255,.16),inset 0 -3px 6px rgba(0,0,0,.8);
+  }
+  .bezel::before{
+    content:"";position:absolute;left:8%;right:8%;top:14px;height:14px;border-radius:2px;
+    background:repeating-linear-gradient(90deg,rgba(0,0,0,.72) 0 3px,transparent 3px 9px);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  .screen{
+    position:relative;isolation:isolate;overflow:hidden;height:clamp(330px,63dvh,620px);
+    border-radius:30px / 38px;background:radial-gradient(125% 135% at 50% 38%, #0e1c13 0%, #070d08 62%, #020402 100%);
+    box-shadow:inset 0 0 34px 6px rgba(0,0,0,.95),inset 0 0 110px 24px rgba(0,0,0,.78),0 0 70px -14px var(--phos-dim);
+  }
+  canvas#rain{position:absolute;inset:0;width:100%;height:100%;opacity:.17;z-index:0}
+  .scan{position:absolute;inset:0;z-index:3;pointer-events:none;
+    background:repeating-linear-gradient(180deg,rgba(0,0,0,.36) 0 1px,transparent 1px 3px)}
+  .scan::after{
+    content:"";position:absolute;left:0;right:0;height:34%;
+    background:linear-gradient(180deg,transparent,rgba(255,255,255,.055),transparent);
+    animation:roll 7.5s linear infinite;
+  }
+  @keyframes roll{0%{transform:translateY(-40%)}100%{transform:translateY(330%)}}
+  .glare{position:absolute;inset:0;z-index:4;pointer-events:none;border-radius:inherit;
+    mix-blend-mode:screen;opacity:.6;
+    background:
+      linear-gradient(122deg, rgba(255,255,255,.11) 0 12%, rgba(255,255,255,0) 30%),
+      radial-gradient(90% 60% at 12% 6%, rgba(255,255,255,.09), transparent 70%);
+  }
+  .term{
+    position:relative;z-index:2;height:100%;overflow-y:auto;overflow-x:hidden;
+    padding:clamp(13px,1.7vw,24px) clamp(12px,1.9vw,26px);
+    font-size:clamp(11px,.72vw + 6px,19px);line-height:1.28;letter-spacing:.04em;
+    text-shadow:0 0 2px currentColor,0 0 9px var(--phos-dim),0 0 26px var(--phos-dim);cursor:text;
+  }
+  .term::-webkit-scrollbar{width:7px}.term::-webkit-scrollbar-thumb{background:var(--phos-dim);border-radius:9px}
+  .ln{white-space:pre-wrap;word-break:break-word}
+  .ln.dim{opacity:.55}.ln.hot{color:#fff;text-shadow:0 0 4px #fff,0 0 14px var(--phos),0 0 34px var(--phos)}
+  .ln.warn{color:#ff7a5c;text-shadow:0 0 3px #ff7a5c,0 0 14px #a03a22}
+  .art{color:var(--phos);opacity:.9;line-height:1.02;letter-spacing:0}
+  .prompt{display:flex;align-items:baseline;gap:.45em;flex-wrap:wrap;margin-top:2px}
+  .prompt .who{white-space:nowrap}
+  .prompt input{
+    flex:1;min-width:9ch;background:transparent;border:0;outline:0;padding:0;color:var(--phos);
+    font:inherit;letter-spacing:inherit;caret-color:var(--phos);caret-shape:block;text-shadow:inherit;
+  }
+  .block{display:inline-block;width:.62em;height:1.02em;vertical-align:-.16em;background:var(--phos);
+    box-shadow:0 0 9px var(--phos);animation:blink 1.05s steps(1) infinite}
+  .prompt input:not(:placeholder-shown) + .block,.typed .block{display:none}
+  @keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+  .caret-on{animation:blink 1.05s steps(1) infinite}
+  .plate{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 6px 2px;
+    font-size:12px;letter-spacing:.2em;color:#a8b3a4;opacity:.6}
+  .keys{margin-top:2px;font-size:12px;letter-spacing:.16em;opacity:.5}
+  @media (max-width:900px){.rig{grid-template-columns:1fr}.screen{height:56dvh}
+    .rack{order:2;grid-template-columns:repeat(2,minmax(0,1fr));padding-top:0}}
+  @media (max-width:420px){.rack{grid-template-columns:1fr}.mod .val{font-size:22px}}
+  @media (prefers-reduced-motion:reduce){
+    .scan::after,.lamp,.block{animation:none}
+  }
+  noscript p{color:#ffb62e;font-size:14px;letter-spacing:.1em}
+</style>
+</head>
+<body>
+<div class="rig">
+  <div class="monitor" id="monitor">
+    <div class="bezel">
+      <div class="screen">
+        <canvas id="rain" aria-hidden="true"></canvas>
+        <div class="term" id="term" role="log" aria-live="polite" aria-label="Terminal output">
+          <div class="ln hot">AURORA-7 FIELD TERMINAL / NODE 04</div>
+          <div class="ln dim">SERIAL 04-117-B · 60Hz · 8192-BYTE ROM · COLD START</div>
+          <div class="ln">&nbsp;</div>
+          <div class="ln">Awaiting POST. Stand by<span class="block" style="margin-left:2px"></span></div>
+        </div>
+        <div class="scan" aria-hidden="true"></div>
+        <div class="glare" aria-hidden="true"></div>
+      </div>
+      <div class="plate">
+        <span>AURORA-7 · DIAGNOSTIC CONSOLE</span>
+        <span><span class="lamp" aria-hidden="true"></span>ONLINE</span>
+      </div>
+    </div>
+    <div class="keys">CLICK THE GLASS TO FOCUS · TYPE <strong>help</strong> FOR THE COMMAND LIST</div>
+  </div>
+
+  <aside class="rack" aria-label="Live system status">
+    <div class="mod"><h3>Phosphor Bias</h3>
+      <div class="val" id="v-bias">2.40<small>kV</small></div><div class="seg" id="s-bias"></div></div>
+    <div class="mod"><h3>Retrace</h3>
+      <div class="val" id="v-hz">60.0<small>Hz</small></div><div class="sub" id="v-hzsub">HORIZ 15.7 kHz · LOCKED</div></div>
+    <div class="mod"><h3>Core Load</h3>
+      <div class="val" id="v-load">34<small>%</small></div><div class="seg" id="s-load"></div></div>
+    <div class="mod"><h3>Helios Array</h3>
+      <div class="array" id="s-array"></div><div class="sub" id="v-arrsub">TRACKING 41.2° N / 9.8° W</div></div>
+    <div class="mod"><h3>Archive Spool</h3>
+      <div class="val" id="v-spool">61<small>%</small></div><div class="sub" id="v-spoolsub">41,208 / 67,000 FRAMES</div></div>
+    <div class="mod"><h3>Signal</h3>
+      <div class="wave" id="s-wave" aria-hidden="true"></div><div class="sub">GROUND LOOP · 2200–0600</div></div>
+    <div class="mod"><h3>Uptime</h3>
+      <div class="val" id="v-up">000:00:00</div><div class="sub">SHIFT: R. VASQUEZ · AMBER-3</div></div>
+  </aside>
+</div>
+<noscript><p>JAVASCRIPT DISABLED — BOOT SEQUENCE, LIVE READOUTS AND THE COMMAND LINE REQUIRE SCRIPTING. HARDWARE IS STILL POWERED.</p></noscript>
+
+<script>
+(function(){
+  "use strict";
+  var term=document.getElementById('term'), rain=document.getElementById('rain');
+  var $=function(s){return document.querySelector(s)};
+  var booted=false, rainOn=true, hist=[], hi=-1, boot0=Date.now();
+  /* ---------- ASCII RAIN ---------- */
+  var GLYPHS='アイウエオカキクケコサシスセソ0123456789ABCDEF<>/\\[]{}=+*·:-=+*';
+  var cols=[],cw=11,rw=0,rh=0,ctx=rain.getContext('2d'),last=0;
+  function sizeRain(){
+    var dpr=Math.min(2,window.devicePixelRatio||1),r=rain.getBoundingClientRect();
+    rain.width=Math.max(1,r.width*dpr);rain.height=Math.max(1,r.height*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);rw=r.width;rh=r.height;
+    cw=11;cols=[];for(var x=0;x<Math.ceil(r.width/cw);x++)cols.push({y:Math.random()*-60,speed:6+Math.random()*16});
+  }
+  function stepRain(ts){
+    if(!last)last=ts;var dt=Math.min(50,ts-last)/16.667;last=ts;
+    if(rainOn){
+      ctx.fillStyle='rgba(4,10,6,.13)';ctx.fillRect(0,0,rw,rh);
+      ctx.font='14px '+(getComputedStyle(document.body).getPropertyValue('--mono')||'monospace');
+      ctx.textBaseline='top';
+      for(var i=0;i<cols.length;i++){
+        var c=cols[i],ch=GLYPHS[(Math.random()*GLYPHS.length)|0];
+        ctx.fillStyle='rgba(255,255,255,.62)';
+        ctx.shadowColor=getComputedStyle(document.body).getPropertyValue('--phos');
+        ctx.shadowBlur=7;ctx.fillText(ch,i*cw,c.y);
+        ctx.shadowBlur=0;
+        c.y+=c.speed*dt;if(c.y>rh+20){c.y=-20;c.speed=6+Math.random()*16}
+      }
+    }else{ctx.clearRect(0,0,rw,rh)}
+    requestAnimationFrame(stepRain);
+  }
+  sizeRain();requestAnimationFrame(stepRain);
+  window.addEventListener('resize',sizeRain);
+  /* ---------- RACK MODULES ---------- */
+  var cells={};
+  function build(id,n){var e=document.getElementById(id),h='';for(var i=0;i<n;i++)h+='<i></i>';e.innerHTML=h;cells[id]=e.children;return cells[id]}
+  build('s-bias',10);build('s-load',12);build('s-array',27);
+  (function(){var w=document.getElementById('s-wave'),h='';for(var i=0;i<22;i++)h+='<i></i>';w.innerHTML=h;cells.wave=w.children})();
+  var load=34,bias=2.40,spool=61,frame=0;
+  function bar(el,n){for(var i=0;i<el.length;i++)el[i].className=i<n?'on':''}
+  function fmt(t){t=Math.max(0,Math.floor(t/1000));
+    var h=String((t/3600)|0).padStart(3,'0'),m=String(((t/60)|0)%60).padStart(2,'0'),s=String(t%60).padStart(2,'0');return h+':'+m+':'+s}
+  function tick(){
+    frame++;
+    load=Math.max(6,Math.min(97,load+Math.round((Math.random()-.5)*13)));
+    bias=Math.max(1.8,Math.min(3.1,bias+(Math.random()-.5)*.12));spool=Math.min(99,spool+(Math.random()>.55?1:0));
+    $('#v-load').innerHTML=load+'<small>%</small>';bar(cells['s-load'],Math.round(load/100*12));
+    $('#v-bias').innerHTML=bias.toFixed(2)+'<small>kV</small>';bar(cells['s-bias'],Math.round((bias-1.8)/1.3*10));
+    $('#v-spool').innerHTML=spool+'<small>%</small>';
+    $('#v-spoolsub').textContent=Math.round(spool/100*67000).toLocaleString('en-US')+' / 67,000 FRAMES';
+    $('#v-hz').innerHTML=(60+Math.sin(frame/9)*.06).toFixed(1)+'<small>Hz</small>';
+    $('#v-hzsub').textContent='HORIZ '+(15.72+Math.sin(frame/7)*.04).toFixed(2)+' kHz · LOCKED';
+    var a=cells['s-array'],n=0;
+    for(var i=0;i<a.length;i++){var on=Math.random()<.34+Math.sin(frame/11+i)*.3;if(on)n++;a[i].className=on?'on':''}
+    $('#v-arrsub').textContent='TRACKING '+(41.2+Math.sin(frame/23)*.6).toFixed(1)+'° N / '+(9.8+Math.cos(frame/19)*.4).toFixed(1)+'° W · '+n+'/27 CELLS';
+    var w=cells.wave;
+    for(var j=0;j<w.length;j++)w[j].style.height=(10+Math.abs(Math.sin(frame/6+j*.7)+Math.sin(frame/3+j)*.6)*26)+'%';
+    $('#v-up').textContent=fmt(Date.now()-boot0);
+  }
+  tick();setInterval(tick,1100);
+  /* ---------- TERMINAL ---------- */
+  function out(txt,cls){var d=document.createElement('div');d.className='ln'+(cls?' '+cls:'');d.textContent=txt;term.appendChild(d);term.scrollTop=term.scrollHeight;return d}
+  function art(txt){var d=document.createElement('div');d.className='ln art';d.textContent=txt;term.appendChild(d);term.scrollTop=term.scrollHeight}
+  function clearTerm(){term.innerHTML=''}
+  function ask(){
+    var p=document.createElement('div');p.className='prompt';
+    p.innerHTML='<span class="who">aurora:/field<span style="opacity:.6">#</span></span>'
+      +'<input id="cmd" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Command input" placeholder=" ">'
+      +'<span class="block" aria-hidden="true"></span>';
+    term.appendChild(p);term.scrollTop=term.scrollHeight;
+    var inp=p.querySelector('input');window.__cmd=inp;
+    if(matchMedia('(pointer:fine)').matches)inp.focus();
+    inp.addEventListener('input',function(){p.classList.toggle('typed',!!inp.value)});
+    inp.addEventListener('keydown',function(ev){
+      if(ev.key==='Enter'){var v=inp.value.trim();if(v)hist.push(v);hi=hist.length;run(v);p.remove();ask();term.scrollTop=term.scrollHeight}
+      else if(ev.key==='ArrowUp'){ev.preventDefault();if(hi>0){hi--;inp.value=hist[hi]||''}}
+      else if(ev.key==='ArrowDown'){ev.preventDefault();if(hi<hist.length-1){hi++;inp.value=hist[hi]}else{hi=hist.length;inp.value=''}}
+    });
+  }
+  function type(text,cb,spd){
+    var d=out('','dim'),i=0;
+    (function step(){
+      if(i<text.length){d.textContent+=text[i++];term.scrollTop=term.scrollHeight;setTimeout(step,spd||14)}
+      else setTimeout(cb,70);
+    })();
+  }
+  var BOOT=[
+    ['AURORA-7 RELAY STATION / DIAGNOSTIC CONSOLE',''],
+    ['ROM 8K · CRC 0x4F2A · POST 00:00:01.284',''],
+    ['LOADING MAGNETOMETER DAEMON ................ OK',''],
+    ['LOADING IONIZER BANK CONTROL ............. OK',''],
+    ['COLD SOLAR TRACKER CALIBRATION ........... OK',''],
+    ['MOUNTING /dev/field0 (4096 blocks) ........ OK',''],
+    ['SPOOLING ARCHIVE SPIRAL (41,208 frames) ... OK',''],
+    ['GROUND LOOP NOISE FLOOR ................. 31 dBmW','warn'],
+    ['VACUUM TUBE WARM-UP 78% — 4 MIN TO STABLE','dim'],
+    [''],
+    ['NIGHT WATCH SHIFT 2200-0600 · OPERATOR R. VASQUEZ',''],
+    ['TYPE help FOR AVAILABLE COMMANDS.','']
+  ];
+  function boot(){
+    if(booted)return;booted=true;var i=0;
+    (function next(){
+      if(i>=BOOT.length){
+        art('      .  ·  ˚  *  ·  ˚  .\n   ˚ ·  W A R M  ·  ˚\n      ·  ˚  ·  ˚  .  ·');
+        setTimeout(ask,600);return;
+      }
+      type(BOOT[i][0],function(){out(BOOT[i][1]);i++;next()},10);
+    })();
+  }
+  var FILES={
+    'manifest.cfg':['# AURORA-7 relay manifest','node=04','site=COSTA VERDE UPLINK','lat=41.2341','lon=-009.7812','sweep_deg=41.2','archive=41208','watch=2200-0600','duty=one operator, no relief'],
+    'field.log':['0042 2200 SHIFT OPEN — WIND 11 KT, CLEAR','0517 2312 ARRAY TRIM +0.4°','1130 0148 SPIRAL 6% DEGRADED, RESLOT OK','1904 0321 IONIZER BANK 3 ARKED, BYPASSED','2651 0502 AURORA ARC 780KM SOUTH','3120 0558 REFRACTURE RISING, ARRAY PARKED'],
+    'crew.txt':['R. VASQUEZ  — night watch, amber-3','K. OYELARAN — electronics, off-site','THE STATION — itself, arguably'],
+    'spectrum.dat':['  0.0 MHz  ####          118.0 MHz  ###','  5.5 MHz  ###           137.0 MHz  ######',' 22.0 MHz  ##            400.0 MHz  ##','108.0 MHz  #####         1660.0 MHz #','auroral 557.7 nm line: strong','hydrogen 656.3 nm line: nominal']
+  };
+  function run(raw){
+    var v=raw.trim();
+    if(!v)return;
+    var p=v.split(/\s+/),cmd=p[0].toLowerCase(),arg=(p[1]||'').toLowerCase();
+    if(booting)return;
+    out('aurora:/field# '+v,'hot');
+    switch(cmd){
+      case 'help':[['help','this list'],['ls','list /field'],['cat <file>','read a field file'],
+        ['date','station clock (UTC)'],['uptime','time since cold start'],['status','pull the rack telemetry'],
+        ['whoami','operator record'],['neofetch','station identity card'],['rain on|off','toggle glyph precipitation'],
+        ['theme green|amber','switch phosphor'],['history','this session'],['motd','message of the night'],
+        ['clear','wipe the glass']].forEach(function(r){out(r[0].padEnd(17)+r[1])});
+        break;
+      case 'ls':
+        out('FILE            SIZE   MODIFIED');
+        out('manifest.cfg     412 B  19 MAR');
+        out('field.log        2.9 KB  TODAY');
+        out('crew.txt         218 B  02 JAN');
+        out('spectrum.dat     1.4 KB  TODAY');
+        out('drift/           512 MB  DIR');
+        break;
+      case 'cat':
+        if(!arg){out('USAGE: cat <file>','warn');break}
+        if(FILES[arg])FILES[arg].forEach(function(l){out(l,arg==='field.log'?'dim':'')});
+        else out('cat: '+arg.toUpperCase()+': NO SUCH FILE ON THIS STATION','warn');
+        break;
+      case 'date':out(new Date().toUTCString().replace('GMT','UTC')+'  —  NIGHT WATCH, LOCAL 22:04','hot');break;
+      case 'uptime':out('COLD START '+fmt(Date.now()-boot0)+' · SCHEDULED SWAP 0600','hot');break;
+      case 'whoami':
+        out('OPERATOR   R. VASQUEZ');out('CLEARANCE  AMBER-3 (GROUND SYSTEMS)');
+        out('SHIFT      2200-0600, NO RELIEF ON STATION');out('LOCATION   COSTA VERDE UPLINK, 1,240 M');
+        break;
+      case 'status':
+        [['PHOSPHOR BIAS','#v-bias'],['CORE LOAD','#v-load'],['RETRACE','#v-hz'],
+         ['HELIOS ARRAY','#v-arrsub'],['ARCHIVE SPOOL','#v-spool']].forEach(function(r){
+          out(r[0].padEnd(15)+$(r[1]).textContent)});
+        break;
+      case 'neofetch':
+        art('        .  ·  ˚        ˚  ·  .\n     ╭───────────╮   AURORA-7 @ node-04\n     │  ╭─────╮  │   ---------\n     │  │ ▓▓▓ │  │   SHELL     ash-bios 4.1\n     │  ╰─────╯  │   THEME     phosphor-green\n     ╰───────────╯   RIG       14F4 P4 phosphor\n   ˚  ·  ˚  ·  ˚    CPU        load '+load+'%  @ 3.4MHz\n        ˚  ·  ˚        VACUUM    78% warmed');
+        out('');
+        out('  OS        AURORA-7 RELAY STATION 4.1.0');
+        out('  HOST      aurora-node04');
+        out('  UPTIME    '+fmt(Date.now()-boot0));
+        out('  ARCHIVE   '+Math.round(spool/100*67000).toLocaleString('en-US')+' frames spooled');
+        out('  SITE      COSTA VERDE UPLINK 41.23N 009.78W');
+        break;
+      case 'rain':
+        rainOn=(arg!=='off');
+        $('#rain').style.display=rainOn?'':'none';
+        if(!rainOn)ctx.clearRect(0,0,rain.width,rain.height);
+        out('GLYPH PRECIPITATION '+(rainOn?'ENGAGED':'SUPPRESSED'));
+        break;
+      case 'theme':
+        if(arg==='amber'||arg==='green'){document.body.classList.toggle('amber',arg==='amber');out('PHOSPHOR -> '+arg.toUpperCase(),'hot')}
+        else out('USAGE: theme green|amber','warn');
+        break;
+      case 'history':
+        if(!hist.length)out('NO HISTORY THIS SHIFT.');hist.forEach(function(h,i){out(String(i+1).padStart(3)+'  '+h,'dim')});
+        break;
+      case 'clear':clearTerm();return;
+      case 'exit':out('SESSION HELD OPEN BY THE REMOTE SUPERVISOR. TRY HARDER.','warn');break;
+      case 'sudo':out('NEGATIVE. THIS CONSOLE IS OLDER THAN YOUR CLEARANCE.','warn');break;
+      case 'motd':out('THE AURORA IS VISIBLE WITHOUT INSTRUMENTS. JUST LOOK UP.','hot');break;
+      default:out('NO SUCH ROUTINE: '+cmd,'warn');
+    }
+  }
+  var booting=true;document.addEventListener('click',function(e){
+    if(!booted)return;
+    if(e.target.closest('.term')&&window.__cmd)window.__cmd.focus();
+  });
+  var mon=$('#monitor');
+  window.addEventListener('pointermove',function(e){
+    var x=(e.clientX/innerWidth-.5),y=(e.clientY/innerHeight-.5);
+    mon.style.setProperty('--ry',(x*3.4).toFixed(2)+'deg');
+    mon.style.setProperty('--rx',(-y*2.2).toFixed(2)+'deg');
+    mon.classList.add('live');
+  });
+  window.addEventListener('pointerleave',function(){mon.classList.remove('live')});
+  setTimeout(function(){booting=false;boot()},620);
+})();
+</script>
+</body>
+</html>

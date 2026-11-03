@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>№ 70 — Amethyst, Chamber 3: a faceted stone under one lamp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,500;1,300&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   №70 — CRYSTAL / GEODE FACET
+   Core technique: a real solid (hexagonal prism, pyramid
+   termination, irregular broken base) is built in JS, rotated,
+   sorted back to front, and shaded per face from Lambert plus
+   Blinn-Phong against a movable point light. Nothing here is a
+   picture of a crystal; the facets are re-solved every frame.
+   Layout: full-bleed cavern, one centred specimen, museum
+   label anchored low-left, instrument panel opposite.
+   ============================================================ */
+:root{
+  --void:#07080c; --paper:#e8e0cf;
+  --ink:#191b22; --ink-2:#5d5a52;
+  --violet:#b98ce8;
+  --halo:#ffb76522;
+  --pad:clamp(16px,2.6vw,44px);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  min-height:100dvh;background:var(--void);color:var(--paper);
+  font-family:"IBM Plex Mono",ui-monospace,"Courier New",monospace;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+.scene{
+  position:relative;width:100%;height:100dvh;min-height:660px;overflow:hidden;isolation:isolate;
+  background:
+    radial-gradient(58% 48% at 50% 34%, var(--halo), transparent 72%),
+    radial-gradient(120% 92% at 50% 10%, #16202f 0%, #0c111b 46%, #06070b 100%),
+    var(--void);
+  transition:background 520ms ease;cursor:grab;
+}
+.scene.dragging{cursor:grabbing}
+.scene:focus-visible{outline:2px solid var(--violet);outline-offset:-5px}
+.bg{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
+.fg{position:absolute;inset:0;width:100%;height:100%;z-index:2;touch-action:none}
+.vig{position:absolute;inset:0;z-index:3;pointer-events:none;
+  background:radial-gradient(76% 66% at 50% 40%, transparent 38%, rgba(3,4,7,.74) 100%)}
+
+/* ---------- animated life (CSS, so it survives DOM rebuilds) ---------- */
+.caustic{animation:drift 7s ease-in-out infinite alternate}
+@keyframes drift{from{transform:translateX(-7px)}to{transform:translateX(7px)}}
+.tw{animation:tw var(--dur,2.2s) ease-in-out infinite;animation-delay:var(--dl,0s)}
+@keyframes tw{0%,100%{opacity:calc(var(--o,.4)*.2)}50%{opacity:var(--o,.4)}}
+
+/* ---------- type ---------- */
+.head{position:absolute;top:var(--pad);left:var(--pad);z-index:6;max-width:min(40ch,38vw)}
+.kicker{font-size:9.5px;letter-spacing:.32em;text-transform:uppercase;color:#7d8899;margin-bottom:14px}
+h1{font-family:"Cormorant Garamond",Georgia,serif;font-weight:300;line-height:.94;letter-spacing:-.022em;
+  font-size:clamp(34px,5.6vw,84px);text-wrap:balance}
+h1 em{font-style:italic;color:var(--violet)}
+.lede{margin-top:15px;font-size:11.5px;line-height:1.78;color:#93a0b3;max-width:35ch}
+
+/* ---------- specimen label ---------- */
+.label{
+  position:absolute;left:var(--pad);bottom:var(--pad);z-index:6;width:min(324px,84vw);
+  padding:20px 22px 17px;border-radius:2px;color:var(--ink);transform:rotate(-1.1deg);
+  background:linear-gradient(158deg,#f2ead8,#ddd2b9 62%,#ccc0a3);
+  box-shadow:0 26px 52px -26px rgba(0,0,0,.92),0 1px 0 rgba(255,255,255,.5) inset;
+}
+.label::after{content:"";position:absolute;inset:7px;border:1px solid rgba(25,27,34,.26);pointer-events:none}
+.label h2{font-family:"Cormorant Garamond",Georgia,serif;font-weight:500;font-size:21px;line-height:1.12;letter-spacing:-.012em}
+.label h2 small{display:block;font:400 9px/1 "IBM Plex Mono",monospace;letter-spacing:.28em;
+  text-transform:uppercase;color:var(--ink-2);margin-bottom:9px}
+.label dl{margin:14px 0 0;display:grid;grid-template-columns:auto 1fr;gap:7px 14px;font-size:10.5px;line-height:1.45}
+.label dt{color:var(--ink-2);letter-spacing:.15em;text-transform:uppercase;font-size:8.5px;padding-top:2px}
+.label dd{color:var(--ink)}
+.label .no{margin-top:14px;padding-top:11px;border-top:1px solid rgba(25,27,34,.24);
+  font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-2);
+  display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+/* ---------- instrument panel ---------- */
+.panel{position:absolute;right:var(--pad);bottom:var(--pad);z-index:6;width:min(238px,80vw);
+  padding:15px 16px 16px;border:1px solid rgba(150,175,205,.2);border-radius:3px;
+  background:linear-gradient(180deg,rgba(18,24,36,.8),rgba(10,13,20,.72));
+  backdrop-filter:blur(9px);box-shadow:0 20px 44px -26px #000}
+.panel h3{font-size:8.5px;letter-spacing:.3em;text-transform:uppercase;color:#7d8899;font-weight:400;margin-bottom:13px}
+.swatches{display:flex;gap:10px;margin-bottom:15px}
+.swatches button{position:relative;width:26px;height:26px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.3);cursor:pointer;padding:0;
+  transition:transform 200ms cubic-bezier(.2,1.6,.3,1)}
+.swatches button:hover{transform:scale(1.18)}
+.swatches button[aria-pressed=true]::after{content:"";position:absolute;width:38px;height:38px;margin:-13px;
+  border-radius:50%;border:1px solid currentColor;opacity:.7}
+.swatches button:focus-visible{outline:2px solid var(--violet);outline-offset:4px}
+.read{font-size:9.5px;line-height:1.95;color:#8c99ab;letter-spacing:.06em}
+.read div{display:flex;justify-content:space-between;gap:10px}
+.read b{color:var(--paper);font-weight:400;font-variant-numeric:tabular-nums}
+.hint{margin-top:13px;padding-top:11px;border-top:1px solid rgba(150,175,205,.16);
+  font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:#5f6b7c}
+
+@media (max-width:900px){
+  .scene{height:auto;min-height:0;display:flex;flex-direction:column;padding-bottom:var(--pad);cursor:default}
+  .bg,.fg{position:relative;inset:auto;height:62dvh;min-height:360px}
+  .fg{touch-action:pan-y}
+  .vig{display:none}
+  .head{order:1;position:static;width:auto;max-width:none;margin:var(--pad) var(--pad) 0}
+  .label{order:2;position:static;width:auto;margin:20px var(--pad) 0;transform:none}
+  .panel{order:3;position:static;width:auto;margin:14px var(--pad) 0}
+}
+@media (prefers-reduced-motion:reduce){
+  .caustic{animation:none}
+  .tw{animation:none;opacity:var(--o,.4)}
+  .swatches button{transition:none}
+}
+</style>
+</head>
+<body>
+
+<main class="scene" id="scene" tabindex="0" aria-describedby="howto" aria-label="An amethyst crystal in a dark chamber, lit by one movable lamp">
+
+  <!-- ============ cavern shell, full bleed ============ -->
+  <svg class="bg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <linearGradient id="rockG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#1d2534"/><stop offset="1" stop-color="#0a0d14"/>
+      </linearGradient>
+      <linearGradient id="floorG" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#1a2130"/><stop offset="1" stop-color="#05060a"/>
+      </linearGradient>
+      <radialGradient id="poolG" cx="50%" cy="0%" r="70%">
+        <stop offset="0" stop-color="#51637e" stop-opacity=".5"/>
+        <stop offset="1" stop-color="#51637e" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <path d="M0 0h1600v304l-150-46-118 62-160-84-142 96-176-70-128 84-150-58-96 62-180-70-100 56Z" fill="url(#rockG)"/>
+    <path d="M0 0h304l-40 250-70 190-90 210-104 0Z" fill="#0a0d14"/>
+    <path d="M1600 0h-324l52 244 78 196 96 200 98 0Z" fill="#0a0d14"/>
+    <path d="M0 1000v-176l132-58 116 74 154-96 138 82 160-58 142 70 176-92 148 86 154-58 140 70v256Z" fill="url(#floorG)"/>
+    <ellipse cx="800" cy="840" rx="540" ry="152" fill="url(#poolG)"/>
+    <g stroke="#4a5f7c" stroke-width="1.3" fill="none" opacity=".45">
+      <path d="M0 1000v-176l132-58 116 74M1600 1000v-176l-140 70-154-58"/>
+      <path d="M304 0l-40 250-70 190M1280 0l52 244 78 196"/>
+    </g>
+  </svg>
+
+  <!-- ============ stone, caustics, lamp ============ -->
+  <svg class="fg" id="fg" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+    <defs>
+      <radialGradient id="coreG" cx="50%" cy="50%" r="50%">
+        <stop offset="0" stop-color="#efdcff" stop-opacity=".95"/>
+        <stop offset=".4" stop-color="#b078e8" stop-opacity=".48"/>
+        <stop offset="1" stop-color="#5b2f8c" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="causticG" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#c79bff" stop-opacity="0"/>
+        <stop offset=".5" stop-color="#e2c6ff" stop-opacity=".65"/>
+        <stop offset="1" stop-color="#c79bff" stop-opacity="0"/>
+      </linearGradient>
+      <filter id="soft" x="-45%" y="-45%" width="190%" height="190%"><feGaussianBlur stdDeviation="10"/></filter>
+      <filter id="soft2" x="-45%" y="-45%" width="190%" height="190%"><feGaussianBlur stdDeviation="2.6"/></filter>
+    </defs>
+
+    <ellipse id="core" cx="500" cy="362" rx="196" ry="238" fill="url(#coreG)" filter="url(#soft)" style="mix-blend-mode:screen"/>
+    <g id="caustics" style="mix-blend-mode:screen" filter="url(#soft2)"></g>
+
+    <g id="lamp" style="cursor:move;color:#ffb765">
+      <g id="lampRay" style="color:inherit"><path d="M0 0 L0 0" stroke="currentColor" stroke-width="1" opacity=".28" fill="none"/></g>
+      <circle r="32" fill="currentColor" opacity=".15" filter="url(#soft)"/>
+      <circle r="15" fill="none" stroke="currentColor" stroke-width="1" opacity=".5"/>
+      <circle r="6" fill="currentColor"/>
+    </g>
+
+    <g id="body"></g>
+    <g id="inner" style="mix-blend-mode:screen"></g>
+    <g id="sparks" style="mix-blend-mode:screen"></g>
+
+    <g id="fallback" opacity=".92">
+      <polygon points="500,120 396,300 442,540 500,470" fill="#7d4fb5"/>
+      <polygon points="500,120 604,300 558,540 500,470" fill="#5a3588"/>
+      <polygon points="396,300 442,540 500,612 500,470" fill="#452769"/>
+      <polygon points="500,120 396,300 604,300" fill="#a86fd8" opacity=".7"/>
+    </g>
+  </svg>
+
+  <div class="vig" aria-hidden="true"></div>
+
+  <header class="head">
+    <p class="kicker">No. 70 &middot; Chamber 3, lamplight survey</p>
+    <h1>A stone that <em>returns</em> the lamp</h1>
+    <p class="lede">Quartz grows as flat faces and nothing else. Give it one small light
+      and every face answers at a different angle &mdash; nineteen of them, and never
+      more than a third awake at once.</p>
+  </header>
+
+  <section class="label" aria-label="Specimen label">
+    <h2><small>Mineral &mdash; specimen 11-A</small>Amethyst, &ldquo;sleepy hollow&rdquo; var.</h2>
+    <dl>
+      <dt>Formula</dt><dd>SiO<sub>2</sub> with Fe<sup>3+</sup> &mdash; the violet is iron</dd>
+      <dt>Locality</dt><dd>Artigas Formation, Cerro del Paso, Uruguay</dd>
+      <dt>System</dt><dd>Trigonal, point group 32</dd>
+      <dt>Mohs</dt><dd>7 &mdash; scratches glass, not steel</dd>
+      <dt>Measure</dt><dd>11.4 cm tall, 2.18 kg, base unrepaired</dd>
+    </dl>
+    <p class="no"><span>Accession 1968.114</span><span>Collected 14 March, by lamplight</span></p>
+  </section>
+
+  <section class="panel" aria-label="Light controls">
+    <h3>Lamp</h3>
+    <div class="swatches" role="group" aria-label="Lamp colour">
+      <button type="button" data-c="ffb765" data-n="Kerosene" style="background:#ffb765;color:#ffb765"
+              aria-pressed="true" aria-label="Kerosene lamp, warm amber"></button>
+      <button type="button" data-c="ff7d63" data-n="Ember" style="background:#ff7d63;color:#ff7d63"
+              aria-pressed="false" aria-label="Ember light, coral"></button>
+      <button type="button" data-c="9dc4ff" data-n="Moon" style="background:#9dc4ff;color:#9dc4ff"
+              aria-pressed="false" aria-label="Moonlight, pale blue"></button>
+    </div>
+    <div class="read">
+      <div><span>Lamp</span><b id="rLamp">Kerosene</b></div>
+      <div><span>Azimuth</span><b id="rAz">214&deg;</b></div>
+      <div><span>Altitude</span><b id="rAlt">&ndash;</b></div>
+      <div><span>Facets awake</span><b id="rLit">0 / 19</b></div>
+      <div><span>Rotation</span><b id="rRot">0&deg; / 0&deg;</b></div>
+    </div>
+    <p class="hint" id="howto">Drag the stone &middot; drag the lamp &middot; arrow keys</p>
+  </section>
+</main>
+
+<noscript>
+  <p style="position:absolute;z-index:9;bottom:var(--pad);left:50%;transform:translateX(-50%);
+     font:400 12px/1.7 'IBM Plex Mono',monospace;color:#8c99ab;text-align:center;max-width:42ch">
+    The nineteen facets are solved in JavaScript so they can follow your pointer. With
+    scripts off you get the flat placeholder stone and the label card.
+  </p>
+</noscript>
+
+<script>
+(function(){
+  "use strict";
+  var CX=500, CY=344, S=238, DEPTH=3.6, POOL=22;
+  var scene=document.getElementById("scene"), fg=document.getElementById("fg");
+  var gBody=document.getElementById("body"), gInner=document.getElementById("inner"),
+      gSparks=document.getElementById("sparks"), gCaust=document.getElementById("caustics"),
+      core=document.getElementById("core"), lampG=document.getElementById("lamp"),
+      lampRay=document.getElementById("lampRay").firstChild;
+  var rLamp=document.getElementById("rLamp"), rAz=document.getElementById("rAz"),
+      rAlt=document.getElementById("rAlt"), rLit=document.getElementById("rLit"),
+      rRot=document.getElementById("rRot"), NS="http://www.w3.org/2000/svg";
+  var reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  document.getElementById("fallback").style.display="none";
+
+  /* ---------- the solid ---------- */
+  var seed=9;
+  function rnd(){seed=(seed*1103515245+12345)%2147483648;return seed/2147483648}
+  var APEX=[0,1.02,0], R1=.72, R2=.82, YS=.34, YM=-.40, YB=-1.06;
+  var SHO=[], MID=[], BAS=[];
+  for(var i=0;i<6;i++){
+    var a=i*Math.PI/3+Math.PI/6, c=Math.cos(a), s=Math.sin(a);
+    SHO.push([R1*c,YS,R1*s]);
+    MID.push([R2*c,YM,R2*s]);
+    BAS.push([R2*(.70+.42*rnd())*c, YB-.18*rnd(), R2*(.70+.42*rnd())*s]);
+  }
+  var FACETS=[];
+  function face(pts,fam){
+    var c=[0,0,0];
+    for(var k=0;k<pts.length;k++){c[0]+=pts[k][0];c[1]+=pts[k][1];c[2]+=pts[k][2]}
+    FACETS.push({p:pts,c:[c[0]/pts.length,c[1]/pts.length,c[2]/pts.length],fam:fam});
+  }
+  for(i=0;i<6;i++){
+    var j=(i+1)%6;
+    face([APEX,SHO[i],SHO[j]],"cap");
+    face([SHO[i],SHO[j],MID[j],MID[i]],"up");
+    face([MID[i],MID[j],BAS[j],BAS[i]],"lo");
+  }
+  face(BAS.slice(),"base");
+
+  /* ---------- colour + small vector kit ---------- */
+  var TONE={cap:[182,130,240],up:[152,102,214],lo:[106,66,160],base:[84,48,130]};
+  function tone(fam,i){var t=TONE[fam],k=.84+.32*(((i*7)%5)/4);
+    return [t[0]*k,t[1]*k,t[2]*k]}
+  function rgb(c,a){return "rgba("+(c[0]|0)+","+(c[1]|0)+","+(c[2]|0)+","+a+")"}
+  function hex2rgb(h){return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]}
+  function dot(a,b){return a[0]*b[0]+a[1]*b[1]+a[2]*b[2]}
+  function nrm(v){var l=Math.hypot(v[0],v[1],v[2])||1;return [v[0]/l,v[1]/l,v[2]/l]}
+  function cross(a,b){return [a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]]}
+  var V=[0,0,1];
+
+  /* ---------- state ---------- */
+  var yaw=0.42, pitch=0.16, dragging=false;
+  var LAMP={x:-0.86,y:-0.60}, lampRGB=[255,183,101], lampName="Kerosene";
+  function rY(v){var c=Math.cos(yaw),s=Math.sin(yaw);return [v[0]*c+v[2]*s, v[1], -v[0]*s+v[2]*c]}
+  function rX(v){var c=Math.cos(pitch),s=Math.sin(pitch);return [v[0], v[1]*c-v[2]*s, v[1]*s+v[2]*c]}
+  function view(v){return rX(rY(v))}
+  function project(v){var p=DEPTH/(DEPTH-v[2]);
+    return {x:CX+v[0]*S*p, y:CY-v[1]*S*p, z:v[2]}}
+  function pts(list){var o="";for(var k=0;k<list.length;k++)
+    o+=(k?",":"")+list[k].x.toFixed(1)+","+list[k].y.toFixed(1);return o}
+
+  /* ---------- fixed pools so CSS animations are never restarted ---------- */
+  var sparkPool=[], k;
+  for(k=0;k<POOL;k++){
+    var g=document.createElementNS(NS,"g");
+    g.setAttribute("class","tw");
+    g.style.setProperty("--dur",(1.5+(k%6)*0.42).toFixed(2)+"s");
+    g.style.setProperty("--dl",(-(k%7)*0.31).toFixed(2)+"s");
+    var p=document.createElementNS(NS,"path");
+    p.setAttribute("d","M0,-7 1.3,-1.3 7,0 1.3,1.3 0,7 -1.3,1.3 -7,0 -1.3,-1.3Z");
+    p.setAttribute("fill","#fff7e4");
+    g.appendChild(p); gSparks.appendChild(g); sparkPool.push(g);
+  }
+  if(!gCaust.childNodes.length){
+    var ca="", baseY=636;
+    for(k=0;k<9;k++){
+      var a=(-1.2+k*0.3), wd=26+16*((k*5)%4), ht=5+3*((k*3)%3), cx=CX+Math.sin(a)*150;
+      ca+='<polygon class="caustic" style="animation-delay:'+(-(k*0.9)).toFixed(1)+'s" points="'
+        +(cx-wd).toFixed(1)+","+baseY+" "+(cx+wd).toFixed(1)+","+baseY+" "
+        +(cx+wd*.42).toFixed(1)+","+(baseY+ht+30).toFixed(1)+" "+(cx-wd*.38).toFixed(1)+","
+        +(baseY+ht+27).toFixed(1)+'" fill="url(#causticG)" opacity="'
+        +(.3+.2*((k*2)%3)).toFixed(2)+'"/>';
+    }
+    gCaust.innerHTML=ca;
+  }
+  var PLANES=[[[0,.98,0],[.64,-1,0.08],[0,.12,.6]],[[0,.92,0],[-.6,-1,.04],[0,.06,-.58]]];
+
+  /* ---------- one frame ---------- */
+  var tPrev=0;
+  function frame(now){
+    if(!tPrev)tPrev=now;
+    if(!reduced&&!dragging)yaw+=(now-tPrev)/16.7*0.13;
+    tPrev=now;
+
+    var L=nrm(view([LAMP.x*3.1, LAMP.y*3.1, 1.9]));
+    var H=nrm([L[0],L[1],L[2]+1]);
+    var order=[],i,f,vp,a,b,n,nv,front,ndl,spec,fr,c3;
+    for(i=0;i<FACETS.length;i++){
+      f=FACETS[i]; vp=f.p.map(view); a=vp[0]; b=vp[1];
+      n=nrm(cross([b[0]-a[0],b[1]-a[1],b[2]-a[2]],
+                  [vp[2][0]-a[0],vp[2][1]-a[1],vp[2][2]-a[2]]));
+      nv=dot(n,V); front=nv>=0; if(!front)n=[-n[0],-n[1],-n[2]];
+      ndl=dot(n,L);
+      spec=Math.pow(Math.max(0,dot(n,H)),20);
+      fr=Math.pow(1-Math.min(1,Math.abs(nv)),2.6);
+      c3=view(f.c);
+      order.push({i:i,fam:f.fam,pr:f.p.map(project),cp:project(c3),
+                  ndl:ndl,sp:spec,fr:fr,front:front,d:c3[2]});
+    }
+    order.sort(function(p,q){return p.d-q.d});
+
+    var lit=0, html="", sk=0, s2, col;
+    for(i=0;i<order.length;i++){
+      var o=order[i], base=tone(o.fam,o.i), lf=Math.max(0,o.ndl), lampMix=o.front?lf:lf*0.16;
+      var r=base[0]*(0.16+0.60*lf), gg=base[1]*(0.16+0.60*lf), bl=base[2]*(0.16+0.60*lf);
+      r+=lampRGB[0]*lampMix*0.20; gg+=lampRGB[1]*lampMix*0.20; bl+=lampRGB[2]*lampMix*0.20;
+      r+=o.fr*(250-90*o.fr)*0.30; gg+=o.fr*(232-70*o.fr)*0.22; bl+=o.fr*(255-40*o.fr)*0.42;
+      if(o.front){
+        r+=16; gg+=9; bl+=30;
+        s2=o.sp*290; r+=s2; gg+=s2*0.97; bl+=s2*0.9;
+        if(lf>0.14)lit++;
+      }else{var amb=.30+.34*lf,fr2=o.fr;
+        r=base[0]*amb+62*fr2; gg=base[1]*amb+44*fr2; bl=base[2]*amb+96*fr2}
+      col=[Math.min(255,r),Math.min(255,gg),Math.min(255,bl)];
+      html+='<polygon points="'+pts(o.pr)+'" fill="'+rgb(col,o.front?0.97:0.26)
+          +'" stroke="rgba(18,12,28,.55)" stroke-width="0.7" stroke-linejoin="round"/>';
+      if(o.front&&o.sp>0.08&&sk<POOL){
+        var g=sparkPool[sk++];
+        g.setAttribute("transform","translate("+o.cp.x.toFixed(1)+","+o.cp.y.toFixed(1)+") scale("
+          +Math.min(1.45,.42+o.sp*1.4).toFixed(2)+")");
+        g.style.setProperty("--o",(.3+o.sp*.7).toFixed(2));
+        g.style.display="";
+      }
+    }
+    for(i=sk;i<POOL;i++)sparkPool[i].style.display="none";
+    gBody.innerHTML=html;
+
+    /* internal cleavage planes, additive, catching the same lamp */
+    var ih="";
+    for(i=0;i<PLANES.length;i++){
+      var pp=PLANES[i].map(function(w){return project(view(w))});
+      var en=nrm(cross([pp[1].x-pp[0].x,pp[1].y-pp[0].y,0],[pp[2].x-pp[0].x,pp[2].y-pp[0].y,0]));
+      var face2=Math.abs(dot(en,V)), cx=0, cy=0;
+      for(var q2=0;q2<3;q2++){cx+=pp[q2].x; cy+=pp[q2].y}
+      ih+='<polygon points="'+pts(pp)+'" fill="'+rgb([216,182,255],.07+.15*face2)+'"/>'
+         +'<ellipse cx="'+(cx/3).toFixed(1)+'" cy="'+(cy/3).toFixed(1)+'" rx="10" ry="10" fill="'
+         +rgb([242,220,255],.18)+'"/>';
+    }
+    gInner.innerHTML=ih;
+
+    /* the lamp */
+    var lxp=CX+LAMP.x*300, lyp=CY+LAMP.y*250, org=project(view([0,0,0]));
+    lampG.setAttribute("transform","translate("+lxp.toFixed(1)+","+lyp.toFixed(1)+")");
+    lampG.setAttribute("style","cursor:move;color:"+rgb(lampRGB,1));
+    lampRay.setAttribute("d","M0 0 L"+(org.x-lxp).toFixed(1)+","+(org.y-lyp).toFixed(1));
+
+    /* the light trapped inside the stone */
+    var br=1+.045*Math.sin(now/1150);
+    core.setAttribute("rx",(192*br).toFixed(1));
+    core.setAttribute("ry",(234*br).toFixed(1));
+    core.setAttribute("fill-opacity",(.5+.42*Math.max(0,L[2])).toFixed(2));
+
+    var az=(Math.atan2(LAMP.x*3.1,LAMP.y*3.1)*180/Math.PI+360)%360;
+    rLamp.textContent=lampName;
+    rAz.textContent=az.toFixed(0)+"\u00B0";
+    rAlt.textContent=(Math.atan2(Math.hypot(LAMP.x*3.1,LAMP.y*3.1),1.9)*180/Math.PI).toFixed(0)+"\u00B0";
+    rLit.textContent=lit+" / "+FACETS.length;
+    rRot.textContent=(((yaw*180/Math.PI)%360+360)%360).toFixed(0)+"\u00B0 / "+(pitch*180/Math.PI).toFixed(0)+"\u00B0";
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- lamp colour ---------- */
+  var root=document.documentElement, sws=document.querySelectorAll(".swatches button");
+  [].forEach.call(sws,function(b){
+    b.addEventListener("click",function(){
+      lampRGB=hex2rgb(b.dataset.c); lampName=b.dataset.n;
+      root.style.setProperty("--halo",b.dataset.c+"22");
+      [].forEach.call(sws,function(o){o.setAttribute("aria-pressed",String(o===b))});
+    });
+  });
+
+  /* ---------- drag the stone, drag the lamp ---------- */
+  var mode="spin", last=null;
+  function toStage(e){
+    var r=fg.getBoundingClientRect(), sc=Math.min(r.width/1000,r.height/700);
+    return {x:(e.clientX-r.left-(r.width-1000*sc)/2)/sc, y:(e.clientY-r.top-(r.height-700*sc)/2)/sc};
+  }
+  scene.addEventListener("pointerdown",function(e){
+    var p=toStage(e);
+    mode=Math.hypot(p.x-(CX+LAMP.x*300),p.y-(CY+LAMP.y*250))<42?"lamp":"spin";
+    dragging=true; scene.classList.add("dragging");
+    last={x:e.clientX,y:e.clientY};
+    scene.setPointerCapture(e.pointerId); e.preventDefault();
+  });
+  scene.addEventListener("pointermove",function(e){
+    if(!dragging)return;
+    if(mode==="spin"){
+      yaw+=(e.clientX-last.x)*.008;
+      pitch=Math.max(-.95,Math.min(.95,pitch+(e.clientY-last.y)*.006));
+    }else{
+      var p=toStage(e);
+      LAMP.x=Math.max(-1.25,Math.min(1.25,(p.x-CX)/300));
+      LAMP.y=Math.max(-1.15,Math.min(1.15,(p.y-CY)/250));
+    }
+    last={x:e.clientX,y:e.clientY};
+  });
+  function up(){dragging=false;scene.classList.remove("dragging")}
+  scene.addEventListener("pointerup",up);
+  scene.addEventListener("pointercancel",up);
+  scene.addEventListener("keydown",function(e){
+    var d=.12,k=e.key;
+    if(k==="ArrowLeft")yaw-=d; else if(k==="ArrowRight")yaw+=d;
+    else if(k==="ArrowUp")pitch=Math.min(.95,pitch+d);
+    else if(k==="ArrowDown")pitch=Math.max(-.95,pitch-d); else return;
+    e.preventDefault();
+  });
+
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

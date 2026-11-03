@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AURORA — Frosted Glass Interface Kit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+  :root{
+    --ink:#05070a;
+    --ink-2:#080d12;
+    --mist:#e8f4f0;
+    --dim:rgba(232,244,240,.56);
+    --dimmer:rgba(232,244,240,.34);
+    --mint:#5ff2c2;
+    --jade:#14c39a;
+    --lime:#c6f24a;
+    --rose:#ff8fb1;
+    --tx:0deg; --ty:0deg; --px:50%; --py:50%;
+  }
+
+  html,body{min-height:100%}
+  body{
+    font-family:"Outfit","Segoe UI",system-ui,-apple-system,sans-serif;
+    background:var(--ink);
+    color:var(--mist);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+
+  /* ── mesh aurora: many large blurred radial blobs ───────────── */
+  .aurora{position:fixed; inset:-18vmax; z-index:0; pointer-events:none; filter:blur(0px) saturate(125%);}
+  .blob{position:absolute; border-radius:50%; mix-blend-mode:screen; will-change:transform;}
+  .b1{width:82vmax;height:82vmax;left:-14vmax;top:-10vmax;
+      background:radial-gradient(circle at 50% 50%, rgba(20,195,154,.72) 0%, rgba(20,195,154,.22) 42%, transparent 70%);
+      animation:float1 26s ease-in-out infinite alternate}
+  .b2{width:64vmax;height:64vmax;left:26vmax;top:8vmax;
+      background:radial-gradient(circle at 50% 50%, rgba(95,242,194,.5) 0%, rgba(95,242,194,.14) 45%, transparent 72%);
+      animation:float2 31s ease-in-out infinite alternate}
+  .b3{width:70vmax;height:70vmax;right:-16vmax;top:-6vmax;
+      background:radial-gradient(circle at 50% 50%, rgba(198,242,74,.4) 0%, rgba(198,242,74,.12) 44%, transparent 70%);
+      animation:float3 37s ease-in-out infinite alternate}
+  .b4{width:58vmax;height:58vmax;right:4vmax;bottom:-20vmax;
+      background:radial-gradient(circle at 50% 50%, rgba(255,143,177,.44) 0%, rgba(255,143,177,.13) 44%, transparent 72%);
+      animation:float4 29s ease-in-out infinite alternate}
+  .b5{width:48vmax;height:48vmax;left:16vmax;bottom:-16vmax;
+      background:radial-gradient(circle at 50% 50%, rgba(40,180,220,.4) 0%, rgba(40,180,220,.1) 46%, transparent 72%);
+      animation:float2 23s ease-in-out infinite alternate-reverse}
+  .b6{width:38vmax;height:38vmax;left:52vmax;top:-12vmax;
+      background:radial-gradient(circle at 50% 50%, rgba(120,255,210,.3) 0%, transparent 68%);
+      animation:float1 19s ease-in-out infinite alternate-reverse}
+
+  @keyframes float1{0%{transform:translate3d(0,0,0) scale(1)}100%{transform:translate3d(9vmax,6vmax,0) scale(1.16)}}
+  @keyframes float2{0%{transform:translate3d(0,0,0) scale(1.08)}100%{transform:translate3d(-11vmax,8vmax,0) scale(.9)}}
+  @keyframes float3{0%{transform:translate3d(0,0,0) scale(.95)}100%{transform:translate3d(-7vmax,-9vmax,0) scale(1.2)}}
+  @keyframes float4{0%{transform:translate3d(0,0,0) scale(1.12)}100%{transform:translate3d(8vmax,-7vmax,0) scale(.92)}}
+
+  .veil{position:fixed; inset:0; z-index:1; pointer-events:none;
+    background:radial-gradient(120% 90% at 50% 10%, rgba(5,7,10,0) 18%, rgba(5,7,10,.66) 76%, rgba(5,7,10,.92) 100%);}
+
+  /* film grain */
+  .grain{
+    position:fixed; inset:-50%; z-index:2; pointer-events:none;
+    opacity:.16; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation:grain .9s steps(3) infinite;
+  }
+  @keyframes grain{0%{transform:translate(0,0)}33%{transform:translate(-2%,1.5%)}66%{transform:translate(1.5%,-2%)}100%{transform:translate(0,0)}}
+
+  /* ── page frame ─────────────────────────────────────────────── */
+  .page{position:relative; z-index:4; min-height:100dvh; display:flex; flex-direction:column;
+    padding:clamp(18px,2.6vw,38px);}
+
+  .bar{display:flex; align-items:center; justify-content:space-between; gap:20px;
+    font-size:clamp(.6rem,.76vw,.72rem); letter-spacing:.26em; text-transform:uppercase; color:var(--dimmer);}
+  .bar strong{color:var(--mist); font-weight:500}
+  .bar nav{display:flex; gap:clamp(14px,1.8vw,32px)}
+  .bar a{color:var(--dimmer); text-decoration:none; transition:color .25s}
+  .bar a:hover{color:var(--mint)}
+
+  /* ── stage ──────────────────────────────────────────────────── */
+  .stage{flex:1; display:grid; grid-template-columns:1fr min(520px, 46vw); gap:clamp(24px,4vw,72px);
+    align-items:center; padding:clamp(30px,5vw,70px) 0;}
+
+  .pitch h1{
+    font-weight:200;
+    font-size:clamp(3rem, 7.6vw, 7.4rem);
+    line-height:.92; letter-spacing:-.035em;
+  }
+  .pitch h1 em{font-style:normal; font-weight:500;
+    background:linear-gradient(96deg, var(--mint), var(--lime) 42%, var(--rose) 96%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .pitch p{margin-top:clamp(16px,2vw,28px); max-width:44ch; font-size:clamp(.95rem,1.16vw,1.12rem);
+    line-height:1.62; color:var(--dim); font-weight:300;}
+
+  .stats{display:flex; gap:clamp(18px,2.4vw,44px); margin-top:clamp(24px,3vw,44px); flex-wrap:wrap}
+  .stat b{display:block; font-size:clamp(1.4rem,2.4vw,2.3rem); font-weight:300; letter-spacing:-.02em}
+  .stat span{font-size:.58rem; letter-spacing:.24em; text-transform:uppercase; color:var(--dimmer)}
+  .stat b i{font-style:normal; color:var(--mint)}
+
+  .cta{margin-top:clamp(24px,3vw,40px); display:flex; gap:12px; flex-wrap:wrap; align-items:center}
+  .btn{
+    position:relative; overflow:hidden; cursor:pointer;
+    padding:13px 26px; border-radius:999px; border:1px solid rgba(232,244,240,.22);
+    background:rgba(232,244,240,.05); color:var(--mist);
+    font-family:inherit; font-size:.68rem; letter-spacing:.24em; text-transform:uppercase;
+    -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px);
+    transition:border-color .3s, transform .3s cubic-bezier(.22,.61,.36,1);
+  }
+  .btn::after{content:""; position:absolute; inset:0;
+    background:linear-gradient(100deg, var(--mint), var(--lime));
+    transform:translateY(101%); transition:transform .42s cubic-bezier(.22,.61,.36,1); z-index:-1;}
+  .btn:hover{border-color:transparent; transform:translateY(-2px)}
+  .btn:hover::after{transform:translateY(0)}
+  .btn--solid{background:linear-gradient(100deg, var(--mint), var(--lime)); color:#04231b; border-color:transparent; font-weight:500}
+
+  /* ── the frosted card (3D tilt) ─────────────────────────────── */
+  .deck{perspective:1400px; perspective-origin:50% 50%}
+  .card{
+    position:relative;
+    transform-style:preserve-3d;
+    transform:rotateX(var(--ty)) rotateY(var(--tx)) translateZ(0);
+    transition:transform .5s cubic-bezier(.22,.61,.36,1);
+    border-radius:26px;
+    padding:clamp(20px,2.2vw,30px);
+    min-height:clamp(360px, 46vh, 520px);
+    display:flex; flex-direction:column; justify-content:space-between;
+    background:linear-gradient(150deg, rgba(255,255,255,.14), rgba(255,255,255,.035) 42%, rgba(255,255,255,.09));
+    -webkit-backdrop-filter:blur(26px) saturate(180%) brightness(1.06);
+    backdrop-filter:blur(26px) saturate(180%) brightness(1.06);
+    border:1px solid rgba(255,255,255,.2);
+    box-shadow:
+      0 40px 90px -40px rgba(0,0,0,.85),
+      0 2px 0 rgba(255,255,255,.28) inset,
+      0 -1px 0 rgba(0,0,0,.4) inset;
+    overflow:hidden;
+  }
+  .card::before{ /* refracted specular sheen tracking the pointer */
+    content:""; position:absolute; inset:-40%;
+    background:radial-gradient(30% 30% at var(--px) var(--py), rgba(255,255,255,.3), transparent 68%);
+    pointer-events:none; mix-blend-mode:screen;
+  }
+  .card::after{ /* top edge light */
+    content:""; position:absolute; left:8%; right:8%; top:-1px; height:1px;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,.75), transparent);
+  }
+
+  .card__head{transform:translateZ(46px); display:flex; justify-content:space-between; align-items:flex-start; gap:14px}
+  .card__title{font-size:.62rem; letter-spacing:.3em; text-transform:uppercase; color:var(--dimmer)}
+  .card__title b{display:block; margin-top:7px; font-size:clamp(1.05rem,1.5vw,1.42rem); letter-spacing:-.01em; color:var(--mist); font-weight:400}
+  .chip{font-size:.54rem; letter-spacing:.22em; text-transform:uppercase; padding:5px 10px; border-radius:999px;
+    border:1px solid rgba(95,242,194,.5); color:var(--mint); background:rgba(95,242,194,.08); white-space:nowrap}
+
+  .card__body{transform:translateZ(30px); margin:clamp(18px,2.4vw,30px) 0}
+  .row{display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center;
+    font-size:.74rem; color:var(--dim); padding:9px 0; border-bottom:1px solid rgba(255,255,255,.09)}
+  .row:last-child{border-bottom:0}
+  .row u{text-decoration:none; font-family:"JetBrains Mono",ui-monospace,monospace; font-size:.7rem; color:var(--mist)}
+  .row u.mint{color:var(--mint)}
+  .row u.rose{color:var(--rose)}
+  .barline{grid-column:1 / 3; height:3px; border-radius:3px; background:rgba(255,255,255,.12); overflow:hidden}
+  .barline i{display:block; height:100%; border-radius:3px;
+    background:linear-gradient(90deg, var(--jade), var(--mint), var(--lime));}
+
+  .card__foot{transform:translateZ(38px); display:flex; justify-content:space-between; align-items:flex-end; gap:16px}
+  .card__foot p{font-size:.66rem; line-height:1.5; color:var(--dimmer); max-width:30ch}
+  .dial{width:52px; height:52px; border-radius:50%; flex:0 0 auto; position:relative;
+    background:conic-gradient(var(--mint) 0 72%, rgba(255,255,255,.14) 72% 100%);
+    -webkit-mask:radial-gradient(circle, transparent 58%, #000 60%);
+    mask:radial-gradient(circle, transparent 58%, #000 60%);}
+  .dial::after{content:"72"; position:absolute; inset:0; display:grid; place-items:center;
+    font-size:.66rem; color:var(--mist); letter-spacing:.06em}
+
+  .ticker{margin-top:clamp(20px,3vw,40px); display:flex; gap:clamp(16px,2.4vw,48px); flex-wrap:wrap;
+    font-family:"JetBrains Mono",ui-monospace,monospace; font-size:.62rem; color:var(--dimmer);
+    border-top:1px solid rgba(232,244,240,.12); padding-top:14px}
+  .ticker b{color:var(--mint); font-weight:500}
+
+  .cursor{position:fixed; z-index:9; width:22px; height:22px; border-radius:50%; pointer-events:none;
+    border:1px solid rgba(232,244,240,.55); transform:translate(-50%,-50%);
+    transition:width .25s, height .25s, border-color .25s, background .25s;}
+  .cursor.is-over{width:46px; height:46px; background:rgba(95,242,194,.12); border-color:var(--mint)}
+
+  @media (max-width:1000px){
+    .stage{grid-template-columns:1fr}
+    .card{min-height:0}
+    .bar nav{display:none}
+  }
+  @media (max-width:520px){
+    .stats{gap:18px}
+    .row{font-size:.7rem}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .blob,.grain{animation:none}
+  }
+</style>
+</head>
+<body>
+<noscript>
+  <div style="padding:32px;max-width:60ch;margin:0 auto;font-family:system-ui,sans-serif">
+    <h1>Aurora</h1>
+    <p>Aurora is a frosted-glass interface kit: 240 components, four blur recipes, one noise field. This page needs JavaScript for the pointer tilt; the gradient field and layout are pure CSS.</p>
+  </div>
+</noscript>
+
+<div class="aurora" aria-hidden="true">
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <div class="blob b4"></div><div class="blob b5"></div><div class="blob b6"></div>
+</div>
+<div class="veil" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="cursor" id="cursor" aria-hidden="true"></div>
+
+<main class="page">
+  <header class="bar">
+    <strong>Aurora&nbsp;/&nbsp;Glass&nbsp;UI</strong>
+    <nav><a href="#">Components</a><a href="#">Recipes</a><a href="#">Docs</a><a href="#">Pricing</a></nav>
+    <span>Build 4.2.1</span>
+  </header>
+
+  <section class="stage">
+    <div class="pitch">
+      <h1>Interface that<br>refracts the <em>room.</em></h1>
+      <p>Aurora is a design system built on one idea: a panel should behave like glass, not like a picture of glass. Every surface samples the colour behind it, softens it, and keeps a single bright edge so the layer boundary never disappears.</p>
+
+      <div class="stats">
+        <div class="stat"><b>240</b><span>Components</span></div>
+        <div class="stat"><b><i>4</i></b><span>Blur recipes</span></div>
+        <div class="stat"><b>11<i>kb</i></b><span>Core bundle</span></div>
+        <div class="stat"><b>60<i>fps</i></b><span>On a 2019 laptop</span></div>
+      </div>
+
+      <div class="cta">
+        <button class="btn btn--solid">Read the docs</button>
+        <button class="btn">See the blur recipes</button>
+      </div>
+    </div>
+
+    <div class="deck">
+      <article class="card" id="card">
+        <div class="card__head">
+          <div class="card__title">Service<b>Refraction&nbsp;API</b></div>
+          <div class="chip">Beta</div>
+        </div>
+
+        <div class="card__body">
+          <div class="row">Backdrop sample rate <u>60 Hz</u><span class="barline"><i style="width:100%"></i></span></div>
+          <div class="row">Saturate boost <u class="mint">+180%</u><span class="barline"><i style="width:78%"></i></span></div>
+          <div class="row">Edge luminance <u>0.94</u><span class="barline"><i style="width:61%"></i></span></div>
+          <div class="row">Grain opacity <u class="rose">0.16</u><span class="barline"><i style="width:34%"></i></span></div>
+          <div class="row">GPU memory <u>8.4 MB</u><span class="barline"><i style="width:22%"></i></span></div>
+        </div>
+
+        <div class="card__foot">
+          <p>Move the pointer over this card. It tilts on two axes, the specular highlight follows, and the backdrop is re-sampled by the compositor.</p>
+          <div class="dial" aria-hidden="true"></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <div class="ticker">
+    <span>backdrop-filter <b>saturate(180%)</b></span>
+    <span>recipe <b>frost-26</b></span>
+    <span>tokens <b>--glass-edge / --glass-fill</b></span>
+    <span>study <b>04</b> &nbsp;mesh aurora + pointer tilt</span>
+  </div>
+</main>
+
+<script>
+(function(){
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var card = document.getElementById('card');
+  var cursor = document.getElementById('cursor');
+  var rx = 0, ry = 0, sx = 0, sy = 0, active = false;
+
+  if(card && !reduce){
+    var deck = card.parentElement;
+
+    card.addEventListener('pointermove', function(e){
+      var r = card.getBoundingClientRect();
+      var nx = (e.clientX - r.left) / r.width;
+      var ny = (e.clientY - r.top) / r.height;
+      ry = (nx - 0.5) * 20;
+      rx = -(ny - 0.5) * 16;
+      card.style.setProperty('--px', (nx * 100).toFixed(1) + '%');
+      card.style.setProperty('--py', (ny * 100).toFixed(1) + '%');
+    });
+    card.addEventListener('pointerleave', function(){ rx = 0; ry = 0; });
+    card.addEventListener('pointerenter', function(){ active = true; });
+
+    (function loop(){
+      sx += (rx - sx) * 0.12;
+      sy += (ry - sy) * 0.12;
+      card.style.setProperty('--ty', sx.toFixed(3) + 'deg');
+      card.style.setProperty('--tx', sy.toFixed(3) + 'deg');
+      requestAnimationFrame(loop);
+    })();
+  }
+
+  if(cursor && !reduce && window.matchMedia('(hover:hover)').matches){
+    var cx = 0, cy = 0, tx = 0, ty = 0;
+    window.addEventListener('pointermove', function(e){ tx = e.clientX; ty = e.clientY; }, {passive:true});
+    document.addEventListener('pointerover', function(e){
+      if(e.target.closest('a,button,.card')) cursor.classList.add('is-over');
+    });
+    document.addEventListener('pointerout', function(e){
+      if(e.target.closest('a,button,.card')) cursor.classList.remove('is-over');
+    });
+    (function loop(){
+      cx += (tx - cx) * 0.22; cy += (ty - cy) * 0.22;
+      cursor.style.transform = 'translate3d(' + cx.toFixed(1) + 'px,' + cy.toFixed(1) + 'px,0) translate(-50%,-50%)';
+      requestAnimationFrame(loop);
+    })();
+  }
+})();
+</script>
+</body>
+</html>

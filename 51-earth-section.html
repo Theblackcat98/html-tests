@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DEEP EARTH — Lithospheric Cross-Section, 0 to 6,371 km</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --ink:#0d0b0a; --panel:#171412; --panel2:#1e1a17; --line:#332c26;
+    --fg:#efe6da; --dim:#9b8c7c; --dimmer:#6d6055;
+    --hot:#ff7a2f; --ice:#7fd4ff; --paper:#e8dfd0;
+    --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --sans:"Space Grotesk",system-ui,-apple-system,Segoe UI,sans-serif;
+  }
+  html,body{height:100%}
+  body{
+    background:
+      radial-gradient(120% 70% at 50% -10%,#2a2320 0%,transparent 58%),
+      linear-gradient(178deg,#141110 0%,#0c0a09 60%,#080706 100%);
+    color:var(--fg);font-family:var(--sans);overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.30;mix-blend-mode:overlay;z-index:99;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='3'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+  /* ── masthead ───────────────────────────────────────── */
+  .mast{padding:20px 26px 14px;border-bottom:1px solid var(--line);
+    display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap}
+  .mast h1{font-size:clamp(20px,2.5vw,32px);font-weight:700;letter-spacing:-.02em;line-height:1}
+  .mast h1 span{color:var(--hot)}
+  .mast .kicker{font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+  .mast .meta{font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--dimmer);text-align:right;line-height:1.9}
+  .mast .meta b{color:var(--dim);font-weight:500}
+
+  /* ── three column rig ───────────────────────────────── */
+  .rig{display:grid;grid-template-columns:118px minmax(0,1fr) 336px;gap:0;align-items:start;
+    max-width:1560px;margin:0 auto;padding:20px 22px 60px}
+
+  /* left: temp scale + depth ruler */
+  .rail{position:sticky;top:18px;align-self:start;padding-top:112px}
+  .tscale{position:relative;height:min(74vh,660px);margin-left:34px;border-left:1px solid var(--line)}
+  .tscale .bar{position:absolute;inset:0 0 0 0;border-left:2px solid transparent;
+    background:linear-gradient(180deg,#3d6b8a 0%,#5b7a63 12%,#8a7440 30%,#a9622c 52%,#d8551c 72%,#ff9a3c 88%,#ffe9a8 100%);
+    opacity:.55;filter:blur(.4px)}
+  .tscale .lbl{position:absolute;left:9px;font-family:var(--mono);font-size:9.5px;color:var(--dim);
+    letter-spacing:.06em;white-space:nowrap;transform:translateY(-50%)}
+  .tscale .lbl::before{content:"";position:absolute;left:-9px;top:50%;width:6px;height:1px;background:var(--dimmer)}
+  .tscale .cap{position:absolute;left:9px;top:-24px;font-family:var(--mono);font-size:9px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--dimmer);transform:none}
+  .tscale .cap2{position:absolute;left:9px;bottom:-22px;font-family:var(--mono);font-size:9px;
+    letter-spacing:.14em;color:var(--dimmer);text-transform:uppercase;transform:none}
+
+  /* centre: the slice */
+  .slice{position:relative;min-width:0;display:flex;justify-content:center}
+  .frame{position:relative;width:100%;max-width:520px;border:1px solid var(--line);
+    background:#0a0908;box-shadow:0 40px 90px -40px #000, inset 0 0 0 1px rgba(255,255,255,.02);overflow:hidden}
+  .frame svg{display:block;width:100%;height:auto}
+  .frame .watermark{position:absolute;right:10px;top:8px;font-family:var(--mono);font-size:8.5px;
+    letter-spacing:.2em;color:rgba(255,255,255,.34);text-transform:uppercase;text-align:right;line-height:1.8}
+
+  /* depth ruler inside the frame */
+  .ruler{position:absolute;left:0;top:0;bottom:0;width:74px;pointer-events:none}
+  .ruler .row{position:absolute;left:0;right:0;display:flex;align-items:center;gap:6px;transform:translateY(-50%)}
+  .ruler .row i{display:block;height:1px;background:rgba(255,255,255,.4);width:12px;flex:none}
+  .ruler .row u{font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;color:rgba(255,255,255,.8);
+    text-decoration:none;text-shadow:0 1px 3px #000}
+  .ruler .row.maj i{width:22px;background:rgba(255,255,255,.75)}
+  .ruler .row.maj u{font-weight:600}
+  .ruler .row.min u{color:rgba(255,255,255,.42);font-size:8.5px}
+
+  /* HUD readout panel under the slice */
+  .hud{margin-top:14px;display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);
+    border:1px solid var(--line)}
+  .cell{background:var(--panel);padding:11px 12px 12px}
+  .cell em{display:block;font-family:var(--mono);font-style:normal;font-size:8.5px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--dimmer);margin-bottom:5px}
+  .cell b{display:block;font-family:var(--mono);font-size:clamp(15px,1.7vw,21px);font-weight:500;
+    letter-spacing:-.01em;color:var(--paper);font-variant-numeric:tabular-nums;line-height:1}
+  .cell b s{text-decoration:none;font-size:.52em;color:var(--dim);margin-left:2px;letter-spacing:.05em}
+  .cell .bar{height:3px;margin-top:9px;background:#2a2420;overflow:hidden}
+  .cell .bar u{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffb347,var(--hot));
+    transition:width .18s linear}
+
+  /* controls */
+  .ctl{margin-top:14px;border:1px solid var(--line);background:var(--panel);padding:14px 16px 16px}
+  .ctl h2{font-family:var(--mono);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--dim);
+    font-weight:500;margin-bottom:12px;display:flex;justify-content:space-between}
+  .ctl h2 em{font-style:normal;color:var(--hot)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:26px;background:transparent;cursor:ew-resize;display:block}
+  input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:99px;
+    background:linear-gradient(90deg,#2b3d49,#6b4a2a 34%,#a8501f 66%,#ffc46b)}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;margin-top:-7px;border-radius:99px;
+    background:radial-gradient(circle at 34% 30%,#fff6e6,#e39a4c 52%,#8a4a15);box-shadow:0 0 0 1px #2a1c0d,0 0 18px rgba(255,140,50,.6)}
+  input[type=range]::-moz-range-track{height:6px;border-radius:99px;
+    background:linear-gradient(90deg,#2b3d49,#6b4a2a 34%,#a8501f 66%,#ffc46b)}
+  input[type=range]::-moz-range-thumb{width:20px;height:20px;border:0;border-radius:99px;
+    background:radial-gradient(circle at 34% 30%,#fff6e6,#e39a4c 52%,#8a4a15);box-shadow:0 0 18px rgba(255,140,50,.6)}
+  .ticks{position:relative;height:14px;margin-top:-2px}
+  .ticks span{position:absolute;transform:translateX(-50%);font-family:var(--mono);font-size:8px;color:var(--dimmer);letter-spacing:.06em}
+  .btns{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .btn{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+    background:transparent;border:1px solid var(--line);color:var(--dim);padding:8px 12px;cursor:pointer;
+    transition:all .16s ease-out}
+  .btn:hover{color:var(--paper);border-color:#6a5949;background:#221d19}
+  .btn[aria-pressed=true]{color:#150e07;background:linear-gradient(180deg,#ffc06a,#e8862c);border-color:#e8862c;font-weight:600}
+  .hint{font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--dimmer);margin-top:10px;line-height:1.8}
+
+  /* right: layer cards */
+  .cards{display:flex;flex-direction:column;gap:9px;padding-left:22px;position:sticky;top:18px;max-height:calc(100vh - 36px);
+    overflow:auto;scrollbar-width:thin}
+  .cards h2{font-family:var(--mono);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:var(--dim);
+    font-weight:500;padding-bottom:3px}
+  .card{position:relative;border:1px solid var(--line);background:var(--panel2);padding:13px 14px 14px;
+    cursor:pointer;transition:border-color .2s,background .2s,transform .2s,opacity .25s;opacity:.5}
+  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c,#666);opacity:.35;transition:opacity .2s}
+  .card:hover{opacity:.9;transform:translateX(3px)}
+  .card.on{opacity:1;border-color:var(--c,#888);background:#241f1b}
+  .card.on::before{opacity:1;box-shadow:0 0 16px var(--c)}
+  .card .top{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .card h3{font-size:14.5px;font-weight:700;letter-spacing:-.01em;color:var(--paper)}
+  .card .state{font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;
+    padding:3px 7px;border:1px solid var(--c);color:var(--c);white-space:nowrap}
+  .card .rng{font-family:var(--mono);font-size:9.5px;color:var(--dim);margin-top:4px;letter-spacing:.04em;
+    font-variant-numeric:tabular-nums}
+  .card p{font-size:11.5px;line-height:1.65;color:#b6a794;margin-top:8px}
+  .card .read{font-family:var(--mono);font-size:9.5px;color:var(--c);margin-top:8px;letter-spacing:.04em;
+    font-variant-numeric:tabular-nums}
+  .foot{max-width:1560px;margin:0 auto;padding:0 22px 50px;font-family:var(--mono);font-size:9px;
+    letter-spacing:.12em;color:#574c42;line-height:1.9;text-transform:uppercase}
+  @media (max-width:1080px){
+    .rig{grid-template-columns:1fr;padding:16px 14px 40px}
+    .rail{display:none}
+    .cards{position:static;max-height:none;padding-left:0;margin-top:22px}
+    .hud{grid-template-columns:repeat(2,1fr)}
+    .frame{max-width:100%}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="mast">
+  <div>
+    <div class="kicker">Geoscience Instrument Panel — Plate 04</div>
+    <h1>DEEP <span>EARTH</span> — Lithospheric Cross-Section</h1>
+  </div>
+  <div class="meta">
+    Radius <b>6,371 km</b> &nbsp;·&nbsp; Radius <b>1,371 km</b><br>
+    Pressure at centre <b>360 GPa</b> &nbsp;·&nbsp; Core temperature <b>5,900 °C</b>
+  </div>
+</header>
+
+<main class="rig">
+
+  <!-- temperature scale -->
+  <aside class="rail" aria-label="Temperature scale">
+    <div class="tscale" aria-hidden="true">
+      <div class="bar"></div>
+      <div class="cap">Temp °C</div>
+      <div class="lbl" style="top:0%">15</div>
+      <div class="lbl" style="top:16.6%">1,000</div>
+      <div class="lbl" style="top:33.3%">2,000</div>
+      <div class="lbl" style="top:50%">3,000</div>
+      <div class="lbl" style="top:66.6%">4,000</div>
+      <div class="lbl" style="top:83.3%">5,000</div>
+      <div class="lbl" style="top:100%">5,900</div>
+      <div class="cap2">Kelvin 288 &rarr; 6,173</div>
+    </div>
+  </aside>
+
+  <!-- the slice -->
+  <section class="slice" aria-label="Vertical cross-section of the Earth">
+    <div class="frame">
+      <svg viewBox="0 0 720 1080" role="img" aria-label="Layered cross-section: crust, upper mantle, lower mantle, outer core and inner core beneath a mountain, ocean and city surface.">
+        <defs>
+          <!-- rock speckle for the crust -->
+          <filter id="fxRock" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+            <feTurbulence type="fractalNoise" baseFrequency="0.62" numOctaves="4" seed="11" result="n"/>
+            <feColorMatrix in="n" type="saturate" values="0"/>
+            <feComponentTransfer><feFuncA type="linear" slope="0.85" intercept="-0.1"/></feComponentTransfer>
+            <feBlend in="SourceGraphic" mode="multiply"/>
+          </filter>
+          <!-- stretched flow lines for the mantle -->
+          <filter id="fxFlow" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+            <feTurbulence type="fractalNoise" baseFrequency="0.006 0.13" numOctaves="3" seed="4" result="n"/>
+            <feColorMatrix in="n" type="saturate" values="0"/>
+            <feComponentTransfer><feFuncA type="linear" slope="1.05" intercept="-0.22"/></feComponentTransfer>
+            <feBlend in="SourceGraphic" mode="multiply"/>
+          </filter>
+          <!-- molten swirl ramp for the core -->
+          <filter id="fxMolten" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+            <feTurbulence type="fractalNoise" baseFrequency="0.009" numOctaves="4" seed="23" result="n"/>
+            <feColorMatrix in="n" type="saturate" values="0"/>
+            <feComponentTransfer result="ramp">
+              <feFuncR type="table" tableValues="0.05 0.20 0.52 0.95 1"/>
+              <feFuncG type="table" tableValues="0.03 0.08 0.20 0.55 0.88"/>
+              <feFuncB type="table" tableValues="0.06 0.05 0.10 0.28 0.66"/>
+              <feFuncA type="linear" slope="1.5" intercept="-0.25"/>
+            </feComponentTransfer>
+            <feBlend in="SourceGraphic" mode="screen"/>
+          </filter>
+          <!-- convection cells for the outer core -->
+          <filter id="fxConv" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+            <feTurbulence type="turbulence" baseFrequency="0.011" numOctaves="2" seed="5" result="n"/>
+            <feColorMatrix in="n" type="saturate" values="0"/>
+            <feComponentTransfer><feFuncA type="linear" slope="1.3" intercept="-0.32"/></feComponentTransfer>
+            <feBlend in="SourceGraphic" mode="multiply"/>
+          </filter>
+          <!-- inner core crystalline sparkle -->
+          <filter id="fxGrain" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+            <feTurbulence type="fractalNoise" baseFrequency="0.45 0.28" numOctaves="5" seed="31" result="n"/>
+            <feColorMatrix in="n" type="saturate" values="0"/>
+            <feComponentTransfer><feFuncA type="linear" slope="0.9" intercept="0.05"/></feComponentTransfer>
+            <feBlend in="SourceGraphic" mode="screen"/>
+          </filter>
+          <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#0c1622"/><stop offset=".55" stop-color="#22394d"/><stop offset="1" stop-color="#6b6a63"/>
+          </linearGradient>
+          <linearGradient id="gSea" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#2d6a7d"/><stop offset="1" stop-color="#0d2b38"/>
+          </linearGradient>
+          <linearGradient id="gCrust" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#9a8360"/><stop offset="1" stop-color="#5c4a35"/>
+          </linearGradient>
+          <linearGradient id="gUpper" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#8c6a4e"/><stop offset="1" stop-color="#6b4c36"/>
+          </linearGradient>
+          <linearGradient id="gLower" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#7a3f28"/><stop offset="1" stop-color="#4a1c14"/>
+          </linearGradient>
+          <linearGradient id="gOuter" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#e8762a"/><stop offset="1" stop-color="#ffc85e"/>
+          </linearGradient>
+          <linearGradient id="gInner" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#ffe9b0"/><stop offset="1" stop-color="#fffaf0"/>
+          </linearGradient>
+          <radialGradient id="gCore" cx=".5" cy=".5" r=".62">
+            <stop offset="0" stop-color="#fffdf2"/><stop offset=".55" stop-color="#ffe6a0"/><stop offset="1" stop-color="#f08a2a"/>
+          </radialGradient>
+          <radialGradient id="gSun" cx=".5" cy=".5" r=".5">
+            <stop offset="0" stop-color="#ffe9c2" stop-opacity=".9"/><stop offset="1" stop-color="#ffb968" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="gDrill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="rgba(255,255,255,0)"/><stop offset="1" stop-color="rgba(255,255,255,.85)"/>
+          </linearGradient>
+          <radialGradient id="gHot" cx=".5" cy=".5" r=".5">
+            <stop offset="0" stop-color="#fff2c0" stop-opacity=".95"/><stop offset=".4" stop-color="#ff9b34" stop-opacity=".5"/><stop offset="1" stop-color="#ff6a12" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+
+        <!-- surface sky -->
+        <rect x="0" y="0" width="720" height="118" fill="url(#gSky)"/>
+        <circle cx="612" cy="34" r="46" fill="url(#gSun)"/>
+        <circle cx="612" cy="34" r="9" fill="#ffe6b0" opacity=".9"/>
+
+        <!-- distant range -->
+        <path d="M0 96 L58 58 L104 84 L168 40 L226 78 L292 50 L340 88 L410 62 L470 92 L536 56 L600 90 L660 68 L720 100 L720 118 L0 118 Z"
+              fill="#2c3742" opacity=".85"/>
+        <path d="M168 40 L196 66 L182 64 L170 72 L156 64 L142 66 Z" fill="#cfd8e0" opacity=".7"/>
+        <path d="M536 56 L558 76 L546 74 L536 82 L524 74 L512 76 Z" fill="#cfd8e0" opacity=".6"/>
+        <!-- near range -->
+        <path d="M0 104 L74 72 L142 100 L214 66 L288 102 L366 74 L452 106 L534 78 L612 104 L720 84 L720 118 L0 118 Z" fill="#1b222a"/>
+
+        <!-- ocean -->
+        <rect x="0" y="98" width="360" height="20" fill="url(#gSea)"/>
+        <g stroke="#7fc8dc" stroke-width=".8" opacity=".5" fill="none">
+          <path d="M6 104 q10 -3 20 0 t20 0 t20 0"/><path d="M80 110 q10 -3 20 0 t20 0"/>
+          <path d="M150 106 q10 -3 20 0 t20 0 t20 0"/><path d="M250 112 q10 -3 20 0"/>
+        </g>
+        <!-- research vessel -->
+        <g transform="translate(196 96)">
+          <path d="M0 8 L30 8 L25 14 L5 14 Z" fill="#d8dee2"/>
+          <rect x="10" y="2" width="9" height="6" fill="#e8eef1"/>
+          <rect x="20" y="5" width="4" height="3" fill="#e8eef1"/>
+          <path d="M31 9 l9 2 l-9 2 z" fill="#8fb6c4"/>
+        </g>
+
+        <!-- land shelf + city + trees -->
+        <rect x="356" y="98" width="364" height="20" fill="#3b3325"/>
+        <path d="M356 98 L720 98 L720 106 L356 110 Z" fill="#4a3f2c"/>
+        <g fill="#c9bda6">
+          <rect x="392" y="86" width="12" height="14"/><rect x="410" y="80" width="9" height="20"/>
+          <rect x="424" y="90" width="16" height="10"/><rect x="446" y="76" width="11" height="24"/>
+          <rect x="463" y="88" width="14" height="12"/><rect x="483" y="82" width="8" height="18"/>
+          <rect x="497" y="92" width="18" height="8"/><rect x="521" y="78" width="10" height="20"/>
+          <rect x="537" y="90" width="13" height="10"/>
+        </g>
+        <g fill="#ffd88a" opacity=".85">
+          <rect x="393" y="88" width="2" height="2"/><rect x="412" y="83" width="2" height="2"/>
+          <rect x="427" y="92" width="2" height="2"/><rect x="448" y="79" width="2" height="2"/>
+          <rect x="465" y="90" width="2" height="2"/><rect x="523" y="81" width="2" height="2"/>
+          <rect x="540" y="92" width="2" height="2"/><rect x="485" y="85" width="2" height="2"/>
+        </g>
+        <g fill="#20301f">
+          <path d="M372 100 l7 -18 l7 18 z"/><path d="M378 100 l8 -22 l8 22 z"/>
+          <path d="M560 102 l7 -17 l7 17 z"/><path d="M580 100 l8 -20 l8 20 z"/>
+          <path d="M600 102 l6 -15 l6 15 z"/><path d="M650 100 l7 -19 l7 19 z"/>
+          <path d="M676 102 l8 -21 l8 21 z"/><path d="M700 100 l6 -16 l6 16 z"/>
+        </g>
+        <line x1="0" y1="117.5" x2="720" y2="117.5" stroke="#e9dcc4" stroke-width="1" opacity=".55"/>
+
+        <!-- layered body, geometry injected by script -->
+        <g id="bands"></g>
+        <g id="bounds"></g>
+
+        <!-- convection arrows in the outer core -->
+        <g id="conv" fill="none" stroke="#fff0c4" stroke-width="1.6" opacity=".42"></g>
+
+        <!-- drill string -->
+        <g id="drill" pointer-events="none">
+          <rect id="casing" x="352" y="0" width="7" fill="url(#gDrill)" opacity=".85"/>
+          <g id="bit">
+            <path d="M-9 0 L9 0 L0 20 Z" fill="#f3ece0"/>
+            <path d="M-9 0 L-2 9 M9 0 L2 9" stroke="#0c0a09" stroke-width="1.1"/>
+            <rect x="-11" y="-4" width="22" height="4" rx="1" fill="#d6cdbc"/>
+            <circle cx="0" cy="0" r="26" fill="url(#gHot)"/>
+          </g>
+        </g>
+        <g id="beams" pointer-events="none"></g>
+
+        <!-- glass -->
+        <rect x="0" y="118" width="720" height="962" fill="none" stroke="rgba(255,255,255,.07)"/>
+        <rect x="0" y="0" width="720" height="1080" fill="url(#vig)" style="fill:none"/>
+      </svg>
+      <div class="watermark" aria-hidden="true">Non-linear depth scale<br>Vertical exaggeration ≈ ×14 at surface</div>
+      <div class="ruler" id="ruler" aria-hidden="true"></div>
+    </div>
+
+    <!-- numeric readouts -->
+    <div class="hud" id="hud">
+      <div class="cell"><em>Depth</em><b id="vDepth">0.0<s>km</s></b>
+        <div class="bar"><u id="bDepth"></u></div></div>
+      <div class="cell"><em>Temperature</em><b id="vTemp">15<s>°C</s></b>
+        <div class="bar"><u id="bTemp"></u></div></div>
+      <div class="cell"><em>Pressure</em><b id="vPres">0.00<s>GPa</s></b>
+        <div class="bar"><u id="bPres"></u></div></div>
+      <div class="cell"><em>Layer</em><b id="vLayer" style="font-size:clamp(12px,1.3vw,16px)">Crust</b>
+        <div class="bar"><u id="bPhase" style="background:linear-gradient(90deg,#7fd4ff,#e8762a)"></u></div></div>
+    </div>
+
+    <!-- drill control -->
+    <div class="ctl">
+      <h2><span>Drill Control — Borehole KPB-07</span> <em id="rate">idle</em></h2>
+      <input id="slider" type="range" min="0" max="6371" step="1" value="0" aria-label="Drill depth in kilometres">
+      <div class="ticks" id="ticks"></div>
+      <div class="btns">
+        <button class="btn" id="bAuto" aria-pressed="false">Auto Descend</button>
+        <button class="btn" id="bSurface">Return to Surface</button>
+        <button class="btn" id="bCore">Jump to Centre</button>
+      </div>
+      <p class="hint">Drag the slider, scroll the section, or use ↑ ↓ / PgDn to drive the bit. A 12.2 km pilot hole was sunk at Kola in 1989; the deepest borehole ever drilled reached 12.3 km — less than 0.2 % of what you are looking at.</p>
+    </div>
+  </section>
+
+  <!-- layer cards -->
+  <aside class="cards" id="cards" aria-label="Layer reference">
+    <h2>Layer Reference — click to travel</h2>
+  </aside>
+</main>
+
+<p class="foot">Model: PREM (Dziewonski &amp; Anderson, 1981) reference Earth model · depth axis is non-linear, each band allotted space in proportion to its scientific interest · textures are procedural SVG turbulence, not photographs · everything on this page is drawn in the browser.</p>
+
+<noscript><p style="padding:24px;font:14px/1.7 system-ui;color:#c9bda6">The drill control on this page needs JavaScript. Without it you still have the full cross-section: continental crust to 35 km, upper mantle to 220 km, lower mantle to 2,890 km, liquid outer core to 5,150 km, and a solid iron inner core beneath that.</p></noscript>
+
+<script>
+(function(){
+  "use strict";
+  var NS="http://www.w3.org/2000/svg";
+  var TOP=118, H=1080, W=720, BASE=H-TOP;
+  var R=6371;
+
+  /* depth, °C, GPa — PREM */
+  var P=[[0,15,0.0004],[5,120,0.014],[20,420,0.6],[35,700,1.1],[60,1150,1.8],[100,1400,3.5],
+         [150,1620,5.2],[220,1850,7.0],[300,2100,9.0],[400,2700,13.5],[500,3000,18],[660,3300,23],
+         [1000,3800,36],[1500,4100,48],[2000,4400,60],[2500,4700,78],[2890,5000,100],[3500,5200,118],
+         [4000,5300,126],[4500,5400,134],[5150,5500,150],[5600,5620,200],[6000,5750,270],[6371,5900,360]];
+
+  var LAYERS=[
+    {id:"crust",name:"Crust",lo:0,hi:35,p0:0,p1:11,state:"Solid",c:"#c8b28a",
+     rng:"0 – 35 km below datum",fact:"Granitic, 35 km thick under the continent",
+     body:"Continental crust is granodiorite above and basaltic gabbro below, separated by the Conrad discontinuity. It holds every mine, aquifer, fossil and city."},
+    {id:"upper",name:"Upper mantle",lo:35,hi:220,p0:11,p1:27,state:"Ductile",c:"#d09a5e",
+     rng:"35 – 220 km",fact:"Rocks creep; plates slide on it",
+     body:"Peridotite, 0.1 – 0.5 % of it water. The asthenosphere at 80 – 200 km is weak enough that lithospheric plates glide on top of it like a stiff raft on wet clay."},
+    {id:"lower",name:"Lower mantle",lo:220,hi:2890,p0:27,p1:70,state:"Solid · convecting",c:"#c2593a",
+     rng:"220 – 2,890 km",fact:"Bridgmanite — the most abundant mineral in Earth",
+     body:"Silicate perovskite and ferropericlase. Nearly 1.9 billion cubic kilometres of it. It convects on a 100-million-year cycle, dragging the plates above and the iron core below."},
+    {id:"outer",name:"Outer core",lo:2890,hi:5150,p0:70,p1:89,state:"Liquid",c:"#ffb14a",
+     rng:"2,890 – 5,150 km",fact:"Liquid iron — the only magnetic dynamo we have",
+     body:"Molten iron–nickel–sulphur, hotter than the surface of the Sun at the top and 150 GPa at the bottom. Its convection twists the magnetic field, and the field shields the surface from solar wind."},
+    {id:"inner",name:"Inner core",lo:5150,hi:6371,p0:89,p1:100,state:"Solid",c:"#ffe9b0",
+     rng:"5,150 – 6,371 km",fact:"A 2,260 km iron ball, as hot as the surface of the Sun",
+     body:"Iron crystallised as the core cooled. Seismic shear waves cross it, so it is unambiguously solid — about 13 °C hotter than the melting point, kept solid only by crushing pressure."}
+  ];
+
+  var BOUNDS=[{d:35,l:"Moho discontinuity"},{d:220,l:"Gutenberg depth"},
+              {d:660,l:"Post-spinel transition"},{d:2890,l:"Core–mantle boundary"},
+              {d:5150,l:"Inner core boundary"}];
+
+  function at(x){ // interpolate PREM table
+    if(x<=P[0][0])return{t:P[0][1],p:P[0][2]};
+    for(var i=1;i<P.length;i++){
+      if(x<=P[i][0]){
+        var a=P[i-1],b=P[i],f=(x-a[0])/(b[0]-a[0]);
+        return{t:a[1]+(b[1]-a[1])*f,p:a[2]+(b[2]-a[2])*f};
+      }
+    }
+    var l=P[P.length-1];return{t:l[1],p:l[2]};
+  }
+  function pct(d){ // depth -> display percent of the band area
+    for(var i=1;i<LAYERS.length;i++){
+      var L=LAYERS[i];
+      if(d<=L.hi){
+        var prev=LAYERS[i-1];
+        return prev.p1 + (d-prev.hi)/(L.hi-prev.hi)*(L.p1-prev.p0);
+      }
+    }
+    return 100;
+  }
+  function yFor(d){return TOP + pct(d)/100*BASE;}
+  function layerAt(d){
+    for(var i=0;i<LAYERS.length;i++) if(d<LAYERS[i].hi) return LAYERS[i];
+    return LAYERS[LAYERS.length-1];
+  }
+
+  /* ── build band geometry ─────────────────────────────── */
+  var bands=document.getElementById("bands"), bnds=document.getElementById("bounds");
+  var defs=document.createElementNS(NS,"defs");
+  LAYERS.forEach(function(L,i){
+    LAYERS.forEach(function(M,j){
+      var gid="gClip"+i+"_"+j; if(!document.getElementById(gid)) defs.innerHTML+=
+        '<clipPath id="'+gid+'"><rect x="0" y="'+ (TOP+L.p0/100*BASE) +'" width="'+W+'" height="'+((L.p1-L.p0)/100*BASE+1)+'"/></clipPath>';
+    });
+  });
+  bands.appendChild(defs);
+
+  LAYERS.forEach(function(L,i){
+    var y=TOP+L.p0/100*BASE, h=(L.p1-L.p0)/100*BASE+1;
+    var g=document.createElementNS(NS,"g"); g.setAttribute("id","band-"+L.id);
+    var grad=["gCrust","gUpper","gLower","gOuter","gInner"][i];
+    var filt=["fxRock","fxFlow","fxFlow","fxMolten","fxGrain"][i];
+    var r=document.createElementNS(NS,"rect");
+    r.setAttribute("x",0);r.setAttribute("y",y);r.setAttribute("width",W);r.setAttribute("height",h);
+    r.setAttribute("fill","url(#"+grad+")");
+    var r2=r.cloneNode(); r2.setAttribute("filter","url(#"+filt+")"); r2.setAttribute("opacity",".55");
+    g.appendChild(r); g.appendChild(r2);
+    if(L.id==="outer"){
+      var gl=document.createElementNS(NS,"rect");
+      gl.setAttribute("x",0);gl.setAttribute("y",y);gl.setAttribute("width",W);gl.setAttribute("height",h);
+      gl.setAttribute("fill","url(#gOuter)"); gl.setAttribute("filter","url(#fxConv)"); gl.setAttribute("opacity",".6");
+      g.appendChild(gl);
+    }
+    if(L.id==="inner"){
+      var rg=document.createElementNS(NS,"ellipse");
+      rg.setAttribute("cx",W/2);rg.setAttribute("cy",TOP+95/100*BASE);
+      rg.setAttribute("rx",W*.44);rg.setAttribute("ry",(L.p1-L.p0)/200*BASE);
+      rg.setAttribute("fill","url(#gCore)"); rg.setAttribute("opacity",".85");
+      g.appendChild(rg);
+    }
+    /* texture bleed from neighbours, clipped — layered depth */
+    LAYERS.forEach(function(M,j){
+      if(j===i) return;
+      var my=TOP+M.p0/100*BASE, mh=(M.p1-M.p0)/100*BASE+1;
+      if(my+mh<=y || my>=y+h) return;
+      var o=document.createElementNS(NS,"rect");
+      o.setAttribute("x",0);o.setAttribute("y",my);o.setAttribute("width",W);o.setAttribute("height",mh);
+      o.setAttribute("filter","url(#"+["fxRock","fxFlow","fxFlow","fxMolten","fxGrain"][j]+")");
+      o.setAttribute("opacity",".22");
+      o.setAttribute("clip-path","url(#gClip"+i+"_"+j+")");
+      g.appendChild(o);
+    });
+    bands.appendChild(g);
+  });
+
+  BOUNDS.forEach(function(b){
+    var y=yFor(b.d);
+    var ln=document.createElementNS(NS,"line");
+    ln.setAttribute("x1",0);ln.setAttribute("x2",W);ln.setAttribute("y1",y);ln.setAttribute("y2",y);
+    ln.setAttribute("stroke","#fff6e6");ln.setAttribute("stroke-opacity",".55");
+    ln.setAttribute("stroke-width",b.d===2890||b.d===5150?"2":"1");
+    ln.setAttribute("stroke-dasharray",b.d===35?"none":"7 5");
+    bnds.appendChild(ln);
+  });
+
+  /* convection arrows in the outer core */
+  (function(){
+    var conv=document.getElementById("conv");
+    for(var i=0;i<9;i++){
+      var cx=40+ (i%5)*145 + (i>4?72:0);
+      var cy=TOP+72/100*BASE + (i>4?8/100*BASE:0);
+      var d="M"+cx+" "+(cy+30)+" c -16 -22 16 -40 0 -62";
+      var p=document.createElementNS(NS,"path");
+      p.setAttribute("d",d);p.setAttribute("id","cv"+i);
+      p.style.animation="none";
+      var mk=document.createElementNS(NS,"animate");
+      mk.setAttribute("attributeName","opacity");mk.setAttribute("values",".05;.5;.05");
+      mk.setAttribute("dur",(5+i*0.7).toFixed(1)+"s");mk.setAttribute("repeatCount","indefinite");
+      p.appendChild(mk);
+      var m2=document.createElementNS(NS,"animate");
+      m2.setAttribute("attributeName","d");
+      m2.setAttribute("values",d+";M"+cx+" "+(cy+18)+" c -20 -20 20 -34 0 -52;"+d);
+      m2.setAttribute("dur",(7+i*0.9).toFixed(1)+"s");m2.setAttribute("repeatCount","indefinite");
+      p.appendChild(m2);
+      conv.appendChild(p);
+    }
+  })();
+
+  /* depth ruler overlay */
+  (function(){
+    var rl=document.getElementById("ruler"), H2=1080;
+    var marks=[{d:0,l:"0",m:1},{d:7,l:"7",m:0},{d:35,l:"35",m:1},{d:100,l:"100",m:0},
+      {d:220,l:"220",m:1},{d:400,l:"400",m:0},{d:660,l:"660",m:1},{d:1000,l:"1,000",m:0},
+      {d:1500,l:"1,500",m:0},{d:2000,l:"2,000",m:1},{d:2890,l:"2,890",m:1},{d:4000,l:"4,000",m:0},
+      {d:5150,l:"5,150",m:1},{d:6000,l:"6,000",m:0},{d:6371,l:"6,371",m:1}];
+    marks.forEach(function(m){
+      var row=document.createElement("div");
+      row.className="row"+(m.m?" maj":" min");
+      row.style.top=(yFor(m.d)/H2*100).toFixed(3)+"%";
+      row.innerHTML="<i></i><u>"+m.l+"</u>";
+      rl.appendChild(row);
+    });
+    var cap=document.createElement("div");
+    cap.style.cssText="position:absolute;left:0;top:8px;font:500 8px/1 var(--mono);letter-spacing:.2em;color:rgba(255,255,255,.4);text-transform:uppercase";
+    cap.textContent="Depth km";
+    rl.appendChild(cap);
+  })();
+
+  /* slider ticks */
+  (function(){
+    var t=document.getElementById("ticks");
+    [0,1000,2000,3000,4000,5000,6371].forEach(function(d){
+      var s=document.createElement("span");
+      s.style.left=(d/R*100).toFixed(2)+"%";
+      s.textContent=d.toLocaleString();
+      t.appendChild(s);
+    });
+  })();
+
+  /* layer cards */
+  var cards=document.getElementById("cards");
+  LAYERS.forEach(function(L){
+    var el=document.createElement("div");
+    el.className="card"; el.style.setProperty("--c",L.c); el.dataset.id=L.id;
+    el.innerHTML='<div class="top"><h3>'+L.name+'</h3><span class="state">'+L.state+'</span></div>'+
+      '<div class="rng">'+L.rng+' km</div><p>'+L.body+'</p>'+
+      '<div class="read">'+L.fact+'</div>';
+    el.addEventListener("click",function(){ stop(); set(L.lo + (L.hi-L.lo)*0.42); });
+    cards.appendChild(el);
+  });
+
+  /* ── drill state ─────────────────────────────────────── */
+  var depth=0, target=0, auto=false, rate=0, last=0;
+  var slider=document.getElementById("slider");
+  slider.max=R;
+  var vD=document.getElementById("vDepth"), vT=document.getElementById("vTemp"),
+      vP=document.getElementById("vPres"), vL=document.getElementById("vLayer");
+  var bD=document.getElementById("bDepth"), bT=document.getElementById("bTemp"),
+      bP=document.getElementById("bPres"), bPh=document.getElementById("bPhase");
+  var bit=document.getElementById("bit"), casing=document.getElementById("casing"), beams=document.getElementById("beams");
+  var rateEl=document.getElementById("rate");
+
+  function set(v){
+    v=Math.max(0,Math.min(R,v));
+    target=v; depth=v; slider.value=Math.round(v); render();
+  }
+  function stop(){ if(auto){auto=false;document.getElementById("bAuto").setAttribute("aria-pressed","false");} }
+  function render(){
+    var d=depth, y=yFor(d), v=at(d), L=layerAt(d);
+    vD.innerHTML=v.d.toLocaleString(undefined,{maximumFractionDigits:1})+'<s>km</s>';
+    vT.innerHTML=Math.round(v.t).toLocaleString()+'<s>°C</s>';
+    vP.innerHTML=(v.p<10?v.p.toFixed(2):Math.round(v.p))+'<s>GPa</s>';
+    vL.textContent=L.name;
+    bD.style.width=(d/R*100).toFixed(2)+"%";
+    bT.style.width=Math.min(100,v.t/5900*100).toFixed(1)+"%";
+    bP.style.width=Math.min(100,v.p/360*100).toFixed(1)+"%";
+    bPh.style.width=Math.min(100,v.t/5900*100).toFixed(1)+"%";
+    vL.style.color=L.c;
+    bit.setAttribute("transform","translate(355.5,"+y.toFixed(2)+")");
+    casing.setAttribute("y",118); casing.setAttribute("height",Math.max(0,y-118).toFixed(2));
+    /* light halo pulses off the bit */
+    while(beams.firstChild) beams.removeChild(beams.firstChild);
+    var rg=document.createElementNS(NS,"rect");
+    rg.setAttribute("x",309);rg.setAttribute("y",y-120);rg.setAttribute("width",93);rg.setAttribute("height",140);
+    rg.setAttribute("fill","url(#gHot)");rg.setAttribute("opacity",(.14+Math.min(.3,v.t/5900*.3)).toFixed(3));
+    beams.appendChild(rg);
+    /* layer highlight */
+    LAYERS.forEach(function(M){
+      var c=cards.querySelector('.card[data-id="'+M.id+'"]');
+      if(!c) return;
+      c.classList.toggle("on",M.id===L.id);
+      var g=document.getElementById("band-"+M.id);
+      if(g) g.setAttribute("opacity", M.id===L.id ? "1" : "0.42");
+    });
+  }
+  function tick(t){
+    var dt=Math.min(0.05,(t-last)/1000||0); last=t;
+    if(auto){
+      target+= (R/34)*dt;
+      if(target>=R){target=R;stop();}
+      depth+= (target-depth)*0.14; slider.value=Math.round(depth);
+      rateEl.textContent="descending "+Math.round(R/34)+" km/s";
+    }else if(Math.abs(target-depth)>0.4){
+      var prev=depth; depth+=(target-depth)*0.22;
+      rateEl.textContent=(target>depth?"descending":"ascending")+" "+Math.round(Math.abs(depth-prev)/Math.max(dt,.001))+" km/s";
+    }else if(rateEl.textContent!=="idle"&&!auto){ rateEl.textContent="holding at "+Math.round(depth)+" km"; }
+    render();
+    requestAnimationFrame(tick);
+  }
+
+  slider.addEventListener("input",function(){ stop(); set(+slider.value); });
+  var bAuto=document.getElementById("bAuto");
+  bAuto.addEventListener("click",function(){
+    auto=!auto; bAuto.setAttribute("aria-pressed",auto);
+    if(auto&&depth>=R-1) set(0);
+  });
+  document.getElementById("bSurface").addEventListener("click",function(){stop();set(0);});
+  document.getElementById("bCore").addEventListener("click",function(){stop();set(R-60);});
+
+  document.querySelector(".frame").addEventListener("wheel",function(e){
+    e.preventDefault(); stop(); set(target + Math.sign(e.deltaY)*Math.max(40,Math.abs(e.deltaY)*0.9));
+  },{passive:false});
+  window.addEventListener("keydown",function(e){
+    if(e.key==="ArrowDown"||e.key==="PageDown"){e.preventDefault();stop();set(target+(e.shiftKey?300:90));}
+    if(e.key==="ArrowUp"||e.key==="PageUp"){e.preventDefault();stop();set(target-(e.shiftKey?300:90));}
+  });
+  render(); requestAnimationFrame(function(t){last=t;tick(t);});
+})();
+</script>
+</body>
+</html>

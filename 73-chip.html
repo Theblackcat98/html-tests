@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AXIOM A9-220 — 3 nm Gate-All-Around SoC Die Shot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   AXIOM A9-220 — MACRO DIE SHOT
+   Technique: DOM grid of functional blocks with layered metal
+   gradients + mix-blend-mode specular sheen; lens-window macro zoom.
+   Skeleton: instrument dashboard (left viewport / right telemetry).
+   ============================================================ */
+:root{
+  --bg:#07090c;
+  --panel:#0c1015;
+  --panel2:#11161d;
+  --line:#1e2731;
+  --line2:#2c3a47;
+  --txt:#c3d0db;
+  --dim:#66788a;
+  --hot:#7fe3ff;
+  --hi:#ffcf70;
+  --ok:#5fe3a6;
+  --red:#ff6b5a;
+  --si:#141b23;
+  --z:1;
+  --tx:0%;
+  --ty:0%;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--bg);color:var(--txt);
+  font-family:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;
+}
+.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------------- top bar ---------------- */
+.top{
+  display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:.6rem 1.4rem;
+  padding:.6rem clamp(.7rem,2vw,1.4rem);
+  border-bottom:1px solid var(--line);background:var(--panel);
+}
+.top .id{display:flex;align-items:baseline;gap:.7rem}
+.top .id b{font-size:clamp(.95rem,1.7vw,1.25rem);letter-spacing:-.01em;color:#e8f2f8;font-weight:600}
+.top .id span{font-family:"IBM Plex Mono",monospace;font-size:.6rem;letter-spacing:.18em;color:var(--dim);text-transform:uppercase}
+.top .stats{display:flex;gap:1.3rem;flex-wrap:wrap}
+.top .stats div{font-family:"IBM Plex Mono",monospace;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.top .stats div b{display:block;font-size:.78rem;color:var(--hot);letter-spacing:.04em;font-weight:500}
+.live{display:inline-flex;align-items:center;gap:.4rem}
+.live::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--ok);
+  box-shadow:0 0 8px var(--ok);animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+
+/* ---------------- dashboard grid ---------------- */
+.dash{
+  display:grid;
+  grid-template-columns:minmax(0,1.32fr) minmax(300px,.68fr);
+  gap:1px;background:var(--line);
+  min-height:calc(100dvh - 49px);
+}
+@media (max-width:1040px){ .dash{grid-template-columns:1fr} }
+
+/* ---- viewport ---- */
+.vp{position:relative;background:
+  radial-gradient(90% 80% at 50% 30%, #12181f 0%, #0a0e13 60%, #06080b 100%);
+  padding:clamp(.8rem,2vw,1.6rem);display:flex;flex-direction:column;gap:.8rem;overflow:hidden}
+.vp .hbar{display:flex;justify-content:space-between;align-items:center;gap:1rem;
+  font-family:"IBM Plex Mono",monospace;font-size:.58rem;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--dim)}
+.vp .hbar b{color:var(--hot);font-weight:500}
+
+.stage{
+  position:relative;flex:1;min-height:min(60vh,520px);
+  background:
+    linear-gradient(180deg,#0d1218,#080b0f),
+    repeating-linear-gradient(45deg, rgba(255,255,255,.012) 0 2px, transparent 2px 6px);
+  border:1px solid var(--line);overflow:hidden;border-radius:2px;
+  display:grid;place-items:center;
+}
+/* probe stage markings */
+.stage::before,.stage::after{
+  content:"";position:absolute;left:0;right:0;height:14px;pointer-events:none;z-index:6;
+  background:repeating-linear-gradient(90deg,var(--line) 0 1px,transparent 1px 12px);
+  opacity:.55;
+}
+.stage::before{top:0} .stage::after{bottom:0}
+
+.lens{
+  position:relative;z-index:4;
+  width:min(100%,640px);aspect-ratio:1;
+  transform:scale(calc(1 + (var(--z) - 1) * .02));
+  transition:transform .18s linear;
+}
+/* the die */
+.die{
+  position:absolute;inset:0;display:grid;z-index:3;
+  grid-template-columns:repeat(22,1fr);grid-template-rows:repeat(22,1fr);
+  transform:scale(var(--z)) translate(var(--tx),var(--ty));
+  transform-origin:50% 50%;
+  transition:transform .16s cubic-bezier(.22,.9,.24,1);
+  background:var(--si);
+  box-shadow:
+    0 0 0 1px #46586a,
+    0 0 0 7px #10161d,
+    0 0 0 8px #6a7c8c,
+    0 34px 70px -26px #000,
+    inset 0 0 60px rgba(0,0,0,.65);
+  border-radius:2px;
+}
+.blk{
+  position:relative;overflow:hidden;
+  border:.5px solid rgba(150,190,215,.14);
+  background:
+    linear-gradient(155deg,
+      #3b4a58 0%, #2a3542 18%, #465768 34%, #222c37 52%,
+      #3d4d5c 70%, #1c242d 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(210,240,255,.28),
+    inset 0 -1px 0 rgba(0,0,0,.5),
+    inset 1px 0 0 rgba(190,225,245,.10);
+  transition:filter .16s, box-shadow .16s, background .16s;
+}
+/* fine standard-cell floorplan */
+.blk::before{
+  content:"";position:absolute;inset:0;opacity:.5;
+  background:
+    repeating-linear-gradient(90deg, rgba(190,225,245,.10) 0 1px, transparent 1px 5px),
+    repeating-linear-gradient(0deg,  rgba(190,225,245,.08) 0 1px, transparent 1px 4px);
+}
+.blk::after{ /* block legend, revealed on hover */
+  content:attr(data-l);
+  position:absolute;left:4px;top:3px;
+  font-family:"IBM Plex Mono",monospace;font-size:8px;letter-spacing:.08em;
+  color:#dff2fb;text-transform:uppercase;
+  text-shadow:0 0 6px #000, 0 0 3px #000;
+  opacity:0;transition:opacity .14s;pointer-events:none;z-index:4;
+}
+.blk:hover{filter:brightness(1.5) saturate(1.15)}
+.blk:hover::after{opacity:1}
+.blk.on{
+  background:linear-gradient(155deg,#8fd8f0,#3f7f9c 40%,#1d3a4c);
+  box-shadow:inset 0 0 0 1px var(--hot), 0 0 22px -2px rgba(127,227,255,.6);
+  filter:none;
+}
+.blk.on::after{opacity:1;color:#041018}
+.die.has-sel .blk:not(.on){filter:brightness(.62) saturate(.6)}
+.die.has-sel .blk.on::after{text-shadow:none}
+
+/* metal routing: dense orthogonal wiring over the whole die */
+.routing{
+  position:absolute;inset:0;pointer-events:none;z-index:4;opacity:.42;
+  mix-blend-mode:screen;
+  background:
+    repeating-linear-gradient(0deg, rgba(150,200,225,.20) 0 1px, transparent 1px 11px),
+    repeating-linear-gradient(90deg, rgba(190,225,245,.13) 0 1px, transparent 1px 15px);
+}
+/* specular sweep — two blended passes */
+.sheen{
+  position:absolute;inset:-20%;pointer-events:none;z-index:5;mix-blend-mode:overlay;
+  background:linear-gradient(104deg,
+    transparent 34%, rgba(255,255,255,.06) 42%, rgba(255,255,255,.55) 48%,
+    rgba(255,255,255,.10) 53%, rgba(140,200,230,.16) 58%, transparent 66%);
+  animation:sweep 7.5s cubic-bezier(.5,0,.5,1) infinite;
+}
+.sheen.b{
+  mix-blend-mode:screen;opacity:.55;
+  background:linear-gradient(104deg,transparent 36%,rgba(120,205,255,.5) 47%,rgba(255,215,150,.28) 52%,transparent 65%);
+  animation-duration:7.5s;animation-delay:-1.1s;
+}
+@keyframes sweep{0%{transform:translateX(-58%)}100%{transform:translateX(58%)}}
+
+/* bond pads + reticle */
+.pads{
+  position:absolute;inset:-8%;z-index:1;pointer-events:none;border-radius:4px;
+  background:repeating-linear-gradient(90deg,#c9a35e 0 3px,rgba(10,14,18,.9) 3px 9px);
+  opacity:.55;
+}
+.pads::after{
+  content:"";position:absolute;inset:8%;
+  background:repeating-linear-gradient(0deg,#c9a35e 0 3px,rgba(10,14,18,.9) 3px 9px);
+  opacity:.6;
+}
+.stage .ret{position:absolute;inset:0;z-index:6;pointer-events:none}
+.stage .ret span{position:absolute;width:22px;height:22px;border:1px solid rgba(127,227,255,.5)}
+.stage .ret span:nth-child(1){top:10px;left:10px;border-right:0;border-bottom:0}
+.stage .ret span:nth-child(2){top:10px;right:10px;border-left:0;border-bottom:0}
+.stage .ret span:nth-child(3){bottom:10px;left:10px;border-right:0;border-top:0}
+.stage .ret span:nth-child(4){bottom:10px;right:10px;border-left:0;border-top:0}
+
+/* lens readout */
+.lensinfo{
+  position:absolute;z-index:7;right:10px;bottom:10px;
+  font-family:"IBM Plex Mono",monospace;font-size:.58rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--hot);background:rgba(4,8,12,.72);
+  border:1px solid var(--line2);padding:.3em .55em;border-radius:2px;
+}
+.lensinfo b{color:#fff;font-weight:500}
+.scale{position:absolute;z-index:7;left:12px;bottom:12px;width:120px;height:16px;pointer-events:none}
+.scale i{position:absolute;bottom:0;width:100%;height:5px;border:1px solid var(--hot);border-top:0;
+  transform:scaleX(calc(var(--z) * .42));transform-origin:0 0}
+.scale span{position:absolute;bottom:6px;left:0;font-family:"IBM Plex Mono",monospace;
+  font-size:.5rem;letter-spacing:.12em;color:var(--hot);white-space:nowrap}
+
+/* ---- control rail ---- */
+.rail{
+  background:var(--panel);padding:clamp(.8rem,1.6vw,1.2rem);
+  display:flex;flex-direction:column;gap:1rem;
+}
+.card{border:1px solid var(--line);border-radius:2px;background:var(--panel2)}
+.card > h3{
+  font-family:"IBM Plex Mono",monospace;font-size:.58rem;letter-spacing:.24em;text-transform:uppercase;
+  color:var(--dim);font-weight:500;padding:.55rem .7rem;border-bottom:1px solid var(--line);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.card > h3 b{color:var(--hot);font-weight:500;letter-spacing:.1em}
+.card .body{padding:.75rem .7rem}
+
+/* lens control */
+.ctl label{display:flex;justify-content:space-between;font-family:"IBM Plex Mono",monospace;
+  font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:.5rem}
+.ctl label output{color:var(--hi)}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:22px;background:transparent;cursor:ew-resize}
+input[type=range]::-webkit-slider-runnable-track{height:3px;background:var(--line2)}
+input[type=range]::-moz-range-track{height:3px;background:var(--line2)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:18px;
+  background:var(--hi);border:0;margin-top:-8px;box-shadow:0 0 10px rgba(255,207,112,.5)}
+input[type=range]::-moz-range-thumb{width:12px;height:18px;background:var(--hi);border:0;border-radius:0}
+.ticks{display:flex;justify-content:space-between;font-family:"IBM Plex Mono",monospace;
+  font-size:.5rem;color:#41525f;letter-spacing:.1em;margin-top:-.2rem}
+
+/* telemetry rows */
+.tele{display:grid;gap:.1rem}
+.tele .r{display:flex;justify-content:space-between;align-items:baseline;gap:.6rem;
+  padding:.34rem 0;border-bottom:1px solid #182029}
+.tele .r:last-child{border-bottom:0}
+.tele .r span{font-family:"IBM Plex Mono",monospace;font-size:.55rem;letter-spacing:.14em;
+  text-transform:uppercase;color:#4d5f6d}
+.tele .r b{font-family:"IBM Plex Mono",monospace;font-size:.72rem;font-weight:500;color:var(--txt);
+  font-variant-numeric:tabular-nums;text-align:right}
+
+/* transistor counter */
+.counter{text-align:center;padding:.4rem 0 .2rem}
+.counter .n{
+  font-family:"IBM Plex Mono",monospace;font-size:clamp(1.5rem,3.4vw,2.15rem);font-weight:600;
+  color:var(--hi);letter-spacing:-.02em;font-variant-numeric:tabular-nums;
+  text-shadow:0 0 22px rgba(255,207,112,.35);
+}
+.counter .u{font-family:"IBM Plex Mono",monospace;font-size:.55rem;letter-spacing:.28em;
+  text-transform:uppercase;color:var(--dim);margin-top:.2rem}
+.bignum{font-variant-numeric:tabular-nums}
+
+/* block inspector */
+.insp{min-height:96px}
+.insp .nm{font-size:1rem;font-weight:600;color:#eaf4fa;letter-spacing:-.01em}
+.insp .code{font-family:"IBM Plex Mono",monospace;font-size:.56rem;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--hot);margin:.15rem 0 .5rem}
+.insp p{font-size:.78rem;line-height:1.6;color:#9fb2c0}
+.insp .swatch{display:inline-block;width:9px;height:9px;border:1px solid var(--line2);
+  margin-right:.45rem;vertical-align:baseline}
+
+/* ---- exploded layer diagram ---- */
+.explode{display:grid;grid-template-columns:minmax(0,1fr);gap:.6rem;padding:.7rem}
+svg.layers{width:100%;height:auto;display:block}
+.lg{display:grid;gap:.1rem}
+.lg .li{
+  display:grid;grid-template-columns:14px 1fr auto;align-items:center;gap:.6rem;
+  padding:.3rem .4rem;border:1px solid transparent;border-radius:2px;cursor:pointer;
+  transition:background .15s,border-color .15s;
+}
+.lg .li:hover{background:#182029;border-color:var(--line2)}
+.lg .li.on{background:#182029;border-color:var(--hot)}
+.lg .li u{width:12px;height:12px;border-radius:1px;text-decoration:none}
+.lg .li .n{font-family:"IBM Plex Mono",monospace;font-size:.6rem;letter-spacing:.12em;color:#a9bcc9}
+.lg .li .t{font-family:"IBM Plex Mono",monospace;font-size:.55rem;color:#4d5f6d;letter-spacing:.08em}
+
+/* ---- spec sheet ---- */
+.sheet{padding:.7rem}
+.sheet table{width:100%;border-collapse:collapse;font-family:"IBM Plex Mono",monospace;font-size:.6rem}
+.sheet caption{text-align:left;font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--dim);padding-bottom:.5rem}
+.sheet td{padding:.28rem 0;border-bottom:1px solid #182029;letter-spacing:.06em}
+.sheet td:first-child{color:#4d5f6d;text-transform:uppercase;letter-spacing:.14em;font-size:.54rem}
+.sheet td:last-child{text-align:right;color:var(--txt)}
+.sheet tr:hover td{color:var(--hot)}
+.foot{
+  border-top:1px solid var(--line);padding:.7rem clamp(.7rem,2vw,1.4rem);
+  display:flex;flex-wrap:wrap;gap:.5rem 1.6rem;justify-content:space-between;
+  font-family:"IBM Plex Mono",monospace;font-size:.55rem;letter-spacing:.16em;
+  text-transform:uppercase;color:#4d5f6d;
+}
+@media (prefers-reduced-motion:reduce){ .sheen,.sheen.b{animation:none} }
+</style>
+</head>
+<body>
+
+<noscript>
+  <p style="padding:1.4rem;font-family:monospace;line-height:1.7">
+    The die shot is assembled in the browser from a 22 × 22 functional block map.
+    Without JavaScript the die is not drawn — the full specification table, layer
+    diagram and notes below are static and complete.
+  </p>
+</noscript>
+
+<header class="top">
+  <div class="id">
+    <b>AXIOM A9-220</b>
+    <span>3 nm gate-all-around system-on-chip · stepping tape-out 4</span>
+  </div>
+  <div class="stats mono">
+    <div>Process<b>N3P / EUV 14-layer</b></div>
+    <div>Die<b>107.1 mm²</b></div>
+    <div>Trinity<b class="live" id="liveOut">IDLE</b></div>
+  </div>
+</header>
+
+<div class="dash">
+  <section class="vp">
+    <div class="hbar mono">
+      <span>Macro die shot · 100× objective · NA 0.95</span>
+      <span>LIVE · <b id="fpsOut">— fps</b></span>
+    </div>
+
+    <div class="stage" id="stage">
+      <div class="ret" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+      <div class="lens" id="lens">
+        <div class="pads" aria-hidden="true"></div>
+        <div class="die" id="die"></div>
+        <div class="routing" aria-hidden="true"></div>
+        <div class="sheen" aria-hidden="true"></div>
+        <div class="sheen b" aria-hidden="true"></div>
+      </div>
+      <div class="lensinfo mono">MAGNIFICATION <b id="magOut">1.0×</b> · FOV <b id="fovOut">3.2 mm</b></div>
+      <div class="scale" aria-hidden="true"><i></i><span id="scaleOut">100 µm</span></div>
+    </div>
+
+    <div class="ctl">
+      <label for="zoom">Lens magnification <output id="zoomOut">1.0×</output></label>
+      <input type="range" id="zoom" min="1" max="6" step="0.05" value="1">
+      <div class="ticks"><span>1× · FULL DIE</span><span>2×</span><span>4×</span><span>6×</span></div>
+    </div>
+  </section>
+
+  <aside class="rail">
+
+    <div class="card">
+      <h3>Structure inspector <b id="inspCode">IDLE</b></h3>
+      <div class="body insp" id="insp">
+        <div class="nm">Awaiting pointer</div>
+        <div class="code">Hover a functional block</div>
+        <p>Twenty-two blocks are drawn to scale. Each carries its own metal stack,
+          floorplan density and block-level figures. Move across the die to read them.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Transistor census <b class="live">LIVE</b></h3>
+      <div class="body">
+        <div class="counter">
+          <div class="n bignum" id="countOut">0</div>
+          <div class="u">transistors on die A9-220</div>
+        </div>
+        <div class="tele" style="margin-top:.6rem">
+          <div class="r"><span>Logic density</span><b>142.6 Mtr / mm²</b></div>
+          <div class="r"><span>SRAM share</span><b>31.4 %</b></div>
+          <div class="r"><span>Metal layers</span><b>14 (M0 – M13)</b></div>
+          <div class="r"><span>Total wire length</span><b>41.8 km</b></div>
+          <div class="r"><span>Nominal TDP</span><b>170 W · 4.2 GHz</b></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Stack decomposition</h3>
+      <div class="explode">
+        <svg class="layers" id="layersSvg" viewBox="0 0 320 190" role="img"
+             aria-label="Exploded diagram of four process layers above the silicon substrate">
+          <defs>
+            <linearGradient id="m1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#e8c47a"/><stop offset=".5" stop-color="#a3803f"/><stop offset="1" stop-color="#6b5223"/>
+            </linearGradient>
+            <linearGradient id="poly" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#c9d6df"/><stop offset="1" stop-color="#5c6a76"/>
+            </linearGradient>
+            <linearGradient id="oxide" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#bfe6f4" stop-opacity=".85"/><stop offset="1" stop-color="#4e8496" stop-opacity=".7"/>
+            </linearGradient>
+            <linearGradient id="sub" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#33404d"/><stop offset="1" stop-color="#12181f"/>
+            </linearGradient>
+          </defs>
+          <g id="lp1"><path d="M60 30 L210 8 L262 30 L112 52 Z" fill="url(#m1)"/>
+            <path d="M60 30 L112 52 L112 60 L60 38 Z" fill="#7a5d29"/>
+            <path d="M262 30 L112 52 L112 60 L262 38 Z" fill="#57431d"/></g>
+          <g id="lp2"><path d="M60 62 L210 40 L262 62 L112 84 Z" fill="url(#oxide)"/>
+            <path d="M60 62 L112 84 L112 90 L60 68 Z" fill="#3d6d7d"/>
+            <path d="M262 62 L112 84 L112 90 L262 68 Z" fill="#2c5563"/></g>
+          <g id="lp3"><path d="M60 94 L210 72 L262 94 L112 116 Z" fill="url(#poly)"/>
+            <path d="M60 94 L112 116 L112 122 L60 100 Z" fill="#4b5761"/>
+            <path d="M262 94 L112 116 L112 122 L262 100 Z" fill="#3a444c"/></g>
+          <g id="lp4"><path d="M40 134 L210 106 L280 134 L110 162 Z" fill="url(#sub)"/>
+            <path d="M40 134 L110 162 L110 176 L40 148 Z" fill="#1b232c"/>
+            <path d="M280 134 L110 162 L110 176 L280 148 Z" fill="#0e141a"/></g>
+          <g stroke="#4d5f6d" stroke-width=".7" stroke-dasharray="3 3" fill="none">
+            <path d="M268 30 L296 30 L296 134 L282 134"/><path d="M266 62 L292 62"/><path d="M266 94 L292 94"/>
+          </g>
+        </svg>
+        <div class="lg mono" id="lgList">
+          <div class="li on" data-k="lp1" style="--c:#d3ac63"><u style="background:#d3ac63"></u>
+            <span class="n">M1 · metal one</span><span class="t">0.5 µm Cu · CMP</span></div>
+          <div class="li" data-k="lp2" style="--c:#9fd0e0"><u style="background:#9fd0e0"></u>
+            <span class="n">OX · interlayer oxide</span><span class="t">0.6 µm SiO₂</span></div>
+          <div class="li" data-k="lp3" style="--c:#a9b6c0"><u style="background:#a9b6c0"></u>
+            <span class="n">POLY · gate stack</span><span class="t">2 nm TiN · GAA</span></div>
+          <div class="li" data-k="lp4" style="--c:#3b4956"><u style="background:#3b4956"></u>
+            <span class="n">SI · substrate</span><span class="t">300 mm FD-SOI</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Specification</h3>
+      <div class="sheet">
+        <table>
+          <caption>Device under test — AXIOM A9-220 rev. C1</caption>
+          <tbody>
+            <tr><td>Architecture</td><td>8-core + 2 tile heterogeneous</td></tr>
+            <tr><td>Compute cores</td><td>8 × out-of-order, 8-wide</td></tr>
+            <tr><td>Peak integer</td><td>64 TOPS @ 4.2 GHz</td></tr>
+            <tr><td>AI accelerator</td><td>196 TOPS INT8 / 4× INT4</td></tr>
+            <tr><td>Shared L3</td><td>64 MB, 16 slices</td></tr>
+            <tr><td>Memory</td><td>2 × DDR5-6400, 51.2 GB/s</td></tr>
+            <tr><td>I/O</td><td>PCIe 6.0 ×16 · CXL 3.1 · USB4</td></tr>
+            <tr><td>Process</td><td>TSMC-equivalent N3P, EUV</td></tr>
+            <tr><td>Die area</td><td>107.1 mm² (10.35 × 10.35)</td></tr>
+            <tr><td>Transistors</td><td>78 400 000 000</td></tr>
+            <tr><td>Package</td><td>CoWoS-L, 2.5D, 4 HBM4 stacks</td></tr>
+            <tr><td>Security</td><td>fTPM 2.0 · SP800-90B entropy</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </aside>
+</div>
+
+<footer class="foot mono">
+  <span>Northwell Silicon · die photography: interference-contrast, 546 nm</span>
+  <span>Every block label is drawn, not rendered — labels are HTML, geometry is a grid</span>
+  <span>Sheet 1 of 1 · not a photograph</span>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- functional block map: 22 x 22 ---------- */
+  var BLOCKS = [
+    {id:'io',  l:'IO RING',      x:0,  y:0,  w:22, h:2,  code:'IO-0',
+     n:'I/O ring', s:'PCIe 6.0 ×16 Gen6 at 128 GT/s, CXL 3.1 link, four USB4 ports and the platform die-to-die interface, terminated on a 1 024-bit parallel bus around the perimeter.'},
+    {id:'io2', l:'IO RING',      x:0,  y:20, w:22, h:2,  code:'IO-1', n:'I/O ring (south)', s:'Same ring, south face. SerDes retimers live here to keep the 32 mm diagonal under 2 ps of skew.'},
+    {id:'io3', l:'IO RING',      x:0,  y:2,  w:2,  h:18, code:'IO-2', n:'I/O ring (west)', s:'Wake and power-management pads, the always-on test port and the boundary-scan chain.'},
+    {id:'io4', l:'IO RING',      x:20, y:2,  w:2,  h:18, code:'IO-3', n:'I/O ring (east)', s:'Display engine outputs, MIPI DSI and the on-package SMH sensor interface.'},
+    {id:'clk', l:'CLK',          x:2,  y:2,  w:18, h:1,  code:'CLK-N', n:'Clock ring', s:'Spread-spectrum from 8 to 200 MHz around a 4.2 GHz carrier. RMS jitter 1.8 ps, skew under 4 ps corner to corner.'},
+    {id:'clk2',l:'CLK',          x:2,  y:19, w:18, h:1,  code:'CLK-S', n:'Clock ring', s:'The south half of the ring. Dropped wire, screened against the memory controller.'},
+    {id:'clk3',l:'CLK',          x:2,  y:2,  w:1,  h:18, code:'CLK-W', n:'Clock ring', s:'Distribution spine, west quadrant.'},
+    {id:'clk4',l:'CLK',          x:19, y:2,  w:1,  h:18, code:'CLK-E', n:'Clock ring', s:'Distribution spine, east quadrant, feeds the AI tile directly.'},
+    {id:'noc', l:'MESH',         x:3,  y:13, w:16, h:1,  code:'NOC', n:'Network-on-chip fabric', s:'A 16 × 16 mesh at 34 GB/s per hop with adaptive routing. Nine hundred thousand routers in total; the whole die is one address space.'},
+    {id:'sram',l:'SRAM',         x:3,  y:10, w:16, h:1,  code:'MB', n:'Macro boundary', s:'Macro boundary row. Everything above it is compute, everything below it is the memory and accelerator half.'}
+  ];
+  for (var c=0;c<4;c++){
+    BLOCKS.push({id:'l2_'+c, l:'L2 BANK', x:3+c*4, y:10, w:4, h:1, code:'L2-'+c, n:'L2 bank '+c, s:'1 MB per core, sixteen-way. Four banks interleaved so the AVX unit can issue across all four without a bank conflict.'});
+  }
+  for (var r=0;r<2;r++){
+    for (var i=0;i<4;i++){
+      var n = r*4+i;
+      BLOCKS.push({id:'core'+n, l:'CORE '+n, x:3+i*4, y:3+r*4, w:3, h:3, code:'CPU-'+n,
+        n:'Compute core '+n,
+        s:'Eight-wide decode, 512 kB L1 data and 256 kB L1 instruction, 16 execution ports, two 256-bit load-store units and a 3.4 GHz sustained all-core rate. Two threads per core.'});
+    }
+  }
+  BLOCKS.push(
+    {id:'l3a', l:'L3 SLICE A', x:3,  y:11, w:7, h:2, code:'L3-A', n:'L3 slice A', s:'16 MB of shared last-level cache, sixteen slices in total. Meshing bandwidth 2.1 TB/s aggregate, victim write-back on eviction.'},
+    {id:'l3b', l:'L3 SLICE B', x:10, y:11, w:9, h:2, code:'L3-B', n:'L3 slice B', s:'Same structure, east half. Slice-to-slice coherence is maintained by the mesh in 9 ns worst case.'},
+    {id:'npu', l:'AI TILE',   x:3,  y:14, w:6, h:5, code:'NPX', n:'Neural accelerator', s:'196 TOPS at INT8, 4× at INT4 with structured sparsity. 512 kB of banked SRAM, 96 MB of model capacity resident, and a weight compressor that halves memory traffic on the way in.'},
+    {id:'med', l:'MEDIA',     x:9,  y:14, w:5, h:5, code:'VDX', n:'Media engine', s:'AV1, HEVC and VVC decode with 8K120 HDR10 output. Two independent display pipelines, 10-bit internal, 4:4:4 in and out.'},
+    {id:'sec', l:'ENCLAVE',   x:14, y:14, w:6, h:2, code:'SEC', n:'Security enclave', s:'A physically isolated power island with its own clock, its own key ladder and no route to the fabric. fTPM 2.0 lives here. Nothing in this region can be powered off by software outside the enclave.'},
+    {id:'mc0', l:'MC',        x:14, y:16, w:3, h:3, code:'MC-0', n:'Memory controller 0', s:'DDR5-6400, 32-bit channel, 51.2 GB/s with on-die ECC and adaptive refresh. Training traffic and inference traffic are separated at the controller so a large batch cannot starve the rest of the die.'},
+    {id:'mc1', l:'MC',        x:17, y:16, w:3, h:3, code:'MC-1', n:'Memory controller 1', s:'Second 32-bit channel, mirrored. Both controllers sit over the HBM4 stacks on the interposer; the four die-to-die links here are 16 Gbps each.'}
+  );
+
+  var die = document.getElementById('die');
+  var stage = document.getElementById('stage');
+  var root = document.documentElement;
+
+  /* ---------- build the die ---------- */
+  var nodes = {};
+  for (var i=0;i<BLOCKS.length;i++){
+    (function(b){
+      var el = document.createElement('div');
+      el.className = 'blk';
+      el.style.gridRow = (b.y + 1) + ' / span ' + b.h;
+      el.style.gridColumn = (b.x + 1) + ' / span ' + b.w;
+      el.setAttribute('data-l', b.l);
+      el.setAttribute('tabindex', '0');
+      el.setAttribute('role', 'button');
+      el.setAttribute('aria-label', b.n + '. ' + b.s);
+      el.addEventListener('pointerenter', function(){ select(b); });
+      el.addEventListener('focus', function(){ select(b); });
+      el.addEventListener('click', function(){ select(b); });
+      die.appendChild(el);
+      nodes[b.id] = el;
+    })(BLOCKS[i]);
+  }
+
+  var insp = document.getElementById('insp');
+  var inspCode = document.getElementById('inspCode');
+  var current = null;
+  function select(b){
+    if (current && nodes[current.id]) nodes[current.id].classList.remove('on');
+    current = b;
+    if (!b) return;
+    nodes[b.id].classList.add('on');
+    die.classList.add('has-sel');
+    inspCode.textContent = b.code;
+    insp.innerHTML = '<div class="nm"><span class="swatch" style="background:' +
+      (b.id.indexOf('core') === 0 ? '#7fe3ff' : b.id.indexOf('l3') === 0 ? '#c0a6ff'
+       : b.id === 'npu' ? '#5fe3a6' : b.id === 'clk' ? '#8a98a4' : '#ffcf70') + '"></span>' +
+      b.n + '</div><div class="code">' + b.code + ' · ' + (b.w * b.h) +
+      ' grid units · ' + (b.w * b.h * 0.221) + ' mm²</div><p>' + b.s + '</p>';
+  }
+  die.addEventListener('pointerleave', function(){
+    if (current && nodes[current.id]) nodes[current.id].classList.remove('on');
+    die.classList.remove('has-sel');
+    current = null;
+    inspCode.textContent = 'IDLE';
+    insp.innerHTML = '<div class="nm">Awaiting pointer</div><div class="code">Hover a functional block</div>' +
+      '<p>Twenty-two blocks are drawn to scale. Each carries its own metal stack, floorplan ' +
+      'density and block-level figures. Move across the die to read them.</p>';
+  });
+
+  /* ---------- lens ---------- */
+  var zoom = document.getElementById('zoom');
+  var zoomOut = document.getElementById('zoomOut');
+  var magOut = document.getElementById('magOut');
+  var fovOut = document.getElementById('fovOut');
+  var scaleOut = document.getElementById('scaleOut');
+  function applyZoom(){
+    var z = +zoom.value;
+    root.style.setProperty('--z', z);
+    zoomOut.textContent = z.toFixed(1) + '×';
+    magOut.textContent = z.toFixed(1) + '×';
+    fovOut.textContent = (3.2 / z).toFixed(2) + ' mm';
+    scaleOut.textContent = (100 / z).toFixed(0) + ' µm';
+  }
+  zoom.addEventListener('input', applyZoom);
+  applyZoom();
+
+  /* the lens tracks the pointer inside the stage */
+  stage.addEventListener('pointermove', function(e){
+    var z = +zoom.value;
+    if (z <= 1.05) return;
+    var r = stage.getBoundingClientRect();
+    var px = (e.clientX - r.left) / r.width - 0.5;
+    var py = (e.clientY - r.top) / r.height - 0.5;
+    var max = 46 * (1 - 1 / z);
+    root.style.setProperty('--tx', (-px * max).toFixed(2) + '%');
+    root.style.setProperty('--ty', (-py * max).toFixed(2) + '%');
+  }, {passive:true});
+
+  /* wheel zooms like a real objective ring */
+  stage.addEventListener('wheel', function(e){
+    e.preventDefault();
+    zoom.value = Math.min(6, Math.max(1, +zoom.value - Math.sign(e.deltaY) * 0.12));
+    applyZoom();
+  }, {passive:false});
+
+  /* ---------- live transistor counter ---------- */
+  var countOut = document.getElementById('countOut');
+  var liveOut = document.getElementById('liveOut');
+  var TARGET = 78400000000;
+  var shown = 0;
+  var t0 = null, lastT = 0;
+  var fps = 0;
+
+  function fmt(n){
+    return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\u2009');
+  }
+  function tick(ts){
+    if (t0 === null) t0 = ts;
+    var dt = Math.min(64, ts - lastT); lastT = ts;
+    if (dt > 0) fps = fps * 0.9 + (1000 / dt) * 0.1;
+    var t = (ts - t0) / 1000;
+    // easing: fast for the first 3 s, then a slow telemetry settle
+    var target = TARGET * (1 - Math.exp(-t / 2.2));
+    // gentle jitter so the instrument reads as live, not animated
+    target += Math.sin(t * 2.1) * TARGET * 0.0004 + Math.sin(t * 7.3) * TARGET * 0.00008;
+    shown += (target - shown) * 0.18;
+    countOut.textContent = fmt(shown);
+    document.getElementById('fpsOut').textContent = Math.round(fps) + ' fps';
+    requestAnimationFrame(tick);
+  }
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    requestAnimationFrame(tick);
+  } else {
+    countOut.textContent = fmt(TARGET);
+    document.getElementById('fpsOut').textContent = 'static';
+  }
+  liveOut.textContent = 'COUNTING';
+
+  /* ---------- exploded layer diagram ---------- */
+  var items = Array.prototype.slice.call(document.querySelectorAll('#lgList .li'));
+  var plates = {lp1:document.getElementById('lp1'), lp2:document.getElementById('lp2'),
+                lp3:document.getElementById('lp3'), lp4:document.getElementById('lp4')};
+  function lift(k){
+    for (var key in plates){
+      if (!plates[key]) continue;
+      var on = key === k;
+      plates[key].style.transition = 'transform .32s cubic-bezier(.2,1.5,.35,1), opacity .2s';
+      plates[key].style.transform = on ? 'translateY(-9px)' : 'translateY(0)';
+      plates[key].style.opacity = (k && !on) ? '0.42' : '1';
+    }
+    for (var j=0;j<items.length;j++) items[j].classList.toggle('on', items[j].getAttribute('data-k') === k);
+  }
+  for (var m=0;m<items.length;m++){
+    (function(el){
+      var k = el.getAttribute('data-k');
+      el.addEventListener('pointerenter', function(){ lift(k); });
+      el.addEventListener('focus', function(){ lift(k); });
+      plates[k].addEventListener('pointerenter', function(){ lift(k); });
+    })(items[m]);
+  }
+  document.getElementById('lgList').addEventListener('pointerleave', function(){ lift('lp1'); });
+})();
+</script>
+</body>
+</html>

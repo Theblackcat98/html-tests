@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>THE PLANT SHADOW — Monstera deliciosa cast in late light</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   №68 — THE PLANT SHADOW
+   Technique: SVG <use> re-projection. One hand-drawn monstera is
+   defined once, then stamped again as a blurred, offset, colour-
+   burned silhouette. Pointer moves the sun, so the burn slides.
+   Layout: framed artwork on a plain warm plaster wall.
+   ============================================================ */
+:root{
+  --plaster-hi:#f6e9d6; --plaster:#e9d8bf; --plaster-lo:#c9b093; --burn:#6b4530;
+  --leaf-1:#255c33; --leaf-2:#3d7f3f; --leaf-3:#5a9c47;
+  --ink:#3a2a1d; --ink-soft:#7a6350; --rule:rgba(58,42,29,.22);
+  --pad: clamp(18px,3.2vw,54px);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--plaster-lo); color:var(--ink); font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif; overflow:hidden; -webkit-font-smoothing:antialiased;}
+
+/* ---------- wall ---------- */
+.wall{position:fixed;inset:0;overflow:hidden;isolation:isolate}
+.wall__skin{
+  position:absolute;inset:-10%;
+  background:
+    radial-gradient(120% 90% at var(--sx,68%) var(--sy,18%),
+      #fdf4e3 0%, var(--plaster-hi) 22%, var(--plaster) 48%, var(--plaster-lo) 78%, #ab9077 100%);
+  transition:background 240ms linear;
+}
+/* plaster mottling: overlapping soft blobs, no images */
+.wall__skin::before{
+  content:"";position:absolute;inset:0;opacity:.5;mix-blend-mode:multiply;
+  background:
+    radial-gradient(30% 22% at 18% 24%, rgba(150,120,92,.20), transparent 70%),
+    radial-gradient(26% 30% at 74% 68%, rgba(140,108,84,.16), transparent 72%),
+    radial-gradient(18% 14% at 41% 84%, rgba(158,126,96,.18), transparent 70%),
+    radial-gradient(40% 18% at 88% 12%, rgba(255,246,232,.55), transparent 72%),
+    repeating-linear-gradient(101deg, rgba(120,96,72,.05) 0 3px, transparent 3px 9px);
+  filter:blur(1px);
+}
+/* trowel grain */
+.wall__skin::after{
+  content:"";position:absolute;inset:0;opacity:.35;
+  background:
+    repeating-linear-gradient(0deg, rgba(90,70,52,.05) 0 1px, transparent 1px 4px),
+    repeating-linear-gradient(90deg, rgba(90,70,52,.035) 0 1px, transparent 1px 6px);
+  mix-blend-mode:multiply;
+}
+/* window light cast on the wall */
+.sunpatch{
+  position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
+  background:radial-gradient(46% 52% at var(--sx,68%) var(--sy,18%),
+    rgba(255,246,214,.85), rgba(255,238,196,.34) 42%, transparent 70%);
+  filter:blur(8px);
+  transition:background 240ms linear;
+}
+
+/* ---------- the plant: silhouette, live plants, cutout light ---------- */
+.plant{position:absolute;inset:0;overflow:visible}
+.plant__defs{position:absolute;width:0;height:0;overflow:hidden}
+.leaf{transform:translate(var(--lx,760px),var(--ly,470px)) rotate(var(--r,0deg)) scale(var(--s,1))}
+.leaf>svg{display:block;width:360px;height:400px;margin:-200px 0 0 -180px;overflow:visible}
+
+.silhouette{
+  position:absolute;inset:0;pointer-events:none;z-index:2;
+  transform:translate(calc(var(--ox,0)*1px),calc(var(--oy,0)*1px));
+  filter:blur(1.1px) saturate(1.05);
+  opacity:.86;
+  mix-blend-mode:multiply;
+  transition:opacity 400ms linear;
+}
+
+/* live plant sits in front of the wall, off to the right, out of frame */
+.live{
+  position:absolute;right:calc(var(--pad)*-1 - 40px);bottom:calc(var(--pad)*-1 - 30px);
+  width:min(30vw,340px);z-index:4;pointer-events:none;
+  filter:drop-shadow(-14px 26px 26px rgba(52,32,20,.28));
+}
+
+/* the fenestration light that leaks through onto the wall */
+.cutout{
+  position:absolute;inset:0;pointer-events:none;z-index:3;
+  transform:translate(calc(var(--ox,0)*1px),calc(var(--oy,0)*1px));
+  mix-blend-mode:screen;
+  background:radial-gradient(24% 30% at var(--lxh,58%) var(--lyh,44%),
+    rgba(255,243,205,.85), rgba(255,235,186,.28) 48%, transparent 72%);
+  filter:blur(4px);
+  transition:background 320ms linear;
+}
+
+/* ---------- motes ---------- */
+.motes{position:absolute;inset:0;z-index:3;pointer-events:none;mix-blend-mode:screen}
+
+/* ---------- typography ---------- */
+.head{position:absolute;top:var(--pad);left:var(--pad);z-index:6;max-width:min(46ch,42vw)}
+.kicker{font-size:clamp(9px,1.1vw,11px);letter-spacing:.34em;text-transform:uppercase; color:var(--ink-soft);margin-bottom:clamp(10px,1.4vw,18px); display:flex;align-items:center;gap:.7em;}
+.kicker::after{content:"";flex:1;height:1px;background:var(--rule)}
+h1{font-family:"Cormorant Garamond",Georgia,"Times New Roman",serif; font-weight:300;line-height:.94;letter-spacing:-.015em; font-size:clamp(40px,7.4vw,116px); text-wrap:balance;}
+h1 em{font-style:italic;font-weight:400}
+.caption{
+  margin-top:clamp(14px,1.8vw,26px);
+  font-family:"Cormorant Garamond",Georgia,serif;
+  font-size:clamp(15px,1.35vw,20px);line-height:1.5;color:#4b3728;
+  max-width:34ch;border-left:1px solid var(--rule);padding-left:1.1em;
+}
+.plate{position:absolute;left:var(--pad);bottom:var(--pad);z-index:6; font-size:clamp(9px,1.05vw,11px);letter-spacing:.24em;text-transform:uppercase; color:var(--ink-soft);}
+.plate b{color:var(--ink);font-weight:500}
+
+/* ---------- console ---------- */
+.console{
+  position:absolute;right:var(--pad);bottom:var(--pad);z-index:8;width:min(310px,72vw);
+  padding:16px 18px 18px;border-radius:3px;
+  background:linear-gradient(180deg,rgba(252,246,235,.90),rgba(240,228,210,.84));
+  border:1px solid rgba(70,50,34,.18);
+  box-shadow:0 1px 0 rgba(255,255,255,.7) inset, 0 18px 40px -22px rgba(50,30,18,.6);
+  backdrop-filter:blur(7px);
+}
+.console h2{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--ink-soft); font-weight:500;margin-bottom:14px;}
+.row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+.row output{font-family:"Cormorant Garamond",Georgia,serif;font-size:19px;color:var(--ink); font-variant-numeric:tabular-nums;}
+.row .lbl{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-soft)}
+
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:22px;background:transparent;cursor:ew-resize;}
+input[type=range]::-webkit-slider-runnable-track{height:2px;border-radius:2px; background:linear-gradient(90deg,#6f8fa8,#e2b877 46%,#d07a45 74%,#8a6fa8);}
+input[type=range]::-moz-range-track{height:2px;border-radius:2px; background:linear-gradient(90deg,#6f8fa8,#e2b877 46%,#d07a45 74%,#8a6fa8);}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:13px;height:13px;border-radius:50%;margin-top:-5.5px;
+  background:#fbf3e6;border:1px solid rgba(60,40,26,.5);box-shadow:0 2px 6px rgba(40,24,12,.4);
+}
+input[type=range]::-moz-range-thumb{width:13px;height:13px;border-radius:50%;border:1px solid rgba(60,40,26,.5); background:#fbf3e6;box-shadow:0 2px 6px rgba(40,24,12,.4);}
+input[type=range]:focus-visible{outline:1px solid var(--ink);outline-offset:4px}
+.console p.hint{margin-top:12px;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:#8b7461}
+.swatches{display:flex;gap:6px;margin-top:10px}
+.swatches i{width:15px;height:15px;border-radius:50%;border:1px solid rgba(60,40,26,.28); box-shadow:0 1px 2px rgba(0,0,0,.18) inset;}
+
+@media (max-width:760px){
+  body{overflow:auto}
+  .wall{position:relative;height:100dvh;min-height:620px}
+  .head{max-width:none}
+  .console{position:absolute;right:var(--pad);left:var(--pad);bottom:var(--pad);width:auto}
+  .live{width:44vw;right:-6vw}
+}
+@media (prefers-reduced-motion:reduce){
+  .wall__skin,.sunpatch,.cutout{transition:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ the monstera, drawn once ============ -->
+<svg class="plant__defs" viewBox="0 0 360 400" aria-hidden="true" focusable="false">
+  <defs>
+    <!-- heart blade, deep fenestrations and marginal slits -->
+    <path id="blade" d="M180 372
+      C128 366 90 326 74 274
+      C58 222 60 162 82 118
+      C100 82 134 58 178 56
+      C222 58 256 82 274 118
+      C296 162 298 222 282 274
+      C266 326 228 366 180 372 Z
+      M180 372 L180 56
+      M180 372 C150 300 108 244 74 200
+      M180 372 C210 300 252 244 286 200
+      M180 372 C158 288 138 212 132 132
+      M180 372 C202 288 222 212 228 132
+      M180 372 C150 282 122 190 110 96
+      M180 372 C210 282 238 190 250 96
+      M120 300 L180 268 L240 300
+      M104 250 L180 214 L256 250
+      M98 200 L180 160 L262 200
+      M106 148 L180 112 L254 148
+      M128 100 L180 74 L232 100
+      M150 348 L156 314 M210 348 L204 314
+      M134 262 L142 232 M226 262 L218 232
+      M120 208 L128 180 M240 208 L232 180
+      M132 154 L140 128 M228 154 L220 128
+      M126 340 C118 306 116 270 122 238
+      M234 340 C242 306 244 270 238 238
+      M104 220 C96 186 96 152 104 122
+      M256 220 C264 186 264 152 256 122
+      M180 56 C172 44 176 34 180 26
+      M180 30 C166 20 158 8 160 2 C168 -2 178 8 180 30 Z"/>
+    <!-- secondary leaf: narrower, fewer cuts -->
+    <path id="blade-slim" d="M180 366
+      C136 358 102 320 88 272
+      C74 224 78 168 98 126
+      C114 92 142 66 178 64
+      C214 66 244 92 260 126
+      C280 168 284 224 270 272
+      C256 320 220 358 180 366 Z
+      M180 366 L180 64
+      M180 366 C152 302 118 250 88 210
+      M180 366 C208 302 242 250 272 210
+      M180 366 C160 290 142 214 140 140
+      M180 366 C200 290 218 214 220 140
+      M118 296 L180 262 L242 296
+      M104 244 L180 208 L256 244
+      M106 192 L180 152 L254 192
+      M120 140 L180 108 L240 140
+      M146 344 L152 312 M214 344 L208 312
+      M180 64 C172 50 176 40 180 32
+      M180 36 C168 24 162 12 166 4 C174 2 178 18 180 36 Z"/>
+  </defs>
+</svg>
+
+<main class="wall" aria-label="A monstera leaf casting a sharp shadow on a warm plaster wall">
+  <div class="wall__skin" aria-hidden="true"></div>
+  <div class="sunpatch" aria-hidden="true"></div>
+
+  <!-- ============ SHADOW: the same drawing, stamped as a burn ============ -->
+  <svg class="silhouette" id="shadow" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <g id="shadowPlant" fill="#6b4530" fill-rule="evenodd"></g>
+  </svg>
+
+  <!-- light leaking through the fenestrations -->
+  <div class="cutout" aria-hidden="true"></div>
+  <canvas class="motes" id="motes" aria-hidden="true"></canvas>
+
+  <!-- ============ header / caption ============ -->
+  <header class="head">
+    <p class="kicker">No. 68 &middot; Interior light study</p>
+    <h1>The plant <em>shadow</em></h1>
+    <p class="caption">
+      Monstera deliciosa, one leaf, four o&rsquo;clock in a room facing west. The wall
+      is warm lime plaster over lath; the leaf itself never enters the picture.
+      Only the burn it leaves behind.
+    </p>
+  </header>
+
+  <p class="plate"><b>Specimen</b> &nbsp;M. deliciosa &rsquo;Thai Constellation&rsquo; &nbsp;&middot;&nbsp; <b>Room</b> &nbsp;North wall, 2.4&nbsp;m &nbsp;&middot;&nbsp; <b>Wall</b> &nbsp;Lime plaster, 14&nbsp;mm trowel</p>
+
+  <!-- ============ console ============ -->
+  <section class="console" aria-label="Light controls">
+    <h2>Sun</h2>
+    <div class="row">
+      <span class="lbl">Time of day</span>
+      <output id="clockOut">15:40</output>
+    </div>
+    <input type="range" id="clock" min="6" max="21" step="0.01" value="15.66" aria-label="Time of day">
+    <div class="row">
+      <span class="lbl">Wall</span>
+      <output id="altOut">+4.0&deg;</output>
+    </div>
+    <input type="range" id="azim" min="-150" max="150" step="1" value="40" aria-label="Shadow direction">
+    <div class="swatches" aria-hidden="true">
+      <i style="background:#9fb8c9"></i><i style="background:#f0d59a"></i>
+      <i style="background:#e0a463"></i><i style="background:#c97a55"></i>
+      <i style="background:#8a6f8f"></i>
+    </div>
+    <p class="hint">Move the pointer &mdash; the sun follows</p>
+  </section>
+
+  <!-- the real plant, foreground, mostly out of frame -->
+  <svg class="live" viewBox="0 0 360 400" aria-hidden="true">
+    <g id="livePlant"></g>
+  </svg>
+</main>
+
+<noscript>
+  <p style="padding:2rem;font:300 17px/1.6 Georgia,serif;background:#e9d8bf;color:#3a2a1d">
+    The shadow is drawn with JavaScript so it can follow your pointer. With scripts off you
+    are left with the plaster wall, the caption, and the quiet.
+  </p>
+</noscript>
+
+<script>
+(function(){
+  "use strict";
+  var P=180, S=1.62, T=1.55, LVL=1;
+  var HUES=[
+    {name:"first light",   a:['#f2ecdf','#e7d3ae','#c6a97f','#8f7a63']},
+    {name:"midday",        a:['#fdf7e8','#f2e4c6','#d2b58c','#8a7458']},
+    {name:"golden hour",   a:['#fbe9c8','#eeba80','#b9764a','#5f4030']},
+    {name:"dusk",          a:['#e9d2c6','#b98a80','#7b5761','#3f2b39']}
+  ];
+
+  function $(id){return document.getElementById(id)}
+  function el(n,a){var e=document.createElementNS("http://www.w3.org/2000/svg",n);
+    for(var k in a)e.setAttribute(k,a[k]);return e}
+  function clamp(v,a,b){return v<a?a:(v>b?b:v)}
+
+  /* ---- placement: one hero leaf, two half leaves, three filler blades ---- */
+  var HERO={id:"blade",x:800,y:452,r:-16,s:1.00};
+  var A    ={id:"blade-slim",x:452,y:652,r:-64,s:.80};
+  var B    ={id:"blade",      x:1112,y:686,r:56, s:.86};
+  var SMALL= [
+    {id:"blade-slim",x:268,y:812,r:-96,s:.46},
+    {id:"blade",     x:700,y:884,r:-8, s:.40},
+    {id:"blade",     x:1332,y:238,r:104,s:.36}
+  ];
+  var LEAVES=[HERO,A,B].concat(SMALL);
+
+  var gShadow=$("shadowPlant"), gLive=$("livePlant"), host=document.querySelector(".wall");
+
+  function paint(target,mode){
+    target.textContent="";
+    LEAVES.forEach(function(L,i){
+      var g=el("g",{});
+      g.setAttribute("class","leaf");
+      g.style.setProperty("--lx",(L.x-P)+"px");
+      g.style.setProperty("--ly",(L.y-P)+"px");
+      g.style.setProperty("--r",L.r+"deg");
+      g.style.setProperty("--s",(L.s*S).toFixed(3));
+      g.setAttribute("data-r0",String(L.r));
+      var u=el("use",{});
+      u.setAttribute("href","#"+L.id);
+      if(mode==="live"){
+        var C=["var(--leaf-1)","var(--leaf-2)","var(--leaf-3)","#6fae55"];
+        u.setAttribute("fill",C[i%C.length]);
+        u.setAttribute("fill-rule","evenodd");
+        u.setAttribute("stroke","rgba(14,42,20,.42)");
+        u.setAttribute("stroke-width","1.1");
+      }else{
+        u.setAttribute("fill","currentColor");
+        u.setAttribute("fill-rule","evenodd");
+        g.setAttribute("color","#6b4530");
+      }
+      g.appendChild(u); target.appendChild(g);
+    });
+  }
+  paint(gShadow,"shadow"); paint(gLive,"live");
+
+  /* ---- ambient drift of the plant itself ---- */
+  var sway=true, tilt=0, tiltT=0;
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches) sway=false;
+  function animate(t){
+    if(sway){
+      tilt=Math.sin(t/3600)*0.55+Math.sin(t/1450)*0.22;
+      tiltT=Math.cos(t/2600)*0.35;
+    }
+    document.querySelectorAll("#shadowPlant .leaf,#livePlant .leaf").forEach(function(g){
+      var v=parseFloat(g.getAttribute("data-r0"));
+      g.style.setProperty("--r",(v+tilt+(v>0?0:tiltT)).toFixed(2)+"deg");
+    });
+    if(sway) requestAnimationFrame(animate);
+  }
+  if(sway) requestAnimationFrame(animate);
+
+  /* ---- light model ---- */
+  var root=document.documentElement;
+  function mix(a,b,t){ // hex lerp
+    var pa=[parseInt(a.slice(1,3),16),parseInt(a.slice(3,5),16),parseInt(a.slice(5,7),16)];
+    var pb=[parseInt(b.slice(1,3),16),parseInt(b.slice(3,5),16),parseInt(b.slice(5,7),16)];
+    var o="#";
+    for(var i=0;i<3;i++){var v=Math.round(pa[i]+(pb[i]-pa[i])*t);
+      o+=(v<16?"0":"")+v.toString(16);}
+    return o;
+  }
+  var burn0=mix(HUES[1].a[3],HUES[2].a[3],.4);
+
+  function render(h,az){
+    h=clamp(h,6,21);
+    var W=host.clientWidth, H=host.clientHeight;
+    var k=Math.min(W/1440,H/900);
+    var t=(h-6)/15;
+    var L=(t*3)|0, f=t*3-L, A=HUES[Math.min(L,3)], Bp=HUES[Math.min(L+1,3)];
+    var col=[];
+    for(var i=0;i<4;i++) col.push(mix(A.a[i],Bp.a[i],f));
+
+    var hDeg=-90+t*180;                       // 6h -> -90, 21h -> 90
+    var alt=Math.max(2,Math.sin(t*Math.PI)*58+2); // degrees above horizon
+    var tanA=Math.tan(alt*Math.PI/180);
+    var LEN=150;
+
+    var rad=hDeg*Math.PI/180, ca=Math.cos(rad), sa=Math.sin(rad);
+    var ox=sa*LEN*tanA, oy=ca*LEN*tanA+LEN*0.5*Math.sin(t*Math.PI);
+
+    var dz=az*Math.PI/180;
+    var skx=Math.cos(dz)*ox - Math.sin(dz)*oy;
+    var sky=Math.sin(dz)*ox + Math.cos(dz)*oy;
+    var warp=1+0.16*Math.cos(t*Math.PI*2);
+    skx*=warp; sky*=1.55*Math.sin(t*Math.PI*0.92+0.35);
+
+    var burn=mix(burn0,col[3],.72), dark=mix("#2b1a10",col[3],.25);
+    root.style.setProperty("--burn",burn);
+    gShadow.setAttribute("color",burn);
+    gShadow.parentNode.style.filter=
+      "blur("+(0.7+LVL*0.75).toFixed(2)+"px) saturate("+(1+LVL*.25).toFixed(2)+")";
+    gShadow.parentNode.style.opacity=(0.62+LVL*0.16).toFixed(2);
+    gShadow.parentNode.style.mixBlendMode=LVL>0.8?"multiply":"soft-light";
+
+    var kx=clamp(50+(skx*1440)/(W*1.05),4,96);
+    var ky=clamp(46+(sky*900)/(H*1.15),3,92);
+    root.style.setProperty("--sx",kx.toFixed(1)+"%");
+    root.style.setProperty("--sy",ky.toFixed(1)+"%");
+    root.style.setProperty("--ox",(skx*k).toFixed(2));
+    root.style.setProperty("--oy",(sky*k).toFixed(2));
+    root.style.setProperty("--lxh",kx.toFixed(1)+"%");
+    root.style.setProperty("--lyh",ky.toFixed(1)+"%");
+
+    var hh=(h|0), mm=Math.round((h-hh)*60);
+    $("clockOut").textContent=("0"+hh).slice(-2)+":"+("0"+mm).slice(-2);
+    $("altOut").textContent="+"+alt.toFixed(1)+"\u00B0";
+  }
+  var clock=$("clock"), azim=$("azim");
+  function draw(){render(parseFloat(clock.value),parseFloat(azim.value))}
+  clock.addEventListener("input",draw);
+  azim.addEventListener("input",draw);
+
+  /* pointer parallax: pulls the sun, softly */
+  var tx=0,ty=0,cx=0,cy=0,live=true;
+  host.addEventListener("pointermove",function(e){
+    var r=host.getBoundingClientRect();
+    tx=((e.clientX-r.left)/r.width-0.5)*2;
+    ty=((e.clientY-r.top)/r.height-0.5)*2;
+  });
+  host.addEventListener("pointerleave",function(){tx=0;ty=0});
+  function loop(){
+    cx+=(tx-cx)*0.045; cy+=(ty-cy)*0.045;
+    azim.value=clamp(40+cx*105,-150,150).toFixed(1);
+    var t=(parseFloat(clock.value)-6)/15;
+    var t2=clamp(t+cy*0.055,0,1);
+    if(Math.abs(t2-t)>0.0004){clock.value=(t2*15+6).toFixed(3);t=t2;}
+    render(parseFloat(clock.value),parseFloat(azim.value));
+    if(live) requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+  addEventListener("resize",draw,{passive:true});
+
+  /* ---- dust in the beam ---- */
+  var cv=$("motes"),ctx=cv.getContext("2d"),D=[],N=110,raf=null;
+  function size(){
+    var d=Math.min(devicePixelRatio||1,2);
+    cv.width=host.clientWidth*d; cv.height=host.clientHeight*d;
+    cv.style.width=host.clientWidth+"px"; cv.style.height=host.clientHeight+"px";
+    ctx.setTransform(d,0,0,d,0,0);
+    D=[]; for(var i=0;i<N;i++)
+      D.push({x:Math.random()*host.clientWidth,y:Math.random()*host.clientHeight,
+        r:Math.random()*1.7+.35,s:Math.random()*.32+.06,
+        a:Math.random()*.5+.15,p:Math.random()*6.28,v:Math.random()*.24-.12});
+  }
+  size(); addEventListener("resize",size,{passive:true});
+  function motes(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    var sx=parseFloat(getComputedStyle(root).getPropertyValue("--sx"))/100;
+    var sy=parseFloat(getComputedStyle(root).getPropertyValue("--sy"))/100;
+    var W=host.clientWidth,H=host.clientHeight;
+    for(var i=0;i<D.length;i++){
+      var d=D[i];
+      d.p+=d.v*0.01; d.y-=d.s*0.9; d.x+=Math.sin(d.p)*0.28;
+      if(d.y<-6){d.y=H+6;d.x=Math.random()*W}
+      if(d.x<-6)d.x=W+6; if(d.x>W+6)d.x=-6;
+      var dist=Math.hypot((d.x/W-sx)*1.25,(d.y/H-sy)*1.05);
+      var vis=Math.max(0,1-dist*1.5);
+      if(vis<=0.01)continue;
+      ctx.beginPath(); ctx.arc(d.x,d.y,d.r,0,6.284);
+      ctx.fillStyle="rgba(255,247,224,"+(d.a*vis*0.85).toFixed(3)+")";
+      ctx.fill();
+    }
+    raf=requestAnimationFrame(motes);
+  }
+  if(!matchMedia("(prefers-reduced-motion: reduce)").matches) motes();
+  document.addEventListener("visibilitychange",function(){
+    if(document.hidden){live=false;cancelAnimationFrame(raf)}
+    else{ if(!live)requestAnimationFrame(loop); live=true;
+      if(!matchMedia("(prefers-reduced-motion: reduce)").matches&&!raf)motes() }
+  });
+})();
+</script>
+</body>
+</html>

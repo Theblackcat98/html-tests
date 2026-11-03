@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>STAGE THREE — Volumetric Study, Smoke &amp; Fog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --char:#0e0e10;
+    --char-2:#17171a;
+    --ink:#e9e6e0;
+    --dim:rgba(233,230,224,.5);
+    --amber:#f0b070;
+    --amber-hi:#ffd9a8;
+    --sans:"Barlow",-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  html,body{height:100%}
+  body{
+    font-family:var(--sans);
+    background:var(--char);
+    color:var(--ink);
+    min-height:100dvh;overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  #fog{position:fixed;inset:0;z-index:0;display:block;width:100%;height:100%;cursor:crosshair;touch-action:none}
+  #fog.stir{cursor:grabbing}
+
+  .room{
+    position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:
+      radial-gradient(70% 50% at 50% 100%, rgba(0,0,0,.85) 0%, transparent 60%),
+      linear-gradient(0deg, #060607 0%, #0d0d10 40%, #131316 100%);
+  }
+  .floorline{
+    position:fixed;left:0;right:0;bottom:0;height:26vh;z-index:2;pointer-events:none;
+    background:linear-gradient(0deg, #0a0a0b 0%, #101013 60%, rgba(16,16,19,0) 100%);
+    box-shadow:0 -1px 0 rgba(240,176,112,.08);
+  }
+  .grain{
+    position:fixed;inset:-25%;z-index:6;pointer-events:none;opacity:.07;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='190' height='190'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='190' height='190' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .vignette{
+    position:fixed;inset:0;z-index:6;pointer-events:none;
+    box-shadow:inset 0 0 200px 40px rgba(0,0,0,.92);
+  }
+
+  /* ---------- top-left title block ---------- */
+  .title{position:fixed;left:clamp(16px,3vw,52px);top:clamp(20px,4vh,58px);z-index:5;max-width:min(46ch,72vw)}
+  .title .kicker{
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.4em;text-transform:uppercase;color:var(--amber);
+    display:flex;align-items:center;gap:12px
+  }
+  .title .kicker::after{content:"";height:1px;flex:1;max-width:90px;background:linear-gradient(90deg,var(--amber),transparent)}
+  h1{
+    font-weight:300;font-size:clamp(34px,5.4vw,76px);line-height:.92;letter-spacing:-.02em;margin-top:14px;
+    text-shadow:0 2px 40px rgba(0,0,0,.9)
+  }
+  h1 b{font-weight:500;display:block;
+    background:linear-gradient(96deg,var(--amber-hi),var(--amber) 46%,#8a6a4a 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .title p{margin-top:18px;font-size:14.5px;line-height:1.76;color:var(--dim);max-width:34ch;font-weight:300}
+  .title p em{color:var(--ink);font-style:normal;border-bottom:1px solid rgba(240,176,112,.4)}
+
+  /* ---------- control panel ---------- */
+  .panel{
+    position:fixed;right:clamp(14px,2.6vw,44px);bottom:clamp(14px,2.6vw,42px);z-index:6;
+    width:min(310px,calc(100vw - 28px));
+    border-radius:4px;padding:18px 20px 16px;
+    background:linear-gradient(165deg, rgba(28,28,32,.9), rgba(12,12,15,.86));
+    box-shadow:inset 0 0 0 1px rgba(240,176,112,.22), 0 34px 60px -28px rgba(0,0,0,1);
+    backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  }
+  .panel h2{
+    font-family:var(--mono);font-size:9px;letter-spacing:.34em;text-transform:uppercase;color:var(--amber);
+    padding-bottom:10px;margin-bottom:16px;border-bottom:1px solid rgba(240,176,112,.18);
+    display:flex;justify-content:space-between;align-items:center
+  }
+  .panel h2 i{width:5px;height:5px;border-radius:50%;background:#4be08a;box-shadow:0 0 9px #4be08a;animation:blip 1.5s ease-in-out infinite}
+  @keyframes blip{0%,100%{opacity:.3}50%{opacity:1}}
+  .ctrl{margin-bottom:14px}
+  .ctrl__lab{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9.5px;
+    letter-spacing:.16em;text-transform:uppercase;color:var(--dim);margin-bottom:7px}
+  .ctrl__lab b{color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:16px;background:transparent;cursor:pointer;display:block
+  }
+  input[type=range]::-webkit-slider-runnable-track{
+    height:2px;background:linear-gradient(90deg,var(--amber) 0%, var(--amber) var(--p,50%), rgba(233,230,224,.14) var(--p,50%));
+  }
+  input[type=range]::-moz-range-track{height:2px;background:rgba(233,230,224,.14)}
+  input[type=range]::-moz-range-progress{height:2px;background:var(--amber)}
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:12px;height:12px;border-radius:2px;margin-top:-5px;
+    background:linear-gradient(140deg,#fff6ea,var(--amber));box-shadow:0 0 12px rgba(240,176,112,.7), 0 2px 5px rgba(0,0,0,.6)
+  }
+  input[type=range]::-moz-range-thumb{
+    width:12px;height:12px;border:0;border-radius:2px;
+    background:linear-gradient(140deg,#fff6ea,var(--amber));box-shadow:0 0 12px rgba(240,176,112,.7)
+  }
+  .presets{display:flex;gap:6px;margin:16px 0 14px}
+  .presets button{
+    flex:1;font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;
+    padding:9px 4px;border:0;border-radius:2px;cursor:pointer;color:var(--dim);
+    background:rgba(233,230,224,.05);box-shadow:inset 0 0 0 1px rgba(233,230,224,.1);
+    transition:all .3s
+  }
+  .presets button:hover{color:var(--ink);background:rgba(240,176,112,.12)}
+  .presets button.on{color:#1a1208;background:linear-gradient(140deg,var(--amber-hi),var(--amber));
+    box-shadow:0 0 18px -4px rgba(240,176,112,.7)}
+  .tally{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-top:14px;border-top:1px solid rgba(240,176,112,.16)
+  }
+  .tally div{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);text-align:center}
+  .tally div b{display:block;font-size:14px;font-weight:700;color:var(--ink);margin-top:4px;font-variant-numeric:tabular-nums;letter-spacing:0}
+  .windbar{grid-column:1/-1;display:flex;align-items:center;gap:8px;margin-top:4px}
+  .windbar i{
+    flex:1;height:3px;border-radius:2px;background:rgba(233,230,224,.12);position:relative;display:block
+  }
+  .windbar i::after{
+    content:"";position:absolute;top:-3px;left:50%;width:9px;height:9px;border-radius:50%;
+    background:var(--amber);box-shadow:0 0 10px var(--amber);transform:translateX(-50%);
+    transition:left .12s linear
+  }
+  .windbar span{font-family:var(--mono);font-size:8.5px;color:var(--dim);letter-spacing:.1em;min-width:64px;text-align:right}
+
+  /* ---------- right side vertical tag ---------- */
+  .sidelabel{
+    position:fixed;right:clamp(14px,2.6vw,44px);top:clamp(20px,4vh,58px);z-index:5;
+    writing-mode:vertical-rl;font-family:var(--mono);font-size:9px;letter-spacing:.42em;
+    text-transform:uppercase;color:rgba(233,230,224,.28);
+  }
+  .hint{
+    position:fixed;left:clamp(16px,3vw,52px);bottom:clamp(20px,4vh,56px);z-index:5;
+    font-family:var(--mono);font-size:9.5px;letter-spacing:.3em;text-transform:uppercase;color:rgba(233,230,224,.45);
+    display:flex;align-items:center;gap:10px
+  }
+  .hint i{width:6px;height:6px;border-radius:50%;background:var(--amber);box-shadow:0 0 12px var(--amber);animation:p 2s ease-in-out infinite}
+  @keyframes p{0%,100%{transform:scale(1);opacity:.4}50%{transform:scale(1.7);opacity:1}}
+
+  noscript{
+    position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;max-width:52ch;
+    padding:20px 24px;border-radius:4px;background:rgba(22,22,26,.96);
+    box-shadow:inset 0 0 0 1px rgba(240,176,112,.4);font-size:14px;line-height:1.65;color:var(--ink)
+  }
+  @media (max-width:700px){
+    .title{max-width:none;right:clamp(16px,3vw,52px)}
+    .title p{display:none}
+    .sidelabel{display:none}
+    .panel{left:clamp(14px,2.6vw,44px);right:clamp(14px,2.6vw,44px);width:auto}
+    .hint{bottom:auto;top:clamp(96px,16vh,150px)}
+  }
+</style>
+</head>
+<body>
+
+<canvas id="fog" role="img" aria-label="Volumetric smoke drifting through a single shaft of light. Drag to stir the smoke."></canvas>
+<div class="room" aria-hidden="true"></div>
+<div class="floorline" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+<div class="grain" aria-hidden="true"></div>
+
+<div class="title">
+  <p class="kicker">Stage Three &middot; Test 12</p>
+  <h1>Volumetric<b>Atmosphere</b></h1>
+  <p>
+    Eighty puffs of soft, low-opacity smoke drifting through one hard beam. Nothing here is a
+    photograph. Each puff is a <em>radial gradient</em>, advected by a turbulence field and lit only
+    where the shaft crosses it.
+  </p>
+</div>
+
+<div class="sidelabel" aria-hidden="true">Shaft 40&deg; &middot; Haze 0.9 &middot; Stir to disturb</div>
+
+<div class="panel" aria-label="Smoke controls">
+  <h2><span>Flow controls</span> <i aria-hidden="true"></i></h2>
+
+  <div class="ctrl">
+    <div class="ctrl__lab"><label for="cDen">Density</label><b id="vDen">420</b></div>
+    <input type="range" id="cDen" min="80" max="760" step="20" value="420">
+  </div>
+  <div class="ctrl">
+    <div class="ctrl__lab"><label for="cOpa">Opacity</label><b id="vOpa">0.42</b></div>
+    <input type="range" id="cOpa" min="4" max="90" step="1" value="42">
+  </div>
+  <div class="ctrl">
+    <div class="ctrl__lab"><label for="cFlow">Flow</label><b id="vFlow">34</b></div>
+    <input type="range" id="cFlow" min="0" max="100" step="1" value="34">
+  </div>
+  <div class="ctrl">
+    <div class="ctrl__lab"><label for="cTurb">Turbulence</label><b id="vTurb">58</b></div>
+    <input type="range" id="cTurb" min="0" max="100" step="1" value="58">
+  </div>
+
+  <div class="presets" role="group" aria-label="Presets">
+    <button type="button" class="on" data-p="ember">Ember</button>
+    <button type="button" data-p="chimney">Chimney</button>
+    <button type="button" data-p="still">Still</button>
+    <button type="button" data-p="flood">Flood</button>
+  </div>
+
+  <div class="tally">
+    <div>Puffs<b id="tPuffs">420</b></div>
+    <div>Frame<b id="tFps">60</b></div>
+    <div>Draw<b id="tDraw">0.0</b></div>
+    <div class="windbar">
+      <span>Wind</span>
+      <i id="windTrack"><span></span></i>
+      <span id="vWind">0.0</span>
+    </div>
+  </div>
+</div>
+
+<p class="hint"><i aria-hidden="true"></i> Click and drag to stir &middot; wind follows the pointer</p>
+<noscript>The smoke simulation needs JavaScript. The written description and the layout remain visible without it.</noscript>
+
+<script>
+(function(){
+  "use strict";
+
+  var cv = document.getElementById("fog"), ctx = cv.getContext("2d");
+  var W = 0, H = 0, DPR = Math.min(window.devicePixelRatio || 1, 1.75);
+  function resize(){
+    W = window.innerWidth; H = window.innerHeight;
+    cv.width = Math.floor(W*DPR); cv.height = Math.floor(H*DPR);
+    cv.style.width = W + "px"; cv.style.height = H + "px";
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    makeSprites();
+  }
+
+  /* ---------- soft puff sprites (offscreen, drawn once) ---------- */
+  var sprites = [];
+  function puffSprite(size, hardness, tint){
+    var c = document.createElement("canvas");
+    c.width = c.height = size;
+    var g = c.getContext("2d");
+    var rg = g.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+    rg.addColorStop(0, "rgba(" + tint + "," + hardness + ")");
+    rg.addColorStop(0.42, "rgba(" + tint + "," + (hardness*0.52) + ")");
+    rg.addColorStop(0.78, "rgba(" + tint + "," + (hardness*0.13) + ")");
+    rg.addColorStop(1, "rgba(" + tint + ",0)");
+    g.fillStyle = rg;
+    g.fillRect(0,0,size,size);
+    /* a second offset blob breaks the perfect circle */
+    var rg2 = g.createRadialGradient(size*0.36, size*0.42, 0, size*0.36, size*0.42, size*0.44);
+    rg2.addColorStop(0, "rgba(255,255,255," + (hardness*0.18) + ")");
+    rg2.addColorStop(1, "rgba(255,255,255,0)");
+    g.fillStyle = rg2;
+    g.fillRect(0,0,size,size);
+    return c;
+  }
+  function makeSprites(){
+    sprites = [
+      puffSprite(256, 0.30, "215,222,235"),
+      puffSprite(256, 0.18, "196,206,225"),
+      puffSprite(256, 0.42, "240,232,222"),
+      puffSprite(256, 0.12, "170,182,205")
+    ];
+  }
+
+  /* ---------- particles ---------- */
+  var MAX = 800;
+  var parts = [];
+  function spawn(i, preset){
+    var srcX = W*0.5 + (Math.random()-0.5)*W*0.1;
+    return {
+      x: srcX + (Math.random()-0.5)*W*0.42,
+      y: H*1.02 + Math.random()*H*0.2,
+      vx: (Math.random()-0.5)*8,
+      vy: -14 - Math.random()*22,
+      r: 90 + Math.random()*260,
+      rot: Math.random()*6.28,
+      vr: (Math.random()-0.5)*0.22,
+      life: 0,
+      max: 5.5 + Math.random()*4.5,
+      seed: Math.random()*100,
+      sp: 0.42 + Math.random()*0.6,
+      s: 0.25 + Math.random()*0.75
+    };
+  }
+  function fill(n){
+    while(parts.length < n) parts.push(spawn(parts.length));
+    if(parts.length > n) parts.length = n;
+  }
+  fill(420);
+
+  /* ---------- config ---------- */
+  var cfg = {density:420, opacity:0.42, flow:34, turb:58};
+  var wind = {x:0, y:0, tx:0, ty:0};
+
+  /* ---------- interaction ---------- */
+  var stirring = false, lx = 0, ly = 0, lastMove = 0;
+  function stirAt(x, y, vx, vy){
+    var R = Math.max(W, H) * 0.30;
+    for(var i=0;i<parts.length;i++){
+      var p = parts[i];
+      var dx = p.x - x, dy = p.y - y;
+      var d2 = dx*dx + dy*dy;
+      if(d2 > R*R) continue;
+      var d = Math.sqrt(d2) || 1;
+      var f = (1 - d/R);
+      f = f*f;
+      p.vx += (dx/d) * vx * f * 0.016;
+      p.vy += (dy/d) * vy * f * 0.016;
+      p.vx += (Math.random()-0.5) * 3 * f;
+      p.vy += (Math.random()-0.5) * 3 * f;
+    }
+  }
+  function pointerAt(cx, cy){
+    var now = performance.now();
+    var vx = 0, vy = 0;
+    if(now - lastMove < 90){ vx = (cx - lx) * 2.4; vy = (cy - ly) * 2.4; }
+    lastMove = now;
+    lx = cx; ly = cy;
+    if(stirring){
+      stirAt(cx, cy, vx, vy);
+      wind.tx += (vx*0.4 - wind.tx) * 0.18;
+      wind.ty += (vy*0.2 - wind.ty) * 0.18;
+    }
+    return vx;
+  }
+  cv.addEventListener("pointerdown", function(e){
+    stirring = true; lx = e.clientX; ly = e.clientY; lastMove = 0;
+    cv.classList.add("stir");
+    cv.setPointerCapture && cv.setPointerCapture(e.pointerId);
+    stirAt(e.clientX, e.clientY, 0, -60);
+  });
+  window.addEventListener("pointermove", function(e){ pointerAt(e.clientX, e.clientY); }, {passive:true});
+  window.addEventListener("pointerup", function(){
+    stirring = false; cv.classList.remove("stir");
+  });
+  cv.addEventListener("pointerleave", function(){ stirring = false; cv.classList.remove("stir"); });
+
+  /* ---------- controls ---------- */
+  function bind(id, key, fmt, apply){
+    var s = document.getElementById(id), out = document.getElementById("v" + id.slice(1));
+    function sync(){
+      var v = parseFloat(s.value);
+      cfg[key] = apply ? apply(v) : v;
+      out.textContent = fmt(v);
+      s.style.setProperty("--p", ((v - s.min)/(s.max - s.min)*100).toFixed(1) + "%");
+    }
+    s.addEventListener("input", sync);
+    sync();
+  }
+  bind("cDen","density", function(v){ return Math.round(v); }, function(v){ fill(Math.round(v)); return Math.round(v); });
+  bind("cOpa","opacity", function(v){ return (v/100).toFixed(2); }, function(v){ return v/100; });
+  bind("cFlow","flow", function(v){ return Math.round(v); });
+  bind("cTurb","turb", function(v){ return Math.round(v); });
+
+  var PRESETS = {
+    ember:   {density:420, opacity:0.42, flow:34, turb:58, rise:22, buoy:1.0},
+    chimney: {density:600, opacity:0.30, flow:64, turb:26, rise:46, buoy:1.9},
+    still:   {density:180, opacity:0.58, flow:4,  turb:14, rise:6,  buoy:0.35},
+    flood:   {density:740, opacity:0.20, flow:92, turb:84, rise:30, buoy:1.2}
+  };
+  var mode = Object.assign({}, PRESETS.ember);
+  function applyPreset(name){
+    mode = Object.assign({}, PRESETS[name]);
+    cfg.density = mode.density; cfg.opacity = mode.opacity; cfg.flow = mode.flow; cfg.turb = mode.turb;
+    fill(mode.density);
+    document.getElementById("cDen").value = mode.density;
+    document.getElementById("cOpa").value = Math.round(mode.opacity*100);
+    document.getElementById("cFlow").value = mode.flow;
+    document.getElementById("cTurb").value = mode.turb;
+    ["cDen","cOpa","cFlow","cTurb"].forEach(function(id){
+      var s = document.getElementById(id);
+      s.dispatchEvent(new Event("input"));
+    });
+  }
+  var pb = document.querySelectorAll(".presets button");
+  Array.prototype.forEach.call(pb, function(b){
+    b.addEventListener("click", function(){
+      Array.prototype.forEach.call(pb, function(x){ x.classList.remove("on"); });
+      b.classList.add("on");
+      applyPreset(b.getAttribute("data-p"));
+    });
+  });
+
+  /* ---------- light shaft geometry ---------- */
+  var shaft = {x: W*0.5, wTop: 60, wBot: W*0.62};
+  function drawShaft(t){
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    var flick = 0.86 + 0.14*Math.sin(t*0.7) + 0.06*Math.sin(t*3.1);
+    var g = ctx.createLinearGradient(shaft.x, 0, shaft.x, H);
+    g.addColorStop(0, "rgba(255,226,186," + (0.24*flick) + ")");
+    g.addColorStop(0.55, "rgba(240,190,140," + (0.10*flick) + ")");
+    g.addColorStop(1, "rgba(200,160,120,0)");
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(shaft.x - shaft.wTop*0.5, -20);
+    ctx.lineTo(shaft.x + shaft.wTop*0.5, -20);
+    ctx.lineTo(shaft.x + shaft.wBot*0.5, H);
+    ctx.lineTo(shaft.x - shaft.wBot*0.5, H);
+    ctx.closePath();
+    ctx.fill();
+    /* hot source */
+    var sg = ctx.createRadialGradient(shaft.x, -30, 0, shaft.x, -30, 260);
+    sg.addColorStop(0, "rgba(255,240,220,.7)");
+    sg.addColorStop(0.3, "rgba(255,214,170,.2)");
+    sg.addColorStop(1, "rgba(255,200,150,0)");
+    ctx.fillStyle = sg;
+    ctx.beginPath(); ctx.arc(shaft.x, -30, 260, 0, 6.2832); ctx.fill();
+    /* volumetric beams */
+    for(var i=0;i<4;i++){
+      var off = (i-1.5) * shaft.wBot * 0.19;
+      var bg = ctx.createLinearGradient(shaft.x, 0, shaft.x + off, H);
+      bg.addColorStop(0, "rgba(255,238,210," + (0.05*flick) + ")");
+      bg.addColorStop(1, "rgba(255,220,180,0)");
+      ctx.fillStyle = bg;
+      ctx.beginPath();
+      ctx.moveTo(shaft.x - 8 + off*0.04, 0);
+      ctx.lineTo(shaft.x + 8 + off*0.04, 0);
+      ctx.lineTo(shaft.x + off + 30, H);
+      ctx.lineTo(shaft.x + off - 30, H);
+      ctx.closePath(); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  /* light test: is point inside the shaft? */
+  function lit(x, y){
+    var frac = y / H;
+    var halfW = (shaft.wTop + (shaft.wBot - shaft.wTop)*frac) * 0.5;
+    return Math.abs(x - shaft.x) < halfW;
+  }
+
+  /* ---------- loop ---------- */
+  var t = 0, fps = 60, fpsAcc = 0, fpsN = 0, drawMs = 0;
+  var tPuffs = document.getElementById("tPuffs"), tFps = document.getElementById("tFps"),
+      tDraw = document.getElementById("tDraw"), vWind = document.getElementById("vWind"),
+      windDot = document.querySelector("#windTrack span") || document.getElementById("windTrack");
+
+  function frame(){
+    var start = performance.now();
+    t += 0.016;
+
+    /* background clear */
+    var bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, "#101014");
+    bg.addColorStop(0.55, "#131317");
+    bg.addColorStop(1, "#0b0b0d");
+    ctx.globalCompositeOperation = "source-over";
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    drawShaft(t);
+
+    /* update + draw puffs */
+    ctx.globalCompositeOperation = "lighter";
+    var flow = cfg.flow, turb = cfg.turb;
+    var drawStart = performance.now();
+    for(var i=0;i<parts.length;i++){
+      var p = parts[i];
+      p.life += 0.016;
+      if(p.life > p.max || p.y < -p.r*0.6){
+        parts[i] = spawn(i, mode);
+        continue;
+      }
+      var k = p.life / p.max;
+      /* turbulence field */
+      var nx = Math.sin((p.y*0.0038) + t*p.sp*0.9 + p.seed) + Math.sin((p.x*0.0021) - t*0.6 + p.seed*0.4);
+      var ny = Math.cos((p.x*0.0031) + t*p.sp*0.6 + p.seed*0.7);
+      p.vx += nx * turb * 0.028;
+      p.vy += ny * turb * 0.010;
+      /* buoyancy + flow */
+      p.vy += (mode.rise * mode.buoy - 26) * 0.004;
+      p.vx += (flow * 0.08 - 6) * 0.01;
+      /* wind */
+      p.vx += wind.x * 0.05;
+      p.vy += wind.y * 0.02;
+      /* damping */
+      p.vx *= 0.985; p.vy *= 0.988;
+      p.x += p.vx; p.y += p.vy;
+      p.rot += p.vr;
+
+      var sp = sprites[i & 3];
+      var size = p.r * 2 * (0.7 + k*0.5);
+      var isLit = lit(p.x, p.y);
+      var a = cfg.opacity * Math.sin(Math.min(1,k) * Math.PI) * (isLit ? 1.25 : 0.34);
+      if(a <= 0.004) continue;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.globalAlpha = Math.min(0.92, a);
+      if(isLit){
+        ctx.globalCompositeOperation = "lighter";
+      }
+      ctx.drawImage(sp, -size/2, -size/2, size, size);
+      ctx.restore();
+    }
+    drawMs = performance.now() - drawStart;
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = "source-over";
+
+    /* wind decay */
+    wind.x *= 0.94; wind.y *= 0.94;
+    if(!stirring){ wind.tx *= 0.9; wind.ty *= 0.9; }
+
+    /* tally */
+    fpsAcc += 0.016; fpsN++;
+    if(fpsAcc > 0.5){
+      fps = Math.round(fpsN/fpsAcc); fpsAcc = 0; fpsN = 0;
+      tFps.textContent = fps;
+      tDraw.textContent = drawMs.toFixed(1);
+      tPuffs.textContent = parts.length;
+      vWind.textContent = wind.x.toFixed(1);
+      var pct = Math.max(0, Math.min(100, 50 + wind.x*1.4));
+      windDot.style.left = pct.toFixed(1) + "%";
+    }
+
+    requestAnimationFrame(frame);
+  }
+
+  window.addEventListener("resize", function(){ resize(); fill(cfg.density); });
+  resize();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Swell — Gerstner Ocean / Surfing POV</title>
+<style>
+  :root{
+    --abyss:#02141d; --deep:#062a3a; --shallow:#0e7d92; --sun:#ffe6bd;
+    --glass:rgba(4,22,32,.52);
+    --line:rgba(180,232,244,.20);
+    --txt:#d5eef5; --dim:#7fa3b0;
+    --mono:ui-monospace,"DejaVu Sans Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:var(--abyss);color:var(--txt);
+    font-family:var(--mono)}
+  .sea{position:fixed;inset:0}
+  canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+  /* ---- control rail ---- */
+  .rail{position:absolute;left:18px;top:18px;width:262px;background:var(--glass);
+    backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);
+    border:1px solid var(--line);border-radius:3px;padding:16px 16px 14px;
+    box-shadow:0 24px 60px -30px #000}
+  .rail h1{margin:0 0 2px;font:400 17px/1 var(--mono);letter-spacing:.3em;text-transform:uppercase}
+  .rail .sub{font:400 9px/1.6 var(--mono);letter-spacing:.16em;color:var(--dim);
+    text-transform:uppercase;margin-bottom:16px}
+  .ctl{margin-bottom:15px}
+  .ctl label{display:flex;justify-content:space-between;font:500 9px/1 var(--mono);
+    letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin-bottom:9px}
+  .ctl label b{color:var(--txt);font-weight:500;font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:3px;border-radius:2px;
+    background:linear-gradient(90deg,var(--shallow),var(--sun));outline:0;cursor:ew-resize}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+    background:var(--txt);border:2px solid #02141d;box-shadow:0 0 10px rgba(150,230,250,.55);cursor:ew-resize}
+  input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--txt);
+    border:2px solid #02141d;cursor:ew-resize}
+  .presets{display:flex;gap:5px;margin-top:14px}
+  .presets button{flex:1;background:transparent;border:1px solid var(--line);color:var(--dim);
+    font:600 8.5px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;padding:8px 4px;
+    cursor:pointer;border-radius:2px;transition:.15s}
+  .presets button:hover{border-color:var(--shallow);color:var(--txt)}
+  .presets button[aria-pressed="true"]{background:var(--shallow);border-color:var(--shallow);color:#02141d}
+  .submerge{margin-top:14px;width:100%;background:transparent;border:1px solid var(--sun);color:var(--sun);
+    font:700 9.5px/1 var(--mono);letter-spacing:.22em;text-transform:uppercase;padding:12px;
+    cursor:pointer;border-radius:2px;transition:.18s}
+  .submerge:hover{background:var(--sun);color:#02141d}
+  .submerge[aria-pressed="true"]{background:var(--sun);color:#02141d}
+
+  /* ---- HUD ---- */
+  .hud{position:absolute;right:18px;top:18px;width:206px;background:var(--glass);
+    backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--line);
+    border-radius:3px;padding:14px 15px}
+  .hud h2{margin:0 0 10px;font:600 9px/1 var(--mono);letter-spacing:.24em;text-transform:uppercase;color:var(--dim)}
+  .hud .row{display:flex;justify-content:space-between;align-items:baseline;padding:6px 0;
+    border-bottom:1px solid rgba(180,232,244,.10);font:400 10.5px/1 var(--mono)}
+  .hud .row span{color:var(--dim);letter-spacing:.12em;text-transform:uppercase;font-size:9px}
+  .hud .row b{font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+  .hud .row b.warn{color:var(--sun)}
+  .strip{position:absolute;left:18px;right:18px;bottom:18px;display:flex;gap:20px;align-items:center;
+    background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+    border:1px solid var(--line);border-radius:3px;padding:11px 16px;flex-wrap:wrap}
+  .strip .w{display:flex;gap:5px;align-items:flex-end;height:26px}
+  .strip .w i{width:5px;background:var(--shallow);display:block;transition:height .3s,background .3s;border-radius:1px}
+  .strip .w i.hot{background:var(--sun)}
+  .strip .lab{font:600 9px/1 var(--mono);letter-spacing:.22em;text-transform:uppercase;color:var(--dim);margin-right:2px}
+  .strip p{margin:0;font:400 10.5px/1.6 var(--mono);color:var(--dim);letter-spacing:.06em}
+  .strip p b{color:var(--txt);font-weight:500}
+  .strip .sp{flex:1}
+  .vitals{display:flex;gap:16px}
+  .vitals div{text-align:right}
+  .vitals span{display:block;font:500 8.5px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+  .vitals b{font:400 15px/1.4 var(--mono);font-variant-numeric:tabular-nums}
+
+  .vig{position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(120% 90% at 50% 42%,transparent 52%,rgba(1,10,16,.55) 100%)}
+  .grain{position:absolute;inset:0;pointer-events:none;opacity:.3;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='3'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E")}
+  .title{position:absolute;left:50%;top:26px;transform:translateX(-50%);text-align:center;pointer-events:none}
+  .title b{display:block;font:300 30px/1 var(--mono);letter-spacing:.52em;text-transform:uppercase;
+    text-shadow:0 2px 24px rgba(0,0,0,.7)}
+  .title span{display:block;margin-top:9px;font:400 9px/1 var(--mono);letter-spacing:.3em;
+    text-transform:uppercase;color:rgba(213,238,245,.65);text-shadow:0 2px 12px rgba(0,0,0,.8)}
+
+  @media (max-width:820px){
+    .rail{width:calc(100% - 36px);left:18px;right:18px;top:auto;bottom:96px;padding:12px 14px}
+    .rail .ctl{margin-bottom:10px}
+    .presets,.submerge{display:none}
+    .hud,.title{display:none}
+    .strip{gap:12px;padding:9px 12px}
+  }
+</style>
+</head>
+<body>
+<div class="sea">
+  <canvas id="c"></canvas>
+  <div class="vig"></div><div class="grain"></div>
+
+  <div class="title">
+    <b>Swell</b>
+    <span>Sum of six Gerstner waves · Trieste, Adriatic</span>
+  </div>
+
+  <div class="rail">
+    <h1>Sea state</h1>
+    <div class="sub">Live surface solver · 6 components</div>
+
+    <div class="ctl">
+      <label>Wave height <b id="vA">0.85 m</b></label>
+      <input id="sA" type="range" min="10" max="100" value="42">
+    </div>
+    <div class="ctl">
+      <label>Swell period <b id="vB">9.4 s</b></label>
+      <input id="sB" type="range" min="40" max="180" value="94">
+    </div>
+    <div class="ctl">
+      <label>Wind / steepness <b id="vC">0.55</b></label>
+      <input id="sC" type="range" min="5" max="100" value="55">
+    </div>
+
+    <div class="presets">
+      <button data-p="0" aria-pressed="false">Glass</button>
+      <button data-p="1" aria-pressed="true">Building</button>
+      <button data-p="2" aria-pressed="false">Gale</button>
+    </div>
+    <button class="submerge" id="sub" aria-pressed="false">Submerge</button>
+  </div>
+
+  <div class="hud">
+    <h2>Camera · surf POV</h2>
+    <div class="row"><span>Position</span><b id="h-pos">—</b></div>
+    <div class="row"><span>Heading</span><b id="h-hdg">—</b></div>
+    <div class="row"><span>Water</span><b id="h-temp">19.4 °C</b></div>
+    <div class="row"><span>Wind</span><b id="h-wind">—</b></div>
+    <div class="row"><span>Foam cover</span><b id="h-foam">—</b></div>
+    <div class="row"><span>Solver</span><b id="h-fps">—</b></div>
+  </div>
+
+  <div class="strip">
+    <span class="lab">Spectrum</span>
+    <span class="w" id="bars"></span>
+    <span class="sp"></span>
+    <p>Dominant <b id="d-dom">0.31 m / 128 m</b> · steepness <b id="d-st">0.44</b> ·
+      breaking <b id="d-brk">none</b></p>
+    <span class="sp"></span>
+    <div class="vitals">
+      <div><span>Swell</span><b id="v-swell">0.9 m</b></div>
+      <div><span>Period</span><b id="v-per">9.4 s</b></div>
+      <div><span>Set</span><b id="v-set">4 s</b></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+const c=document.getElementById("c"),g=c.getContext("2d");
+let W=0,H=0,S=0.5,dpr=1;
+const $=id=>document.getElementById(id);
+
+/* ================= solver parameters ================= */
+const P={amp:0.85, period:9.4, steep:0.55};
+let waves=[];
+const G=9.81;
+function buildWaves(){
+  const L0=P.period*P.period/(2*Math.PI*Math.sqrt(1.0)); // deep-water dispersion, d≈400 m
+  const dirs=[0.06,0.30,-0.18,0.62,-0.42,0.92];
+  const rel =[1.00,0.72,0.55,0.40,0.30,0.22];
+  const len =[1.00,0.62,0.41,0.27,0.18,0.12];
+  const spd =[1.00,0.88,0.74,0.63,0.52,0.44];
+  waves=dirs.map((a,i)=>{
+    const L=L0*len[i];
+    const k=2*Math.PI/L;
+    const w=Math.sqrt(G*k);
+    const A=(P.amp/2)*rel[i];
+    return {a,k,w,A,Q:P.steep*rel[i]*0.85,dx:Math.cos(a),dz:Math.sin(a),ph:i*1.7};
+  });
+  // normalise so total amplitude ≈ P.amp
+  const tot=waves.reduce((s,w)=>s+w.A,0);
+  waves.forEach(w=>w.A*=P.amp/Math.max(0.4,tot));
+}
+buildWaves();
+
+/* ================= value noise (foam + spray) ================= */
+function h2(i,j){let n=i*374761393+j*668265263;n=(n^(n>>13))*1274126177;return ((n^(n>>16))>>>0)/4294967296;}
+function vnoise(x,y){
+  const xi=Math.floor(x),yi=Math.floor(y),xf=x-xi,yf=y-yi;
+  const u=xf*xf*(3-2*xf),v=yf*yf*(3-2*yf);
+  const a=h2(xi,yi),b=h2(xi+1,yi),c=h2(xi,yi+1),d=h2(xi+1,yi+1);
+  return (a+(b-a)*u)+((c-a)+(a-b-c+d)*u)*v;
+}
+function fbm(x,y){return vnoise(x,y)*0.55+vnoise(x*2.1+7,y*2.1-3)*0.3+vnoise(x*4.3-2,y*4.3+5)*0.15;}
+
+/* ================= camera ================= */
+let camZ=0, camX=0, heading=0.14, t=0, submerged=0, subTarget=0, subT=0;
+let spray=[], foamTotal=0;
+
+function resize(){
+  W=innerWidth;H=innerHeight;
+  dpr=Math.min(1.6,devicePixelRatio||1);
+  S=Math.min(0.62,Math.max(0.36,(W<760?0.46:0.55)));
+  c.width=Math.round(W*S*dpr);c.height=Math.round(H*S*dpr);
+  c.style.width=W+"px";c.style.height=H+"px";
+  g.setTransform(S*dpr,0,0,S*dpr,0,0);
+}
+addEventListener("resize",resize);resize();
+
+/* ================= UI ================= */
+function readSliders(){
+  P.amp=+$("sA").value/100*2.2;
+  P.period=+$("sB").value/10;
+  P.steep=+$("sC").value/100;
+  buildWaves();
+  $("vA").textContent=P.amp.toFixed(2)+" m";
+  $("vB").textContent=P.period.toFixed(1)+" s";
+  $("vC").textContent=P.steep.toFixed(2);
+  $("v-swell").textContent=P.amp.toFixed(1)+" m";
+  $("v-per").textContent=P.period.toFixed(1)+" s";
+  const set=Math.max(2,P.period*0.42);
+  $("v-set").textContent=set.toFixed(0)+" s";
+  const dom=waves.reduce((a,b)=>b.A>a.A?b:a);
+  $("d-dom").textContent=dom.A.toFixed(2)+" m / "+(2*Math.PI/dom.k).toFixed(0)+" m";
+  $("d-st").textContent=Math.min(1.2,P.steep*0.8).toFixed(2);
+  $("d-brk").textContent=P.amp>1.6?"heavy":P.amp>1.0?"breaking":"none";
+  $("h-wind").textContent=Math.round(P.steep*28+4)+" kn";
+  // spectrum bars
+  const bars=$("bars");bars.innerHTML=waves.map((w,i)=>
+    '<i style="height:'+Math.max(3,Math.round(w.A/waves[0].A*26))+'px" title="'+
+    (2*Math.PI/w.k).toFixed(0)+' m"></i>').join("");
+}
+["sA","sB","sC"].forEach(id=>$(id).addEventListener("input",()=>{
+  readSliders();
+  document.querySelectorAll(".presets button").forEach(b=>b.setAttribute("aria-pressed","false"));
+}));
+const PRESETS=[[0.22,5.2,0.18],[0.85,9.4,0.55],[1.9,13.6,0.92]];
+document.querySelectorAll(".presets button").forEach(b=>b.addEventListener("click",()=>{
+  const p=PRESETS[+b.dataset.p];
+  $("sA").value=Math.round(p[0]/2.2*100);$("sB").value=Math.round(p[1]*10);$("sC").value=Math.round(p[2]*100);
+  document.querySelectorAll(".presets button").forEach(o=>o.setAttribute("aria-pressed",String(o===b)));
+  readSliders();
+}));
+$("sub").addEventListener("click",function(){
+  subTarget=subTarget?0:1;
+  this.setAttribute("aria-pressed",String(!!subTarget));
+  this.textContent=subTarget?"Surface":"Submerge";
+});
+readSliders();
+
+/* ================= draw ================= */
+const ROWS=132, N=72;
+let pts=new Float32Array(N*2);
+const cols=new Float32Array(N*4);
+
+function drawSky(hz){
+  const sk=g.createLinearGradient(0,0,0,hz);
+  sk.addColorStop(0,"#0a2a3e");sk.addColorStop(.55,"#0e4a5c");sk.addColorStop(1,"#2a7c85");
+  g.fillStyle=sk;g.fillRect(0,0,W,hz);
+  // sun
+  const sx=W*0.66, sy=hz-H*0.045;
+  const gl=g.createRadialGradient(sx,sy,0,sx,sy,H*0.34);
+  gl.addColorStop(0,"rgba(255,232,190,.95)");gl.addColorStop(.08,"rgba(255,222,168,.55)");
+  gl.addColorStop(.4,"rgba(255,196,130,.14)");gl.addColorStop(1,"rgba(255,196,130,0)");
+  g.fillStyle=gl;g.fillRect(0,0,W,hz+20);
+  g.fillStyle="#fff4dc";g.beginPath();g.arc(sx,sy,H*0.028,0,6.2832);g.fill();
+  // haze band
+  const hz2=g.createLinearGradient(0,hz-H*0.09,0,hz);
+  hz2.addColorStop(0,"rgba(160,225,235,0)");hz2.addColorStop(1,"rgba(190,235,240,.42)");
+  g.fillStyle=hz2;g.fillRect(0,hz-H*0.09,W,H*0.09);
+  // far swell silhouette against the sky
+  g.fillStyle="rgba(10,52,64,.55)";
+  g.beginPath();g.moveTo(0,hz);
+  for(let i=0;i<=60;i++){
+    const x=i/60*W;
+    const y=hz-2-Math.sin(i*0.42+t*0.9)*1.6-Math.sin(i*0.17-t*0.5)*2.2;
+    g.lineTo(x,y);
+  }
+  g.lineTo(W,hz);g.closePath();g.fill();
+}
+
+function drawOcean(hz,alpha){
+  const focal=520, K=260;
+  const sunDir={x:0.34,y:0.86,z:0.38};
+  let foamAcc=0, foamN=0;
+  for(let r=0;r<ROWS;r++){
+    const p=r/(ROWS-1);
+    const sy=hz+(H-hz)*Math.pow(p,1.85);
+    const dz=Math.max(0.8,sy-hz);
+    const z=K/dz;
+    const zc=Math.max(1.5,z);
+    const damp=1/(1+0.16*z);
+    const halfW=(W*0.5+ (W*0.5-camX*8) )*z/focal;
+    const x0=camX*8-halfW, x1=camX*8+halfW;
+    const att=0.9*damp;
+
+    // sample the surface
+    for(let i=0;i<N;i++){
+      const X=x0+(x1-x0)*i/(N-1);
+      let px=0,pz=0,py=0,nx=0,ny=0,nzz=0;
+      for(let w=0;w<waves.length;w++){
+        const wv=waves[w];
+        const ph=wv.k*(wv.dx*(X-camX*8)+wv.dz*z)-wv.w*t+wv.ph;
+        const s=Math.sin(ph),c=Math.cos(ph);
+        const Q=wv.Q;
+        px+=Q*wv.A*wv.dx*c; pz+=Q*wv.A*wv.dz*c; py+=wv.A*s;
+        const wa=wv.A*wv.k*c;
+        nx-=wv.dx*wa; nzz-=wv.dz*wa; ny+=wv.A*wv.k*s;
+      }
+      const worldY=py*att;
+      const syScreen=sy - worldY*focal/zc;
+      let nX=nx, nY=ny+1.15, nZ=nzz;
+      const len=Math.hypot(nX,nY,nZ)||1;
+      nX/=len;nY/=len;nZ/=len;
+      // lighting
+      const lam=Math.max(0,nX*sunDir.x+nY*sunDir.y+nZ*sunDir.z);
+      const half={x:sunDir.x,y:sunDir.y,z:sunDir.z};
+      let hx=half.x,hy=half.y,hz2=half.z+1;
+      const hl=Math.hypot(hx,hy,hz2);hx/=hl;hy/=hl;hz2/=hl;
+      const spec=Math.pow(Math.max(0,nX*hx+nY*hy+nZ*hz2),48);
+      const fres=Math.pow(1-Math.max(0,nY),3);
+      // foam
+      const crest=(worldY/Math.max(0.15,P.amp*0.42));
+      const nz=fbm(X*0.16+z*0.05+t*0.5,z*0.14);
+      let foam=0;
+      if(crest>0.55){
+        foam=Math.min(1,(crest-0.55)*2.1);
+        foam*=Math.max(0,nz*1.5-0.22);
+        if(foam>0)foam=Math.min(1,foam);
+      }
+      pts[i*2]=x0+(x1-x0)*i/(N-1);
+      pts[i*2+1]=syScreen;
+      cols[i*4]=lam;cols[i*4+1]=spec;cols[i*4+2]=foam;cols[i*4+3]=fres;
+      if(foam>0.35){foamAcc+=foam;foamN++;}
+    }
+
+    // ---- base water band (far → near) ----
+    const depthT=Math.min(1,p*1.5);
+    g.beginPath();
+    g.moveTo(pts[0],pts[1]);
+    for(let i=1;i<N;i++)g.lineTo(pts[i*2],pts[i*2+1]);
+    g.lineTo(pts[(N-1)*2],sy+1.5);
+    g.lineTo(pts[0],sy+1.5);
+    g.closePath();
+    const baseCol=mixWater(depthT,0.42,0.1);
+    g.fillStyle=baseCol;g.fill();
+
+    // ---- shaded facets + specular + foam ----
+    for(let i=0;i<N-1;i++){
+      const lam=cols[i*4], spec=cols[i*4+1], foam=cols[i*4+2], fres=cols[i*4+3];
+      const xa=pts[i*2],ya=pts[i*2+1],xb=pts[(i+1)*2],yb=pts[(i+1)*2+1];
+      const top=Math.min(ya,yb);
+      g.beginPath();
+      g.moveTo(xa,ya);g.lineTo(xb,yb);g.lineTo(xb,sy+1.5);g.lineTo(xa,sy+1.5);g.closePath();
+      let c2=mixWater(depthT,0.30+lam*0.72,fres*0.5);
+      if(spec>0.02){
+        const s2=Math.min(1,spec*1.5);
+        c2=mixHex(c2,[255,246,222],s2*0.92);
+      }
+      g.fillStyle=c2;g.fill();
+      if(foam>0.06){
+        const fh=3+foam*10*(0.4+p);
+        g.beginPath();
+        g.moveTo(xa,ya);g.lineTo(xb,yb);g.lineTo(xb,yb+fh);g.lineTo(xa,ya+fh);g.closePath();
+        g.fillStyle="rgba(236,252,255,"+Math.min(0.92,foam*0.95)+")";
+        g.fill();
+      }
+    }
+    // ---- spray spawn on the strongest near-band foam ----
+    if(p>0.42 && r%6===0 && foamN>2){
+      const i=(Math.random()*N)|0;
+      const f=cols[i*4+2];
+      if(f>0.42 && spray.length<520 && Math.random()<f*0.5){
+        spray.push({x:pts[i*2],y:pts[i*2+1]-2,
+          vx:(Math.random()-0.5)*40-14,vy:-40-Math.random()*90,f:0.6+Math.random()*1.6,
+          life:0,max:0.7+Math.random()*1.1});
+      }
+    }
+  }
+  foamTotal=foamN?foamAcc/foamN:0;
+}
+
+function mixWater(depthT,lam,fres){
+  // deep blue → turquoise with depth; lambert modulates
+  const deep=[6,38,54], mid=[10,86,104], shal=[38,178,178];
+  let c;
+  if(depthT<0.55){const u=depthT/0.55;c=[deep[0]+(mid[0]-deep[0])*u,deep[1]+(mid[1]-deep[1])*u,deep[2]+(mid[2]-deep[2])*u];}
+  else{const u=(depthT-0.55)/0.45;c=[mid[0]+(shal[0]-mid[0])*u,mid[1]+(shal[1]-mid[1])*u,mid[2]+(shal[2]-mid[2])*u];}
+  const k=0.34+lam*0.78;
+  return "rgb("+Math.min(255,c[0]*k)|0+","+Math.min(255,c[1]*k)|0+","+Math.min(255,c[2]*k)|0+")";
+}
+function mixHex(hex,rgb,amt){
+  const m=hex.match(/\d+/g);
+  return "rgb("+(parseFloat(m[0])+(rgb[0]-parseFloat(m[0]))*amt|0)+","+
+    (parseFloat(m[1])+(rgb[1]-parseFloat(m[1]))*amt|0)+","+
+    (parseFloat(m[2])+(rgb[2]-parseFloat(m[2]))*amt|0)+")";
+}
+
+function drawSpray(){
+  for(const p of spray){
+    const a=Math.max(0,1-p.life/p.max);
+    g.fillStyle="rgba(240,253,255,"+(a*0.75)+")";
+    g.beginPath();g.arc(p.x,p.y,p.f*a*1.4,0,6.2832);g.fill();
+  }
+}
+
+/* ---------------- underwater ---------------- */
+let bubbles=[];
+for(let i=0;i<120;i++)bubbles.push({c:(Math.random()*3)|0,x:Math.random(),y:Math.random(),
+  r:0.6+Math.random()*3,s:0.05+Math.random()*0.14,ph:Math.random()*6.28});
+
+function drawUnderwater(hz){
+  if(submerged<=0.001)return;
+  const top=1-submerged;
+  // wavy wipe edge
+  g.save();
+  g.beginPath();
+  g.moveTo(0,H);
+  for(let px=0;px<=W;px+=14){
+    const yy=hz+H*0.10+(H-(hz+H*0.10))*top+Math.sin(px*0.014+t*2.2)*7*submerged;
+    g.lineTo(px,yy);
+  }
+  g.lineTo(W,H);g.closePath();
+  g.clip();
+  // water column
+  const ug=g.createLinearGradient(0,hz,0,H);
+  ug.addColorStop(0,"#1a7f92");ug.addColorStop(.35,"#0a4d63");ug.addColorStop(1,"#031c28");
+  g.fillStyle=ug;g.fillRect(0,hz-20,W,H);
+  // light shafts
+  g.globalCompositeOperation="screen";
+  for(let i=0;i<7;i++){
+    const bx=((i*0.17+t*0.03)%1)*W*1.2-W*0.1;
+    const wdt=40+Math.sin(i*2.1+t*0.6)*26;
+    const lg=g.createLinearGradient(bx,0,bx+W*0.16,H);
+    lg.addColorStop(0,"rgba(180,240,255,.20)");lg.addColorStop(1,"rgba(180,240,255,0)");
+    g.fillStyle=lg;
+    g.beginPath();g.moveTo(bx,hz);g.lineTo(bx+wdt,hz);
+    g.lineTo(bx+wdt+W*0.19,H);g.lineTo(bx+W*0.19,H);g.closePath();g.fill();
+  }
+  g.globalCompositeOperation="source-over";
+  // caustics on the underside of the surface
+  g.globalCompositeOperation="screen";
+  for(let i=0;i<26;i++){
+    const yy=hz+18+i*13;
+    g.beginPath();
+    for(let px=0;px<=W;px+=12){
+      const y=yy+Math.sin(px*0.021+t*1.5+i*0.7)*9+Math.sin(px*0.007-t*0.9+i)*14;
+      px?g.lineTo(px,y):g.moveTo(px,y);
+    }
+    g.strokeStyle="rgba(190,248,255,"+(0.10*(1-i/26)*(0.4+0.6*submerged))+")";
+    g.lineWidth=2.4;g.stroke();
+  }
+  g.globalCompositeOperation="source-over";
+  // bubble columns
+  bubbles.forEach(b=>{
+    b.y-=b.s*0.008*(1+submerged);
+    if(b.y<-0.05){b.y=1.05;b.x=Math.random();}
+    const colX=[0.18,0.53,0.81][b.c];
+    const px2=(colX*W + Math.sin(b.y*9+b.ph)*26*b.r + Math.sin(t*1.4+b.ph)*10)*1;
+    const py2=hz+b.y*(H-hz);
+    g.strokeStyle="rgba(220,250,255,.42)";g.lineWidth=0.9;
+    g.beginPath();g.arc(px2,py2,b.r,0,6.2832);g.stroke();
+    g.fillStyle="rgba(255,255,255,.16)";g.fill();
+  });
+  // suspended particulate
+  for(let i=0;i<70;i++){
+    const px2=(h2(i,3)*W+t*8*(1+h2(i,7)*6))%W;
+    const py2=hz+((h2(i,11)*H - t*20*(1+h2(i,13)*4))%(H-hz)+(H-hz))%(H-hz);
+    g.fillStyle="rgba(200,240,250,.18)";
+    g.fillRect(px2,py2,1.5,1.5);
+  }
+  g.restore();
+  // foam line at the wipe edge
+  g.save();
+  g.beginPath();
+  for(let px=0;px<=W;px+=10){
+    const yy=hz+H*0.10+(H-(hz+H*0.10))*top+Math.sin(px*0.014+t*2.2)*7*submerged;
+    px?g.lineTo(px,yy):g.moveTo(px,yy);
+  }
+  g.strokeStyle="rgba(235,253,255,"+(0.75*submerged)+")";
+  g.lineWidth=2.4;g.stroke();
+  g.restore();
+  if(submerged>0.5){
+    g.fillStyle="rgba(2,26,36,"+((submerged-0.5)*0.5)+")";
+    g.fillRect(0,0,W,H);
+  }
+}
+
+/* ================= loop ================= */
+let last=performance.now(), fps=60, acc=0, frames=0;
+function loop(now){
+  const dt=Math.min(0.05,(now-last)/1000);last=now;
+  t+=dt;
+  // submerge transition
+  if(submerged!==subTarget){
+    subT+=dt/1.5;
+    if(subT>=1){subT=1;submerged=subTarget;}
+    else submerged=submerged+(subTarget-submerged)*0.14;
+  }
+  heading+=Math.sin(t*0.21)*dt*0.02;
+  camZ+=dt*(2.2+P.amp*2.6);
+  // spray integration
+  for(const p of spray){
+    p.life+=dt;p.vy+=420*dt;p.vx*=0.99;p.x+=p.vx*dt;p.y+=p.vy*dt;
+  }
+  for(let i=spray.length-1;i>=0;i--)if(spray[i].life>spray[i].max)spray.splice(i,1);
+  g.setTransform(S*dpr,0,0,S*dpr,0,0);
+  g.clearRect(0,0,W,H);
+  g.fillStyle="#02141d";g.fillRect(0,0,W,H);
+  const hz=H*0.415;
+  drawSky(hz);
+  if(submerged<0.995) drawOcean(hz,1);
+  for(const p of spray){
+    const a=Math.max(0,1-p.life/p.max);
+    g.fillStyle="rgba(240,253,255,"+(a*0.75)+")";
+    g.beginPath();g.arc(p.x,p.y,p.f*a*1.4,0,6.2832);g.fill();
+  }
+  drawUnderwater(hz);
+  camX=Math.sin(t*0.13)*1.4;
+  $("h-pos").textContent=Math.abs(camX*4).toFixed(1)+" km E";
+  $("h-hdg").textContent=String(Math.round(((heading*180/Math.PI)+360)%360)).padStart(3,"0")+"°";
+  $("h-foam").textContent=Math.round(foamTotal*100)+"%";
+  $("h-temp").textContent=(19.4+Math.sin(t*0.1)*0.3).toFixed(1)+" °C";
+  document.querySelectorAll("#bars i").forEach((el,i)=>{
+    el.classList.toggle("hot",!!waves[i]&&waves[i].A>waves[0].A*0.5);
+  });
+  frames++;acc+=dt;
+  if(acc>0.5){fps=Math.round(frames/acc);frames=0;acc=0;$("h-fps").textContent=fps+" fps";}
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

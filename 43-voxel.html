@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VOXEL TERRAIN — Isomorphic Build</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:#08101e;color:#e8f0ff;font-family:ui-monospace,"SFMono-Regular",Menlo,monospace;
+    overflow:hidden;user-select:none;-webkit-user-select:none}
+  .sky{position:absolute;inset:0;z-index:0}
+  .stars{position:absolute;inset:0;z-index:1;opacity:0;transition:opacity .7s}
+  .stars i{position:absolute;width:2px;height:2px;border-radius:99px;background:#fff;
+    box-shadow:0 0 7px #cfe4ff;animation:tw 4s ease-in-out infinite}
+  @keyframes tw{0%,100%{opacity:.22}50%{opacity:1}}
+  .moon{position:absolute;width:36px;height:36px;border-radius:99px;right:13%;top:13%;opacity:0;
+    background:radial-gradient(circle at 36% 34%,#fff,#c9d6ee 58%,#8ea3c4);
+    box-shadow:0 0 44px 12px rgba(200,220,255,.26);transition:opacity .7s}
+  .clouds{position:absolute;inset:0;z-index:1;transition:opacity .7s}
+  .clouds i{position:absolute;height:24px;border-radius:99px;filter:blur(10px);opacity:.55}
+  .sun{position:absolute;z-index:6;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:99px;
+    background:radial-gradient(circle,#fffdf0 0 24%,#ffe9a8 38%,#ffb35c 60%,rgba(255,140,60,0) 74%);
+    box-shadow:0 0 96px 28px rgba(255,190,110,.45);cursor:grab;touch-action:none}
+  .sun:active{cursor:grabbing}
+  .sun b{position:absolute;left:50%;top:68px;transform:translateX(-50%);font-weight:400;font-size:9px;
+    letter-spacing:.24em;white-space:nowrap;color:rgba(255,255,255,.8);text-shadow:0 1px 5px rgba(0,0,0,.8)}
+  #scene{position:absolute;inset:0;z-index:3;width:100%;height:100%;cursor:crosshair;touch-action:none}
+  .pol{transition:fill .18s linear}
+  .pop{animation:pop .36s cubic-bezier(.3,1.65,.5,1) both;transform-box:fill-box;transform-origin:50% 100%}
+  @keyframes pop{0%{transform:scale(.1,.1)}68%{transform:scale(1.09,1.14)}100%{transform:scale(1,1)}}
+  .pane{position:absolute;z-index:5;background:rgba(9,16,30,.7);border:1px solid rgba(160,200,255,.22);
+    border-radius:12px;backdrop-filter:blur(10px);box-shadow:0 18px 50px -22px #000}
+  .tl{top:18px;left:18px;padding:14px 16px;max-width:272px}
+  .tl h1{font-size:15px;font-weight:600;letter-spacing:.01em}
+  .tl p{font-size:10.5px;line-height:1.6;color:#9fb6d8;margin-top:6px}
+  .tl .clock{margin-top:10px;font-size:21px;letter-spacing:.06em;color:#ffd98a}
+  .tr{top:18px;right:18px;padding:12px 14px;font-size:10px;letter-spacing:.16em;color:#9fb6d8;
+    text-transform:uppercase;line-height:1.95;text-align:right}
+  .tr b{color:#e8f0ff;font-weight:500}
+  .dock{left:18px;bottom:18px;padding:13px 14px;display:grid;gap:11px;width:272px}
+  .dock h3{font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:#7f95b8;font-weight:500;margin-bottom:6px}
+  .pal{display:flex;gap:5px;flex-wrap:wrap}
+  .pal button{width:34px;height:30px;border-radius:7px;cursor:pointer;border:2px solid transparent;padding:0;transition:.14s}
+  .pal button:hover{transform:translateY(-2px)}
+  .pal button.on{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.2)}
+  .pal button span{position:absolute;left:0;right:0;bottom:-1px;font-size:6.5px;letter-spacing:.04em;
+    color:rgba(0,0,0,.62);text-transform:uppercase;font-weight:700}
+  .row{display:flex;gap:7px}
+  .row button{flex:1;font:inherit;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;
+    padding:8px 5px;border-radius:7px;border:1px solid rgba(160,200,255,.24);background:rgba(255,255,255,.05);
+    color:#cfe0f8;transition:.15s;white-space:nowrap}
+  .row button:hover{background:rgba(255,255,255,.13)}
+  .row button.on{background:#7fd4ff;border-color:transparent;color:#062033;font-weight:700}
+  .br{right:18px;bottom:18px;padding:12px 14px;font-size:10px;line-height:1.9;color:#9fb6d8;max-width:250px}
+  .br kbd{background:rgba(255,255,255,.1);border:1px solid rgba(160,200,255,.25);border-radius:4px;
+    padding:1px 5px;font-size:9px;color:#e8f0ff}
+  @media (max-width:860px){.tr,.br{display:none}.tl{max-width:200px}.dock{width:calc(100% - 36px)}}
+</style>
+</head>
+<body>
+<div class="sky" id="sky"></div>
+<div class="stars" id="stars"></div>
+<div class="clouds" id="clouds"></div>
+<div class="moon" id="moon"></div>
+<div class="sun" id="sun"><b>drag the sun</b></div>
+<svg id="scene" xmlns="http://www.w3.org/2000/svg" viewBox="-220 -182 500 424" preserveAspectRatio="xMidYMid meet"></svg>
+
+<div class="pane tl">
+  <h1>Isomorphic Build</h1>
+  <p>Drag the sun across the sky and the whole valley moves its shadows. Click a block to stack it, right-click to dig it out.</p>
+  <div class="clock" id="clock">12:00</div>
+</div>
+<div class="pane tr">
+  <div>grid <b>34 &times; 26</b></div>
+  <div>peak <b id="gpeak">0</b></div>
+  <div>voxels <b id="gvox">0</b></div>
+  <div>sea level <b>1</b></div>
+</div>
+<div class="pane dock">
+  <div>
+    <h3>Block</h3>
+    <div class="pal" id="pal"></div>
+  </div>
+  <div>
+    <h3>Time</h3>
+    <div class="row"><button id="bAuto">Auto cycle</button><button id="bNoon">Noon</button></div>
+  </div>
+  <div class="row"><button id="bClear">Clear build</button><button id="bUndo">Undo</button></div>
+</div>
+<div class="pane br">
+  <kbd>drag</kbd> sun &middot; <kbd>click</kbd> place<br>
+  <kbd>right click</kbd> dig &middot; <kbd>space</kbd> cycle
+</div>
+
+<script>
+const GW = 34, GH = 26, TW = 16, TH = 8, BH = 11, SEA = 1, SNOW = 9;
+const svg = document.getElementById("scene");
+const px = (c, r, y) => (c - r) * TW / 2;
+const py = (c, r, y) => (c + r) * TH / 2 - y * BH;
+const clamp = (v, a, b) => v < a ? a : v > b ? b : v;
+const lerp = (a, b, t) => a + (b - a) * t;
+
+const H = [], S = [], T = [];
+for (let r = 0; r < GH; r++) { H.push(new Array(GW).fill(0)); S.push(new Array(GW).fill("grass")); T.push(new Array(GW).fill(null)); }
+function hash2(x, y) { const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return s - Math.floor(s); }
+function vnoise(x, y) {
+  const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+  const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+  const a = hash2(xi, yi), b = hash2(xi + 1, yi), c = hash2(xi, yi + 1), d = hash2(xi + 1, yi + 1);
+  return (a * (1 - u) + b * u) * (1 - v) + (c * (1 - u) + d * u) * v;
+}
+function fbm(x, y) { return vnoise(x, y) * .55 + vnoise(x * 2.1, y * 2.1) * .27 + vnoise(x * 4.3, y * 4.3) * .13 + vnoise(x * 8.7, y * 8.7) * .05; }
+const riverAt = c => 12 + Math.sin(c * .28) * 4.4 + Math.sin(c * .71 + 1.2) * 1.7;
+const ORDER = [];
+for (let r = 0; r < GH; r++) for (let c = 0; c < GW; c++) ORDER.push([c, r]);
+ORDER.sort((a, b) => (a[0] + a[1]) - (b[0] + b[1]));
+
+for (let r = 0; r < GH; r++) for (let c = 0; c < GW; c++) {
+  let h = Math.round(fbm(c * .085, r * .085) * 15 + fbm(c * .24 + 40, r * .24) * 2.4);
+  const d = Math.abs(r - riverAt(c));
+  if (d < 2.4) h -= 5; else if (d < 4.2) h -= 2;
+  H[r][c] = Math.max(0, h);
+  const hh = H[r][c];
+  S[r][c] = hh <= SEA + 1 ? "sand" : hh >= SNOW ? "snow" : hh >= SNOW - 2 && hash2(c, r) > .5 ? "snow" : "grass";
+  if (hh > 2 && hh < SNOW - 1 && hash2(c * 1.7, r * 1.7) > .962) T[r][c] = { t: 2 + (hash2(c, r) > .5 ? 1 : 0) };
+  else if (hh > 1 && hh < 4 && Math.abs(r - riverAt(c)) > 5 && hash2(c * 3.1 + 7, r * 3.1) > .94) T[r][c] = { t: 1 };
+}
+for (let k = -3; k <= 3; k++) {
+  const c = 17 + k, r = Math.round(riverAt(c));
+  H[r][c] = 5; S[r][c] = "wood"; T[r][c] = null;
+  H[r - 1][c] = 5; S[r - 1][c] = "wood"; T[r - 1][c] = null;
+  [-2, 1].forEach(d => { if (r + d >= 0 && r + d < GH) { H[r + d][c] = 6; S[r + d][c] = "wood"; T[r + d][c] = null; } });
+}
+H[Math.round(riverAt(17)) - 2][17] = 0; H[Math.round(riverAt(17)) + 1][17] = 0;
+T[Math.round(riverAt(17)) - 2][17] = { t: 0, post: 1 };
+T[Math.round(riverAt(17)) + 1][17] = { t: 0, post: 1 };
+
+const COL = {
+  grass: [111, 191, 79], sand: [227, 194, 122], snow: [244, 248, 255], stone: [138, 143, 154],
+  dirt: [134, 96, 62], rock: [104, 110, 124], wood: [156, 107, 63], leaf: [63, 158, 74],
+  water: [42, 104, 162], gravel: [150, 148, 140]
+};
+const PALS = [["grass", "Grass"], ["dirt", "Dirt"], ["stone", "Stone"], ["sand", "Sand"], ["snow", "Snow"],
+  ["wood", "Wood"], ["leaf", "Leaf"], ["rock", "Rock"], ["gravel", "Gravel"]];
+const SKY = [
+  [0.00, [5, 9, 28], [15, 24, 56]], [0.16, [28, 20, 60], [92, 54, 90]],
+  [0.28, [70, 44, 94], [242, 138, 90]], [0.40, [56, 116, 194], [188, 226, 255]],
+  [0.50, [44, 124, 212], [170, 218, 246]], [0.62, [56, 106, 184], [216, 228, 238]],
+  [0.76, [68, 44, 102], [246, 126, 76]], [0.88, [24, 17, 54], [94, 50, 90]],
+  [1.00, [5, 9, 28], [15, 24, 56]]
+];
+function skyAt(t) {
+  for (let i = 0; i < SKY.length - 1; i++) if (t <= SKY[i + 1][0]) {
+    const k = (t - SKY[i][0]) / (SKY[i + 1][0] - SKY[i][0]);
+    return [0, 1, 2].map(j => Math.round(lerp(SKY[i][1][j], SKY[i + 1][1][j], k)));
+  }
+  return SKY[SKY.length - 1][1];
+}
+const rgb = c => "rgb(" + c[0] + "," + c[1] + "," + c[2] + ")";
+let dayT = .34, auto = false, picked = "stone", popAt = null, undo = [];
+let lightAmt = 1, nightAmt = 0, light = [255, 240, 214], amb = [58, 82, 138];
+let sunGX = -9, shadowLen = 3;
+
+function surfaceKey(c, r, y) {
+  const h = H[r][c], t = T[r][c];
+  if (t && y >= h) return "wood";
+  if (y === h - 1) return S[r][c];
+  if (y >= h - 2) return "dirt";
+  return "rock";
+}
+function faceColor(c, r, y, f) {
+  const k = surfaceKey(c, r, y);
+  const b = COL[k] || COL.grass;
+  const sh = f === "t" ? 1 : f === "r" ? .76 : .54;
+  const out = [0, 0, 0];
+  for (let i = 0; i < 3; i++) {
+    const v = b[i] * sh;
+    out[i] = Math.round(clamp(lerp(v * amb[i] / 255, v * light[i] / 255, lightAmt), 0, 255));
+  }
+  return rgb(out);
+}
+function heightAt(c, r) { return H[r][c] + (T[r][c] ? T[r][c].t : 0); }
+
+function render() {
+  const sh = [], w = [], t = [];
+  for (let i = 0; i < ORDER.length; i++) {
+    const c = ORDER[i][0], r = ORDER[i][1], h = H[r][c];
+    if (h <= SEA) continue;
+    const hh = heightAt(c, r);
+    const vx = c - sunGX, vy = r + 7, d = Math.hypot(vx, vy) || 1;
+    const L = Math.min(10, (hh - SEA) * shadowLen / d);
+    if (L > .3) {
+      const dc = vx / d * L, dr = vy / d * L;
+      const P = (a, b) => px(a, b, 0).toFixed(1) + "," + py(a, b, 0).toFixed(1);
+      sh.push('<polygon class="pol" points="' + P(c, r) + " " + P(c + 1, r) + " " + P(c + 1, r + 1) + " " + P(c, r + 1) +
+        " " + P(c + 1 + dc, r + 1 + dr) + " " + P(c + 1 + dc, r + 1 + dr) + " " + P(c + 1 + dc, r + 1 + dr) +
+        " " + P(c + dc, r + dr) + '" fill="rgba(8,14,36,' + clamp(.34 * (1 - L / 13) * lightAmt, 0, .5).toFixed(3) + ')"/>');
+    }
+  }
+  for (let r = 0; r < GH; r++) for (let c = 0; c < GW; c++) {
+    if (H[r][c] > SEA) continue;
+    const deep = clamp((SEA + 1.6 - H[r][c]) / 3.4, 0, 1);
+    const b = COL.water, out = [0, 0, 0];
+    for (let i = 0; i < 3; i++) out[i] = Math.round(clamp(lerp(b[i] * amb[i] / 255, b[i] * light[i] / 255, lightAmt) * (1.1 - deep * .42), 0, 255));
+    w.push('<polygon class="pol" points="' + px(c, r, SEA) + "," + py(c, r, SEA) + " " + px(c + 1, r, SEA) + "," +
+      py(c + 1, r, SEA) + " " + px(c + 1, r + 1, SEA) + "," + py(c + 1, r + 1, SEA) + " " + px(c, r + 1, SEA) + "," +
+      py(c, r + 1, SEA) + '" fill="' + rgb(out) + '"/>');
+  }
+  for (let i = 0; i < ORDER.length; i++) {
+    const c = ORDER[i][0], r = ORDER[i][1], h = H[r][c];
+    if (h <= 0) continue;
+    for (let y = 0; y < h; y++) {
+      const dn = Math.max(0, y - 1);
+      const a1 = px(c, r, y).toFixed(1) + "," + py(c, r, y).toFixed(1);
+      const a2 = px(c + 1, r, y).toFixed(1) + "," + py(c + 1, r, y).toFixed(1);
+      const a3 = px(c + 1, r + 1, y).toFixed(1) + "," + py(c + 1, r + 1, y).toFixed(1);
+      const a4 = px(c, r + 1, y).toFixed(1) + "," + py(c, r + 1, y).toFixed(1);
+      if (y === h - 1) t.push('<polygon class="pol" points="' + a1 + " " + a2 + " " + a3 + " " + a4 + '" fill="' + faceColor(c, r, y, "t") + '"/>');
+      if (c + 1 < GW && H[r][c + 1] < y) t.push('<polygon class="pol" points="' + a2 + " " + a3 + " " +
+        px(c + 1, r + 1, dn).toFixed(1) + "," + py(c + 1, r + 1, dn).toFixed(1) + " " +
+        px(c + 1, r, dn).toFixed(1) + "," + py(c + 1, r, dn).toFixed(1) + '" fill="' + faceColor(c, r, y, "r") + '"/>');
+      if (r + 1 < GH && H[r + 1][c] < y) t.push('<polygon class="pol" points="' + a3 + " " + a4 + " " +
+        px(c, r + 1, dn).toFixed(1) + "," + py(c, r + 1, dn).toFixed(1) + " " +
+        px(c + 1, r + 1, dn).toFixed(1) + "," + py(c + 1, r + 1, dn).toFixed(1) + '" fill="' + faceColor(c, r, y, "f") + '"/>');
+    }
+    const tr = T[r][c];
+    if (!tr) continue;
+    const wc = COL.wood, lc = COL.leaf;
+    const wm = k => rgb(wc.map((v, i) => Math.round(v * k * lerp(amb[i] / 255, light[i] / 255, lightAmt))));
+    for (let y = h; y < h + tr.t; y++) {
+      const a1 = px(c, r, y).toFixed(1) + "," + py(c, r, y).toFixed(1);
+      const a2 = px(c + 1, r, y).toFixed(1) + "," + py(c + 1, r, y).toFixed(1);
+      const a3 = px(c + 1, r + 1, y).toFixed(1) + "," + py(c + 1, r + 1, y).toFixed(1);
+      const a4 = px(c, r + 1, y).toFixed(1) + "," + py(c, r + 1, y).toFixed(1);
+      const b1 = px(c, r, y - 1).toFixed(1) + "," + py(c, r, y - 1).toFixed(1);
+      const b2 = px(c + 1, r, y - 1).toFixed(1) + "," + py(c + 1, r, y - 1).toFixed(1);
+      const b3 = px(c + 1, r + 1, y - 1).toFixed(1) + "," + py(c + 1, r + 1, y - 1).toFixed(1);
+      const b4 = px(c, r + 1, y - 1).toFixed(1) + "," + py(c, r + 1, y - 1).toFixed(1);
+      t.push('<polygon class="pol" points="' + a1 + " " + a2 + " " + a3 + " " + a4 + '" fill="' + wm(1) + '"/>');
+      t.push('<polygon class="pol" points="' + a2 + " " + a3 + " " + b3 + " " + b2 + '" fill="' + wm(.72) + '"/>');
+      t.push('<polygon class="pol" points="' + a3 + " " + a4 + " " + b4 + " " + b3 + '" fill="' + wm(.5) + '"/>');
+    }
+    const ly = h + tr.t, w2 = 1.1;
+    const l1 = px(c + (1 - w2) / 2, r + (1 - w2) / 2, ly).toFixed(1) + "," + py(c + (1 - w2) / 2, r + (1 - w2) / 2, ly).toFixed(1);
+    const l2 = px(c + (1 + w2) / 2, r + (1 - w2) / 2, ly).toFixed(1) + "," + py(c + (1 + w2) / 2, r + (1 - w2) / 2, ly).toFixed(1);
+    const l3 = px(c + (1 + w2) / 2, r + (1 + w2) / 2, ly).toFixed(1) + "," + py(c + (1 + w2) / 2, r + (1 + w2) / 2, ly).toFixed(1);
+    const l4 = px(c + (1 - w2) / 2, r + (1 + w2) / 2, ly).toFixed(1) + "," + py(c + (1 - w2) / 2, r + (1 + w2) / 2, ly).toFixed(1);
+    const m1 = l1.split(",")[0] + "," + (py(c + .45, r + .45, ly - 1.5)).toFixed(1);
+    const m2 = l2.split(",")[0] + "," + (py(c + .55, r + .45, ly - 1.5)).toFixed(1);
+    const m3 = l3.split(",")[0] + "," + (py(c + .55, r + .55, ly - 1.5)).toFixed(1);
+    const m4 = l4.split(",")[0] + "," + (py(c + .45, r + .55, ly - 1.5)).toFixed(1);
+    const lcol = k => rgb(lc.map(v => Math.round(v * k * lerp(amb[1] / 255, light[1] / 255, lightAmt))));
+    t.push('<polygon class="pol" points="' + l1 + " " + l2 + " " + l3 + " " + l4 + '" fill="' + lcol(1) + '"/>');
+    t.push('<polygon class="pol" points="' + m1 + " " + m2 + " " + l2 + " " + l1 + '" fill="' + lcol(.6) + '"/>');
+    t.push('<polygon class="pol" points="' + m3 + " " + m4 + " " + l3 + " " + l2 + '" fill="' + lcol(.4) + '"/>');
+  }
+  svg.innerHTML = sh.join("") + w.join("") + t.join("");
+  if (popAt) {
+    const c = popAt[0], r = popAt[1], y = popAt[2];
+    const key = px(c, r, y).toFixed(1) + "," + py(c, r, y).toFixed(1) + " " + px(c + 1, r, y).toFixed(1) + "," +
+      py(c + 1, r, y).toFixed(1) + " " + px(c + 1, r + 1, y).toFixed(1) + "," + py(c + 1, r + 1, y).toFixed(1) + " " +
+      px(c, r + 1, y).toFixed(1) + "," + py(c, r + 1, y).toFixed(1);
+    const list = svg.querySelectorAll("polygon");
+    for (let i = 0; i < list.length; i++) if (list[i].getAttribute("points") === key) list[i].classList.add("pop");
+    popAt = null;
+  }
+  let peak = 0, vox = 0;
+  for (let r = 0; r < GH; r++) for (let c = 0; c < GW; c++) { peak = Math.max(peak, H[r][c]); vox += heightAt(c, r); }
+  document.getElementById("gpeak").textContent = peak;
+  document.getElementById("gvox").textContent = vox.toLocaleString();
+}
+function lightNow() {
+  const s = skyAt(dayT);
+  const e = Math.sin(Math.PI * clamp(dayT, .001, .999));
+  lightAmt = .18 + .82 * Math.pow(e, .5);
+  nightAmt = clamp(1 - e * 2.6, 0, 1);
+  const warm = clamp(1 - Math.abs(dayT - .5) * 2.1, 0, 1);
+  light = [255, Math.round(lerp(238, 208, warm)), Math.round(lerp(202, 158, warm))];
+  amb = [Math.round(lerp(46, 84, lightAmt)), Math.round(lerp(64, 104, lightAmt)), Math.round(lerp(112, 150, lightAmt))];
+  document.getElementById("sky").style.background =
+    "linear-gradient(180deg,rgb(" + s[0] + "," + s[1] + "," + s[2] + ") 0%,rgb(" +
+    Math.min(255, s[0] + 14) + "," + Math.min(255, s[1] + 14) + "," + Math.min(255, s[2] + 16) + ") 44%,rgb(" +
+    Math.round(lerp(s[0], s[2], .5)) + "," + Math.round(lerp(s[1], s[2], .5)) + "," + Math.round(lerp(s[2], s[2], .5)) + ") 100%)";
+  document.getElementById("stars").style.opacity = nightAmt;
+  document.getElementById("moon").style.opacity = nightAmt * .95;
+  document.getElementById("clouds").style.opacity = .2 + lightAmt * .6;
+  const hrs = (dayT * 24 + 4) % 24;
+  document.getElementById("clock").textContent = String(Math.floor(hrs)).padStart(2, "0") + ":" +
+    String(Math.floor((hrs % 1) * 60)).padStart(2, "0");
+  sunGX = lerp(-10, GW + 9, dayT);
+  shadowLen = .3 + (1 - Math.pow(e, .55)) * 5.6;
+  const sun = document.getElementById("sun");
+  sun.style.left = lerp(innerWidth * .08, innerWidth * .92, dayT) + "px";
+  sun.style.top = innerHeight * lerp(.66, .1, Math.pow(e, .75)) + "px";
+  sun.style.opacity = nightAmt > .85 ? .3 : 1;
+}
+const stars = document.getElementById("stars");
+for (let i = 0; i < 110; i++) {
+  const s = document.createElement("i");
+  s.style.left = Math.random() * 100 + "%"; s.style.top = Math.random() * 60 + "%";
+  s.style.animationDelay = (-Math.random() * 4).toFixed(1) + "s";
+  stars.appendChild(s);
+}
+[[7, 11, 230], [29, 19, 310], [55, 8, 190], [72, 23, 270], [15, 30, 160]].forEach(c => {
+  const d = document.createElement("i");
+  d.style.left = c[0] + "%"; d.style.top = c[1] + "%"; d.style.width = c[2] + "px";
+  d.style.background = "linear-gradient(90deg,transparent,#fff,transparent)";
+  document.getElementById("clouds").appendChild(d);
+});
+const sunEl = document.getElementById("sun");
+let sdrag = false;
+function sunMove(e) {
+  dayT = clamp((e.clientX / innerWidth - .08) / .84, 0, 1);
+  auto = false; document.getElementById("bAuto").classList.remove("on");
+  lightNow(); render();
+}
+sunEl.addEventListener("pointerdown", e => { sdrag = true; sunEl.setPointerCapture(e.pointerId); e.stopPropagation(); });
+sunEl.addEventListener("pointermove", e => { if (sdrag) sunMove(e); });
+sunEl.addEventListener("pointerup", () => sdrag = false);
+sunEl.addEventListener("pointercancel", () => sdrag = false);
+addEventListener("pointermove", e => { if (sdrag) sunMove(e); });
+addEventListener("resize", () => { lightNow(); });
+
+function pickCell(e) {
+  let q;
+  if (svg.getScreenCTM) {
+    const m = svg.getScreenCTM().inverse();
+    q = new DOMPoint(e.clientX, e.clientY).matrixTransform(m);
+  } else {
+    const r = svg.getBoundingClientRect();
+    const vb = svg.viewBox.baseVal;
+    const sx = vb.width / (r.width || 1), sy = vb.height / (r.height || 1);
+    const s = Math.min(sx, sy);
+    q = { x: vb.x + (e.clientX - r.left - (r.width - vb.width / s) / 2) * s,
+          y: vb.y + (e.clientY - r.top - (r.height - vb.height / s) / 2) * s };
+  }
+  let best = null, bd = 1e9;
+  for (let i = 0; i < ORDER.length; i++) {
+    const c = ORDER[i][0], r = ORDER[i][1], h = H[r][c];
+    const cx = px(c, r, h), cy = py(c, r, h);
+    const d = Math.hypot(q.x - cx, (q.y - cy) * 1.04);
+    if (d < bd) { bd = d; best = [c, r, h]; }
+  }
+  return best ? { c: best[0], r: best[1], h: best[2], q } : null;
+}
+svg.addEventListener("contextmenu", e => e.preventDefault());
+svg.addEventListener("pointerdown", e => {
+  const hit = pickCell(e);
+  if (!hit) return;
+  if (e.button === 2) {
+    if (hit.h <= 0) return;
+    if (hit.q.y < py(hit.c, hit.r, hit.h)) {
+      undo.push([hit.c, hit.r, hit.h, "add"]); H[hit.r][hit.c] = hit.h - 1;
+      if (hit.h - 1 <= SEA + 1) S[hit.r][hit.c] = "sand";
+      popAt = [hit.c, hit.r, hit.h - 1];
+    } else if (hit.h < H[hit.r][hit.c]) {
+      undo.push([hit.c, hit.r, hit.h, "del"]); H[hit.r][hit.c] = hit.h;
+    }
+  } else {
+    if (hit.h >= 17) return;
+    undo.push([hit.c, hit.r, hit.h, "del"]); H[hit.r][hit.c] = hit.h + 1;
+    S[hit.r][hit.c] = hit.h + 1 <= SEA + 1 ? "sand" : picked;
+    popAt = [hit.c, hit.r, hit.h + 1];
+  }
+  render();
+});
+const pal = document.getElementById("pal");
+PALS.forEach(p => {
+  const b = document.createElement("button"), c = COL[p[0]];
+  b.style.background = "rgb(" + c[0] + "," + c[1] + "," + c[2] + ")";
+  b.innerHTML = "<span>" + p[1] + "</span>";
+  b.className = p[0] === picked ? "on" : "";
+  b.onclick = () => { picked = p[0]; pal.querySelectorAll("button").forEach(n => n.classList.remove("on")); b.classList.add("on"); };
+  pal.appendChild(b);
+});
+const bAuto = document.getElementById("bAuto");
+bAuto.onclick = () => { auto = !auto; bAuto.classList.toggle("on", auto); };
+document.getElementById("bNoon").onclick = () => { dayT = .5; auto = false; bAuto.classList.remove("on"); lightNow(); render(); };
+document.getElementById("bClear").onclick = () => {
+  for (let r = 0; r < GH; r++) for (let c = 0; c < GW; c++) {
+    H[r][c] = Math.min(H[r][c], SEA + 1); T[r][c] = null; S[r][c] = "sand";
+  }
+  undo = []; render();
+};
+document.getElementById("bUndo").onclick = () => {
+  const u = undo.pop(); if (!u) return;
+  if (u[3] === "add") H[u[1]][u[0]] = u[2]; else H[u[1]][u[0]] = u[2] + 1;
+  popAt = [u[0], u[1], u[2]]; render();
+};
+addEventListener("keydown", e => { if (e.code === "Space") { e.preventDefault(); bAuto.click(); } });
+let last = performance.now();
+function loop(t) {
+  const dt = Math.min(.05, (t - last) / 1000); last = t;
+  if (auto) { dayT = (dayT + dt * .035) % 1; lightNow(); render(); }
+  requestAnimationFrame(loop);
+}
+lightNow(); render();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

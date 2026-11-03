@@ -1,0 +1,847 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CENERE — Restaurant &amp; Chef · Trieste</title>
+<style>
+  :root{
+    --ink:#0a0a0b; --ink-2:#111113; --ink-3:#191a1d;
+    --bone:#e9e3d7; --bone-dim:#a9a294; --bone-dk:#6c675e;
+    --ember:#c0561f; --ember-2:#e07a3c; --ash:#6f7a63;
+    --hair:rgba(233,227,215,.13);
+    --serif:"Canela","Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    --sans:"Helvetica Neue",Inter,"Segoe UI",system-ui,sans-serif;
+    --mono:ui-monospace,"DejaVu Sans Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--ink);color:var(--bone);font-family:var(--sans);
+    -webkit-font-smoothing:antialiased}
+
+  /* ============ sticky editorial rail ============ */
+  .rail{position:fixed;left:0;top:0;bottom:0;width:78px;border-right:1px solid var(--hair);
+    display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+    padding:22px 0;background:var(--ink);z-index:40}
+  .rail .mark{writing-mode:vertical-rl;transform:rotate(180deg);
+    font-family:var(--serif);font-size:20px;letter-spacing:.44em;text-transform:uppercase;color:var(--bone)}
+  .rail nav{display:flex;flex-direction:column;gap:16px;align-items:center}
+  .rail nav a{font:500 9px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;
+    color:var(--bone-dk);text-decoration:none;writing-mode:vertical-rl;padding:4px 0;
+    border-left:1px solid transparent;transition:.2s}
+  .rail nav a:hover{color:var(--bone-dim)}
+  .rail nav a.on{color:var(--ember-2);border-left-color:var(--ember)}
+  .rail .yr{font:500 9px/1 var(--mono);letter-spacing:.2em;color:var(--bone-dk)}
+
+  main{margin-left:78px}
+  .wrap{padding:0 clamp(20px,5vw,86px)}
+
+  /* ============ hero ============ */
+  .hero{position:relative;min-height:100svh;display:grid;align-items:end;
+    padding:clamp(24px,4vw,60px) 0 clamp(26px,4vw,54px);overflow:hidden}
+  .hero canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .hero .scrim{position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(180deg,rgba(10,10,11,.82) 0%,rgba(10,10,11,.18) 34%,rgba(10,10,11,.35) 62%,rgba(10,10,11,.96) 100%)}
+  .hero .copy{position:relative;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);
+    gap:clamp(20px,4vw,64px);align-items:end;width:100%}
+  .hero h1{margin:0;font-family:var(--serif);font-weight:400;line-height:.86;
+    font-size:clamp(56px,12.5vw,190px);letter-spacing:-.018em}
+  .hero h1 i{display:block;font-style:italic;color:var(--ember-2);font-size:.44em;letter-spacing:-.01em;
+    margin-left:.06em;margin-top:.12em}
+  .hero .meta{border-top:1px solid var(--hair);padding-top:14px;font-size:12.5px;line-height:1.85;
+    color:var(--bone-dim);max-width:46ch}
+  .hero .meta b{color:var(--bone);font-weight:500}
+  .eyebrow{font:600 9.5px/1 var(--mono);letter-spacing:.34em;text-transform:uppercase;
+    color:var(--ember-2);display:flex;align-items:center;gap:10px;margin-bottom:20px}
+  .eyebrow::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--ember),transparent)}
+
+  /* ============ generic section ============ */
+  section{position:relative}
+  .sec-pad{padding:clamp(56px,9vw,140px) 0}
+  .cols{display:grid;gap:clamp(22px,4vw,72px);grid-template-columns:minmax(0,1fr) minmax(0,1.15fr)}
+  .rule{height:1px;background:var(--hair);border:0;margin:0}
+  h2{font-family:var(--serif);font-weight:400;font-size:clamp(30px,4.6vw,62px);line-height:1.02;
+    letter-spacing:-.012em;margin:0 0 18px}
+  h2 em{font-style:italic;color:var(--bone-dim)}
+  h3{font:600 9.5px/1 var(--mono);letter-spacing:.26em;text-transform:uppercase;color:var(--bone-dk);
+    margin:0 0 14px}
+  p{font-size:15px;line-height:1.78;color:#c9c3b6;margin:0 0 18px;max-width:62ch}
+  p.lead{font-family:var(--serif);font-size:clamp(19px,2.1vw,26px);line-height:1.42;color:var(--bone);
+    letter-spacing:-.005em;margin-bottom:26px}
+  .num{font-family:var(--serif);font-size:clamp(52px,7vw,104px);line-height:.8;color:transparent;
+    -webkit-text-stroke:1px var(--ember);opacity:.85}
+
+  /* reveal */
+  .rv{opacity:0;transform:translateY(26px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1)}
+  .rv.in{opacity:1;transform:none}
+
+  /* ingredient story */
+  .ing{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:var(--hair);
+    border:1px solid var(--hair);margin-top:34px}
+  .ing div{background:var(--ink-2);padding:20px 18px 22px}
+  .ing h4{margin:0 0 8px;font-family:var(--serif);font-weight:400;font-size:21px}
+  .ing span{font:500 8.5px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--ember-2)}
+  .ing p{font-size:13px;margin:10px 0 0;line-height:1.66;color:var(--bone-dim)}
+  .pull{font-family:var(--serif);font-style:italic;font-size:clamp(22px,3.1vw,40px);line-height:1.24;
+    border-left:1px solid var(--ember);padding-left:22px;margin:36px 0;color:var(--bone)}
+  .pull cite{display:block;font:500 9px/1 var(--mono);letter-spacing:.24em;text-transform:uppercase;
+    font-style:normal;color:var(--bone-dk);margin-top:16px}
+
+  /* ============ menu ============ */
+  .tabs{display:flex;gap:2px;border-bottom:1px solid var(--hair);margin-bottom:30px;flex-wrap:wrap}
+  .tabs button{background:none;border:0;color:var(--bone-dk);cursor:pointer;padding:11px 16px;
+    font:600 9.5px/1 var(--mono);letter-spacing:.22em;text-transform:uppercase;position:relative;transition:.2s}
+  .tabs button:hover{color:var(--bone)}
+  .tabs button[aria-selected="true"]{color:var(--bone)}
+  .tabs button[aria-selected="true"]::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;
+    height:1px;background:var(--ember-2)}
+  .panelwrap{position:relative}
+  .mpanel{opacity:0;position:absolute;inset:0;pointer-events:none;transition:opacity .55s ease}
+  .mpanel.on{opacity:1;position:relative;pointer-events:auto}
+  .course{padding:19px 0;border-bottom:1px solid var(--hair);display:grid;
+    grid-template-columns:74px minmax(0,1fr);gap:10px 18px;align-items:baseline}
+  .course .no{font:500 9px/1.6 var(--mono);letter-spacing:.16em;color:var(--bone-dk)}
+  .course .name{font-family:var(--serif);font-size:clamp(20px,2.5vw,29px);line-height:1.15;letter-spacing:-.008em}
+  .course .name small{display:block;font:400 10px/1.5 var(--mono);letter-spacing:.16em;
+    text-transform:uppercase;color:var(--ember-2);margin-top:7px}
+  .leader{display:flex;align-items:baseline;gap:8px;margin-top:9px}
+  .leader .dots{flex:1;border-bottom:1px dotted rgba(233,227,215,.26);transform:translateY(-4px)}
+  .leader .price{font:500 11px/1 var(--mono);letter-spacing:.1em;color:var(--bone-dim);white-space:nowrap}
+  .course .desc{grid-column:2;font-size:13.5px;line-height:1.7;color:var(--bone-dim);max-width:58ch}
+  .note{margin-top:26px;font:400 12px/1.7 var(--mono);color:var(--bone-dk);max-width:60ch}
+
+  /* ============ chef portrait ============ */
+  .chef{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1fr);gap:clamp(22px,4vw,66px);align-items:center}
+  .portrait{position:relative;aspect-ratio:4/5;background:#0e0e10;overflow:hidden;border:1px solid var(--hair)}
+  .portrait svg{position:absolute;inset:0;width:100%;height:100%}
+  .portrait .ht{position:absolute;inset:0;mix-blend-mode:multiply;opacity:.9;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cdefs%3E%3Cpattern id='p' width='6' height='6' patternUnits='userSpaceOnUse' patternTransform='rotate(22)'%3E%3Ccircle cx='3' cy='3' r='1.9' fill='%23000'/%3E%3C/pattern%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.028' numOctaves='3' seed='11'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='15'/%3E%3C/filter%3E%3C/defs%3E%3Crect width='220' height='220' fill='url(%23p)' filter='url(%23w)' opacity='.55'/%3E%3C/svg%3E")}
+  .portrait .ht2{position:absolute;inset:0;mix-blend-mode:screen;opacity:.35;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cpattern id='q' width='7' height='7' patternUnits='userSpaceOnUse' patternTransform='rotate(-18)'%3E%3Ccircle cx='3.5' cy='3.5' r='1.1' fill='%23e9e3d7'/%3E%3C/pattern%3E%3Crect width='220' height='220' fill='url(%23q)'/%3E%3C/svg%3E")}
+  .portrait figcaption{position:absolute;left:0;bottom:0;right:0;padding:12px 14px;
+    background:linear-gradient(180deg,transparent,rgba(10,10,11,.9));
+    font:500 8.5px/1.6 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--bone-dim)}
+  .facts{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--hair);border:1px solid var(--hair);margin-top:28px}
+  .facts div{background:var(--ink-2);padding:14px 15px}
+  .facts dt{font:500 8.5px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--bone-dk)}
+  .facts dd{margin:8px 0 0;font-family:var(--serif);font-size:19px}
+
+  /* ============ reservation ============ */
+  .res{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:1px;background:var(--hair);
+    border:1px solid var(--hair)}
+  .res .left{background:var(--ink-2);padding:clamp(20px,3vw,34px)}
+  .res .right{background:var(--ink-3);padding:clamp(20px,3vw,30px);display:flex;flex-direction:column;gap:20px}
+  .calhead{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .calhead b{font-family:var(--serif);font-weight:400;font-size:20px}
+  .calhead button{background:none;border:1px solid var(--hair);color:var(--bone-dim);width:28px;height:28px;
+    cursor:pointer;border-radius:50%;font:400 12px/1 var(--mono);transition:.2s}
+  .calhead button:hover:not([disabled]){border-color:var(--ember);color:var(--ember-2)}
+  .calhead button[disabled]{opacity:.25;cursor:default}
+  .calhead .sp{flex:1}
+  .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+  .grid .dow{font:500 8.5px/1 var(--mono);letter-spacing:.1em;color:var(--bone-dk);text-align:center;padding:6px 0}
+  .day{aspect-ratio:1;border:1px solid transparent;background:transparent;color:var(--bone);
+    font:400 12.5px/1 var(--mono);cursor:pointer;border-radius:2px;transition:.14s;display:grid;place-items:center}
+  .day:hover:not([disabled]){border-color:var(--ember)}
+  .day[disabled]{color:#3a3833;cursor:default;background:rgba(255,255,255,.02)}
+  .day.past{color:#3a3833;cursor:default}
+  .day.closed::after{content:"";position:absolute;width:3px;height:3px;background:#3a3833;border-radius:50%}
+  .day[aria-pressed="true"]{background:var(--ember);color:#fff;border-color:var(--ember)}
+  .slots{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .slot{border:1px solid var(--hair);background:transparent;color:var(--bone-dim);padding:11px 4px;
+    font:500 11px/1 var(--mono);letter-spacing:.06em;cursor:pointer;transition:.14s;border-radius:2px;position:relative}
+  .slot:hover:not([disabled]){border-color:var(--ember);color:var(--bone)}
+  .slot[disabled]{opacity:.28;cursor:default;text-decoration:line-through}
+  .slot[aria-pressed="true"]{background:var(--bone);color:var(--ink);border-color:var(--bone)}
+  .step{display:flex;align-items:center;gap:14px}
+  .step button{width:34px;height:34px;border:1px solid var(--hair);background:transparent;color:var(--bone);
+    cursor:pointer;font:400 16px/1 var(--mono);border-radius:50%;transition:.15s}
+  .step button:hover:not([disabled]){border-color:var(--ember);color:var(--ember-2)}
+  .step button[disabled]{opacity:.25;cursor:default}
+  .step b{font:500 20px/1 var(--mono);min-width:36px;text-align:center}
+  .field h4{font:500 8.5px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--bone-dk);margin:0 0 10px}
+  .err{color:var(--ember-2);font:500 10px/1.5 var(--mono);letter-spacing:.08em;min-height:15px;margin-top:8px}
+  .go{background:var(--ember);border:0;color:#fff;padding:15px 18px;width:100%;cursor:pointer;
+    font:700 10px/1 var(--mono);letter-spacing:.24em;text-transform:uppercase;transition:.18s}
+  .go:hover{background:var(--ember-2)}
+  .summary{font:400 12.5px/1.9 var(--mono);color:var(--bone-dim);flex:1}
+  .summary b{color:var(--bone);font-weight:500}
+  .summary .row{display:flex;justify-content:space-between;border-bottom:1px dotted var(--hair);padding-bottom:6px}
+  .conf{display:none;padding:clamp(24px,4vw,50px);text-align:left}
+  .conf.on{display:block;animation:fade .6s both}
+  .conf .code{font:700 clamp(34px,5vw,60px)/1 var(--mono);letter-spacing:.06em;color:var(--ember-2);margin:14px 0 18px}
+  @keyframes fade{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+  /* ============ visit ============ */
+  .visit{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:clamp(22px,4vw,64px);align-items:start}
+  .plan{border:1px solid var(--hair);background:var(--ink-2);position:relative}
+  .plan svg{width:100%;height:auto;display:block}
+  .plan .cap{position:absolute;left:14px;bottom:12px;font:500 8.5px/1.6 var(--mono);
+    letter-spacing:.18em;text-transform:uppercase;color:var(--bone-dk)}
+  .hours{margin-top:26px;border-top:1px solid var(--hair)}
+  .hours div{display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--hair);
+    font:400 12.5px/1 var(--mono);letter-spacing:.04em}
+  .hours div span:last-child{color:var(--bone-dim)}
+  .hours div.closed span:last-child{color:var(--ember-2)}
+
+  footer{border-top:1px solid var(--hair);padding:34px 0 60px;font:400 11px/1.9 var(--mono);
+    color:var(--bone-dk);display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+  footer b{color:var(--bone-dim);font-weight:500}
+
+  @media (max-width:900px){
+    .rail{display:none} main{margin-left:0}
+    .hero .copy{grid-template-columns:1fr}
+    .cols,.chef,.visit,.res{grid-template-columns:1fr}
+    .facts{grid-template-columns:1fr 1fr}
+  }
+</style>
+</head>
+<body>
+
+<aside class="rail">
+  <div class="mark">Cenere</div>
+  <nav id="nav">
+    <a href="#hero" class="on">Front</a><a href="#story">Story</a><a href="#menu">Menus</a>
+    <a href="#chef">Chef</a><a href="#reserve">Reserve</a><a href="#visit">Visit</a>
+  </nav>
+  <div class="yr">MMXXVI</div>
+</aside>
+
+<main>
+  <!-- ============ HERO ============ -->
+  <section class="hero" id="hero">
+    <canvas id="dish"></canvas>
+    <div class="scrim"></div>
+    <div class="wrap hero-copy-wrap">
+      <div class="copy">
+        <div>
+          <div class="eyebrow">Trieste · Riva del Sale 4 · since 2016</div>
+          <h1>Cenere<i>one fire, salt, sea</i></h1>
+        </div>
+        <div class="meta">
+          <p style="margin:0 0 14px"><b>Seven courses, cooked over a single fire of olive wood and dried
+            seaweed.</b> The menu changes when the boats do. We buy eleven times a week and we do not
+            keep a freezer.</p>
+          <p style="margin:0">Dinner Wednesday to Sunday, 18:00–23:00.<br>
+            The bar opens at 17:00 and pours only Adriatic things.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ STORY ============ -->
+  <section id="story" class="sec-pad">
+    <div class="wrap">
+      <div class="eyebrow rv">01 — The room</div>
+      <hr class="rule rv">
+      <div class="cols" style="margin-top:34px">
+        <div class="rv">
+          <div class="num">11</div>
+          <h3>Purchases a week</h3>
+          <p class="lead">The list is short enough that Matteo can name the boat, the hour and the
+            price for almost everything on your plate.</p>
+          <p>We buy at the Molo Audace at 06:00, from four boats we have used for nine years. If a
+            skipper cannot tell us where the fish was, we do not buy the fish. Last March we sent
+            back two hundred kilos of red mullet because the answer was a shrug.</p>
+        </div>
+        <div class="rv">
+          <p>Everything else grows within ninety kilometres of the room: San Daniele, the flat-leaf
+            parsley from Muggia, the last of the white radicchio that comes into the market in
+            February. The salt on the bread is from the pans at Sečovlje, eight kilometres from the
+            front door, harvested by a family we have bought from since the second week of opening.</p>
+          <div class="pull">“A plate is a decision about what to leave out. The fire is how you find out
+            whether you were right.”
+            <cite>Matteo Albanese — chef, owner, and the only person who touches the fire</cite>
+          </div>
+        </div>
+      </div>
+
+      <div class="ing rv">
+        <div><span>Sourced</span><h4>Red mullet</h4>
+          <p>Line-caught, 4–6 kg, off the Sistiana bank. Bought whole, filleted to order, never
+            more than a day before service.</p></div>
+        <div><span>Grown</span><h4>Castelvetrano</h4>
+          <p>Two hectares above Muggia on karst rock, dry-farmed. Picked at 05:00 the morning of
+            service because it does not travel.</p></div>
+        <div><span>Harvested</span><h4>Salt &amp; kelp</h4>
+          <p>Hand-cut pans, Sečovlje. And bladderwrack dried on the roof, which goes into the broth
+            and, ground, into the crust of everything deep fried.</p></div>
+        <div><span>Made here</span><h4>Olive oil</h4>
+          <p>Pressed in November from Debina olives, kept in tin. Fourteen days of harvest age before
+            it is allowed near a plate.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+  <section id="menu" class="sec-pad">
+    <div class="wrap">
+      <div class="eyebrow rv">02 — The menu</div>
+      <hr class="rule rv">
+      <div style="margin-top:30px" class="rv">
+        <h2>Seven courses, <em>one sitting</em></h2>
+        <p style="max-width:56ch">The menu is written at 15:00, when the market has told us what it
+          actually has. Below is the version running this week. We do not take substitutions; we do
+          take allergies, if you tell us when you book.</p>
+      </div>
+
+      <div class="tabs rv" role="tablist" style="margin-top:34px">
+        <button role="tab" aria-selected="true" data-p="0">Settimana · 7</button>
+        <button role="tab" aria-selected="false" data-p="1">Degustazione · 9</button>
+        <button role="tab" aria-selected="false" data-p="2">Bar &amp; Ombre</button>
+      </div>
+
+      <div class="panelwrap rv">
+        <div class="mpanel on" data-p="0">
+          <div class="course"><div class="no">I</div><div class="name">Pane e sale<small>first bread</small>
+            <div class="leader"><span class="dots"></span><span class="price">incl.</span></div></div>
+            <p class="desc">Sečovlje salt butter, warm Casale flatbread, cultured butter from a
+              two-daughter dairy in Valdobbiadene.</p></div>
+          <div class="course"><div class="no">II</div><div class="name">Radicchio di Castelvetrano<small>bitter, warm</small>
+            <div class="leader"><span class="dots"></span><span class="price">incl.</span></div></div>
+            <p class="desc">Charred over vine cuttings, hazelnut milk, aged balsamic from Modena,
+              a spoon of the bitter cooking liquid reduced to a glaze.</p></div>
+          <div class="course"><div class="no">III</div><div class="name">Sgombro<small>cool, brined</small>
+            <div class="leader"><span class="dots"></span><span class="price">incl.</span></div></div>
+            <p class="desc">Horse mackerel cured in-house for nine hours in sea salt and lemon peel,
+              shaved fennel, green olive, a single drop of Ligurian oil.</p></div>
+          <div class="course"><div class="no">IV</div><div class="name">Zuppa di pesce<small>the fire, again</small>
+            <div class="leader"><span class="dots"></span><span class="price">incl.</span></div></div>
+            <p class="desc">A broth of grey mackerel bones, tomato leaf, fennel pollen and one
+              burnt onion. Served in the bowl it was cooked in.</p></div>
+          <div class="course"><div class="no">V</div><div class="name">Branzino al sale<small>the main</small>
+            <div class="leader"><span class="dots"></span><span class="price">incl.</span></div></div>
+            <p class="desc">Two kilos of salt, one fish, twenty-two minutes. Crust cracked at the
+              table; sea herbs and lemon from the terrace.</p></div>
+          <div class="course"><div class="no">VI</div><div class="name">Sedano e mela<small>reset</small>
+            <div class="leader"><span class="dots"></span><span class="price">incl.</span></div></div>
+            <p class="desc">Celeriac roasted in its own leaves, green apple, brown butter, a fine
+              dusting of toasted buckwheat.</p></div>
+          <div class="course"><div class="no">VII</div><div class="name">Dolce: il rabarbaro<small>last</small>
+            <div class="leader"><span class="dots"></span><span class="price">incl.</span></div></div>
+            <p class="desc">Rhubarb poached in Verduzzo from the Friuli hills, sheep’s milk gelato,
+              rye crumb, and the reduction poured cold at the table.</p></div>
+          <p class="note">€135 per guest · bread, olive oil and the wine pairings are included ·
+          a non-alcoholic pairing is €65, built from Verduzzo, apple and fermented quince.</p>
+        </div>
+
+        <div class="mpanel" data-p="1">
+          <div class="course"><div class="no">I–III</div><div class="name">The Adriatic, cold<small>served in sequence</small>
+            <div class="leader"><span class="dots"></span><span class="price">—</span></div></div>
+            <p class="desc">Bread and salt, then a raw sea bream with citrus and bay, then cured
+              mackerel. Three small plates, nine bites.</p></div>
+          <div class="course"><div class="no">IV</div><div class="name">Uovo, patata, tartufo<small>on the coal</small>
+            <div class="leader"><span class="dots"></span><span class="price">—</span></div></div>
+            <p class="desc">A sixty-minute egg under embers, Ratte potatoes cooked in the ash,
+              summer truffle shaved at the pass.</p></div>
+          <div class="course"><div class="no">V</div><div class="name">Coda di rospo<small>grilled</small>
+            <div class="leader"><span class="dots"></span><span class="price">—</span></div></div>
+            <p class="desc">Monkfish tail over olive wood, capers, anchovy, a broth reduced with
+              Verdicchio.</p></div>
+          <div class="course"><div class="no">VI</div><div class="name">Cacio e pere<small>aged 18 months</small>
+            <div class="leader"><span class="dots"></span><span class="price">—</span></div></div>
+            <p class="desc">Gorizia Montasio, pear poached in red wine, walnut, three weeks of
+              patience.</p></div>
+          <div class="course"><div class="no">VII</div><div class="name">Gamberi e aglio<small>the second fire</small>
+            <div class="leader"><span class="dots"></span><span class="price">—</span></div></div>
+            <p class="desc">Prawns grilled in their shells with two heads of new garlic, shrimp
+              emulsion, sea lettuce.</p></div>
+          <div class="course"><div class="no">VIII</div><div class="name">Frittura mista<small>the last fire</small>
+            <div class="leader"><span class="dots"></span><span class="price">—</span></div></div>
+            <p class="desc">Whatever the boats had that morning — a small mixed fry, four minutes,
+              coarse salt. This is the course the kitchen argues about.</p></div>
+          <div class="course"><div class="no">IX</div><div class="name">Pecorino, miele, sale<small>to finish</small>
+            <div class="leader"><span class="dots"></span><span class="price">—</span></div></div>
+            <p class="desc">Aged sheep’s cheese, chestnut honey from Basilicata, one grain of
+              salt. Coffee after.</p></div>
+          <p class="note">€185 per guest · the full menu seats guests in two sittings of six;
+          a party of six or more is taken as a private room.</p>
+        </div>
+
+        <div class="mpanel" data-p="2">
+          <div class="course"><div class="no">01</div><div class="name">Vermouth di Trieste<small>house, 1.1 L</small>
+            <div class="leader"><span class="dots"></span><span class="price">€9</span></div></div>
+            <p class="desc">Botanicals from the Karst, macerated in neutral spirit for ninety days.
+              Straight, over one large cube.</p></div>
+          <div class="course"><div class="no">02</div><div class="name">Malvasia, Vipava<small>bottle, 2023</small>
+            <div class="leader"><span class="dots"></span><span class="price">€46</span></div></div>
+            <p class="desc">Twelve days on skins. Orange peel, salt, and a bitterness that cleans
+              the palate between courses.</p></div>
+          <div class="course"><div class="no">03</div><div class="name">Terrano, Carso<small>glass, 2021</small>
+            <div class="leader"><span class="dots"></span><span class="price">€8</span></div></div>
+            <p class="desc">Red, sandy, grown on rock eight kilometres away. Our most-ordered glass.</p></div>
+          <div class="course"><div class="no">04</div><div class="name">Ombra, San Daniele<small>plate, 5 to share</small>
+            <div class="leader"><span class="dots"></span><span class="price">€24</span></div></div>
+            <p class="desc">Air-dried ham, two years, sliced to order. Mustard from the seed we
+              soak in-house in February.</p></div>
+          <div class="course"><div class="no">05</div><div class="name">Frittata di patate<small>any hour</small>
+            <div class="leader"><span class="dots"></span><span class="price">€14</span></div></div>
+            <p class="desc">The bar cook’s only dish. Potatoes cooked in olive oil, eggs, parmesan,
+              parsley cut at the last second.</p></div>
+          <p class="note">The bar serves from 17:00 and does not take bookings — arrive early, or
+          call +39 040 631 4420 and we will hold two stools.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+  <!-- ============ CHEF ============ -->
+  <section id="chef" class="sec-pad">
+    <div class="wrap">
+      <div class="eyebrow rv">03 — The kitchen</div>
+      <hr class="rule rv">
+      <div class="chef" style="margin-top:34px">
+        <figure class="portrait rv" style="margin:0">
+          <svg viewBox="0 0 400 500" aria-label="Duotone halftone portrait of Matteo Albanese">
+            <defs>
+              <filter id="duo" x="0" y="0" width="100%" height="100%">
+                <feColorMatrix type="matrix" values="
+                  .42 .42 .16 0 .02
+                  .38 .38 .14 0 .01
+                  .34 .34 .12 0 .00
+                  0 0 0 1 0"/>
+              </filter>
+              <linearGradient id="lit" x1=".1" y1="0" x2=".9" y2="1">
+                <stop offset="0" stop-color="#efe9dd"/><stop offset=".55" stop-color="#8e8878"/>
+                <stop offset="1" stop-color="#1b1c1e"/>
+              </linearGradient>
+            </defs>
+            <g filter="url(#duo)">
+              <rect width="400" height="500" fill="#0c0c0e"/>
+              <ellipse cx="200" cy="252" rx="150" ry="176" fill="url(#lit)" opacity=".13"/>
+              <!-- shoulders / jacket -->
+              <path d="M56,500 C64,404 118,352 200,352 C282,352 336,404 344,500 Z" fill="#4c4a44"/>
+              <path d="M200,352 L200,500" stroke="#2a2925" stroke-width="3"/>
+              <path d="M164,364 L200,424 L236,364" fill="none" stroke="#16171a" stroke-width="9"/>
+              <!-- neck -->
+              <path d="M170,300 h60 v64 h-60 z" fill="#6d6459"/>
+              <!-- head -->
+              <ellipse cx="200" cy="236" rx="76" ry="92" fill="url(#lit)"/>
+              <!-- shadow side -->
+              <path d="M200,144 C238,158 264,200 264,244 C264,296 236,332 200,334 Z" fill="#26262a" opacity=".55"/>
+              <!-- ear -->
+              <ellipse cx="276" cy="242" rx="12" ry="20" fill="#7b7264"/>
+              <!-- brows, eyes, nose -->
+              <path d="M158,214 q16,-11 32,-2" stroke="#1a1a1c" stroke-width="6" fill="none" stroke-linecap="round"/>
+              <path d="M212,212 q16,-9 32,2" stroke="#1a1a1c" stroke-width="6" fill="none" stroke-linecap="round"/>
+              <ellipse cx="174" cy="232" rx="11" ry="6" fill="#151517"/>
+              <ellipse cx="228" cy="232" rx="11" ry="6" fill="#151517"/>
+              <path d="M200,238 q-10,30 4,36" stroke="#3a3833" stroke-width="5" fill="none" stroke-linecap="round"/>
+              <!-- mouth + stubble -->
+              <path d="M180,298 q20,10 40,0" stroke="#211f1d" stroke-width="6" fill="none" stroke-linecap="round"/>
+              <path d="M162,262 q38,26 76,0 q-38,44 -76,0 Z" fill="#2b2a27" opacity=".5"/>
+              <!-- toque -->
+              <path d="M118,150 C112,104 150,78 200,78 C250,78 288,104 282,150 Z" fill="#ded7c8"/>
+              <path d="M126,148 C122,110 152,90 200,90 C248,90 278,110 274,148 Z" fill="#f3eee3" opacity=".75"/>
+              <rect x="118" y="144" width="164" height="20" fill="#c8c1b2"/>
+              <path d="M128,152 h144 M134,162 h132" stroke="#8e8878" stroke-width="2" opacity=".6"/>
+              <!-- apron string + hands -->
+              <path d="M118,404 q82,26 164,0" stroke="#8e8878" stroke-width="3" fill="none" opacity=".5"/>
+            </g>
+          </svg>
+          <div class="ht"></div><div class="ht2"></div>
+          <figcaption>Plate 03 · Duotone halftone · 240 lpi · press proof, unretouched</figcaption>
+        </figure>
+
+        <div class="rv">
+          <h2>Matteo<br><em>Albanese</em></h2>
+          <p class="lead">Trained in Bologna, cooked in Copenhagen, opened his own fire in Trieste
+            in 2016 because he could not find salt with a story attached to it.</p>
+          <p>He cooks alone at the pass from 16:00 with one commis, Luca, who has been here longer
+            than anyone except the salt. The brigade is four. Nobody works a double service, and
+            nobody is on the floor while the fire is lit, because Matteo does not trust a flame
+            he did not lay himself.</p>
+          <p>Before Trieste: <b style="color:var(--bone);font-weight:500">Osteria Francescana</b> in
+            Modena, six years, pastry section; <b style="color:var(--bone);font-weight:500">Noma</b>
+            in Copenhagen, research. He still writes every menu longhand on a squared pad and
+            throws it away after service.</p>
+          <dl class="facts">
+            <div><dt>Since</dt><dd>2016</dd></div>
+            <div><dt>Brigade</dt><dd>4</dd></div>
+            <div><dt>One fire</dt><dd>Olive &amp; seaweed</dd></div>
+            <div><dt>Wild herbs</dt><dd>47 species / yr</dd></div>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+  <!-- ============ RESERVE ============ -->
+  <section id="reserve" class="sec-pad">
+    <div class="wrap">
+      <div class="eyebrow rv">04 — The table</div>
+      <hr class="rule rv">
+      <div style="margin-top:30px" class="rv">
+        <h2>Take a seat</h2>
+        <p style="max-width:58ch">Twenty-two covers, one sitting, Wednesday to Sunday. We release
+          tables sixty days ahead and we hold four for walk-ins. Choose a date, a time and how many
+          of you there are; we will confirm within the hour.</p>
+      </div>
+
+      <div class="res rv" style="margin-top:30px">
+        <div class="left" id="bookleft">
+          <div class="calhead">
+            <button id="prev" aria-label="Previous month">‹</button>
+            <b id="mon">—</b>
+            <span class="sp"></span>
+            <button id="next" aria-label="Next month">›</button>
+          </div>
+          <div class="grid" id="dow" style="margin-bottom:6px"></div>
+          <div class="grid" id="days"></div>
+
+          <div style="margin-top:28px">
+            <h4 style="font:500 8.5px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--bone-dk);margin:0 0 12px">Service · Wednesday – Sunday</h4>
+            <div class="slots" id="slots"></div>
+          </div>
+        </div>
+
+        <div class="right">
+          <div class="field">
+            <h4>Guests</h4>
+            <div class="step">
+              <button id="minus" aria-label="Fewer guests">−</button>
+              <b id="guests">2</b>
+              <button id="plus" aria-label="More guests">+</button>
+            </div>
+            <p id="gnote" style="font:400 11px/1.6 var(--mono);color:var(--bone-dk);margin:10px 0 0;min-height:34px">
+              Two seats at the counter are taken first; we will seat you there if you are two.</p>
+          </div>
+          <div class="field">
+            <h4>Your booking</h4>
+            <div class="summary" id="sum">
+              <div class="row"><span>Date</span><b>—</b></div>
+              <div class="row"><span>Time</span><b>—</b></div>
+              <div class="row"><span>Guests</span><b>2</b></div>
+              <div class="row"><span>Menu</span><b>Settimana · €135</b></div>
+            </div>
+          </div>
+          <div class="err" id="err"></div>
+          <button class="go" id="go">Request the table</button>
+          <p style="font:400 10.5px/1.7 var(--mono);color:var(--bone-dk);margin:0">
+            No card required. We hold the request for 90 minutes.</p>
+        </div>
+      </div>
+
+      <div class="res conf" id="conf">
+        <div>
+          <div class="eyebrow" style="margin-bottom:0">Confirmed</div>
+          <div class="code" id="confcode">CNR-0000</div>
+          <p class="lead" style="font-size:clamp(17px,2vw,22px)" id="confline">—</p>
+          <p style="max-width:52ch">A message is on its way to you now. If anything changes — a
+            late train, an allergy we should know about — call the room on
+            <b style="color:var(--bone);font-weight:500">+39 040 631 4420</b> and ask for Luca. He
+            will not be surprised, and he will not ask you to explain twice.</p>
+          <button class="go" id="again" style="width:auto;padding:13px 20px;background:transparent;
+            color:var(--bone);border:1px solid var(--hair);margin-top:12px">Book another evening</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+  <!-- ============ VISIT ============ -->
+  <section id="visit" class="sec-pad">
+    <div class="wrap">
+      <div class="eyebrow rv">05 — Getting here</div>
+      <hr class="rule rv">
+      <div class="visit" style="margin-top:34px">
+        <div class="rv">
+          <h2>A salt warehouse<br><em>on the Riva del Sale</em></h2>
+          <p>The building is 1908: a bonded store for the pans at Sečovlje, then a boat workshop,
+            then eleven years of nothing. The brick vault is original. The fire is in the middle of
+            the room, which means the room is warmer than a dining room should be and better for
+            it.</p>
+          <p>Six steps from the pavement. The nearest doorbell is the one marked SALA — not the one
+            marked OFFICE, which is a different family and has nothing to do with us.</p>
+          <div class="hours">
+            <div><span>Wednesday – Friday</span><span>18:00 – 23:00</span></div>
+            <div><span>Saturday – Sunday</span><span>18:00 – 23:30</span></div>
+            <div><span>Bar</span><span>17:00 – 00:30</span></div>
+            <div class="closed"><span>Monday &amp; Tuesday</span><span>We are closed</span></div>
+          </div>
+        </div>
+        <div class="plan rv">
+          <svg viewBox="0 0 520 360" aria-label="Floor plan of the restaurant">
+            <defs>
+              <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                <path d="M0 0h8" stroke="#2a2a2c" stroke-width="1"/>
+              </pattern>
+            </defs>
+            <rect width="520" height="360" fill="#0d0d0f"/>
+            <!-- outer walls -->
+            <path d="M30,30 H490 V330 H30 Z" fill="none" stroke="#8e8878" stroke-width="4"/>
+            <!-- vault ribs -->
+            <g stroke="#2c2b28" stroke-width="2">
+              <path d="M60,30 v300 M120,30 v300 M180,30 v300 M240,30 v300 M300,30 v300 M360,30 v300 M420,30 v300 M460,30 v300"/>
+            </g>
+            <!-- dining room -->
+            <rect x="60" y="60" width="300" height="180" fill="url(#hatch)" opacity=".5"/>
+            <text x="210" y="86" text-anchor="middle" font-family="monospace" font-size="9"
+              letter-spacing="2.4" fill="#a9a294">SALA · 14 COVERS</text>
+            <!-- tables -->
+            <g fill="#17171a" stroke="#6c675e" stroke-width="1.2">
+              <circle cx="120" cy="130" r="21"/><circle cx="200" cy="130" r="21"/><circle cx="290" cy="130" r="21"/>
+              <circle cx="120" cy="200" r="21"/><circle cx="200" cy="200" r="21"/><circle cx="290" cy="200" r="21"/>
+            </g>
+            <g fill="#8e8878">
+              <circle cx="120" cy="102" r="3.4"/><circle cx="138" cy="126" r="3.4"/><circle cx="102" cy="126" r="3.4"/>
+              <circle cx="200" cy="102" r="3.4"/><circle cx="218" cy="126" r="3.4"/><circle cx="182" cy="126" r="3.4"/>
+              <circle cx="290" cy="102" r="3.4"/><circle cx="308" cy="126" r="3.4"/><circle cx="272" cy="126" r="3.4"/>
+              <circle cx="120" cy="172" r="3.4"/><circle cx="138" cy="196" r="3.4"/><circle cx="102" cy="196" r="3.4"/>
+              <circle cx="200" cy="172" r="3.4"/><circle cx="218" cy="196" r="3.4"/><circle cx="182" cy="196" r="3.4"/>
+              <circle cx="290" cy="172" r="3.4"/><circle cx="308" cy="196" r="3.4"/><circle cx="272" cy="196" r="3.4"/>
+            </g>
+            <!-- counter -->
+            <path d="M60,272 H240 V252 H60 Z" fill="#1b1b1e" stroke="#6c675e" stroke-width="1.2"/>
+            <text x="150" y="266" text-anchor="middle" font-family="monospace" font-size="8"
+              letter-spacing="2" fill="#a9a294">BAR · 8 STOOLS</text>
+            <!-- kitchen + fire -->
+            <path d="M270,252 H470 V320 H270 Z" fill="#141416" stroke="#6c675e" stroke-width="1.2"/>
+            <circle cx="370" cy="286" r="26" fill="#2a1a12" stroke="#c0561f" stroke-width="1.4"/>
+            <circle cx="370" cy="286" r="16" fill="#c0561f" opacity=".45"/>
+            <circle cx="370" cy="286" r="8" fill="#e07a3c" opacity=".7"/>
+            <text x="370" y="248" text-anchor="middle" font-family="monospace" font-size="8"
+              letter-spacing="2" fill="#a9a294">CUCINA · THE FIRE</text>
+            <!-- the pass -->
+            <rect x="248" y="240" width="22" height="80" fill="#1f1f22" stroke="#6c675e" stroke-width="1"/>
+            <!-- entrance -->
+            <path d="M150,330 h96" stroke="#0d0d0f" stroke-width="7"/>
+            <path d="M150,330 a48,48 0 0 1 96,0" fill="none" stroke="#c0561f" stroke-width="1.6" stroke-dasharray="3 4"/>
+            <text x="198" y="352" text-anchor="middle" font-family="monospace" font-size="8"
+              letter-spacing="2.6" fill="#e07a3c">ENTRY</text>
+            <!-- windows -->
+            <g stroke="#3a5a6a" stroke-width="3">
+              <path d="M370,30 h90"/><path d="M370,330 h90"/>
+            </g>
+            <text x="415" y="24" text-anchor="middle" font-family="monospace" font-size="7.5"
+              letter-spacing="1.6" fill="#5b6c7e">RIVA DEL SALE</text>
+          </svg>
+          <span class="cap">Ground floor · 214 m² · drawn to 1:100</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="wrap">
+    <span><b>Cenere</b> · Riva del Sale 4, 34121 Trieste, Italia</span>
+    <span>+39 040 631 4420 · cena@cenere.example</span>
+    <span>Design &amp; words: an invented restaurant</span>
+  </footer>
+</main>
+
+<script>
+(function(){
+const $=(s,r)=>(r||document).querySelector(s), $$=(s,r)=>[...(r||document).querySelectorAll(s)];
+
+/* ---------------- hero: the plated dish, drawn ---------------- */
+const cv=$("#dish"), g=cv.getContext("2d");
+let W=0,H=0,dpr=Math.min(2,devicePixelRatio||1);
+let seed=20160412;
+const rnd=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
+function drawDish(){
+  g.clearRect(0,0,W,H);
+  const bgGrad=g.createRadialGradient(W*.5,H*.44,0,W*.5,H*.5,Math.max(W,H)*.8);
+  bgGrad.addColorStop(0,"#1a1512");bgGrad.addColorStop(.5,"#100d0c");bgGrad.addColorStop(1,"#070606");
+  g.fillStyle=bgGrad;g.fillRect(0,0,W,H);
+  const cx=W*.52, cy=H*.5, R=Math.min(W,H)*.40;
+  // fire glow behind the plate
+  const glow=g.createRadialGradient(cx,cy,R*.9,cx,cy,R*2.1);
+  glow.addColorStop(0,"rgba(192,86,31,.20)");glow.addColorStop(.45,"rgba(192,86,31,.05)");glow.addColorStop(1,"rgba(0,0,0,0)");
+  g.fillStyle=glow;g.fillRect(0,0,W,H);
+  // plate
+  g.save();
+  const plate=g.createRadialGradient(cx-R*.3,cy-R*.4,R*.1,cx,cy,R);
+  plate.addColorStop(0,"#2b2724");plate.addColorStop(.7,"#1a1715");plate.addColorStop(.93,"#100e0d");plate.addColorStop(1,"#262220");
+  g.fillStyle=plate;g.beginPath();g.ellipse(cx,cy,R,R*.985,0,0,6.2832);g.fill();
+  // speckled stoneware
+  g.globalAlpha=.35;
+  for(let i=0;i<1400;i++){
+    const a=rnd()*6.2832,rr=Math.sqrt(rnd())*R;
+    g.fillStyle=rnd()<.5?"#3a3532":"#0b0a0a";
+    g.fillRect(cx+Math.cos(a)*rr,cy+Math.sin(a)*rr,1.6,1.6);
+  }
+  g.globalAlpha=1;
+  // rim
+  g.strokeStyle="rgba(233,227,215,.10)";g.lineWidth=1.4;
+  g.beginPath();g.ellipse(cx,cy,R*.92,0,0,0,6.2832);g.stroke();
+  g.restore();
+
+  // sauce swoosh
+  g.save();
+  g.translate(cx,cy);g.rotate(-0.5);
+  for(let k=0;k<3;k++){
+    const sg=g.createRadialGradient(0,0,0,0,0,R*.8);
+    const hue=[[124,32,20],[70,22,14],[20,12,10]][k];
+    sg.addColorStop(0,"rgba("+hue[0]+","+hue[1]+","+hue[2]+",.92)");
+    sg.addColorStop(.6,"rgba("+hue[0]+","+hue[1]+","+hue[2]+",.45)");
+    sg.addColorStop(1,"rgba("+hue[0]+","+hue[1]+","+hue[2]+",0)");
+    g.fillStyle=sg;
+    g.beginPath();
+    g.ellipse((k-1)*R*.16,(k-1)*R*.09,R*(.62-k*.1),R*(.40-k*.07),(k*.7-.3),0,6.2832);
+    g.fill();
+  }
+  g.restore();
+
+  // quenelle of fish
+  g.save();g.translate(cx+R*.06,cy-R*.05);g.rotate(-.42);
+  const qg=g.createLinearGradient(0,-R*.14,0,R*.14);
+  qg.addColorStop(0,"#f0e7d6");qg.addColorStop(.45,"#d8cbb4");qg.addColorStop(1,"#7e7565");
+  g.fillStyle=qg;
+  g.beginPath();
+  g.moveTo(-R*.30,0);
+  g.bezierCurveTo(-R*.16,-R*.17,R*.16,-R*.15,R*.30,-R*.01);
+  g.bezierCurveTo(R*.16,R*.14,-R*.16,R*.13,-R*.30,0);
+  g.fill();
+  g.strokeStyle="rgba(255,255,255,.30)";g.lineWidth=1.6;
+  for(let i=0;i<7;i++){const px2=-R*.24+i*R*.07;
+    g.beginPath();g.moveTo(px2,-R*.10+i*1.5);g.quadraticCurveTo(px2+R*.02,0,px2,R*.09-i*1.5);g.stroke();}
+  g.restore();
+
+  // herb + oil dots
+  const palette=["#6f7a63","#4d5a3c","#c0561f","#e07a3c","#8e8878","#b9c19a"];
+  for(let i=0;i<170;i++){
+    const a=rnd()*6.2832, rr=Math.sqrt(rnd())*R*.9;
+    const s=1.2+rnd()*3.6;
+    g.fillStyle=palette[(rnd()*palette.length)|0];
+    g.globalAlpha=.35+rnd()*.6;
+    g.beginPath();g.ellipse(cx+Math.cos(a)*rr,cy+Math.sin(a)*rr,s,s*(0.5+rnd()),a,0,6.2832);g.fill();
+  }
+  g.globalAlpha=1;
+  // oil ring
+  g.strokeStyle="rgba(224,122,60,.22)";g.lineWidth=7;
+  g.beginPath();g.ellipse(cx,cy,R*.7,R*.68,0,0,6.2832);g.stroke();
+
+  // embers drifting over the plate
+  for(let i=0;i<70;i++){
+    const px2=cx+(rnd()-.5)*R*2.2, py2=cy-R*.2-rnd()*R*1.4;
+    g.fillStyle="rgba(224,122,60,"+(0.06+rnd()*0.16)+")";
+    g.beginPath();g.arc(px2,py2,0.6+rnd()*1.8,0,6.2832);g.fill();
+  }
+}
+function sizeHero(){
+  const r=cv.getBoundingClientRect();
+  W=r.width;H=r.height;cv.width=W*dpr;cv.height=H*dpr;
+  g.setTransform(dpr,0,0,dpr,0,0);seed=20160412;drawDish();
+}
+sizeHero();addEventListener("resize",sizeHero);
+
+/* ---------------- scroll reveal + scroll-spy ---------------- */
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target);}}),
+  {threshold:.16,rootMargin:"0px 0px -8% 0px"});
+$$(".rv").forEach(el=>io.observe(el));
+const secs=["hero","story","menu","chef","reserve","visit"];
+addEventListener("scroll",()=>{
+  let cur="hero";
+  secs.forEach(id=>{const el=document.getElementById(id);
+    if(el&&el.getBoundingClientRect().top<innerHeight*0.4)cur=id;});
+  $$("#nav a").forEach(a=>a.classList.toggle("on",a.getAttribute("href")==="#"+cur));
+},{passive:true});
+
+/* ---------------- menu tabs ---------------- */
+const panels=$$(".mpanel"), tabs=$$(".tabs button");
+tabs.forEach(t=>t.addEventListener("click",()=>{
+  tabs.forEach(o=>o.setAttribute("aria-selected",String(o===t)));
+  panels.forEach(p=>p.classList.toggle("on",p.dataset.p===t.dataset.p));
+}));
+
+/* ---------------- calendar ---------------- */
+const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const DOW=["M","T","W","T","F","S","S"];
+const today=new Date();today.setHours(0,0,0,0);
+let view=new Date(today.getFullYear(),today.getMonth(),1);
+let selDate=null, selTime=null, guests=2;
+$("#dow").innerHTML=DOW.map(d=>'<div class="dow">'+d+'</div>').join("");
+
+const SLOTS=["17:30","18:00","18:30","19:00","19:30","20:00","20:30","21:00","21:30"];
+const FULL={"19:00":1,"19:30":1,"20:00":1,"20:30":1};
+function drawCal(){
+  $("#mon").textContent=MONTHS[view.getMonth()]+" "+view.getFullYear();
+  const first=new Date(view.getFullYear(),view.getMonth(),1);
+  let lead=(first.getDay()+6)%7;
+  const dim=new Date(view.getFullYear(),view.getMonth()+1,0).getDate();
+  const max=new Date(today.getFullYear(),today.getMonth()+2,0);
+  $("#prev").disabled=view<=new Date(today.getFullYear(),today.getMonth(),1);
+  $("#next").disabled=view>=max;
+  let html="";
+  for(let i=0;i<lead;i++)html+="<span></span>";
+  for(let d=1;d<=dim;d++){
+    const dt=new Date(view.getFullYear(),view.getMonth(),d);
+    const past=dt<today, closed=dt.getDay()===1, full=dt.getDay()===0||(d%7===3);
+    const dis=past||closed||full;
+    html+='<button class="day'+(past?" past":"")+(closed?" closed":"")+'"'+
+      ' data-d="'+d+'"'+(dis?" disabled":"")+
+      ' aria-pressed="'+(selDate&&selDate.toDateString()===dt.toDateString())+'"'+
+      ' aria-label="'+dt.toDateString()+'">'+d+'</button>';
+  }
+  $("#days").innerHTML=html;
+  $$("#days .day").forEach(b=>b.addEventListener("click",()=>{
+    const d=+b.dataset.d;
+    selDate=new Date(view.getFullYear(),view.getMonth(),d);
+    selTime=null; drawSlots(); drawCal(); summary(); $("#err").textContent="";
+  }));
+  drawSlots();
+}
+function drawSlots(){
+  let h="";
+  SLOTS.forEach((s,i)=>{
+    const off=(selDate&&(selDate.getDay()===0||selDate.getDate()%7===3))?(i<3||i>7):FULL[s];
+    h+='<button class="slot" data-t="'+s+'"'+(off?" disabled":"")+
+      ' aria-pressed="'+(selTime===s)+'">'+s+'</button>';
+  });
+  $("#slots").innerHTML=h;
+  $$("#slots .slot").forEach(b=>b.addEventListener("click",()=>{
+    selTime=b.dataset.t; drawSlots(); summary(); $("#err").textContent="";
+  }));
+}
+$("#prev").addEventListener("click",()=>{view=new Date(view.getFullYear(),view.getMonth()-1,1);drawCal();});
+$("#next").addEventListener("click",()=>{view=new Date(view.getFullYear(),view.getMonth()+1,1);drawCal();});
+
+function setGuests(n){
+  guests=Math.max(1,Math.min(8,n));
+  $("#guests").textContent=guests;
+  $("#minus").disabled=guests<=1;$("#plus").disabled=guests>=8;
+  $("#gnote").textContent = guests===1 ? "One seat at the counter, unless you would rather be quiet."
+    : guests<=4 ? "We will seat you together unless the room is nearly full."
+    : guests<=6 ? "A table of six is the most the fire can hold comfortably."
+    : "Above six we take the private room at the back — the menu is unchanged.";
+  summary();
+}
+$("#minus").addEventListener("click",()=>setGuests(guests-1));
+$("#plus").addEventListener("click",()=>setGuests(guests+1));
+function summary(){
+  const d=selDate? selDate.getDate()+" "+MONTHS[selDate.getMonth()].slice(0,3)+" "+selDate.getFullYear() : "—";
+  const rows=[["Date",d],["Time",selTime||"—"],["Guests",String(guests)],
+    ["Menu",guests>=6&&selDate&&selDate.getDay()===0?"Degustazione · €185":"Settimana · €135"]];
+  $("#sum").innerHTML=rows.map(r=>'<div class="row"><span>'+r[0]+'</span><b>'+r[1]+'</b></div>').join("");
+}
+$("#go").addEventListener("click",()=>{
+  const e=$("#err");
+  if(!selDate){e.textContent="Choose a date first — the room is thirty days ahead.";return;}
+  if(!selTime){e.textContent="Choose a service time. The fire is lit at 17:00 sharp.";return;}
+  const days=(selDate-today)/86400000;
+  if(days>60){e.textContent="That is past the release window. Tables open sixty days out.";return;}
+  if(selDate.getDay()===1){e.textContent="We are closed on Mondays. The kiln is cold.";return;}
+  const code="CNR-"+String(Math.floor(Math.random()*9000)+1000);
+  $("#confcode").textContent=code;
+  $("#confline").textContent=guests+(guests===1?" seat":" seats")+" · "+
+    selDate.toDateString().replace(/ \w+ /," ")+" at "+selTime+
+    (guests>=6&&selDate.getDay()===0?" · full nine-course menu":" · seven courses");
+  $("#bookleft").style.display="none";
+  document.querySelector(".res .right").style.display="none";
+  $("#conf").classList.add("on");
+  $("#err").textContent="";
+});
+$("#again").addEventListener("click",()=>{
+  $("#conf").classList.remove("on");
+  $("#bookleft").style.display="";
+  document.querySelector(".res .right").style.display="";
+  selDate=null;selTime=null;drawCal();summary();
+});
+
+drawCal();setGuests(2);
+})();
+</script>
+</body>
+</html>

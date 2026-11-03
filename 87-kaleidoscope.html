@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Folded Light — a flow-field kaleidoscope with twelve mirrored wedges</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   FOLDED LIGHT — KALEIDOSCOPE
+   Technique: canvas flow field rendered into a persistence buffer,
+   then mirrored through N clipped wedges with rotation and zoom.
+   Skeleton: full-bleed canvas with a bottom instrument rail.
+   ============================================================ */
+:root{
+  --ink:#f0eee9; --dim:#8a8880; --line:rgba(240,238,233,.16);
+  --mono:"IBM Plex Mono",Menlo,Consolas,monospace;
+  --sans:"Inter","Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:#000;color:var(--ink);font-family:var(--sans);overflow:hidden;-webkit-font-smoothing:antialiased}
+canvas#view{position:fixed;inset:0;width:100%;height:100%;display:block}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.vig{position:fixed;inset:0;pointer-events:none;z-index:5;
+  background:radial-gradient(120% 100% at 50% 50%,transparent 42%,rgba(0,0,0,.55) 88%,#000 100%)}
+
+/* ---------- head ---------- */
+.head{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;justify-content:space-between;
+  align-items:flex-start;gap:1rem;padding:clamp(1.1rem,3vw,2rem) clamp(1.1rem,3vw,2.2rem);pointer-events:none}
+.head h1{font-size:clamp(1rem,2vw,1.35rem);font-weight:300;letter-spacing:.22em;text-transform:uppercase}
+.head h1 b{font-weight:500;color:#ffd7a0}
+.head p{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--dim);margin-top:.45rem;max-width:34ch;line-height:1.8}
+.readout{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--dim);text-align:right;
+  line-height:1.9;font-variant-numeric:tabular-nums}
+.readout b{color:var(--ink);font-weight:400}
+@media (max-width:720px){.head p,.readout{display:none}}
+
+/* ---------- instrument rail ---------- */
+.rail{position:fixed;left:50%;bottom:clamp(1rem,3vh,2rem);transform:translateX(-50%);z-index:30;
+  display:flex;align-items:center;gap:1.4rem;padding:.75rem 1.1rem;border-radius:14px;
+  background:rgba(10,10,12,.55);border:1px solid var(--line);backdrop-filter:blur(20px) saturate(1.4);
+  box-shadow:0 30px 60px -30px #000;max-width:calc(100vw - 2rem);flex-wrap:wrap;justify-content:center}
+.rail .ctl{display:flex;flex-direction:column;gap:.3rem;min-width:104px}
+.rail label{font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--dim);display:flex;justify-content:space-between;gap:.6rem}
+.rail label b{color:var(--ink);font-weight:400;font-variant-numeric:tabular-nums}
+.rail input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:12px;background:transparent}
+.rail input[type=range]::-webkit-slider-runnable-track{height:1px;background:rgba(240,238,233,.24)}
+.rail input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:11px;margin-top:-5px;
+  background:var(--ink);border-radius:50%;box-shadow:0 0 10px rgba(255,215,160,.7)}
+.rail input[type=range]::-moz-range-track{height:1px;background:rgba(240,238,233,.24)}
+.rail input[type=range]::-moz-range-thumb{width:11px;height:11px;background:#fff;border:0;border-radius:50%}
+.rail button{background:none;border:1px solid var(--line);color:var(--ink);border-radius:99px;
+  padding:.6rem 1.1rem;font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;
+  cursor:pointer;transition:.25s;white-space:nowrap}
+.rail button:hover{background:rgba(255,215,160,.14);border-color:rgba(255,215,160,.5);transform:translateY(-2px)}
+.rail .sep{width:1px;align-self:stretch;background:var(--line)}
+@media (max-width:720px){.rail{gap:.9rem;padding:.6rem .8rem}.rail .ctl{min-width:82px}.rail .sep{display:none}}
+
+/* ---------- caption plate ---------- */
+.plate{position:fixed;left:clamp(1.1rem,3vw,2.2rem);bottom:clamp(1rem,3vh,2rem);z-index:20;max-width:24ch}
+.plate b{display:block;font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:500}
+.plate p{font-size:11.5px;line-height:1.7;color:var(--dim);margin-top:.4rem}
+@media (max-width:980px){.plate{display:none}}
+</style>
+</head>
+<body>
+<canvas id="view" aria-label="A flow field of coloured particles mirrored into wedges on black"></canvas>
+<div class="vig" aria-hidden="true"></div>
+
+<header class="head">
+  <div>
+    <h1>Folded <b>Light</b></h1>
+    <p>Curl-noise field · persistence buffer · mirrored wedges</p>
+  </div>
+  <div class="readout">
+    <div>seed <b id="rSeed">00000</b></div>
+    <div>particles <b id="rP">1100</b></div>
+    <div>wedges <b id="rN">12</b></div>
+    <div>frame <b id="rF">60</b> fps</div>
+  </div>
+</header>
+
+<div class="plate">
+  <b>Study No. 4</b>
+  <p>Nothing here is drawn twice. One ribbon of particles is folded into symmetry,
+  and the eye does the rest.</p>
+</div>
+
+<section class="rail" aria-label="Kaleidoscope controls">
+  <div class="ctl"><label>Segments <b id="vN">12</b></label><input id="n" type="range" min="3" max="24" step="1" value="12"></div>
+  <div class="ctl"><label>Rotation <b id="vR">0.08</b></label><input id="r" type="range" min="-1.4" max="1.4" step="0.02" value="0.08"></div>
+  <div class="ctl"><label>Zoom <b id="vZ">1.08</b></label><input id="z" type="range" min="0.6" max="2.4" step="0.01" value="1.08"></div>
+  <div class="ctl"><label>Trails <b id="vT">0.94</b></label><input id="t" type="range" min="0.7" max="0.995" step="0.005" value="0.94"></div>
+  <span class="sep"></span>
+  <button id="shuffle">Shuffle seed</button>
+</section>
+
+<noscript><p style="position:fixed;inset:0;display:grid;place-items:center;text-align:center;padding:2rem;
+font-family:var(--mono);font-size:12px;color:#8a8880">The kaleidoscope needs JavaScript to fold the field.
+Enable scripting for the full instrument.</p></noscript>
+
+<script>
+(function(){
+"use strict";
+var view=document.getElementById('view'),vx=view.getContext('2d');
+var buf=document.createElement('canvas'),bx=buf.getContext('2d');
+var B=0,W=0,H=0,SZ=0;
+var S={n:12,rot:0.08,zoom:1.08,trail:0.94,seed:1};
+var NP=1100,parts=[],angle=0,frames=0,fps=0,fpsT=performance.now();
+
+/* saturated light on black — hues kept far apart so overlaps build, never mud */
+var HUES=[352,14,38,58,96,150,186,206,232,286,312];
+function col(h,l,a){return'hsl('+h+','+(88+Math.random()*10).toFixed(0)+'%,'+l.toFixed(0)+'%,'+(a*100).toFixed(0)+'%)';}
+
+/* ---- the flow field: four octaves of rotated sine ridges ---- */
+var ph=[0,0,0,0],ps=[0,0,0,0],fr=0;
+function seedField(){
+  for(var i=0;i<4;i++){ph[i]=Math.random()*6.283;ps[i]=Math.random()*6.283;}
+  fr=Math.random()*1000;
+}
+function field(x,y,t){
+  var a=0,amp=1,f=0.0021;
+  for(var i=0;i<4;i++){
+    a+=Math.sin((x*Math.cos(ps[i])+y*Math.sin(ps[i]))*f+ph[i]+t*(0.14+i*0.05))*amp;
+    f*=2.07;amp*=0.52;
+  }
+  return a*2.4;
+}
+function noiseAt(x,y,t){return field(x,y,t);}
+
+function size(){
+  W=innerWidth;H=innerHeight;view.width=W;view.height=H;
+  SZ=Math.max(280,Math.min(720,Math.round(Math.min(W,H)*0.62)));
+  buf.width=SZ;buf.height=SZ;bx.setTransform(1,0,0,1,0,0);
+  bx.fillStyle='#000';bx.fillRect(0,0,SZ,SZ);
+}
+addEventListener('resize',size);
+
+function newParticle(p,spread){
+  if(spread){
+    var a=Math.random()*6.283,r=Math.sqrt(Math.random())*SZ*0.16;
+    p.x=SZ/2+Math.cos(a)*r;p.y=SZ/2+Math.sin(a)*r;
+  }else{
+    p.x=Math.random()*SZ;p.y=Math.random()*SZ;
+  }
+  p.px=p.x;p.py=p.y;
+  p.h=HUES[(Math.random()*HUES.length)|0];
+  p.l=54+Math.random()*14;
+  p.a=.16+Math.random()*.3;
+  p.life=p.max=140+Math.random()*420;
+  p.w=.5+Math.random()*1.5;
+  p.big=Math.random()>.985;
+  return p;
+}
+for(var i=0;i<NP;i++)parts.push(newParticle({},true));
+
+function step(dt,t){
+  bx.globalCompositeOperation='source-over';
+  bx.fillStyle='rgba(0,0,0,'+(1-S.trail).toFixed(3)+')';
+  bx.fillRect(0,0,SZ,SZ);
+  bx.globalCompositeOperation='lighter';
+  bx.lineCap='round';
+  var c=SZ/2;
+  for(var i=0;i<parts.length;i++){
+    var p=parts[i];
+    p.px=p.x;p.py=p.y;
+    var ang=noiseAt(p.x,p.y,t)*Math.PI;
+    var sp=(p.big?2.1:1.35);
+    p.x+=Math.cos(ang)*sp;p.y+=Math.sin(ang)*sp;
+    p.life-=1;
+    if(p.life<=0||p.x<-20||p.x>SZ+20||p.y<-20||p.y>SZ+20)newParticle(p,true);
+    /* keep the ribbon near the middle so the fold has something to fold */
+    var dx=p.x-c,dy=p.y-c,d2=dx*dx+dy*dy;
+    if(d2>SZ*SZ*0.30){
+      var f=SZ*0.30/Math.sqrt(d2);
+      p.x=c+dx*f;p.y=c+dy*f;p.vx=0;
+      p.life=Math.min(p.life,p.max*.6);
+    }
+    bx.strokeStyle=col(p.h,p.l,p.a);
+    bx.lineWidth=p.w*(p.big?2.6:1);
+    bx.beginPath();bx.moveTo(p.px,p.py);bx.lineTo(p.x,p.y);bx.stroke();
+  }
+}
+
+function composite(){
+  vx.globalCompositeOperation='source-over';
+  vx.fillStyle='#000';vx.fillRect(0,0,W,H);
+  vx.save();
+  vx.translate(W/2,H/2);
+  var breathe=1+Math.sin(performance.now()*0.00012)*0.035;
+  var z=S.zoom*breathe;
+  vx.rotate(angle);
+  vx.scale(z,z);
+  var R=Math.hypot(W,H)*0.95;
+  for(var i=0;i<S.n;i++){
+    vx.save();
+    vx.rotate(i*2*Math.PI/S.n);
+    vx.beginPath();
+    vx.moveTo(0,0);
+    /* one wedge: apex at the origin, opening backwards so every wedge overlaps a mirror line */
+    vx.arc(0,0,R,Math.PI*0.5-Math.PI/S.n,Math.PI*0.5+Math.PI/S.n);
+    vx.closePath();
+    vx.clip();
+    vx.save();
+    vx.rotate(Math.PI*0.5);
+    vx.drawImage(buf,-SZ/2,-SZ/2);
+    vx.restore();
+    vx.restore();
+  }
+  vx.restore();
+  /* centre bloom so the rosette does not go flat in the middle */
+  vx.globalCompositeOperation='lighter';
+  var g=vx.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.min(W,H)*0.28);
+  g.addColorStop(0,'rgba(255,236,206,.10)');g.addColorStop(1,'rgba(0,0,0,0)');
+  vx.fillStyle=g;vx.fillRect(0,0,W,H);
+  vx.globalCompositeOperation='source-over';
+}
+
+var last=performance.now();
+function frame(now){
+  var dt=Math.min(.05,(now-last)/1000);last=now;
+  angle+=S.rot*dt*0.55;
+  step(dt,now*0.00016+fr);
+  composite();
+  frames++;fpsT+=dt;
+  if(fpsT>1){fps=Math.round(frames/fpsT);frames=0;fpsT=0;
+    document.getElementById('rF').textContent=fps;}
+  requestAnimationFrame(frame);
+}
+size();seedField();requestAnimationFrame(frame);
+
+/* ---------- controls ---------- */
+function bind(id,key,fmt,after){
+  var e=document.getElementById(id),o=document.getElementById('v'+id.toUpperCase());
+  e.addEventListener('input',function(){S[key]=parseFloat(e.value);o.textContent=fmt(S[key]);if(after)after();});
+}
+bind('n','n',function(v){return v;},function(){document.getElementById('rN').textContent=S.n;});
+bind('r','rot',function(v){return v.toFixed(2);});
+bind('z','zoom',function(v){return v.toFixed(2);});
+bind('t','trail',function(v){return v.toFixed(3);});
+document.getElementById('shuffle').onclick=function(){
+  S.seed=Math.floor(Math.random()*99999);
+  document.getElementById('rSeed').textContent=('0000'+S.seed).slice(-5);
+  seedField();
+  bx.setTransform(1,0,0,1,0,0);
+  bx.fillStyle='#000';bx.fillRect(0,0,SZ,SZ);
+  for(var i=0;i<parts.length;i++)newParticle(parts[i],true);
+  angle=Math.random()*6.283;
+  this.textContent='Shuffled';
+  var t=this;setTimeout(function(){t.textContent='Shuffle seed';},900);
+};
+document.getElementById('rSeed').textContent=('0000'+(S.seed=Math.floor(Math.random()*99999))).slice(-5);
+addEventListener('keydown',function(e){
+  if(e.key==='s'||e.key==='S')document.getElementById('shuffle').click();
+  if(e.key>='1'&&e.key<='6'){S.n=+e.key*2;document.getElementById('n').value=S.n;
+    document.getElementById('vN').textContent=S.n;document.getElementById('rN').textContent=S.n;}
+});
+/* pointer steers the field slightly — a slow nudge of the whole ribbon */
+addEventListener('pointermove',function(e){
+  fr+=(e.clientX/innerWidth-0.5)*0.004;
+});
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HOLLOW CREEK BASIN — Contour Survey Sheet 14-NW</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#efe7d7;
+    --paper2:#e4d9c4;
+    --ink:#2b2a26;
+    --ink2:#5d584d;
+    --ink3:#8d8577;
+    --sea:#3f6b6a;
+    --warn:#a8502a;
+    --contour:#6a5f4c;
+    --index:#2f2b23;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:#c9bfa9; color:var(--ink); overflow:hidden;
+    font-family:"IBM Plex Sans","Helvetica Neue",Arial,sans-serif;
+  }
+  .desk{position:fixed;inset:0;
+    background:
+      radial-gradient(60% 50% at 50% 0%, rgba(0,0,0,.26), transparent 70%),
+      linear-gradient(150deg,#b9ad95,#a1967e 60%,#8b8070);}
+  .fibre{position:fixed;inset:0;opacity:.5;mix-blend-mode:multiply;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7 0.04' numOctaves='4' seed='13'/%3E%3CfeColorMatrix values='0 0 0 0 0.42 0 0 0 0 0.38 0 0 0 0 0.3 0 0 0 0.38 0'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23f)'/%3E%3C/svg%3E");}
+  .sheet{
+    position:fixed; z-index:2; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:min(1400px,96vw); height:min(94dvh,900px);
+    background:linear-gradient(160deg,var(--paper) 0%,var(--paper2) 100%);
+    box-shadow:0 40px 80px -40px rgba(30,26,18,.7), 0 2px 0 rgba(255,255,255,.5) inset;
+    display:grid; grid-template-columns:minmax(0,1fr) clamp(210px,17vw,264px);
+    grid-template-rows:auto minmax(0,1fr) auto;
+  }
+  .bar{
+    grid-column:1/-1; display:flex; justify-content:space-between; align-items:flex-end;
+    gap:18px; padding:12px clamp(12px,1.6vw,22px) 10px;
+    border-bottom:1px solid var(--ink);
+  }
+  .bar h1{font-family:"IBM Plex Mono",monospace;font-size:clamp(12px,1.35vw,19px);
+    font-weight:500;letter-spacing:.14em;text-transform:uppercase}
+  .bar h1 span{color:var(--ink2)}
+  .bar .meta{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--ink2);text-align:right;line-height:1.8}
+  .bar .meta b{color:var(--ink);font-weight:500}
+
+  .map{position:relative;min-width:0;min-height:0;overflow:hidden}
+  .map::before{
+    content:""; position:absolute; inset:0; pointer-events:none; opacity:.5;
+    background-image:
+      linear-gradient(rgba(107,95,76,.13) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(107,95,76,.13) 1px, transparent 1px);
+    background-size:40px 40px;
+  }
+  .map::after{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:
+      linear-gradient(90deg, transparent 0 49.6%, rgba(43,42,38,.28) 49.6% 50.4%, transparent 50.4%),
+      linear-gradient(180deg, transparent 0 49.6%, rgba(43,42,38,.28) 49.6% 50.4%, transparent 50.4%);
+  }
+  svg.map-svg{position:absolute; inset:0; width:100%; height:100%; display:block}
+  .contour{fill:none; stroke:var(--contour); stroke-width:.9; opacity:.66;
+    transition:opacity .2s ease}
+  .contour.idx{stroke:var(--index); stroke-width:1.9; opacity:.9}
+  .contour.hi{stroke:#8a5a30; opacity:.95}
+  .elev{
+    font-family:"IBM Plex Mono",monospace; font-size:9.5px; fill:var(--index);
+    paint-order:stroke; stroke:var(--paper); stroke-width:3.4; stroke-linejoin:round;
+  }
+  .elev.minor{fill:#6a5f4c; font-size:8px; stroke-width:2.6}
+  .pin-line{stroke:var(--warn); stroke-width:1.2}
+  .pin-dot{fill:#fff8ec; stroke:var(--warn); stroke-width:1.8}
+  .pin-ring{fill:none; stroke:var(--warn); stroke-width:.8; opacity:.5}
+  .pin-lbl{font-family:"IBM Plex Mono",monospace;font-size:10px;fill:var(--warn);
+    letter-spacing:.12em; paint-order:stroke; stroke:var(--paper); stroke-width:3.4}
+  .water{fill:rgba(63,107,106,.16); stroke:var(--sea); stroke-width:1.1}
+  .scree{fill:none; stroke:#7c6f5a; stroke-width:.7; stroke-dasharray:1 5; opacity:.7}
+  .ctrl{position:absolute;inset:10px;pointer-events:none;
+    font-family:"IBM Plex Mono",monospace;font-size:8.5px;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--ink3)}
+  .ctrl i{position:absolute;width:16px;height:16px;border:1px solid var(--ink2)}
+  .ctrl i:nth-child(1){left:0;top:0;border-right:0;border-bottom:0}
+  .ctrl i:nth-child(2){right:0;top:0;border-left:0;border-bottom:0}
+  .ctrl i:nth-child(3){left:0;bottom:0;border-right:0;border-top:0}
+  .ctrl i:nth-child(4){right:0;bottom:0;border-left:0;border-top:0}
+  .scalebar{position:absolute;left:14px;bottom:14px;z-index:3;
+    font-family:"IBM Plex Mono",monospace;font-size:8.5px;letter-spacing:.18em;color:var(--ink2)}
+  .scalebar .r{display:flex;height:6px;width:130px;border:1px solid var(--ink);
+    margin-bottom:4px; overflow:hidden}
+  .scalebar .r i{flex:1}
+  .scalebar .r i:nth-child(odd){background:var(--ink)}
+  .north{position:absolute;right:16px;top:14px;z-index:3;width:36px;height:52px;
+    font-family:"IBM Plex Mono",monospace;font-size:8px;color:var(--ink2);text-align:center}
+  .north svg{display:block;margin:0 auto}
+
+  .side{border-left:1px solid var(--ink); display:flex; flex-direction:column;
+    min-height:0; background:rgba(255,255,255,.16)}
+  .side section{padding:12px 14px;border-bottom:1px solid rgba(43,42,38,.3)}
+  .side h2{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.26em;
+    text-transform:uppercase;color:var(--ink2);font-weight:500;margin-bottom:9px}
+  .side p{font-size:12px;line-height:1.72;font-weight:300;color:var(--ink2)}
+  .side p b{color:var(--ink);font-weight:500}
+  .read{font-family:"IBM Plex Mono",monospace}
+  .read .big{font-size:clamp(28px,3.4vw,44px);font-weight:500;letter-spacing:-.02em;
+    color:var(--warn);line-height:1;font-variant-numeric:tabular-nums}
+  .read .unit{font-size:11px;letter-spacing:.2em;color:var(--ink2);margin-left:5px}
+  .read .row{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--ink2);padding:3px 0;
+    border-bottom:1px dotted rgba(43,42,38,.25)}
+  .read .row b{color:var(--ink);font-weight:500}
+  .legend{list-style:none}
+  .legend li{display:flex;align-items:center;gap:9px;font-size:10.5px;padding:3.5px 0;
+    color:var(--ink2);font-family:"IBM Plex Mono",monospace;letter-spacing:.06em}
+  .legend svg{flex:0 0 auto}
+  .notes{overflow:auto;flex:1 1 auto;min-height:0}
+
+  .profile{grid-column:1/-1;border-top:1px solid var(--ink);
+    display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;
+    padding:8px clamp(12px,1.6vw,20px); background:rgba(255,255,255,.22)}
+  .profile h3{font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:.26em;
+    text-transform:uppercase;color:var(--ink2);font-weight:500;line-height:1.7}
+  .profile h3 span{display:block;color:var(--ink3);font-size:8.5px}
+  .profile svg{width:100%;height:58px;display:block}
+  .profile .p-lab{font-family:"IBM Plex Mono",monospace;font-size:8.5px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--ink2);text-align:right;line-height:1.8}
+  .p-grid{stroke:rgba(43,42,38,.18); stroke-width:.7}
+  .p-fill{fill:rgba(168,80,42,.14); stroke:none}
+  .p-line{fill:none; stroke:var(--ink); stroke-width:1.4}
+  .p-dash{fill:none; stroke:var(--warn); stroke-width:.9; stroke-dasharray:3 3}
+  .p-dot{fill:#fff8ec; stroke:var(--warn); stroke-width:1.6}
+  @media (max-width:1000px){
+    .sheet{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr) auto auto}
+    .side{border-left:none;border-top:1px solid var(--ink);max-height:30dvh;overflow:auto}
+    .side section{border-bottom:1px solid rgba(43,42,38,.2)}
+    .profile{grid-column:1/-1;grid-template-columns:1fr;gap:6px}
+    .profile .p-lab{display:none}
+    .bar h1{font-size:11px}
+  }
+  @media (max-width:560px){
+    .bar .meta{font-size:8px}
+    .side{max-height:34dvh}
+    .north{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="desk" aria-hidden="true"></div>
+<div class="fibre" aria-hidden="true"></div>
+
+<div class="sheet">
+  <header class="bar">
+    <h1>Hollow Creek Basin <span>· Contour Survey</span></h1>
+    <div class="meta">
+      Sheet <b>14-NW</b> &nbsp;·&nbsp; Scale <b>1:25 000</b><br>
+      Vertical interval <b>5 m</b> &nbsp;·&nbsp; Datum <b>NGVD 29</b> &nbsp;·&nbsp; Levelled 04.06.1998
+    </div>
+  </header>
+
+  <div class="map" id="map">
+    <svg class="map-svg" id="svg" viewBox="0 0 600 600" preserveAspectRatio="xMidYMid meet"
+         role="img" aria-label="A contour map of the Hollow Creek basin: twenty-two organic contour lines rising from the creek at the south-west to a summit marked by a pin in the north-east.">
+      <defs>
+        <filter id="wob" x="-10%" y="-10%" width="120%" height="120%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.013" numOctaves="3" seed="4" result="t">
+            <animate attributeName="baseFrequency" dur="52s" repeatCount="indefinite"
+                     values="0.013;0.019;0.0105;0.013"/>
+          </feTurbulence>
+          <feDisplacementMap in="SourceGraphic" in2="t" scale="7" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+        <filter id="paperfilter" x="-5%" y="-5%" width="110%" height="110%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="n"/>
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="1.1" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+      </defs>
+
+      <path class="water" filter="url(#paperfilter)"
+            d="M-20 520 C 90 486 150 540 232 500 C 318 458 300 392 400 372 C 500 352 560 396 640 360"/>
+      <path class="scree" d="M430 180 q 60 -34 122 -6 M446 210 q 56 -30 116 -4 M420 244 q 62 -26 120 -2"/>
+      <g id="rings" filter="url(#wob)"></g>
+      <g id="labels"></g>
+      <g id="pin">
+        <line class="pin-line" x1="0" y1="0" x2="0" y2="0" id="pinStem"/>
+        <circle class="pin-ring" r="14" id="pinRing"/>
+        <circle class="pin-dot" r="4.5" id="pinDot"/>
+        <text class="pin-lbl" id="pinLbl" x="0" y="0">SUMMIT 00</text>
+      </g>
+    </svg>
+    <div class="ctrl" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <div class="scalebar" aria-hidden="true">
+      <div class="r"><i></i><i></i><i></i><i></i></div>0 &nbsp; 250 &nbsp; 500 m
+    </div>
+    <div class="north" aria-hidden="true">
+      <svg width="26" height="34" viewBox="0 0 26 34">
+        <path d="M13 2 L20 30 L13 24 L6 30 Z" fill="#2b2a26"/>
+        <path d="M13 2 L13 24 L6 30 Z" fill="#efe7d7" opacity=".7"/>
+      </svg>GRID N
+    </div>
+  </div>
+
+  <aside class="side">
+    <section>
+      <h2>Datum readout</h2>
+      <div class="read">
+        <div><span class="big" id="elevOut">0</span><span class="unit">m NGVD</span></div>
+        <div style="height:9px"></div>
+        <div class="row"><span>Section A—A</span><b id="secOut">0 m</b></div>
+        <div class="row"><span>Vertical interval</span><b>5 m</b></div>
+        <div class="row"><span>Contours drawn</span><b id="cntOut">0</b></div>
+        <div class="row"><span>Benchmark</span><b>BM 41 = 214.6</b></div>
+      </div>
+    </section>
+    <section class="notes">
+      <h2>Field notes</h2>
+      <p>South-west quarter of the basin, drained by <b>Hollow Creek</b> which leaves the
+         sheet at the southern edge. The ground rises steadily to the north-east through a
+         bench of scree and closes on a single summit; there is no second high point on
+         this sheet.</p>
+      <p style="margin-top:9px">Every fifth line is an index contour and is labelled in
+         metres. Intermediate lines are drawn at one fifth of that interval. Move the
+         pointer up the sheet to raise the section, or scroll.</p>
+    </section>
+    <section>
+      <h2>Legend</h2>
+      <ul class="legend">
+        <li><svg width="26" height="8"><path d="M0 4h26" stroke="#2f2b23" stroke-width="1.9" fill="none"/></svg>Index contour, 25 m</li>
+        <li><svg width="26" height="8"><path d="M0 4h26" stroke="#6a5f4c" stroke-width=".9" fill="none"/></svg>Intermediate, 5 m</li>
+        <li><svg width="26" height="8"><path d="M0 4h26" stroke="#8a5a30" stroke-width=".9" fill="none"/></svg>Highest traced, 20 m</li>
+        <li><svg width="26" height="8"><path d="M0 4 C 8 0 16 8 26 4" stroke="#3f6b6a" stroke-width="1.1" fill="none"/></svg>Watercourse</li>
+        <li><svg width="26" height="10"><circle cx="13" cy="5" r="4" fill="#fff8ec" stroke="#a8502a" stroke-width="1.6" fill="none"/></svg>Control point, PG 8</li>
+      </ul>
+    </section>
+  </aside>
+
+  <footer class="profile">
+    <h3>Profile A—A<span>West to east, 2 400 m</span></h3>
+    <svg id="prof" viewBox="0 0 600 58" preserveAspectRatio="none" aria-hidden="true">
+      <g class="p-grid">
+        <line x1="0" y1="14" x2="600" y2="14"/><line x1="0" y1="30" x2="600" y2="30"/>
+        <line x1="0" y1="46" x2="600" y2="46"/>
+      </g>
+      <path class="p-fill" id="pFill" d=""/>
+      <path class="p-line" id="pLine" d=""/>
+      <line class="p-dash" id="pDash" x1="0" y1="58" x2="0" y2="0"/>
+      <circle class="p-dot" id="pDot" cx="0" cy="0" r="3.4"/>
+    </svg>
+    <p class="p-lab">PG 8 &nbsp;3 210<br>PG 12 &nbsp;2 640<br>Summit &nbsp;2 400</p>
+  </footer>
+</div>
+
+<noscript>
+  <p style="position:fixed;left:50%;bottom:8px;transform:translateX(-50%);z-index:9;
+     font:10px/1 'IBM Plex Mono',monospace;letter-spacing:.24em;text-transform:uppercase;color:#5d584d">
+    Static plate &mdash; contour interpolation requires JavaScript</p>
+</noscript>
+
+<script>
+(function(){
+  var NS = 'http://www.w3.org/2000/svg';
+  var ringsG = document.getElementById('rings');
+  var labelsG = document.getElementById('labels');
+  var elevOut = document.getElementById('elevOut');
+  var secOut = document.getElementById('secOut');
+  var cntOut = document.getElementById('cntOut');
+  var pinDot = document.getElementById('pinDot');
+  var pinRing = document.getElementById('pinRing');
+  var pinStem = document.getElementById('pinStem');
+  var pinLbl = document.getElementById('pinLbl');
+  var pLine = document.getElementById('pLine');
+  var pFill = document.getElementById('pFill');
+  var pDash = document.getElementById('pDash');
+  var pDot = document.getElementById('pDot');
+
+  var CX = 320, CY = 292;
+  var COUNT = 22, PTS = 108, SPACING = 10.4, BASE = 26;
+  var MAXE = 100;                       /* metres, summit datum on the sheet */
+  var e = 0, target = 0;
+
+  function r_at(th, i, ev){
+    var base = BASE + i * SPACING;
+    var k = base / 190;
+    var wob =
+        0.30 * Math.sin(3*th + 0.9*ev) +
+        0.21 * Math.cos(5*th - 0.7*ev + i*0.11) +
+        0.13 * Math.sin(7*th + 0.4*ev + i*0.23) +
+        0.08 * Math.cos(11*th - 0.3*ev) +
+        0.05 * Math.sin(17*th + 0.2*ev);
+    var drift = 1 + k * 0.55 * Math.sin(ev * 0.03 + i * 0.17);
+    var squash = 1 + 0.16 * Math.cos(ev * 0.021) ;
+    return base * (1 + wob * (0.22 + k * 0.5)) * drift * squash;
+  }
+
+  /* summit height for the section cut: the 20 m trace is the outermost ring */
+  function heightAt(th, ev){
+    var outer = r_at(th, COUNT - 1, ev);
+    return 20 + Math.round((1 - Math.min(1, Math.abs(outer - 232) / 150)) * 20);
+  }
+
+  var paths = [], labels = [];
+  for (var i = 0; i < COUNT; i++){
+    var isIdx = (i % 5 === 0) || i === COUNT - 1;
+    var p = document.createElementNS(NS,'path');
+    p.setAttribute('class', 'contour' + (isIdx ? ' idx' : '') + (i === COUNT-1 ? ' hi' : ''));
+    ringsG.appendChild(p); paths.push(p);
+
+    if (isIdx || i % 2 === 0){
+      var t = document.createElementNS(NS,'text');
+      t.setAttribute('class', 'elev' + (isIdx ? '' : ' minor'));
+      t.setAttribute('text-anchor','middle');
+      labelsG.appendChild(t); labels.push({el:t, i:i, off:isIdx?-7:-1});
+    }
+  }
+
+  function draw(ev){
+    var topR = 0;
+    for (var i = 0; i < COUNT; i++){
+      var d = '', x, y;
+      for (var p = 0; p <= PTS; p++){
+        var th = p / PTS * Math.PI * 2;
+        var r = r_at(th, i, ev);
+        x = CX + Math.cos(th - 0.42) * r;
+        y = CY + Math.sin(th - 0.42) * r * 0.86;
+        d += (p ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
+      }
+      d += 'Z';
+      paths[i].setAttribute('d', d);
+      if (i === COUNT - 1) topR = r_at(0, i, ev);
+    }
+    for (var L = 0; L < labels.length; L++){
+      var it = labels[L];
+      var th2 = -0.95 + it.off * 0.055;
+      var rr = r_at(th2, it.i, ev) + (it.off ? 0 : 2);
+      var lx = CX + Math.cos(th2 - 0.42) * rr;
+      var ly = CY + Math.sin(th2 - 0.42) * rr * 0.86 + 3.2;
+      it.el.setAttribute('x', lx.toFixed(1));
+      it.el.setAttribute('y', ly.toFixed(1));
+      it.el.textContent = (20 + it.i * 5) + '';
+    }
+
+    var sum = 20 + Math.round((1 - Math.min(1, Math.abs(topR - 236) / 130)) * 20);
+    var px = CX + Math.cos(-0.42) * Math.max(9, topR * 0.16);
+    var py = CY + Math.sin(-0.42) * Math.max(9, topR * 0.16) * 0.86;
+    pinDot.setAttribute('cx', px.toFixed(1)); pinDot.setAttribute('cy', py.toFixed(1));
+    pinRing.setAttribute('cx', px.toFixed(1)); pinRing.setAttribute('cy', py.toFixed(1));
+    pinRing.setAttribute('r', (11 + sum * 0.14).toFixed(1));
+    pinStem.setAttribute('x1', (px + 9).toFixed(1)); pinStem.setAttribute('y1', (py - 8).toFixed(1));
+    pinStem.setAttribute('x2', (px + 58).toFixed(1)); pinStem.setAttribute('y2', (py - 40).toFixed(1));
+    pinLbl.setAttribute('x', (px + 60).toFixed(1)); pinLbl.setAttribute('y', (py - 42).toFixed(1));
+    pinLbl.textContent = 'SUMMIT ' + sum;
+
+    elevOut.textContent = sum;
+    secOut.textContent = sum + ' m';
+    cntOut.textContent = COUNT + ' lines';
+
+    /* section A—A, west to east */
+    var pl = '', pf = '';
+    for (var s = 0; s <= 80; s++){
+      var thx = -Math.PI + s / 80 * Math.PI * 2;
+      var h = heightAt(thx, ev);
+      var hx = (s / 80) * 600;
+      var hy = 52 - (h / 45) * 46;
+      pl += (s ? 'L' : 'M') + hx.toFixed(1) + ' ' + hy.toFixed(1);
+    }
+    pLine.setAttribute('d', pl);
+    pFill.setAttribute('d', pl + 'L600 58 L0 58 Z');
+    var sx = 600 * (0.28 + (ev / MAXE) * 0.62);
+    pDash.setAttribute('x1', sx.toFixed(1)); pDash.setAttribute('x2', sx.toFixed(1));
+    pDot.setAttribute('cx', sx.toFixed(1));
+    pDot.setAttribute('cy', (52 - (sum / 45) * 46).toFixed(1));
+  }
+
+  function aim(ev){ target = Math.max(0, Math.min(MAXE, ev)); }
+
+  window.addEventListener('pointermove', function(ev2){
+    var h = window.innerHeight;
+    aim(((1 - ev2.clientY / h) - 0.08) * 118);
+  }, {passive:true});
+  window.addEventListener('wheel', function(ev2){
+    target = Math.max(0, Math.min(MAXE, target - ev2.deltaY * 0.05));
+  }, {passive:true});
+  window.addEventListener('keydown', function(ev2){
+    if (ev2.key === 'ArrowUp')   target = Math.min(MAXE, target + 6);
+    if (ev2.key === 'ArrowDown') target = Math.max(0, target - 6);
+  });
+
+  var last = 0;
+  function loop(now){
+    if (Math.abs(target - e) > 0.02){
+      e += (target - e) * 0.06;
+      if (now - last > 16){ last = now; draw(e); }
+    }
+    requestAnimationFrame(loop);
+  }
+  draw(0);
+  target = 34; e = 34;
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

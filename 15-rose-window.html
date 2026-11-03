@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ROSA LUCIS — The Rose Window of the North Crossing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --stone:#151318;
+    --stone2:#241f27;
+    --lead:#08070a;
+    --gold:#d9b46a;
+    --bone:#e8e0cf;
+    --cobalt:#1b3f9e;
+    --ruby:#9c1b2e;
+    --amber:#d9952a;
+    --emerald:#1d6b4c;
+    --amethyst:#5b2f80;
+    --sapphire:#245c9c;
+    --violet:#6a2b7a;
+    --glass:#f4e6c4;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:
+      radial-gradient(90% 70% at 50% 42%, #1b1720 0%, #100e14 55%, #060509 100%);
+    color:var(--bone);
+    font-family:"EB Garamond",Georgia,"Times New Roman",serif;
+    overflow:hidden;
+  }
+  .walltex{
+    position:fixed;inset:0;z-index:0;opacity:.42;mix-blend-mode:overlay;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.02 0.05' numOctaves='4' seed='9'/%3E%3CfeColorMatrix values='0 0 0 0 0.7 0 0 0 0 0.65 0 0 0 0 0.6 0 0 0 0.6 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23s)'/%3E%3C/svg%3E");
+  }
+  /* light coming through the glass from behind */
+  .beams{position:fixed;inset:-30% -60%;z-index:1;pointer-events:none;mix-blend-mode:screen;opacity:.5}
+  .beams i{
+    position:absolute; top:-20%; width:clamp(60px,9vw,150px); height:150%;
+    background:linear-gradient(180deg, rgba(255,238,196,.42), rgba(255,206,140,.10) 60%, transparent);
+    filter:blur(16px); transform:rotate(var(--r,14deg));
+  }
+  .beams i:nth-child(1){left:16%;--r:11deg;animation:beam 26s ease-in-out infinite alternate}
+  .beams i:nth-child(2){left:31%;--r:19deg;animation:beam 31s ease-in-out infinite alternate-reverse;opacity:.7}
+  .beams i:nth-child(3){left:50%;--r:24deg;animation:beam 38s ease-in-out infinite alternate;opacity:.5}
+  .beams i:nth-child(4){left:66%;--r:17deg;animation:beam 29s ease-in-out infinite alternate-reverse;opacity:.85}
+  .beams i:nth-child(5){left:82%;--r:9deg;animation:beam 34s ease-in-out infinite alternate;opacity:.6}
+  @keyframes beam{from{transform:rotate(var(--r,14deg)) translateX(-3%)}to{transform:rotate(var(--r,14deg)) translateX(4%)}}
+
+  .gothic{
+    position:relative; z-index:3; height:100dvh; display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(210px,20vw);
+  }
+  .stage{position:relative; display:grid; place-items:center; overflow:hidden}
+  .arch{position:absolute; inset:0; z-index:0;
+    background:linear-gradient(180deg, rgba(0,0,0,.9) 0%, transparent 18%, transparent 100%)}
+  #roseWrap{
+    position:relative; z-index:2; width:min(74vmin,600px); aspect-ratio:1;
+    animation:swell 46s ease-in-out infinite;
+  }
+  @keyframes swell{0%,100%{transform:scale(1) rotate(-.25deg)}50%{transform:scale(1.045) rotate(.25deg)}}
+  #rose{width:100%;height:100%;display:block;
+    animation:turn 640s linear infinite;
+    filter:drop-shadow(0 26px 46px rgba(0,0,0,.75)) drop-shadow(0 0 40px rgba(255,214,150,.10));}
+  @keyframes turn{to{transform:rotate(360deg)}}
+  .pane{
+    stroke:var(--lead); stroke-width:3.4; stroke-linejoin:round;
+    transition:filter .35s ease, opacity .35s ease;
+    cursor:pointer;
+  }
+  .pane:hover{filter:brightness(1.55) saturate(1.25) drop-shadow(0 0 6px rgba(255,236,190,.55))}
+  #rose.hot .pane:not(:hover){opacity:.26}
+  .came{fill:none;stroke:var(--lead);stroke-width:4.6;stroke-linecap:round}
+  .stone-ring{fill:none;stroke:url(#stoneG);stroke-width:17}
+  .insc{fill:var(--gold);font-family:"EB Garamond",serif;font-size:12.5px;letter-spacing:5px;opacity:.8}
+  .boss{fill:url(#stoneG);stroke:var(--lead);stroke-width:2}
+
+  .side{
+    position:relative; z-index:4; border-left:1px solid rgba(216,180,106,.18);
+    background:linear-gradient(180deg, rgba(12,10,15,.72), rgba(6,5,9,.9));
+    display:flex; flex-direction:column; justify-content:space-between;
+    padding:clamp(20px,2.4vw,34px) clamp(16px,1.8vw,26px);
+    backdrop-filter:blur(3px);
+  }
+  .side .kicker{font-family:"Cormorant Garamond",serif;font-size:11px;letter-spacing:.42em;
+    text-transform:uppercase;color:rgba(216,180,106,.72)}
+  .side h2{
+    font-family:"Cormorant Garamond",serif; font-weight:300; letter-spacing:.16em;
+    text-transform:uppercase; font-size:clamp(19px,1.9vw,28px); line-height:1.2;
+    margin:12px 0 14px; color:var(--bone);
+  }
+  .side p{font-size:13.5px;line-height:1.95;color:rgba(232,224,207,.6);font-weight:300}
+  .side p em{color:rgba(216,180,106,.9);font-style:italic}
+  .readout{
+    border-top:1px solid rgba(216,180,106,.22); border-bottom:1px solid rgba(216,180,106,.22);
+    padding:14px 0; margin:20px 0;
+  }
+  .readout .swatch{width:26px;height:26px;background:#2a2a30;border:1px solid var(--lead);
+    box-shadow:0 0 0 3px rgba(0,0,0,.6), 0 6px 14px -6px rgba(0,0,0,.9);
+    transition:background .35s ease}
+  .readout h3{font-family:"Cormorant Garamond",serif;font-weight:400;font-size:17px;
+    letter-spacing:.2em;text-transform:uppercase;margin:12px 0 4px;color:var(--bone)}
+  .readout small{font-size:11.5px;letter-spacing:.06em;color:rgba(232,224,207,.5);font-style:italic}
+  .legend{list-style:none;margin-top:6px}
+  .legend li{display:flex;align-items:center;gap:9px;font-size:11.5px;letter-spacing:.12em;
+    text-transform:uppercase;color:rgba(232,224,207,.5);padding:3px 0}
+  .legend i{width:9px;height:9px;flex:0 0 auto;border:1px solid var(--lead)}
+  .legend li:hover{color:var(--bone)}
+  .foot{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:rgba(232,224,207,.32)}
+  .glassnote{
+    position:absolute; left:clamp(14px,2.4vw,30px); bottom:clamp(14px,2.4vh,26px); z-index:5;
+    font-size:11px; letter-spacing:.28em; text-transform:uppercase; color:rgba(216,180,106,.55);
+  }
+  @media (max-width:900px){
+    .gothic{grid-template-columns:1fr; grid-template-rows:1fr auto}
+    .side{border-left:none;border-top:1px solid rgba(216,180,106,.18);
+      max-height:44dvh; overflow:auto}
+    #roseWrap{width:min(70vw,420px)}
+    .beams{opacity:.34}
+  }
+  @media (max-width:560px){
+    .side p{font-size:12.5px;line-height:1.8}
+    .legend li{font-size:10px}
+    .glassnote{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="walltex" aria-hidden="true"></div>
+<div class="beams" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+
+<main class="gothic">
+  <section class="stage">
+    <div class="arch" aria-hidden="true"></div>
+    <div id="roseWrap">
+      <svg id="rose" viewBox="-210 -210 420 420" role="img"
+           aria-label="A rose window of radial stone tracery: an outer ring of 24 small lights, a middle ring of 12 cusped petals in cobalt, ruby, emerald, amber and amethyst, and a golden heart.">
+        <defs>
+          <linearGradient id="stoneG" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#3a333f"/><stop offset=".5" stop-color="#221d27"/>
+            <stop offset="1" stop-color="#151219"/>
+          </linearGradient>
+          <radialGradient id="heart" cx=".38" cy=".32">
+            <stop offset="0" stop-color="#fff6dc"/><stop offset=".55" stop-color="#f0cf88"/>
+            <stop offset="1" stop-color="#c08c30"/>
+          </radialGradient>
+          <radialGradient id="shade" cx=".5" cy=".42" r=".62">
+            <stop offset="0" stop-color="#fff8e6" stop-opacity=".26"/>
+            <stop offset=".62" stop-color="#fff8e6" stop-opacity="0"/>
+            <stop offset="1" stop-color="#000000" stop-opacity=".55"/>
+          </radialGradient>
+          <filter id="glow" x="-25%" y="-25%" width="150%" height="150%">
+            <feGaussianBlur stdDeviation="5" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+
+        <circle class="stone-ring" cx="0" cy="0" r="186"/>
+        <g id="turner">
+          <g id="gC"></g>
+          <circle class="came" cx="0" cy="0" r="118"/>
+          <g id="gB"></g>
+          <circle class="came" cx="0" cy="0" r="62"/>
+          <g id="gA"></g>
+          <g id="gHub"></g>
+          <circle class="came" cx="0" cy="0" r="24"/>
+          <g class="came" id="spokes"></g>
+        </g>
+        <circle cx="0" cy="0" r="176" fill="url(#shade)" pointer-events="none"/>
+        <text class="insc" x="0" y="176" text-anchor="middle">ANNO DCCCLXVII</text>
+        <circle class="boss" cx="0" cy="-186" r="6"/>
+      </svg>
+    </div>
+    <p class="glassnote">Hover a light to read its glass</p>
+  </section>
+
+  <aside class="side">
+    <div>
+      <p class="kicker">Fitting 04 &nbsp;/&nbsp; 4.8 m oculus</p>
+      <h2>Rosa<br>Lucis</h2>
+      <p>Twenty-four lanterns for the outer ambulatory, twelve for the saints, and one
+         for the sun. The glazier worked from the inside of the scaffold and painted
+         <em>reverse grisaille</em> on the back of every pane so the light would read
+         as flesh, not glass.</p>
+    </div>
+
+    <div class="readout">
+      <div class="swatch" id="swatch"></div>
+      <h3 id="rname">The Oculus</h3>
+      <small id="rsub">Crown glass, lead came, 1341</small>
+    </div>
+
+    <ul class="legend" id="legend">
+      <li data-c="cobalt"><i style="background:#1b3f9e"></i>Cobalt — the deep</li>
+      <li data-c="ruby"><i style="background:#9c1b2e"></i>Ruby — the martyr</li>
+      <li data-c="emerald"><i style="background:#1d6b4c"></i>Emerald — the field</li>
+      <li data-c="amber"><i style="background:#d9952a"></i>Amber — the mercy</li>
+      <li data-c="amethyst"><i style="background:#5b2f80"></i>Amethyst — the vigil</li>
+    </ul>
+
+    <p class="foot">North transept &nbsp;·&nbsp; restored 1908</p>
+  </aside>
+</main>
+
+<noscript>
+  <p style="position:fixed;left:50%;bottom:10px;transform:translateX(-50%);z-index:9;
+     font:10px/1 'EB Garamond',serif;letter-spacing:.3em;text-transform:uppercase;color:#8c7f66">
+    The tracery is drawn with JavaScript &mdash; the stone tracery rings remain visible</p>
+</noscript>
+
+<script>
+(function(){
+  var NS = 'http://www.w3.org/2000/svg';
+  var rose = document.getElementById('rose');
+  var swatch = document.getElementById('swatch');
+  var rname = document.getElementById('rname');
+  var rsub = document.getElementById('rsub');
+
+  var GLASS = {
+    cobalt:   {c:'#1b3f9e', n:'Cobalt',    s:'Pot-metal, Saxon, 1318'},
+    ruby:     {c:'#9c1b2e', n:'Ruby',      s:'Silver stain, 1318'},
+    emerald:  {c:'#1d6b4c', n:'Emerald',   s:'Copper green, 1318'},
+    amber:    {c:'#d9952a', n:'Amber',     s:'Sang de boeuf, 1318'},
+    amethyst: {c:'#5b2f80', n:'Amethyst',  s:'Manganese violet, 1318'},
+    sapphire: {c:'#245c9c', n:'Sapphire',  s:'Cobalt over white, 1318'},
+    violet:   {c:'#6a2b7a', n:'Violet',    s:'Cobalt over red, 1318'}
+  };
+
+  function P(r, a){ var t = a * Math.PI/180; return [r*Math.cos(t), r*Math.sin(t)]; }
+  function f(n){ return Math.round(n*100)/100; }
+
+  /* a cusped sector: two arcs, two bulges -> reads as a petal of tracery */
+  function petal(r1, r2, a0, a1, bulge){
+    var rc = (r1+r2)/2 * bulge;
+    var A0 = P(r1,a0), B0 = P(r2,a0), B1 = P(r2,a1), A1 = P(r1,a1), Cm = P(rc,(a0+a1)/2);
+    return 'M' + f(A0[0]) + ' ' + f(A0[1]) +
+      'Q' + f(Cm[0]) + ' ' + f(Cm[1]) + ' ' + f(B0[0]) + ' ' + f(B0[1]) +
+      'A' + f(r2) + ' ' + f(r2) + ' 0 0 1 ' + f(B1[0]) + ' ' + f(B1[1]) +
+      'Q' + f(Cm[0]) + ' ' + f(Cm[1]) + ' ' + f(A1[0]) + ' ' + f(A1[1]) +
+      'A' + f(r1) + ' ' + f(r1) + ' 0 0 0 ' + f(A0[0]) + ' ' + f(A0[1]) + 'Z';
+  }
+
+  function build(parent, r1, r2, count, offset, keys, bulge, ringName){
+    for (var i = 0; i < count; i++){
+      var a0 = offset + i*(360/count) + 0.7;
+      var a1 = offset + (i+1)*(360/count) - 0.7;
+      var k = keys[i % keys.length];
+      var g = GLASS[k];
+      var p = document.createElementNS(NS,'path');
+      p.setAttribute('d', petal(r1, r2, a0, a1, bulge));
+      p.setAttribute('fill', g.c);
+      p.setAttribute('class','pane');
+      p.setAttribute('data-key', k);
+      p.setAttribute('data-n', g.n);
+      p.setAttribute('data-s', g.s + ' · ' + ringName + ' ' + (i+1));
+      parent.appendChild(p);
+    }
+  }
+
+  build(document.getElementById('gC'), 118, 176, 24, 0,
+        ['cobalt','ruby','sapphire','emerald','violet'], 1.02, 'Lantern');
+  build(document.getElementById('gB'), 62, 118, 12, 7.5,
+        ['cobalt','ruby','emerald','amber','amethyst','sapphire'], 1.07, 'Apostle');
+  build(document.getElementById('gA'), 24, 62, 12, 15,
+        ['amber','emerald','ruby','cobalt'], 1.13, 'Virtue');
+
+  /* the heart: six golden petals */
+  var hub = document.getElementById('gHub');
+  for (var j = 0; j < 6; j++){
+    var h = document.createElementNS(NS,'path');
+    h.setAttribute('d', petal(5, 24, j*60 + 10, (j+1)*60 - 10, 1.18));
+    h.setAttribute('fill','url(#heart)');
+    h.setAttribute('class','pane');
+    h.setAttribute('data-key','amber');
+    h.setAttribute('data-n','The Oculus');
+    h.setAttribute('data-s','Crown glass, lead came, 1341');
+    hub.appendChild(h);
+  }
+  var c = document.createElementNS(NS,'circle');
+  c.setAttribute('r', 5.5); c.setAttribute('fill','#fff8e0');
+  hub.appendChild(c);
+
+  /* twelve radial mullions */
+  var sp = document.getElementById('spokes');
+  for (var s = 0; s < 12; s++){
+    var a = s * 30 * Math.PI/180;
+    var l = document.createElementNS(NS,'line');
+    l.setAttribute('x1', f(24*Math.cos(a))); l.setAttribute('y1', f(24*Math.sin(a)));
+    l.setAttribute('x2', f(176*Math.cos(a))); l.setAttribute('y2', f(176*Math.sin(a)));
+    l.setAttribute('stroke-width', 3.2);
+    sp.appendChild(l);
+  }
+
+  var DEFAULT = {n:'The Oculus', s:'Crown glass, lead came, 1341', c:'#f0cf88'};
+  function show(el){
+    var n = DEFAULT.n, s = DEFAULT.s, col = DEFAULT.c;
+    if (el){ n = el.getAttribute('data-n'); s = el.getAttribute('data-s');
+            col = GLASS[el.getAttribute('data-key')].c; }
+    rname.textContent = n; rsub.textContent = s;
+    swatch.style.background = col;
+  }
+  rose.addEventListener('mouseover', function(e){
+    var p = e.target.closest ? e.target.closest('.pane') : null;
+    if (p){ rose.classList.add('hot'); show(p); }
+  });
+  rose.addEventListener('mouseout', function(e){
+    if (e.target && e.target.classList && e.target.classList.contains('pane')){
+      rose.classList.remove('hot'); show(null);
+    }
+  });
+  document.getElementById('legend').addEventListener('mouseover', function(e){
+    var li = e.target.closest('li'); if (!li) return;
+    var k = li.getAttribute('data-c');
+    swatch.style.background = GLASS[k].c;
+    rname.textContent = GLASS[k].n; rsub.textContent = GLASS[k].s + ' · legend';
+  });
+  show(null);
+})();
+</script>
+</body>
+</html>

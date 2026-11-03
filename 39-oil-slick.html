@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Thin-Film Interference — An Iridescent Oil Slick</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --seed-hue:196; --d:520; --bias:34; --speed:1;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+    --serif:"Cormorant Garamond",Georgia,serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:#04050a;color:#e8eef6}
+  body{-webkit-font-smoothing:antialiased}
+
+  .film{position:fixed;inset:0;overflow:hidden;background:#04050a}
+  .layer{position:absolute;inset:-20%;pointer-events:none}
+  .l1{ /* macro pools: broad, slow, blended */
+    background:
+      radial-gradient(46% 40% at 22% 28%,hsl(calc(var(--seed-hue) + 0) 90% 46% / .5),transparent 68%),
+      radial-gradient(40% 52% at 74% 22%,hsl(calc(var(--seed-hue) + 62) 92% 44% / .44),transparent 70%),
+      radial-gradient(52% 46% at 62% 78%,hsl(calc(var(--seed-hue) + 128) 88% 42% / .46),transparent 70%),
+      radial-gradient(38% 44% at 14% 82%,hsl(calc(var(--seed-hue) + 208) 90% 46% / .4),transparent 68%),
+      radial-gradient(70% 70% at 50% 50%,#0b0f1c,#04050a 78%);
+    mix-blend-mode:screen;filter:blur(34px) saturate(1.25);
+    animation:drift1 96s ease-in-out infinite;
+  }
+  @keyframes drift1{
+    0%,100%{transform:translate(-3%,2%) scale(1.06)}
+    33%{transform:translate(4%,-3%) scale(1.12)}
+    66%{transform:translate(-1%,-5%) scale(1.02)}
+  }
+  .l2{ /* the interference field itself */
+    mix-blend-mode:color-dodge;filter:blur(2px) saturate(1.5) contrast(1.05);
+    opacity:.95;animation:spin 220s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .l3{ /* fine banding */
+    background:repeating-linear-gradient(112deg,
+      hsl(0 90% 60% / .10) 0 2px, transparent 2px 7px,
+      hsl(180 90% 60% / .07) 7px 9px, transparent 9px 16px);
+    mix-blend-mode:overlay;filter:blur(1px);
+    animation:band 34s linear infinite;
+  }
+  @keyframes band{0%{background-position:0 0}100%{background-position:640px -220px}}
+  .l4{ /* specular sheet, the wet highlight */
+    background:
+      radial-gradient(30% 18% at 34% 22%,rgba(255,255,255,.14),transparent 70%),
+      radial-gradient(24% 12% at 68% 66%,rgba(255,255,255,.09),transparent 72%),
+      radial-gradient(18% 8% at 46% 84%,rgba(255,255,255,.07),transparent 70%);
+    mix-blend-mode:screen;filter:blur(20px);
+    animation:gloss 48s ease-in-out infinite;
+  }
+  @keyframes gloss{0%,100%{opacity:.85;transform:translate(0,0)}50%{opacity:1;transform:translate(3%,-2%)}}
+
+  /* macro-droplet bokeh */
+  .drops{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;opacity:.8}
+  .drop{position:absolute;border-radius:50%;
+    background:radial-gradient(circle at 36% 30%,rgba(255,255,255,.4),rgba(255,255,255,.05) 22%,transparent 40%),
+      radial-gradient(circle at 50% 50%,hsl(var(--dh) 90% 60% / .22),transparent 66%);
+    box-shadow:inset 0 0 14px hsl(var(--dh) 90% 70% / .3),0 0 22px hsl(var(--dh) 90% 60% / .18);
+    filter:blur(var(--b))}
+
+  .ripple{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;
+    mix-blend-mode:overlay;border-radius:50%;
+    background:radial-gradient(circle,transparent 46%,rgba(255,255,255,.5) 58%,rgba(255,255,255,.1) 68%,transparent 74%)}
+  .vig{position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(78% 68% at 50% 46%,transparent 34%,rgba(0,0,0,.6) 84%,rgba(0,0,0,.88) 100%)}
+  .grain{position:absolute;inset:0;pointer-events:none;opacity:.4;mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23g)' opacity='.3'/%3E%3C/svg%3E")}
+
+  /* ---------------- chrome ---------------- */
+  .ui{position:fixed;inset:0;z-index:6;pointer-events:none;display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(190px,20vw);grid-template-rows:auto 1fr auto;
+    padding:clamp(14px,2.2vw,32px);gap:14px}
+  .ui > *{pointer-events:auto}
+  .head{grid-column:1/3;display:flex;justify-content:space-between;align-items:flex-end;
+    gap:18px;flex-wrap:wrap;padding-bottom:11px;
+    border-bottom:1px solid rgba(255,255,255,.16);backdrop-filter:blur(6px)}
+  .head .k{font-family:var(--mono);font-size:9px;letter-spacing:.3em;text-transform:uppercase;
+    color:rgba(255,255,255,.6)}
+  .head h1{margin:7px 0 0;font-family:var(--serif);font-weight:300;
+    font-size:clamp(24px,3.4vw,50px);line-height:1;letter-spacing:-.015em;
+    text-shadow:0 2px 30px rgba(0,0,0,.7)}
+  .head h1 em{font-style:italic}
+  .head .r{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-align:right;
+    color:rgba(255,255,255,.66);line-height:2;text-transform:uppercase}
+  .head .r b{font-weight:400;color:#fff}
+
+  .legend{grid-column:2/3;grid-row:2/4;align-self:end;
+    border:1px solid rgba(255,255,255,.2);border-radius:4px;padding:13px;
+    background:rgba(6,8,16,.5);backdrop-filter:blur(14px)}
+  .legend h3{margin:0 0 10px;font-family:var(--mono);font-size:8.5px;letter-spacing:.26em;
+    text-transform:uppercase;color:rgba(255,255,255,.72);font-weight:400}
+  .bar{height:15px;border-radius:2px;overflow:hidden;display:flex;box-shadow:0 0 0 1px rgba(255,255,255,.18)}
+  .bar i{flex:1}
+  .ticks{display:flex;justify-content:space-between;margin-top:5px;
+    font-family:var(--mono);font-size:8px;letter-spacing:.1em;color:rgba(255,255,255,.5)}
+  .rows{margin-top:12px;display:grid;gap:6px}
+  .row label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:8.5px;
+    letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.62);margin-bottom:4px}
+  .row label b{font-weight:400;color:#fff;font-variant-numeric:tabular-nums}
+  .row input{width:100%;-webkit-appearance:none;appearance:none;height:16px;background:transparent;cursor:pointer}
+  .row input::-webkit-slider-runnable-track{height:2px;background:rgba(255,255,255,.28)}
+  .row input::-moz-range-track{height:2px;background:rgba(255,255,255,.28)}
+  .row input::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:11px;margin-top:-5px;
+    border-radius:50%;background:#fff;box-shadow:0 0 10px rgba(255,255,255,.7)}
+  .row input::-moz-range-thumb{width:11px;height:11px;border:0;border-radius:50%;background:#fff}
+  .legend .go{width:100%;margin-top:13px;font-family:var(--mono);font-size:9px;letter-spacing:.24em;
+    text-transform:uppercase;color:#04050a;background:#fff;border:0;padding:9px;cursor:pointer;
+    transition:opacity .2s}
+  .legend .go:hover{opacity:.8}
+
+  .foot{grid-column:1/3;grid-row:3;display:flex;justify-content:space-between;align-items:flex-end;
+    gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:9px;letter-spacing:.16em;
+    text-transform:uppercase;color:rgba(255,255,255,.6);text-shadow:0 1px 12px rgba(0,0,0,.8)}
+  .foot b{font-weight:400;color:#fff;font-variant-numeric:tabular-nums}
+  .foot .n{max-width:46ch;line-height:2;letter-spacing:.1em;text-transform:none;font-size:9.5px}
+
+  @media (max-width:900px){
+    .ui{position:relative;grid-template-columns:1fr;min-height:100dvh;padding:12px}
+    .head{grid-column:1}.legend{grid-column:1;grid-row:auto;margin-top:12px}
+    .foot{grid-column:1;grid-row:auto;padding-bottom:16px}
+    .head .r{text-align:left}
+    .l1{filter:blur(24px)}
+  }
+  @media (prefers-reduced-motion:reduce){.layer{animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="film" id="film">
+  <div class="layer l1" id="l1"></div>
+  <div class="layer l2" id="l2"></div>
+  <div class="layer l3"></div>
+  <div class="layer l4"></div>
+  <div class="drops" id="drops" aria-hidden="true"></div>
+  <div class="vig" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+</div>
+
+<div class="ui">
+  <div class="head">
+    <div>
+      <div class="k">Thin-film interference &middot; oil on water &middot; seed 4,1&times;&nbsp;10&#8315;&#185;</div>
+      <h1>Nothing is coloured here.<br><em>Everything is interference.</em></h1>
+    </div>
+    <div class="r">
+      Film <b id="rD">520 nm</b> &middot; incidence <b id="rB">34&deg;</b><br>
+      Refractive index <b>1.45</b> air on <b>1.33</b> water<br>
+      Coverage <b>100%</b> &middot; drains in 40 min
+    </div>
+  </div>
+
+  <div></div>
+
+  <aside class="legend">
+    <h3>Thickness &rarr; colour</h3>
+    <div class="bar" id="bar"></div>
+    <div class="ticks"><span>0</span><span>250</span><span>500</span><span>750</span><span>1000 nm</span></div>
+    <div class="rows">
+      <div class="row">
+        <label>Film thickness <b id="vD">520 nm</b></label>
+        <input type="range" id="sD" min="90" max="1100" value="520" aria-label="Film thickness in nanometres">
+      </div>
+      <div class="row">
+        <label>Incidence angle <b id="vB">34&deg;</b></label>
+        <input type="range" id="sB" min="8" max="78" value="34" aria-label="Incidence angle in degrees">
+      </div>
+      <div class="row">
+        <label>Drift rate <b id="vS">1.00&times;</b></label>
+        <input type="range" id="sS" min="0" max="100" value="34" aria-label="Drift rate">
+      </div>
+    </div>
+    <button class="go" type="button" id="reseed">Reseed the palette</button>
+  </aside>
+
+  <div class="foot">
+    <div class="n">Move the pointer to disturb the film &middot; click anywhere to reseed the palette &middot;
+      the whole field is one conic gradient, rebuilt from the physics each time the sliders move</div>
+    <div>Local <b id="rT">520</b> nm &middot; at pointer</div>
+  </div>
+</div>
+
+<noscript><p style="position:fixed;left:0;right:0;bottom:0;margin:0;padding:12px;background:#04050a;color:#e8eef6;font:12px monospace;text-align:center">A static oil slick would need no JavaScript at all. The moving parts do.</p></noscript>
+
+<script>
+(function(){
+  "use strict";
+  var root = document.documentElement;
+  var l2 = document.getElementById("l2");
+  var film = document.getElementById("film");
+  var bar = document.getElementById("bar");
+  var sD = document.getElementById("sD"), sB = document.getElementById("sB"), sS = document.getElementById("sS");
+
+  var S = { d: 520, bias: 34, speed: 1, seed: 196 };
+
+  /* ------------------------------------------------ thin-film reflectance
+     A single air / oil / water stack. The optical path difference is
+     2*n*d*cos(theta_t); the reflection at the top surface has a half-wave
+     phase shift, so the two rays are both reflected and interfere.       */
+  var LAM = [612, 549, 464];   /* R, G, B in nanometres */
+
+  function reflect(d, angleDeg, n1, n2, n3, lam){
+    var th1 = angleDeg * Math.PI / 180;
+    var s1 = Math.sin(th1) / n2;
+    if (s1 >= 1) return 0;
+    var ct2 = Math.sqrt(1 - s1 * s1);
+    var s2 = (n2 / n3) * s1;
+    if (s2 >= 1) return 0;
+    var ct3 = Math.sqrt(1 - s2 * s2);
+    var r12 = (n1 * Math.cos(th1) - n2 * ct2) / (n1 * Math.cos(th1) + n2 * ct2);
+    var r23 = (n2 * ct2 - n3 * ct3) / (n2 * ct2 + n3 * ct3);
+    var phi = 4 * Math.PI * n2 * d * ct2 / lam + Math.PI;
+    var c = Math.cos(phi), c2 = Math.cos(2 * phi);
+    var I = c * c;
+    var Q = c2 * c2;
+    var R = (r12 * r12 + r23 * r23 + 2 * r12 * r23 * c) / (1 + r12 * r12 * r23 * r23 + 2 * r12 * r23 * c2);
+    return Math.max(0, Math.min(1, R * 1.9 + I * 0.06 - Q * 0.04));
+  }
+
+  function tone(x){
+    /* gentle filmic shoulder so the highlights never clip flat */
+    return Math.pow(x, 0.62) * 255;
+  }
+  function colorAt(d, angle){
+    var r = reflect(d, angle, 1, 1.45, 1.33, LAM[0]);
+    var g = reflect(d, angle, 1, 1.45, 1.33, LAM[1]);
+    var b = reflect(d, angle, 1, 1.45, 1.33, LAM[2]);
+    return "rgb(" + Math.round(tone(r)) + "," + Math.round(tone(g)) + "," + Math.round(tone(b)) + ")";
+  }
+
+  /* ------------------------------------------------ the conic field */
+  function buildField(){
+    var stops = [];
+    var N = 44;
+    for (var i = 0; i <= N; i++){
+      var p = i / N;
+      var wobble = 1
+        + 0.42 * Math.sin(p * Math.PI * 6 + T * 0.22 + S.seed * 0.01)
+        + 0.18 * Math.sin(p * Math.PI * 11 - T * 0.13);
+      var d = Math.max(70, S.d * wobble);
+      stops.push(colorAt(d, S.bias + 26 * Math.sin(p * Math.PI * 3 + T * 0.17)) + " " +
+        (p * 100).toFixed(1) + "%");
+    }
+    l2.style.background = "radial-gradient(60% 52% at " + (px + 50).toFixed(1) + "% " + (py + 50).toFixed(1) + "%," +
+      "rgba(4,5,10,.92) 0%,rgba(4,5,10,.4) 34%,rgba(4,5,10,.2) 62%,rgba(4,5,10,.55) 100%)," +
+      "conic-gradient(from " + (T * 3.2).toFixed(2) + "deg at " + px.toFixed(1) + "% " + py.toFixed(1) + "%," +
+      stops.join(",") + ")";
+  }
+
+  /* ------------------------------------------------ legend */
+  function buildBar(){
+    bar.innerHTML = "";
+    for (var i = 0; i < 40; i++){
+      var s = document.createElement("i");
+      s.style.background = colorAt(60 + (1040 / 39) * i, S.bias);
+      bar.appendChild(s);
+    }
+  }
+
+  /* ------------------------------------------------ droplet bokeh */
+  var dropHost = document.getElementById("drops");
+  var drops = [];
+  function seed(n, force){
+    dropHost.innerHTML = "";
+    drops = [];
+    for (var i = 0; i < n; i++){
+      var d = document.createElement("div");
+      d.className = "drop";
+      var r = 26 + Math.random() * 132;
+      d.style.width = d.style.height = r.toFixed(0) + "px";
+      d.style.left = (Math.random() * 108 - 6).toFixed(1) + "%";
+      d.style.top = (Math.random() * 106 - 4).toFixed(1) + "%";
+      d.style.setProperty("--b", (4 + Math.random() * 16).toFixed(1) + "px");
+      d.style.setProperty("--dh", (Math.random() * 360).toFixed(0));
+      d.style.opacity = (0.28 + Math.random() * 0.5).toFixed(2);
+      dropHost.appendChild(d);
+      drops.push({ el: d, x: parseFloat(d.style.left), y: parseFloat(d.style.top),
+        vx: (Math.random() - 0.5) * 0.02, vy: (Math.random() - 0.5) * 0.016, ph: Math.random() * 6.28 });
+    }
+  }
+  seed(16);
+
+  /* ------------------------------------------------ pointer */
+  var px = 50, py = 50, tx = 50, ty = 50, T = 0, last = performance.now();
+  var ripples = [];
+  for (var r0 = 0; r0 < 5; r0++){
+    var rp = document.createElement("div");
+    rp.className = "ripple";
+    rp.style.opacity = "0";
+    film.appendChild(rp);
+    ripples.push({ el: rp, life: 0 });
+  }
+  var ripIdx = 0;
+  function disturb(x, y){
+    var rp = ripples[ripIdx++ % ripples.length];
+    rp.life = 1;
+    rp.x = x; rp.y = y;
+  }
+  film.addEventListener("pointermove", function(e){
+    tx = (e.clientX / innerWidth) * 100;
+    ty = (e.clientY / innerHeight) * 100;
+    if (Math.random() > 0.55) disturb(tx, ty);
+  }, {passive:true});
+  film.addEventListener("pointerdown", function(e){
+    reseed();
+    disturb((e.clientX / innerWidth) * 100, (e.clientY / innerHeight) * 100);
+  });
+  [].forEach.call(document.querySelectorAll(".ui input, .ui button, .legend, .head, .foot"),
+    function(n){ n.addEventListener("pointerdown", function(e){ e.stopPropagation(); }); });
+
+  function reseed(){
+    S.seed = Math.random() * 360;
+    S.d = 260 + Math.random() * 620;
+    S.bias = 12 + Math.random() * 56;
+    sD.value = Math.round(S.d); sB.value = Math.round(S.bias);
+    sync(); buildBar(); seed(16);
+  }
+  function sync(){
+    S.d = +sD.value; S.bias = +sB.value;
+    S.speed = Math.pow(+sS.value / 34, 2.1);
+    root.style.setProperty("--seed-hue", S.seed.toFixed(0));
+    root.style.setProperty("--d", S.d);
+    root.style.setProperty("--bias", S.bias);
+    document.getElementById("rD").textContent = S.d + " nm";
+    document.getElementById("rB").textContent = S.bias + "\u00B0";
+    document.getElementById("vD").textContent = S.d + " nm";
+    document.getElementById("vB").textContent = S.bias + "\u00B0";
+    document.getElementById("vS").textContent = S.speed.toFixed(2) + "\u00d7";
+  }
+  sD.addEventListener("input", function(){ sync(); buildBar(); });
+  sB.addEventListener("input", function(){ sync(); buildBar(); });
+  sS.addEventListener("input", sync);
+  document.getElementById("reseed").addEventListener("click", reseed);
+  addEventListener("keydown", function(e){ if (e.key === "r" || e.key === "R") reseed(); });
+  sync(); buildBar();
+
+  /* ------------------------------------------------ loop */
+  function loop(now){
+    var dt = Math.min(0.06, (now - last) / 1000); last = now;
+    T += dt * S.speed;
+    px += (tx - px) * 0.045;
+    py += (ty - py) * 0.045;
+    buildField();
+    /* the local film thickness under the pointer, from the same field */
+    var local = S.d * (1 + 0.42 * Math.sin((px / 100) * Math.PI * 6 + T * 0.22 + S.seed * 0.01)
+                      + 0.18 * Math.sin((py / 100) * Math.PI * 11 - T * 0.13));
+    document.getElementById("rT").textContent = Math.round(Math.max(70, local));
+    for (var i = 0; i < drops.length; i++){
+      var d = drops[i];
+      d.x += d.vx * dt * S.speed; d.y += d.vy * dt * S.speed;
+      d.ph += dt * 0.25;
+      if (d.x < -8) d.x = 104; if (d.x > 106) d.x = -6;
+      if (d.y < -6) d.y = 102; if (d.y > 104) d.y = -4;
+      d.el.style.transform = "translate(" + (Math.sin(d.ph) * 8).toFixed(1) + "px," +
+        (Math.cos(d.ph * 0.8) * 6).toFixed(1) + "px)";
+      d.el.style.left = d.x.toFixed(2) + "%";
+      d.el.style.top = d.y.toFixed(2) + "%";
+    }
+    for (i = 0; i < ripples.length; i++){
+      var rp = ripples[i];
+      if (rp.life <= 0) continue;
+      rp.life -= dt * 0.5;
+      var k = 1 - rp.life;
+      var size = (30 + k * 620).toFixed(0);
+      rp.el.style.width = rp.el.style.height = size + "px";
+      rp.el.style.marginLeft = (-size / 2) + "px";
+      rp.el.style.marginTop = (-size / 2) + "px";
+      rp.el.style.transform = "translate(" + (rp.x * innerWidth / 100).toFixed(1) + "px," +
+        (rp.y * innerHeight / 100).toFixed(1) + "px)";
+      rp.el.style.opacity = Math.max(0, rp.life * 0.55).toFixed(3);
+    }
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

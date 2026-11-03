@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fold No. 7 — A Paper Crane Assembled in CSS 3D</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=Zen+Old+Mincho:wght@400;500&family=IBM+Plex+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --u:130px;
+    --paper:#f5f0e5;
+    --ink:#2c2924; --ink-2:#6d675d; --ink-3:#8d8578;
+    --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+    --serif:"Cormorant Garamond",Georgia,serif;
+    --jp:"Zen Old Mincho","Yu Mincho",serif;
+    --st1:#fcf9f3; --st2:#e9e2d7; --st3:#ccc3b5; --st4:#a49a8c;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:#cfc7b9}
+  body{font-family:var(--mono);color:var(--ink);-webkit-font-smoothing:antialiased}
+
+  .cyc{position:fixed;inset:0;background:
+      radial-gradient(120% 92% at 34% 10%,var(--st1) 0%,var(--st2) 34%,var(--st3) 70%,var(--st4) 100%)}
+  .cyc::before{content:"";position:absolute;left:0;right:0;top:36%;bottom:0;
+    background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(70,58,46,.14));
+    box-shadow:inset 0 3px 30px -8px rgba(255,255,255,.95),0 -50px 100px -60px rgba(80,66,52,.55)}
+  .cyc::after{content:"";position:absolute;inset:0;
+    background:
+      radial-gradient(44% 32% at 26% 14%,rgba(255,252,242,.9),transparent 70%),
+      radial-gradient(82% 72% at 50% 44%,transparent 38%,rgba(84,70,56,.30) 100%)}
+
+  .frame{position:fixed;inset:0;z-index:6;pointer-events:none;
+    display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto 1fr auto;
+    padding:clamp(16px,2.4vw,34px);gap:12px}
+  .ttl{grid-column:1;grid-row:1;max-width:26ch}
+  .ttl .jp{font-family:var(--jp);font-size:clamp(13px,1.2vw,17px);letter-spacing:.44em;color:var(--ink-3)}
+  .ttl h1{margin:8px 0 0;font-family:var(--serif);font-weight:300;line-height:1.02;
+    font-size:clamp(28px,3.4vw,48px);letter-spacing:-.01em}
+  .ttl h1 b{font-weight:400;font-style:italic}
+  .ttl p{margin:11px 0 0;font-size:9.5px;line-height:2;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--ink-2);max-width:30ch}
+  .meta{grid-column:3;grid-row:1;text-align:right;font-size:9px;letter-spacing:.16em;
+    line-height:2.2;color:var(--ink-3);text-transform:uppercase}
+  .meta b{font-weight:400;color:#4a443c}
+  .foot{grid-column:1/4;grid-row:3;display:flex;gap:clamp(10px,2vw,30px);align-items:flex-end;flex-wrap:wrap}
+  .hint{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-2);line-height:2.1;margin:0}
+  .hint em{font-style:normal;color:#3f3931}
+
+  .stage{position:fixed;inset:0;z-index:3;display:grid;place-items:center;
+    perspective:1600px;perspective-origin:50% 44%;cursor:grab;touch-action:none;user-select:none}
+  .stage.drag{cursor:grabbing}
+  .world{position:relative;width:calc(var(--u)*2);height:calc(var(--u)*2);transform-style:preserve-3d}
+
+  .cast,.contact{position:absolute;left:50%;top:50%;border-radius:50%;pointer-events:none;
+    transform:translate3d(0,var(--cz,0px),0) rotateX(90deg) scale(var(--cs,1))}
+  .cast{width:calc(var(--u)*3.2);height:calc(var(--u)*1.5);margin:calc(var(--u)*-.4) 0 0 calc(var(--u)*-1.6);
+    background:radial-gradient(closest-side,rgba(90,74,56,.5),rgba(90,74,56,.2) 54%,transparent 80%);
+    filter:blur(15px);opacity:var(--co,1)}
+  .contact{width:calc(var(--u)*1.4);height:calc(var(--u)*.56);margin:calc(var(--u)*-.24) 0 0 calc(var(--u)*-.7);
+    background:radial-gradient(closest-side,rgba(66,52,38,.5),transparent 78%);
+    filter:blur(5px);opacity:var(--co2,1)}
+
+  .crane{position:absolute;inset:0;transform-style:preserve-3d;
+    transform:translate3d(0,calc(var(--lift,0) * -52px),0) rotateX(var(--tip,0deg)) rotateX(var(--drx,0deg)) rotateY(var(--dry,0deg))}
+  .g{position:absolute;inset:0;transform-style:preserve-3d}
+  .ghead{transform:translate3d(calc(var(--u)*.74),0,calc(var(--u)*-.74))}
+
+  .f{position:absolute;inset:0;background-color:var(--paper);
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='170' height='170'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='4'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='170' height='170' filter='url(%23f)' opacity='.17'/%3E%3C/svg%3E");
+    box-shadow:0 0 0 .5px rgba(146,132,112,.4)}
+  .f::before,.f::after{content:"";position:absolute;inset:0;pointer-events:none}
+  .f::before{background:rgba(255,253,246,var(--lit,0))}
+  .f::after{background:rgba(40,30,20,var(--shd,0))}
+
+  .f-bodyF{clip-path:polygon(50% 0%,100% 50%,50% 100%)}
+  .f-bodyB{clip-path:polygon(50% 0%,50% 100%,0% 50%)}
+  .f-wingL{clip-path:polygon(0% 50%,0% 0%,50% 0%)}
+  .f-wingR{clip-path:polygon(100% 50%,100% 100%,50% 100%)}
+  .f-neck{clip-path:polygon(50% 0%,100% 0%,100% 50%)}
+  .f-tail{clip-path:polygon(50% 100%,0% 100%,0% 50%)}
+  .f-head{left:calc(var(--u)*-1.2);top:calc(var(--u)*-1.2);
+    width:calc(var(--u)*2.92);height:calc(var(--u)*2.92);
+    clip-path:polygon(75.3% 24.7%,84.7% 15.3%,78% 8%)}
+
+  .cr{position:absolute;left:50%;top:50%;height:1px;transform-origin:0 50%;pointer-events:none;
+    background:linear-gradient(90deg,rgba(118,104,84,0),rgba(118,104,84,.5) 14%,rgba(118,104,84,.5) 86%,rgba(118,104,84,0))}
+  .cv{width:1px;height:calc(var(--u)*1);margin:calc(var(--u)*-.5) 0 0 0;transform-origin:50% 50%}
+  .ch{width:calc(var(--u)*1);height:1px;margin-left:calc(var(--u)*-.5);transform-origin:50% 0}
+  .cd2{width:calc(var(--u)*1.4142);height:1px;margin-left:calc(var(--u)*-.7071)}
+  .cd1{width:calc(var(--u));height:1px;margin-left:0}
+
+  .seq{position:fixed;left:50%;bottom:clamp(14px,2.4vw,30px);transform:translateX(-50%);
+    z-index:8;width:min(94vw,900px);display:grid;grid-template-columns:repeat(6,1fr);
+    background:rgba(251,248,242,.74);backdrop-filter:blur(9px);
+    border:1px solid rgba(120,106,86,.3);border-radius:6px;overflow:hidden}
+  .seq button{appearance:none;background:transparent;border:0;border-right:1px solid rgba(120,106,86,.18);
+    padding:9px 8px 11px;cursor:pointer;text-align:left;font-family:var(--mono);transition:background .2s ease}
+  .seq button:last-child{border-right:0}
+  .seq button:hover{background:rgba(120,106,86,.1)}
+  .seq button b{display:block;font-size:8px;letter-spacing:.2em;color:#9c9385;font-weight:400}
+  .seq button i{display:block;font-style:normal;font-size:9px;letter-spacing:.13em;color:#4a443c;margin-top:3px;text-transform:uppercase}
+  .seq button[aria-current="true"]{background:rgba(172,58,38,.11)}
+  .seq button[aria-current="true"] b{color:#a8402c}
+  .seq .track{position:absolute;left:0;bottom:0;height:2px;background:#a8402c;width:0;z-index:2}
+
+  .readout{position:fixed;right:clamp(16px,2.4vw,34px);bottom:calc(clamp(14px,2.4vw,30px) + 78px);
+    z-index:8;font-size:9px;letter-spacing:.16em;color:var(--ink-2);text-transform:uppercase;
+    line-height:2.2;text-align:right;pointer-events:none}
+  .readout b{font-weight:400;color:#3f3931;font-variant-numeric:tabular-nums}
+
+  .cur{position:fixed;width:30px;height:30px;margin:-15px 0 0 -15px;border:1px solid rgba(70,62,52,.45);
+    border-radius:50%;pointer-events:none;z-index:9;opacity:0;
+    transition:width .2s,height .2s,margin .2s,opacity .35s}
+  .cur::before,.cur::after{content:"";position:absolute;background:rgba(70,62,52,.6)}
+  .cur::before{left:50%;top:-7px;bottom:-7px;width:1px;margin-left:-.5px}
+  .cur::after{top:50%;left:-7px;right:-7px;height:1px;margin-top:-.5px}
+  .cur.on{opacity:1}
+  .cur.hot{width:54px;height:54px;margin:-27px 0 0 -27px}
+
+  @media (max-width:820px){
+    .frame{padding:14px}
+    .ttl p{display:none}
+    .meta{font-size:8px;letter-spacing:.1em}
+    .seq{grid-template-columns:repeat(3,1fr);width:94vw;bottom:10px}
+    .seq button:nth-child(6){display:none}
+    .readout{display:none}
+    .world{transform:scale(.62)}
+    .cur{display:none}
+    .stage{cursor:auto}
+    .hint{font-size:8px;letter-spacing:.14em}
+  }
+  @media (prefers-reduced-motion:reduce){.f{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="cyc" aria-hidden="true"></div>
+
+<div class="stage" id="stage">
+  <div class="world">
+    <div class="cast" id="cast" aria-hidden="true"></div>
+    <div class="contact" id="contact" aria-hidden="true"></div>
+
+    <div class="crane" id="crane">
+      <div class="g" id="gBody">
+        <div class="f f-bodyF" data-face="bodyF"></div>
+        <div class="f f-bodyB" data-face="bodyB"></div>
+        <div class="cr cd1" style="transform:rotate(-90deg)" data-cr="bm1"></div>
+        <div class="cr cd1" style="transform:rotate(0deg)" data-cr="bm2"></div>
+        <div class="cr cd1" style="transform:rotate(90deg)" data-cr="bm3"></div>
+        <div class="cr cd1" style="transform:rotate(180deg)" data-cr="bm4"></div>
+      </div>
+
+      <div class="g" id="gWingL">
+        <div class="f f-wingL" data-face="wingL"></div>
+        <div class="cr cd2" style="transform:rotate(-135deg)" data-cr="wld"></div>
+        <div class="cr cd1" style="transform:rotate(180deg)" data-cr="wlm"></div>
+      </div>
+
+      <div class="g" id="gWingR">
+        <div class="f f-wingR" data-face="wingR"></div>
+        <div class="cr cd2" style="transform:rotate(45deg)" data-cr="wrd"></div>
+        <div class="cr cd1" style="transform:rotate(0deg)" data-cr="wrm"></div>
+      </div>
+
+      <div class="g" id="gNeck">
+        <div class="f f-neck" data-face="neck"></div>
+        <div class="g ghead" id="gHead"><div class="f f-head" data-face="head"></div></div>
+        <div class="cr cd2" style="transform:rotate(-45deg)" data-cr="nkd"></div>
+        <div class="cr cd1" style="transform:rotate(-90deg)" data-cr="nkm"></div>
+      </div>
+
+      <div class="g" id="gTail">
+        <div class="f f-tail" data-face="tail"></div>
+        <div class="cr cd2" style="transform:rotate(135deg)" data-cr="tld"></div>
+        <div class="cr cd1" style="transform:rotate(90deg)" data-cr="tlm"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="frame">
+  <div class="ttl">
+    <div class="jp">折り鶴</div>
+    <h1>Fold <b>No.&nbsp;7</b></h1>
+    <p>Seven triangular panels. Two fold lines that cross at the centre. Forty seconds if you are careful, three if you are not.</p>
+  </div>
+  <div></div>
+  <div class="meta">
+    Pattern <b>bird base &middot; 8 creases</b><br>
+    Faces <b>7 &middot; hinges 5</b><br>
+    Stock <b>140 gsm kozo</b>
+  </div>
+  <div class="foot">
+    <p class="hint"><em>Click</em> the paper to fold or unfold it.<br><em>Drag</em> to walk around the model.<br><em>Step through</em> the sequence below.</p>
+  </div>
+</div>
+
+<nav class="seq" id="seq" aria-label="Fold sequence"></nav>
+<div class="readout" aria-live="off">
+  <div>Fold <b id="rT">0.00</b> / 1.00</div>
+  <div>Base <b id="rB">0&deg;</b> &middot; Wings <b id="rW">0&deg;</b></div>
+  <div>Neck <b id="rN">0&deg;</b> &middot; Tail <b id="rL">0&deg;</b></div>
+  <div>Head <b id="rH">0&deg;</b> &middot; Height <b id="rZ">0</b> mm</div>
+</div>
+<div class="cur" id="cur" aria-hidden="true"></div>
+
+<noscript><p style="position:fixed;left:0;right:0;bottom:0;margin:0;padding:12px;background:#2c2924;color:#f5f0e5;font:12px monospace;text-align:center">The paper is flat. Folding it needs JavaScript, a steady hand and about forty seconds.</p></noscript>
+
+<script>
+(function(){
+  "use strict";
+
+  var stage = document.getElementById("stage");
+  var crane = document.getElementById("crane");
+  var castEl = document.getElementById("cast");
+  var contactEl = document.getElementById("contact");
+  var curEl = document.getElementById("cur");
+
+  var G = {
+    body:  document.getElementById("gBody"),
+    wingL: document.getElementById("gWingL"),
+    wingR: document.getElementById("gWingR"),
+    neck:  document.getElementById("gNeck"),
+    head:  document.getElementById("gHead"),
+    tail:  document.getElementById("gTail")
+  };
+  var FACE = {}, CREASE = {};
+  [].forEach.call(document.querySelectorAll("[data-face]"), function(n){ FACE[n.dataset.face] = n; });
+  [].forEach.call(document.querySelectorAll("[data-cr]"), function(n){ CREASE[n.dataset.cr] = n; });
+
+  /* ------------------------------------------------------------
+     the fold sequence: keyframes from flat sheet to finished bird
+     body = collapse of the central diamond
+     wl / wr = the two wings
+     nk = neck, tl = tail, hd = head reverse fold
+     ------------------------------------------------------------ */
+  var KEYS = [
+    { t:0.00, body:0,   wl:0,   wr:0,   nk:0,   tl:0,   hd:0,   lift:0, tip:0 },
+    { t:0.18, body:0.42,wl:0,   wr:0,   nk:0,   tl:0,   hd:0,   lift:0.12, tip:1.5 },
+    { t:0.40, body:1,   wl:0.34,wr:0.34,nk:0.30,tl:0.22,hd:0,   lift:0.46, tip:2.5 },
+    { t:0.62, body:1,   wl:0.86,wr:0.86,nk:0.62,tl:0.58,hd:0,   lift:0.78, tip:3 },
+    { t:0.82, body:1,   wl:1,   wr:1,   nk:1,   tl:1,   hd:0.5, lift:0.95, tip:3.5 },
+    { t:1.00, body:1,   wl:1,   wr:1,   nk:1,   tl:1,   hd:1,   lift:1,   tip:3 }
+  ];
+  var FIN = { body: 30, wl: 90, wr: 90, nk: 86, tl: -70, hd: -58 };
+  var LABELS = [
+    "Flat sheet", "Base sinks", "Square fold", "Petals", "Reverse fold", "Crane"
+  ];
+
+  function ease(t){ return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+  function sample(t){
+    var i = 0;
+    while (i < KEYS.length - 2 && t > KEYS[i + 1].t) i++;
+    var a = KEYS[i], b = KEYS[i + 1];
+    var k = ease(Math.min(1, Math.max(0, (t - a.t) / (b.t - a.t))));
+    var o = {};
+    ["body","wl","wr","nk","tl","hd","lift","tip"].forEach(function(f){
+      o[f] = a[f] + (b[f] - a[f]) * k;
+    });
+    return o;
+  }
+
+  /* ---------- 3x3 rotation matrices, for per-face shading ---------- */
+  function mul(A, B){
+    var C = new Array(9);
+    for (var i = 0; i < 3; i++)
+      for (var j = 0; j < 3; j++)
+        C[i * 3 + j] = A[i*3]*B[j] + A[i*3+1]*B[3+j] + A[i*3+2]*B[6+j];
+    return C;
+  }
+  function app(M, v){
+    return [M[0]*v[0] + M[1]*v[1] + M[2]*v[2],
+            M[3]*v[0] + M[4]*v[1] + M[5]*v[2],
+            M[6]*v[0] + M[7]*v[1] + M[8]*v[2]];
+  }
+  var D2R = Math.PI / 180;
+  function rotX(a){ var c = Math.cos(a), s = Math.sin(a); return [1,0,0, 0,c,-s, 0,s,c]; }
+  function rotY(a){ var c = Math.cos(a), s = Math.sin(a); return [c,0,s, 0,1,0, -s,0,c]; }
+  function rotZ(a){ var c = Math.cos(a), s = Math.sin(a); return [c,-s,0, s,c,0, 0,0,1]; }
+  function rotAxis(x, y, z, deg){
+    var l = Math.hypot(x, y, z); x /= l; y /= l; z /= l;
+    var a = deg * D2R, c = Math.cos(a), s = Math.sin(a), t = 1 - c;
+    return [t*x*x + c,   t*x*y - s*z, t*x*z + s*y,
+            t*x*y + s*z, t*y*y + c,   t*y*z - s*x,
+            t*x*z - s*y, t*y*z + s*x, t*z*z + c];
+  }
+  var L_AX = rotAxis(1, 0, 1, 0);   /* wing and neck hinge family */
+  var D_AX = rotAxis(1, 0, -1, 0);  /* the crossing hinge family */
+  var UP = [0, 1, 0];
+  function light(){
+    var l = [-0.46, 0.84, 0.30], m = Math.hypot(l[0], l[1], l[2]);
+    return [l[0] / m, l[1] / m, l[2] / m];
+  }
+  var L = light(), RIM = [0.5, 0.1, -0.86];
+
+  /* ---------- state ---------- */
+  var t = 0, target = 0, playing = false, dir = 1;
+  var drx = -14, dry = 22, vrx = 0, vry = 0, dragging = false, lastX = 0, lastY = 0, moved = 0;
+
+  var R = { t: document.getElementById("rT"), b: document.getElementById("rB"),
+            w: document.getElementById("rW"), n: document.getElementById("rN"),
+            l: document.getElementById("rL"), h: document.getElementById("rH"),
+            z: document.getElementById("rZ") };
+
+  function render(){
+    var s = sample(t);
+
+    G.body.style.transform  = "rotateZ(" + (s.body * FIN.body).toFixed(2) + "deg)";
+    G.wingL.style.transform = "rotate3d(1,0,-1,"  + (s.wl * FIN.wl).toFixed(2) + "deg)";
+    G.wingR.style.transform = "rotate3d(1,0,-1,"  + (s.wr * FIN.wr).toFixed(2) + "deg)";
+    G.neck.style.transform  = "rotate3d(1,0,1,"   + (s.nk * FIN.nk).toFixed(2) + "deg)";
+    G.tail.style.transform  = "rotate3d(1,0,1,"   + (s.tl * FIN.tl).toFixed(2) + "deg)";
+    G.head.style.transform  = "translate3d(" + (130 * 0.74) + "px,0," + (-130 * 0.74) + "px) rotateX(" + (s.hd * FIN.hd).toFixed(2) + "deg)";
+
+    crane.style.setProperty("--lift", s.lift.toFixed(3));
+    crane.style.setProperty("--tip", s.tip.toFixed(2) + "deg");
+    crane.style.setProperty("--drx", drx.toFixed(2) + "deg");
+    crane.style.setProperty("--dry", dry.toFixed(2) + "deg");
+
+    /* the shadow softens and spreads as the bird leaves the table */
+    var h = s.lift;
+    castEl.style.setProperty("--cs", (1.15 + h * 0.85).toFixed(3));
+    castEl.style.setProperty("--cz", (h * 46).toFixed(1) + "px");
+    castEl.style.setProperty("--co", (1 - h * 0.62).toFixed(3));
+    contactEl.style.setProperty("--cs", (1 - h * 0.55).toFixed(3));
+    contactEl.style.setProperty("--cz", (h * 46).toFixed(1) + "px");
+    contactEl.style.setProperty("--co2", (1 - h * 0.9).toFixed(3));
+
+    /* per-face shading from the real surface normal */
+    var root = mul(rotY(dry * D2R), rotX(drx * D2R));
+    var tipM = mul(root, rotX(s.tip * D2R));
+    var mats = {
+      bodyF:  mul(tipM, rotZ(s.body * FIN.body * D2R)),
+      bodyB:  mul(tipM, rotZ(s.body * FIN.body * D2R)),
+      wingL:  mul(tipM, mul(rotAxis(1, 0, -1, s.wl * FIN.wl), D_AX)),
+      wingR:  mul(tipM, mul(rotAxis(1, 0, -1, s.wr * FIN.wr), D_AX)),
+      neck:   mul(tipM, mul(rotAxis(1, 0, 1, s.nk * FIN.nk), L_AX)),
+      tail:   mul(tipM, mul(rotAxis(1, 0, 1, s.tl * FIN.tl), L_AX)),
+      head:   mul(tipM, mul(rotAxis(1, 0, 1, s.nk * FIN.nk),
+                     mul(rotAxis(1, 0, 1, s.hd * FIN.hd), L_AX)))
+    };
+    for (var key in mats){
+      var n = app(mats[key], UP);
+      var nl = Math.hypot(n[0], n[1], n[2]) || 1;
+      n = [n[0] / nl, n[1] / nl, n[2] / nl];
+      var d = Math.max(0, n[0] * L[0] + n[1] * L[1] + n[2] * L[2]);
+      var r = Math.max(0, n[0] * RIM[0] + n[1] * RIM[1] + n[2] * RIM[2]);
+      var el = FACE[key];
+      el.style.setProperty("--lit", (Math.pow(d, 0.85) * 0.46 + r * 0.10).toFixed(3));
+      el.style.setProperty("--shd", (0.10 + (1 - d) * 0.42).toFixed(3));
+    }
+
+    /* creases fade as the paper loses its memory of the flat sheet */
+    var cOp = (0.85 * (1 - h * 0.55)).toFixed(3);
+    for (var c in CREASE) CREASE[c].style.opacity = cOp;
+
+    R.t.textContent = t.toFixed(2);
+    R.b.textContent = (s.body * FIN.body).toFixed(0) + "\u00B0";
+    R.w.textContent = (s.wl * FIN.wl).toFixed(0) + "\u00B0";
+    R.n.textContent = (s.nk * FIN.nk).toFixed(0) + "\u00B0";
+    R.l.textContent = Math.abs(s.tl * FIN.tl).toFixed(0) + "\u00B0";
+    R.h.textContent = Math.abs(s.hd * FIN.hd).toFixed(0) + "\u00B0";
+    R.z.textContent = (h * 96).toFixed(0);
+
+    var idx = t < 0.09 ? 0 : t < 0.29 ? 1 : t < 0.51 ? 2 : t < 0.72 ? 3 : t < 0.91 ? 4 : 5;
+    [].forEach.call(seq.children, function(b, i){ b.setAttribute("aria-current", i === idx ? "true" : "false"); });
+    track.style.width = (t * 100).toFixed(1) + "%";
+  }
+
+  /* ---------- sequence strip ---------- */
+  var seq = document.getElementById("seq");
+  var track = document.createElement("div");
+  track.className = "track";
+  KEYS.forEach(function(k, i){
+    var b = document.createElement("button");
+    b.type = "button";
+    b.innerHTML = "<b>" + (i + 1) + " &middot; t " + k.t.toFixed(2) + "</b><i>" + LABELS[i] + "</i>";
+    b.addEventListener("click", function(){ playing = false; t = k.t; render(); });
+    seq.appendChild(b);
+  });
+  seq.appendChild(track);
+
+  /* ---------- interaction ---------- */
+  function toggle(){
+    playing = true;
+    dir = t > 0.5 ? -1 : 1;
+  }
+  stage.addEventListener("click", function(e){ if (moved < 6) toggle(); });
+
+  stage.addEventListener("pointerdown", function(e){
+    dragging = true; moved = 0; lastX = e.clientX; lastY = e.clientY;
+    stage.classList.add("drag");
+    stage.setPointerCapture(e.pointerId);
+  });
+  stage.addEventListener("pointermove", function(e){
+    if (!dragging) return;
+    var dx = e.clientX - lastX, dy = e.clientY - lastY;
+    moved += Math.abs(dx) + Math.abs(dy);
+    lastX = e.clientX; lastY = e.clientY;
+    dry += dx * 0.32; vry = dx * 0.32;
+    drx = Math.max(-84, Math.min(84, drx - dy * 0.24));
+    vrx = -dy * 0.24;
+  });
+  function endDrag(){
+    dragging = false; stage.classList.remove("drag");
+  }
+  stage.addEventListener("pointerup", endDrag);
+  stage.addEventListener("pointercancel", endDrag);
+  stage.addEventListener("pointerleave", endDrag);
+
+  addEventListener("pointermove", function(e){
+    curEl.style.transform = "translate(" + e.clientX + "px," + e.clientY + "px)";
+    curEl.classList.add("on");
+  }, {passive:true});
+  stage.addEventListener("pointerenter", function(){ curEl.classList.add("hot"); });
+  stage.addEventListener("pointerleave", function(){ curEl.classList.remove("hot"); });
+
+  addEventListener("keydown", function(e){
+    if (e.code === "Space"){ e.preventDefault(); toggle(); }
+    if (e.key === "ArrowRight"){ playing = false; t = Math.min(1, t + 0.05); render(); }
+    if (e.key === "ArrowLeft"){ playing = false; t = Math.max(0, t - 0.05); render(); }
+  });
+
+  /* ---------- loop ---------- */
+  var last = performance.now();
+  (function loop(now){
+    var dt = Math.min(0.05, (now - last) / 1000); last = now;
+    if (playing){
+      t += dir * dt * 0.34;
+      if (t >= 1){ t = 1; dir = -1; }
+      if (t <= 0){ t = 0; playing = false; }
+    }
+    if (!dragging){
+      dry += vry; vry *= 0.93;
+      drx += vrx; vrx *= 0.93;
+      if (Math.abs(vry) < 0.03 && Math.abs(vrx) < 0.03) dry += 0.055;
+    }
+    render();
+    requestAnimationFrame(loop);
+  })(last);
+
+  render();
+})();
+</script>
+</body>
+</html>

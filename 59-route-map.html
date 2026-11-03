@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PAPER AERONAUT — Departure Board &amp; Hand-Drawn Route Map</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Playfair+Display:ital,wght@0,700;1,700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --paper:#e6dac1; --paper2:#dccfb4; --paper3:#d2c3a4; --ink:#3d3023; --ink2:#5c4b38;
+    --blood:#8e2f21; --teal:#1f5f5b; --sea:#3a5a80; --rule:#b6a488;
+    --type:"Special Elite","Courier New",monospace; --serif:"Playfair Display",Georgia,serif;
+    --mono:"Courier Prime",ui-monospace,monospace;
+  }
+  html,body{height:100%}
+  body{background:#c3b393;color:var(--ink);font-family:var(--type);overflow:hidden;
+    -webkit-font-smoothing:antialiased}
+  .fiber{position:fixed;inset:0;z-index:40;pointer-events:none;opacity:.5;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.6 .04' numOctaves='5'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E")}
+  .fiber2{position:fixed;inset:0;z-index:39;pointer-events:none;opacity:.28;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.03 .9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23m)'/%3E%3C/svg%3E")}
+  .edge{position:fixed;inset:0;z-index:41;pointer-events:none;
+    box-shadow:inset 0 0 120px rgba(90,66,38,.32),inset 0 0 24px rgba(70,48,24,.3)}
+
+  .desk{position:relative;z-index:10;height:100dvh;display:grid;grid-template-columns:1fr 330px;
+    gap:0;max-width:1720px;margin:0 auto;padding:16px 18px}
+
+  /* ── map panel ───────────────────────────────────── */
+  .mapwrap{position:relative;background:
+      linear-gradient(158deg,#efe5ce 0%,#e6dac1 42%,#d9caab 100%);
+    border:1px solid var(--rule);box-shadow:0 30px 60px -34px #4a3a20, inset 0 0 0 6px rgba(255,255,255,.18);
+    display:flex;flex-direction:column;overflow:hidden}
+  .maphead{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;
+    padding:10px 16px;border-bottom:1px solid var(--rule)}
+  .maphead h1{font-family:var(--serif);font-weight:700;font-size:clamp(17px,2.2vw,25px);letter-spacing:.01em}
+  .maphead h1 em{font-style:italic;color:var(--blood)}
+  .maphead .meta{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;color:var(--ink2);text-align:right;line-height:1.8}
+  .mapbody{position:relative;flex:1;min-height:0}
+  .mapbody svg{position:absolute;inset:0;width:100%;height:100%}
+  .stain{position:absolute;border-radius:50%;pointer-events:none;mix-blend-mode:multiply}
+  .s1{right:-40px;bottom:-60px;width:280px;height:270px;opacity:.5;
+    background:radial-gradient(ellipse at 42% 40%,rgba(120,78,30,.5),rgba(120,78,30,.16) 58%,transparent 72%)}
+  .s2{left:34%;top:8%;width:110px;height:100px;opacity:.24;
+    background:radial-gradient(ellipse at 50% 50%,rgba(96,58,20,.6),transparent 70%)}
+  .corner{position:absolute;width:26px;height:26px;border:2px solid var(--ink2);opacity:.5}
+  .corner.tl{left:12px;top:12px;border-right:0;border-bottom:0}
+  .corner.br{right:12px;bottom:12px;border-left:0;border-top:0}
+  .legend{position:absolute;left:16px;bottom:12px;font-family:var(--mono);font-size:9px;
+    letter-spacing:.1em;color:var(--ink2);line-height:1.9;background:rgba(238,228,206,.6);padding:6px 9px}
+  .pin{cursor:pointer}
+  .pin text{font-family:var(--mono);font-size:8.4px;letter-spacing:.06em;fill:#5a4732;pointer-events:none}
+  .pin circle.hit{fill:transparent}
+  .pin:hover .pinbody{transform:scale(1.28)}
+  .pinbody{transform-origin:center;transform-box:fill-box;transition:transform .18s}
+  .pin.sel .pinbody{animation:drop 1.4s cubic-bezier(.2,1.4,.3,1)}
+  @keyframes drop{0%{transform:translateY(-24px) rotate(-12deg)}60%{transform:translateY(2px) rotate(3deg)}100%{transform:none}}
+
+  /* ── side rail ───────────────────────────────────── */
+  .rail{display:flex;flex-direction:column;gap:12px;min-height:0;padding-left:14px}
+  .card{background:linear-gradient(170deg,#f0e7d2,#ddd0b3);border:1px solid var(--rule);
+    box-shadow:0 16px 30px -24px #4a3a20;padding:12px 14px 13px;position:relative}
+  .card h2{font-family:var(--mono);font-size:9px;letter-spacing:.24em;text-transform:uppercase;
+    color:var(--ink2);padding-bottom:7px;border-bottom:1px solid var(--rule);margin-bottom:9px;
+    display:flex;justify-content:space-between}
+  .card h2 b{color:var(--blood);font-weight:700}
+  .readout{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+  .readout div em{display:block;font-family:var(--mono);font-style:normal;font-size:8.5px;
+    letter-spacing:.16em;text-transform:uppercase;color:#8a7458}
+  .readout div b{font-family:var(--mono);font-size:16px;color:var(--ink);font-weight:700;letter-spacing:-.01em}
+  .readout div b s{text-decoration:none;font-size:10px;color:var(--ink2);margin-left:2px}
+  .bar{height:8px;background:#c8b592;border:1px solid var(--rule);margin-top:11px;position:relative;overflow:hidden}
+  .bar u{position:absolute;inset:0;width:0;text-decoration:none;
+    background:repeating-linear-gradient(90deg,var(--blood) 0 6px,#a8452f 6px 8px);transition:width .5s}
+  .bar span{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--mono);
+    font-size:8px;letter-spacing:.14em;color:#f0e7d2;mix-blend-mode:difference}
+
+  .board{display:flex;flex-direction:column;min-height:0;flex:1;gap:0}
+  .dest{display:grid;grid-template-columns:22px 1fr auto;gap:8px;align-items:center;width:100%;
+    text-align:left;background:transparent;border:0;border-bottom:1px dotted #b6a488;padding:7px 4px;
+    cursor:pointer;font-family:var(--type);color:var(--ink);transition:background .14s,padding-left .14s}
+  .dest:hover{background:rgba(142,47,33,.09);padding-left:9px}
+  .dest.on{background:rgba(142,47,33,.16);padding-left:9px}
+  .dest .i{font-family:var(--mono);font-size:9px;color:#8a7458}
+  .dest .c{font-size:12.5px;line-height:1.2}
+  .dest .c small{display:block;font-family:var(--mono);font-size:8.5px;color:#8a7458;margin-top:2px}
+  .dest .d{font-family:var(--mono);font-size:10px;color:var(--ink2);text-align:right}
+  .dest.on .d{color:var(--blood);font-weight:700}
+
+  .logwrap{flex:1;min-height:0;display:flex;flex-direction:column}
+  .log{flex:1;min-height:90px;overflow:auto;padding-right:4px;scrollbar-width:thin}
+  .ent{border-bottom:1px dotted #b6a488;padding:8px 0 7px;position:relative}
+  .ent .l1{font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:var(--blood);font-weight:700}
+  .ent .l2{font-family:var(--mono);font-size:9px;color:var(--ink2);margin-top:3px;letter-spacing:.06em}
+  .ent .l3{font-size:11px;line-height:1.45;color:var(--ink2);margin-top:4px;font-style:italic}
+  .stamp{position:absolute;right:0;top:6px;width:74px;height:34px;border:2px solid var(--teal);
+    color:var(--teal);display:grid;place-items:center;text-align:center;transform:rotate(-7deg);
+    opacity:.72;font-family:var(--mono);font-size:7.5px;letter-spacing:.12em;line-height:1.3;
+    border-radius:2px;mix-blend-mode:multiply}
+  .stamp.b{color:var(--blood);border-color:var(--blood)}
+  .logempty{font-size:11px;color:#8a7458;font-style:italic;padding:8px 0}
+
+  .foot{padding:8px 14px;font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;
+    color:#8a7458;text-transform:uppercase;border-top:1px solid var(--rule);line-height:1.8}
+
+  @media (max-width:1080px){
+    body{overflow:auto}
+    .desk{grid-template-columns:1fr;height:auto;min-height:100dvh}
+    .mapwrap{height:66vh;min-height:400px}
+    .rail{padding-left:0}
+    .log{max-height:320px}
+  }
+  @media (max-width:560px){
+    .readout{grid-template-columns:1fr}
+    .stamp{width:60px;height:28px;font-size:6.5px}
+  }
+</style>
+</head>
+<body>
+<div class="fiber" aria-hidden="true"></div>
+<div class="fiber2" aria-hidden="true"></div>
+<div class="edge" aria-hidden="true"></div>
+
+<div class="desk">
+  <section class="mapwrap">
+    <header class="maphead">
+      <h1>Paper Aeronaut &mdash; <em>The Long Way Round</em></h1>
+      <div class="meta">
+        Chart 4 &middot; Great-circle routes, hand inked<br>
+        Position: last departure logged above &middot; Sheet 1 of 1
+      </div>
+    </header>
+    <div class="mapbody">
+      <svg id="map" viewBox="0 0 1000 520" preserveAspectRatio="xMidYMid meet" role="img"
+           aria-label="Hand-drawn world map with city pins and a dashed flight route">
+        <defs>
+          <filter id="rough" x="-8%" y="-8%" width="116%" height="116%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="3" seed="7" result="n"/>
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="3.4" xChannelSelector="R" yChannelSelector="G"/>
+          </filter>
+          <filter id="rough2" x="-8%" y="-8%" width="116%" height="116%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="19" result="n"/>
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="1.8" xChannelSelector="R" yChannelSelector="G"/>
+          </filter>
+          <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(38)">
+            <line x1="0" y1="0" x2="0" y2="7" stroke="#5c4b38" stroke-width=".7" opacity=".45"/>
+          </pattern>
+          <radialGradient id="gSea" cx=".5" cy=".5" r=".75">
+            <stop offset="0" stop-color="#eee4cc"/><stop offset="1" stop-color="#ddceac"/>
+          </radialGradient>
+        </defs>
+
+        <rect width="1000" height="520" fill="url(#gSea)"/>
+        <g stroke="#8a7458" stroke-width=".5" opacity=".38">
+          <g id="gridlines"></g>
+        </g>
+        <g id="rhumbs" stroke="#8a7458" stroke-width=".5" opacity=".26" fill="none"></g>
+
+        <g id="land" filter="url(#rough)">
+          <g fill="#d8c69f" stroke="#4a3a20" stroke-width="1.4" stroke-linejoin="round">
+            <path d="M28,150 C40,120 70,104 96,98 C120,92 132,100 148,110 C160,104 178,92 200,96 C224,100 244,116 258,134 C272,152 288,160 300,178 C312,196 330,206 340,222 C348,236 336,244 324,238 C310,230 300,214 286,204 C272,194 258,192 244,190 C226,188 212,196 198,196 C182,196 172,186 158,184 C140,182 124,190 108,190 C88,190 74,178 60,168 C46,158 32,162 28,150 Z"/>
+            <path d="M244,190 C254,198 262,206 268,216 C274,226 282,230 288,238 C282,242 274,238 268,230 C262,222 254,212 246,204 Z"/>
+            <path d="M300,58 C312,44 336,40 356,46 C376,52 392,50 404,58 C416,66 412,76 400,80 C384,84 368,80 352,84 C336,88 322,84 310,78 C300,72 296,64 300,58 Z"/>
+            <path d="M292,238 C308,232 328,236 342,246 C356,256 372,258 384,270 C394,282 388,300 378,314 C368,328 366,348 356,364 C346,380 340,398 330,412 C322,424 310,424 306,412 C302,400 300,384 294,370 C288,356 276,344 272,328 C268,310 274,292 274,278 C274,260 280,244 292,238 Z"/>
+            <path d="M432,128 C440,120 452,120 460,126 C468,132 466,140 456,142 C446,144 434,140 430,134 Z"/>
+            <path d="M472,124 C480,112 494,106 506,108 C516,110 522,104 532,102 C544,100 556,104 566,110 C576,116 590,116 600,124 C610,132 608,142 596,146 C584,150 572,146 562,150 C552,154 546,164 534,166 C522,168 512,162 502,164 C492,166 484,160 476,156 C466,150 466,134 472,124 Z"/>
+            <path d="M452,190 C466,176 488,166 512,166 C534,166 556,172 572,180 C590,188 606,196 616,210 C626,224 632,244 630,264 C628,286 618,306 604,320 C590,334 574,344 558,346 C544,348 532,340 526,328 C520,316 522,300 514,290 C506,280 492,276 484,264 C476,252 476,236 470,224 C464,212 456,204 452,190 Z"/>
+            <path d="M620,282 C626,276 636,276 640,282 C644,290 640,302 634,310 C628,318 620,316 618,308 C616,298 616,290 620,282 Z"/>
+            <path d="M606,120 C620,100 646,88 674,86 C700,84 722,92 744,88 C766,84 784,92 800,102 C816,112 830,110 844,116 C860,122 872,132 886,138 C898,144 904,156 898,166 C892,176 878,180 868,190 C858,200 852,214 838,220 C824,226 810,220 798,228 C786,236 774,242 762,250 C750,258 736,254 726,246 C716,238 712,224 700,218 C688,212 676,214 666,206 C656,198 650,186 638,180 C626,174 614,170 608,158 C602,146 600,132 606,120 Z"/>
+            <path d="M766,252 C780,246 794,250 802,258 C810,266 806,278 794,280 C782,282 770,278 764,270 C758,262 758,256 766,252 Z"/>
+            <path d="M826,262 C840,256 856,260 862,268 C868,276 860,286 848,286 C836,286 824,278 822,270 Z"/>
+            <path d="M862,142 C868,136 876,138 878,146 C880,154 874,160 870,168 C866,176 860,176 858,168 C856,160 858,150 862,142 Z"/>
+            <path d="M818,296 C834,282 858,274 882,276 C906,278 926,290 930,308 C934,326 922,344 904,354 C886,364 862,362 844,352 C826,342 814,326 812,310 C810,304 814,300 818,296 Z"/>
+            <path d="M964,344 C972,340 978,346 976,354 C974,362 966,368 962,376 C958,384 950,384 950,376 C950,366 958,348 964,344 Z"/>
+            <path d="M480,136 C486,130 494,132 494,140 C494,148 488,156 484,160 C480,164 476,158 478,150 C480,144 476,142 480,136 Z"/>
+          </g>
+          <g fill="url(#hatch)" opacity=".5">
+            <path d="M452,190 C466,176 488,166 512,166 C534,166 556,172 572,180 C590,188 606,196 616,210 C626,224 632,244 630,264 C628,286 618,306 604,320 C590,334 574,344 558,346 C544,348 532,340 526,328 C520,316 522,300 514,290 C506,280 492,276 484,264 C476,252 476,236 470,224 C464,212 456,204 452,190 Z"/>
+          </g>
+        </g>
+
+        <g id="routes" fill="none"></g>
+        <g id="pins"></g>
+        <path id="mp" d="M0,0" fill="none"/>
+        <g id="plane" transform="translate(-40,-40)">
+          <g transform="rotate(0)">
+            <path d="M-11,0 L-3,-3 L2,-11 L5,-11 L4,-3 L9,-1 L11,-3 L13,-3 L12,0 L13,3 L11,3 L9,1 L4,3 L5,11 L2,11 L-3,3 L-11,0 Z"
+                  fill="#3d3023" stroke="#e6dac1" stroke-width=".8"/>
+          </g>
+          <animateMotion id="mv" dur="7s" begin="indefinite" fill="freeze" rotate="auto">
+            <mpath href="#mp" xlink:href="#mp"/>
+          </animateMotion>
+          <animate id="blink" attributeName="opacity" values="1;1;.35;1" dur="0.9s" repeatCount="indefinite"/>
+        </g>
+        <g id="rose" transform="translate(930 470)" filter="url(#rough2)"></g>
+      </svg>
+      <div class="stain s1" aria-hidden="true"></div>
+      <div class="stain s2" aria-hidden="true"></div>
+      <div class="corner tl" aria-hidden="true"></div>
+      <div class="corner br" aria-hidden="true"></div>
+      <div class="legend">
+        Routes drawn as flown &middot; dashed = scheduled<br>
+        Distances are great-circle; fuel at 3,180 kg/h, cruise 830 km/h
+      </div>
+    </div>
+  </section>
+
+  <aside class="rail">
+    <div class="card">
+      <h2><span>Departure Board</span><b id="rState">AT LIS</b></h2>
+      <div class="readout">
+        <div><em>To</em><b id="rTo">&mdash;</b></div>
+        <div><em>Distance</em><b id="rDist">0<s>km</s></b></div>
+        <div><em>Bearing</em><b id="rBrg">000&deg;</b></div>
+        <div><em>Flight time</em><b id="rTime">0h 00</b></div>
+        <div><em>Fuel burn</em><b id="rFuel">0<s>kg</s></b></div>
+        <div><em>Arrival</em><b id="rETA">&mdash;</b></div>
+      </div>
+      <div class="bar"><u id="rBar"></u><span id="rPct">READY</span></div>
+    </div>
+
+    <div class="card board" style="flex:0 1 auto;max-height:38vh;overflow:auto">
+      <h2><span>Destinations</span><b id="rCount">0</b></h2>
+      <div id="dests"></div>
+    </div>
+
+    <div class="card logwrap">
+      <h2><span>Flight Log</span><b id="rTotal">0 km</b></h2>
+      <div class="log" id="log"><p class="logempty">No flights recorded. Choose a destination to ink the first line.</p></div>
+    </div>
+
+    <div class="foot">Paper Aeronaut &middot; Chart 4 &middot; ink on 90 gsm<br>
+      All routes computed live &mdash; no map tiles, no images</div>
+  </aside>
+</div>
+
+<noscript><p style="position:fixed;left:0;right:0;bottom:0;z-index:99;background:#3d3023;color:#e6dac1;padding:12px 20px;font:12px/1.7 var(--mono)">Flying the plane and the flight log need JavaScript. The chart, the coastlines, the compass rose, the coffee rings and the departure board are all already drawn.</p></noscript>
+
+<script>
+(function(){
+  "use strict";
+  var NS="http://www.w3.org/2000/svg";
+  var MW=1000, MH=520;
+  function px(lon){ return (lon+180)/360*MW; }
+  function py(lat){ return (90-lat)/180*MH; }
+  function el(tag,at){ var n=document.createElementNS(NS,tag); for(var k in at) n.setAttribute(k,at[k]); return n; }
+
+  var C=[
+    {c:"Lisboa",     cc:"LIS", lat:38.72,  lon: -9.14,  note:"Home field. Rubber-stamped and out."},
+    {c:"Reykjavík",  cc:"KEF", lat:64.13,  lon:-21.90,  note:"Windscreen iced at 1,200 m. Bitter."},
+    {c:"Oslo",       cc:"OSL", lat:59.91,  lon: 10.75,  note:"Low cloud, landed on the fjord approach."},
+    {c:"Cairo",      cc:"CAI", lat:30.04,  lon: 31.24,  note:"Dust haze; switched to the long circuit."},
+    {c:"Dubai",      cc:"DXB", lat:25.20,  lon: 55.27,  note:"Turned east at 30,000 ft over the Zagros."},
+    {c:"Kathmandu",  cc:"KTM", lat:27.71,  lon: 85.32,  note:"Two attempts. The second one worked."},
+    {c:"Singapore",  cc:"SIN", lat: 1.35,  lon:103.82,  note:"Short hop, heavy monsoon, engine off early."},
+    {c:"Tokyo",      cc:"HND", lat:35.68,  lon:139.69,  note:"Crossed the date line mid-ocean at 03:10."},
+    {c:"Sydney",     cc:"SYD", lat:-33.87, lon:151.21,  note:"Longest leg so far. Nineteen hours sealed."},
+    {c:"Auckland",   cc:"AKL", lat:-36.85, lon:174.76,  note:"Tailwind all the way across the Tasman."},
+    {c:"Anchorage",  cc:"ANC", lat:61.22,  lon:-149.90, note:"Fuel stop. Everything smells of pine."},
+    {c:"San Francisco",cc:"SFO",lat:37.77,  lon:-122.42, note:"Fog held; the second approach had us over the bay."},
+    {c:"Mexico City",cc:"MEX", lat:19.43,  lon: -99.13, note:"Volcano on the right, city underneath it."},
+    {c:"New York",   cc:"JFK", lat:40.71,  lon: -74.01, note:"Bus into the city. Slept four hours."},
+    {c:"Buenos Aires",cc:"EZE", lat:-34.60, lon: -58.38, note:"Rioplatte wind. The paper came loose in the cabin."},
+    {c:"Montevideo", cc:"MVD", lat:-34.90, lon: -56.16, note:"Eleven kilometres up the coast. Same weather."},
+    {c:"Cape Town",  cc:"CPT", lat:-33.92, lon: 18.42,  note:"Tablecloth weather. Landed at Foreshore."},
+    {c:"Istanbul",   cc:"IST", lat:41.01,  lon: 28.98,  note:"Crossed the Bosphorus at dawn."},
+    {c:"Berlin",     cc:"BER", lat:52.52,  lon: 13.40,  note:"Rain, then rain, then a very short walk."},
+    {c:"Honolulu",   cc:"HNL", lat:21.31,  lon:-157.86, note:"Satellite crossing. Nothing but ocean for nine hours."},
+    {c:"Point Nemo", cc:"NEM", lat:-48.88, lon:-123.35, note:"Nearest settlement: 2,688 km. Unchanged."}
+  ];
+  var i, j;
+
+  /* graticule */
+  (function(){
+    var g=document.getElementById("gridlines"), d="";
+    for(i=-180;i<=180;i+=30) d+="M"+px(i)+",0 L"+px(i)+","+MH;
+    for(j=-60;j<=60;j+=30) d+="M0,"+py(j)+" L"+MW+","+py(j);
+    g.innerHTML='<path d="'+d+'" fill="none" stroke-dasharray="2 5"/>';
+  })();
+  /* rhumb lines from Lisbon + three compass nodes */
+  (function(){
+    var g=document.getElementById("rhumbs"), hubs=[0,7,15,18], d="";
+    for(i=0;i<hubs.length;i++) for(j=0;j<16;j++){
+      var a=j*22.5*Math.PI/180, L=1500;
+      d+="M"+px(C[hubs[i]].lon)+","+py(C[hubs[i]].lat)+
+         " L"+(px(C[hubs[i]].lon)+Math.cos(a)*L)+","+(py(C[hubs[i]].lat)+Math.sin(a)*L);
+    }
+    g.innerHTML='<path d="'+d+'"/>';
+  })();
+  /* compass rose */
+  (function(){
+    var g=document.getElementById("rose"), s="", k;
+    for(k=0;k<32;k++){
+      var a=k*11.25*Math.PI/180-Math.PI/2, r1=(k%4===0)?34:(k%2===0)?26:20, r2=40;
+      s+="M0,0 L"+(Math.cos(a)*r2).toFixed(1)+","+(Math.sin(a)*r2).toFixed(1)+
+         " L"+(Math.cos(a+0.09)*r1).toFixed(1)+","+(Math.sin(a+0.09)*r1).toFixed(1)+" Z ";
+    }
+    g.innerHTML='<circle r="42" fill="none" stroke="#5c4b38" stroke-width="1"/>'+
+      '<circle r="34" fill="none" stroke="#5c4b38" stroke-width=".6"/>'+
+      '<path d="'+s+'" fill="#5c4b38" opacity=".55"/>'+
+      '<text y="-48" text-anchor="middle" font-family="Courier Prime,monospace" font-size="11" fill="#4a3a20">N</text>';
+  })();
+
+  /* ── great-circle maths ────────────────────────────── */
+  function gc(a,b,n){
+    var la1=a.lat*Math.PI/180, lo1=a.lon*Math.PI/180, la2=b.lat*Math.PI/180, lo2=b.lon*Math.PI/180;
+    var p=[], x, y, z, dt=2*Math.asin(Math.sqrt(Math.pow(Math.sin((la2-la1)/2),2)+
+      Math.cos(la1)*Math.cos(la2)*Math.pow(Math.sin((lo2-lo1)/2),2))), k, f;
+    if(dt<1e-9) return [[px(a.lon),py(a.lat)],[px(b.lon),py(b.lat)]];
+    for(k=0;k<=n;k++){
+      f=k/n;
+      x=Math.sin((1-f)*dt)/Math.sin(dt)*Math.cos(lo1)+Math.sin(f*dt)/Math.sin(dt)*Math.cos(lo2)*Math.cos(la1);
+      y=Math.sin((1-f)*dt)/Math.sin(dt)*Math.sin(lo1)+Math.sin(f*dt)/Math.sin(dt)*Math.sin(lo2)*Math.cos(la1);
+      z=Math.cos(la1)*Math.cos(la2)*Math.sin(f*dt)/Math.sin(dt);
+      p.push([px(Math.atan2(y,x)*180/Math.PI), py(Math.atan2(z,Math.hypot(x,y))*180/Math.PI)]);
+    }
+    return p;
+  }
+  function dist(a,b){
+    var la1=a.lat*Math.PI/180,la2=b.lat*Math.PI/180,
+        dlat=la2-la1, dlon=(b.lon-a.lon)*Math.PI/180, R=6371;
+    var h=Math.sin(dlat/2)*Math.sin(dlat/2)+Math.cos(la1)*Math.cos(la2)*Math.sin(dlon/2)*Math.sin(dlon/2);
+    return 2*R*Math.asin(Math.min(1,Math.sqrt(h)));
+  }
+  function bearing(a,b){
+    var la1=a.lat*Math.PI/180,la2=b.lat*Math.PI/180,dlon=(b.lon-a.lon)*Math.PI/180;
+    var y=Math.sin(dlon)*Math.cos(la2),
+        x=Math.cos(la1)*Math.sin(la2)-Math.sin(la1)*Math.cos(la2)*Math.cos(dlon);
+    return (Math.atan2(y,x)*180/Math.PI+360)%360;
+  }
+  function pathD(pts,dx){
+    /* unwrap longitude, then offset for the dateline copies */
+    var u=[pts[0].slice()], k;
+    for(k=1;k<pts.length;k++){
+      var x=pts[k][0], last=u[k-1][0];
+      while(x-last>MW/2) x-=MW;
+      while(x-last<-MW/2) x+=MW;
+      u.push([x,pts[k][1]]);
+    }
+    var d="M"+u[0][0].toFixed(1)+","+u[0][1].toFixed(1);
+    for(k=1;k<u.length;k++) d+=" L"+u[k][0].toFixed(1)+","+u[k][1].toFixed(1);
+    return {d:d, mid:u[Math.floor(u.length/2)][0]};
+  }
+  function shifted(d,dx){
+    if(!dx) return d;
+    return d.replace(/(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/g,function(m,x,y){
+      return (parseFloat(x)+dx).toFixed(1)+","+y;
+    });
+  }
+
+  /* ── pins ──────────────────────────────────────────── */
+  var pinsG=document.getElementById("pins"), pins=[];
+  C.forEach(function(P,idx){
+    var g=el("g",{class:"pin","data-i":idx});
+    g.innerHTML=
+      '<circle class="hit" cx="'+px(P.lon)+'" cy="'+py(P.lat)+'" r="13"/>'+
+      '<g class="pinbody">'+
+        '<path d="M0,3 C-4.6,-3 -6.6,-5.6 -6.6,-8.4 A6.6,6.6 0 0 1 6.6,-8.4 C6.6,-5.6 4.6,-3 0,3 Z" fill="#8e2f21" stroke="#3d3023" stroke-width=".7"/>'+
+        '<circle cx="0" cy="-8.4" r="2.3" fill="#e6dac1"/>'+
+      '</g>'+
+      '<text x="9" y="-11">'+P.c.toUpperCase()+'</text>'+
+      '<text x="9" y="-2" style="font-size:7.2px;fill:#8a7458">'+P.cc+'</text>';
+    g.style.cursor="pointer";
+    g.addEventListener("click",function(){ fly(idx); });
+    pinsG.appendChild(g); pins.push(g);
+  });
+
+  var routesG=document.getElementById("routes");
+  var mp=document.getElementById("mp"), mv=document.getElementById("mv");
+  var plane=document.getElementById("plane");
+  var lastIdx=0, totalKm=0, flying=false;
+  var rTo=document.getElementById("rTo"), rDist=document.getElementById("rDist"),
+      rBrg=document.getElementById("rBrg"), rTime=document.getElementById("rTime"),
+      rFuel=document.getElementById("rFuel"), rETA=document.getElementById("rETA"),
+      rBar=document.getElementById("rBar"), rPct=document.getElementById("rPct"),
+      rState=document.getElementById("rState"), rTotal=document.getElementById("rTotal"),
+      log=document.getElementById("log");
+
+  function dstr(t){ var d=new Date(t);
+    return String(d.getUTCHours()).padStart(2,"0")+":"+String(d.getUTCMinutes()).padStart(2,"0"); }
+  function hhmm(h){ return Math.floor(h)+"h "+String(Math.round((h%1)*60)).padStart(2,"0"); }
+
+  function stampFor(idx,alt){
+    var P=C[idx];
+    return '<span class="stamp'+(alt?" b":"")+'">'+P.cc+'<br>'+
+      new Date().toISOString().slice(5,10).replace("-","/")+'</span>';
+  }
+
+  function fly(idx){
+    if(idx===lastIdx && flying) return;
+    var a=C[lastIdx], b=C[idx];
+    var pts=gc(a,b,64);
+    var base=pathD(pts,0);
+    var clipId="clipWorld";
+    if(!document.getElementById(clipId)){
+      var defs=document.querySelector("#map defs");
+      var cp=el("clipPath",{id:clipId});
+      cp.appendChild(el("rect",{x:0,y:0,width:MW,height:MH}));
+      defs.appendChild(cp);
+    }
+    var g=el("g",{"clip-path":"url(#"+clipId+")"});
+    ["","M",-MW].forEach(function(off){
+      var d=shifted(base.d,off);
+      g.appendChild(el("path",{d:d,stroke:"#5c4b38","stroke-width":"1.1",
+        "stroke-dasharray":"1 5","stroke-linecap":"round",opacity:".5"}));
+      g.appendChild(el("path",{d:d,stroke:"#8e2f21","stroke-width":"1.5",
+        "stroke-dasharray":"9 6",opacity:".85"}));
+    });
+    routesG.appendChild(g);
+    mp.setAttribute("d",base.d);
+    var dur=Math.max(3.2,Math.min(11,dist(a,b)/780));
+    mv.setAttribute("dur",dur.toFixed(2)+"s");
+    try{ mv.beginElement(); }catch(e){}
+    plane.style.opacity="1";
+    plane.setAttribute("transform","translate(-40,-40)");
+    flying=true;
+
+    var km=dist(a,b), brg=bearing(a,b), hrs=km/830, burn=hrs*3180;
+    rTo.textContent=b.c;
+    rDist.innerHTML=Math.round(km).toLocaleString()+'<s>km</s>';
+    rBrg.textContent=String(Math.round(brg)).padStart(3,"0")+"°";
+    rTime.textContent=hhmm(hrs);
+    rFuel.innerHTML=Math.round(burn).toLocaleString()+'<s>kg</s>';
+    var now=Date.now();
+    rETA.textContent=dstr(now)+"Z +"+hhmm(hrs);
+    rState.textContent="DEP "+a.cc;
+    rBar.style.width="0%"; rPct.textContent="0%";
+
+    pins.forEach(function(p,k){ p.classList.toggle("sel",k===idx); });
+    dests.children[lastIdx].classList.remove("on");
+    dests.children[idx].classList.add("on");
+
+    var t0=performance.now(), ms=dur*1000;
+    (function step(){
+      var p=Math.min(1,(performance.now()-t0)/ms);
+      var e=p*p*(3-2*p);
+      rBar.style.width=(e*100).toFixed(1)+"%";
+      rPct.textContent=Math.round(e*100)+"%  "+b.c.toUpperCase();
+      if(p<1) requestAnimationFrame(step);
+      else{
+        flying=false; rState.textContent="AT "+b.cc;
+        rPct.textContent="LANDED";
+        totalKm+=km;
+        rTotal.textContent=Math.round(totalKm).toLocaleString()+" km";
+        writeLog(a,b,km,brg,hrs,burn,idx);
+        lastIdx=idx;
+      }
+    })();
+  }
+
+  function writeLog(a,b,km,brg,hrs,burn,idx){
+    var empty=log.querySelector(".logempty"); if(empty) empty.remove();
+    var n=log.children.length+1;
+    var ent=document.createElement("div");
+    ent.className="ent";
+    ent.innerHTML='<div class="l1">'+a.cc+' \u2192 '+b.cc+'</div>'+
+      '<div class="l2">'+Math.round(km).toLocaleString()+' km &middot; '+String(Math.round(brg)).padStart(3,"0")+
+      '\u00B0 &middot; '+hhmm(hrs)+' &middot; '+Math.round(burn).toLocaleString()+' kg</div>'+
+      '<div class="l3">'+b.note+'</div>'+stampFor(idx,n%2===0);
+    log.insertBefore(ent,log.firstChild);
+    while(log.children.length>26) log.removeChild(log.lastChild);
+  }
+
+  /* destination list */
+  var dests=document.getElementById("dests");
+  C.forEach(function(P,i){
+    var b=document.createElement("button");
+    b.className="dest"+(i===0?" on":"");
+    b.innerHTML='<span class="i">'+P.cc.slice(0,2)+'</span>'+
+      '<span class="c">'+P.c+'<small>'+P.note.slice(0,34)+'\u2026</small></span>'+
+      '<span class="d">\u2014</span>';
+    b.addEventListener("click",function(){ fly(i); });
+    b.dataset.i=i; dests.appendChild(b);
+  });
+  document.getElementById("rCount").textContent=C.length;
+  function refreshBoard(){
+    for(var i=0;i<C.length;i++){
+      if(i===lastIdx) continue;
+      var el=dests.children[i].querySelector(".d");
+      el.textContent=Math.round(dist(C[lastIdx],C[i])).toLocaleString();
+    }
+  }
+  refreshBoard();
+  setInterval(refreshBoard,4000);
+  var origFly=fly;
+  window.addEventListener("keydown",function(e){
+    var n=parseInt(e.key,10);
+    if(n>=1&&n<=9){ var idx=[7,17,1,18,2,6,0,3,10][n-1]; origFly(idx); }
+  });
+})();
+</script>
+</body>
+</html>

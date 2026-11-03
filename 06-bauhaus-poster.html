@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BAUHAUS 1919 — Poster für eine neue Einheit von Kunst und Technik</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box}
+  :root{
+    --cream:#efe6cf; --ink:#14120e;
+    --red:#e63329; --yellow:#f2b705; --blue:#1b4b9c;
+    --display:'Archivo Black','Arial Black',Impact,'Haettenschweiler',sans-serif;
+    --text:'Space Grotesk','Helvetica Neue',Helvetica,Arial,sans-serif;
+    --rot:0deg;
+  }
+  html,body{height:100%}
+  body{
+    margin:0;background:var(--ink);color:var(--ink);
+    font-family:var(--text);cursor:none;overflow:hidden;
+  }
+  .bleed{
+    position:relative;min-height:100dvh;overflow:hidden;
+    background:
+      radial-gradient(120% 80% at 82% 12%, rgba(242,183,5,.30), transparent 58%),
+      radial-gradient(90% 70% at 6% 96%, rgba(27,75,156,.24), transparent 60%),
+      var(--cream);
+  }
+  .bleed::before{
+    content:"";position:absolute;inset:0;pointer-events:none;z-index:8;
+    background-image:radial-gradient(rgba(20,18,14,.10) 1px,transparent 1.1px);
+    background-size:5px 5px;mix-blend-mode:multiply;opacity:.5;
+  }
+  .bleed::after{
+    content:"";position:absolute;inset:0;pointer-events:none;z-index:7;
+    box-shadow:inset 0 0 180px 20px rgba(20,18,14,.30);
+  }
+  .frame{position:absolute;inset:clamp(10px,1.6vw,26px);border:3px solid var(--ink);z-index:5}
+
+  /* ---- vertical edge type ---- */
+  .edge{
+    position:absolute;left:0;top:0;bottom:0;width:clamp(34px,3.4vw,52px);
+    background:var(--ink);z-index:6;display:grid;place-items:center;
+  }
+  .edge span{
+    writing-mode:vertical-rl;transform:rotate(180deg);
+    color:var(--cream);font-size:clamp(10px,.72vw,13px);letter-spacing:.42em;font-weight:700;
+    white-space:nowrap;
+  }
+  .edge i{position:absolute;bottom:16px;width:12px;height:12px;background:var(--red);transform:rotate(45deg)}
+
+  /* ---- poster field ---- */
+  .poster{position:relative;min-height:100dvh;padding:clamp(26px,3.4vw,60px) clamp(20px,3vw,54px)
+    clamp(96px,12vh,150px) calc(clamp(34px,3.4vw,52px) + clamp(78px,9.2vw,150px))}
+
+  .kicker{
+    display:flex;flex-wrap:wrap;gap:clamp(8px,1.2vw,22px);align-items:center;
+    border-bottom:5px solid var(--ink);padding-bottom:9px;
+    font-size:clamp(9px,.66vw,12px);font-weight:700;letter-spacing:.3em;text-transform:uppercase;
+  }
+  .kicker b{background:var(--ink);color:var(--cream);padding:3px 8px;letter-spacing:.24em}
+  .kicker span{opacity:.66}
+
+  /* ---- typographic lockup ---- */
+  .lockup{position:relative;z-index:2;margin:clamp(14px,2.2vw,34px) 0 0}
+  .lockup h1{
+    margin:0;font-family:var(--display);line-height:.82;letter-spacing:-.015em;
+    font-size:clamp(52px,15.2vw,268px);
+    text-transform:uppercase;
+  }
+  .lockup h1 .fill{position:relative;z-index:2;display:inline-block}
+  .lockup h1 .fill::before{
+    content:"";position:absolute;inset:.14em -.06em .2em -.05em;background:var(--red);z-index:-1;
+    transform:skewX(-9deg);
+  }
+  .year{
+    position:absolute;left:clamp(2px,1vw,26px);bottom:-10px;
+    z-index:3;width:clamp(94px,13vw,206px);aspect-ratio:1;background:var(--blue);color:var(--cream);
+    display:grid;place-items:center;transform:rotate(-7deg);
+    font-family:var(--display);font-size:clamp(30px,5.4vw,88px);letter-spacing:-.02em;
+    box-shadow:10px 10px 0 var(--ink);
+  }
+  .year::after{
+    content:"WEISSENHOF";position:absolute;bottom:-1.5em;left:0;right:0;text-align:center;
+    font-family:var(--text);font-size:clamp(8px,.62vw,11px);letter-spacing:.4em;color:var(--ink);
+  }
+  .sub{
+    margin:clamp(20px,2.4vw,34px) 0 0;max-width:44ch;
+    font-size:clamp(12.5px,1.06vw,17px);line-height:1.44;font-weight:500;
+  }
+  .sub b{color:var(--red);font-weight:700}
+  .quote{
+    margin:clamp(12px,1.4vw,20px) 0 0;max-width:52ch;
+    font-size:clamp(15px,1.5vw,25px);line-height:1.24;font-weight:700;letter-spacing:-.01em;
+    text-transform:uppercase;
+  }
+  .rule{height:5px;background:var(--ink);margin:clamp(16px,2vw,28px) 0}
+  .rule.thick{height:12px}
+  .rule.yellow{height:clamp(14px,2.2vw,34px);background:var(--yellow)}
+
+  /* ---- off-grid geometry ---- */
+  .shape-zone{position:absolute;z-index:3;right:clamp(4px,2.2vw,54px);top:clamp(96px,15vh,210px);width:min(38vw,420px)}
+  .morph{
+    display:block;width:100%;aspect-ratio:1;padding:0;border:0;background:transparent;
+    position:relative;transition:clip-path .78s cubic-bezier(.72,0,.2,1),transform .78s cubic-bezier(.72,0,.2,1);
+    transform:rotate(var(--rot));
+  }
+  .morph::before{
+    content:"";position:absolute;inset:0;background:var(--blue);
+    transition:background .4s ease;
+  }
+  .morph::after{
+    content:"";position:absolute;inset:5.5%;border:5px solid var(--ink);
+    transition:inset .78s cubic-bezier(.72,0,.2,1),border-color .4s;
+  }
+  .morph.s0{clip-path:polygon(0 0,50% 0,100% 0,100% 50%,100% 100%,50% 100%,0 100%,0 50%)}
+  .morph.s1{clip-path:polygon(44% 12%,56% 12%,77.5% 55%,93% 86%,72% 100%,28% 100%,7% 86%,22.5% 55%)}
+  .morph.s2{clip-path:polygon(50% 0%,85% 15%,100% 50%,85% 85%,50% 100%,15% 85%,0% 50%,15% 15%)}
+  .morph:hover::before,.morph:focus-visible::before{background:var(--red)}
+  .morph:hover::after,.morph:focus-visible::after{inset:0;border-color:var(--cream)}
+  .morph:focus-visible ~ .tag{background:var(--ink);color:var(--cream)}
+  .morph:focus-visible ~ .tag em{background:var(--yellow);color:var(--ink)}
+  .tag{
+    display:flex;align-items:center;gap:10px;margin-top:14px;border-top:5px solid var(--ink);padding-top:8px;
+    font-size:clamp(10px,.78vw,14px);font-weight:700;letter-spacing:.26em;text-transform:uppercase;
+  }
+  .tag em{font-style:normal;background:var(--ink);color:var(--cream);padding:2px 7px}
+  .tag .n{margin-left:auto;font-family:var(--display);font-size:clamp(15px,1.5vw,24px);letter-spacing:0}
+  .hint{font-size:clamp(9px,.66vw,12px);letter-spacing:.2em;opacity:.6;margin-top:6px;text-transform:uppercase}
+
+  .half{position:absolute;z-index:0;right:calc(clamp(4px,2.2vw,54px) + min(19vw,210px)*.62);
+    top:clamp(96px,15vh,210px);width:min(19vw,210px);aspect-ratio:1;
+    border:5px solid var(--ink);border-radius:50%;pointer-events:none;
+    animation:breathe 7s ease-in-out infinite}
+  @keyframes breathe{0%,100%{transform:scale(1) rotate(0)}50%{transform:scale(1.09) rotate(12deg)}}
+  .bar{position:absolute;z-index:1;left:calc(clamp(34px,3.4vw,52px) + 14px);top:12%;height:58%;
+    width:min(5px,.5vw);background:var(--ink);pointer-events:none;
+    animation:drop 9s cubic-bezier(.6,0,.4,1) infinite}
+  @keyframes drop{0%,100%{transform:scaleY(.94)}50%{transform:scaleY(1)}}
+  .dots{position:absolute;z-index:1;left:calc(clamp(34px,3.4vw,52px) + 36px);bottom:clamp(120px,16vh,190px);
+    display:grid;grid-template-columns:repeat(3,clamp(9px,1vw,15px));gap:clamp(5px,.6vw,9px)}
+  .dots i{aspect-ratio:1;border-radius:50%;background:var(--ink)}
+  .dots i:nth-child(4n){background:var(--red)}
+  .dots i:nth-child(7n){background:var(--blue)}
+
+  /* ---- bottom ruled strip ---- */
+  .strip{
+    position:absolute;left:0;right:0;bottom:0;z-index:6;background:var(--cream);
+    border-top:5px solid var(--ink);display:grid;grid-template-columns:repeat(4,1fr);
+  }
+  .strip div{padding:clamp(9px,1.1vw,16px) clamp(10px,1.4vw,24px);border-right:5px solid var(--ink)}
+  .strip div:last-child{border-right:0;background:var(--yellow)}
+  .strip b{display:block;font-family:var(--display);font-size:clamp(14px,1.7vw,30px);letter-spacing:-.01em;line-height:1}
+  .strip small{display:block;margin-top:5px;font-size:clamp(8px,.62vw,11px);letter-spacing:.2em;opacity:.7;text-transform:uppercase}
+
+  .cur{
+    position:fixed;left:0;top:0;width:26px;height:26px;margin:-13px 0 0 -13px;z-index:40;
+    border:3px solid var(--ink);pointer-events:none;
+    transition:width .22s cubic-bezier(.3,1.4,.5,1),height .22s cubic-bezier(.3,1.4,.5,1),
+      margin .22s cubic-bezier(.3,1.4,.5,1),background .22s;
+    mix-blend-mode:difference;border-color:#fff;
+  }
+  .cur.hot{width:58px;height:58px;margin:-29px 0 0 -29px;background:#fff}
+  @media (pointer:coarse){.cur{display:none}body{cursor:auto}}
+  @media (max-width:900px){
+    .poster{padding-left:calc(clamp(34px,3.4vw,52px) + clamp(16px,2vw,36px));
+      padding-bottom:clamp(150px,26vh,230px)}
+    .shape-zone{position:static;width:min(72vw,340px);margin:22px auto 0}
+    .half,.bar{display:none}
+    .dots{display:none}
+    .strip{grid-template-columns:repeat(2,1fr)}
+    .strip div{border-bottom:5px solid var(--ink)}
+    .quote{max-width:none}
+  }
+  @media (max-width:420px){.strip div:nth-child(2n){border-right:0}.year{box-shadow:6px 6px 0 var(--ink)}}
+  @media (prefers-reduced-motion:reduce){.half,.bar{animation:none}}
+  noscript p{position:fixed;inset:auto 0 0 0;background:var(--red);color:var(--cream);padding:10px;margin:0;
+    font-size:13px;letter-spacing:.1em;z-index:50}
+</style>
+</head>
+<body>
+<div class="bleed">
+  <div class="frame" aria-hidden="true"></div>
+  <div class="edge" aria-hidden="true"><span>VORKURS · WERKSTATT · FORM · FARBE · LICHT · BEWEGUNG</span><i></i></div>
+
+  <main class="poster">
+    <div class="kicker">
+      <b>Staatliches Bauhaus</b>
+      <span>Gründung 12. Juni 1919, Weimar</span>
+      <span>Werkstätten für Kunst und Technik</span>
+      <span>Nr. 04 / Plakat</span>
+    </div>
+
+    <div class="lockup">
+      <h1>Bauhaus<span class="year">1919</span></h1>
+    </div>
+
+    <p class="sub">Die Werkstätten gliederten den Menschen zum ersten Mal in <b>Hand</b>, <b>Kopf</b> und <b>Auge</b>. Itten, Klee, Albers, Schlemmer und Kandinsky lehrten Material, Farbe, Form und Bewegung — und jenes Gleichgewicht aus Widerstand und Hingabe, das heute noch keinen Namen trägt.</p>
+    <div class="rule yellow" aria-hidden="true"></div>
+    <p class="quote">Art and technology — a new unity. The circle is not finished, the square is not asleep.</p>
+    <div class="rule" aria-hidden="true"></div>
+    <p class="sub">Kein Fachgebiet stand über einem anderen. Wer eine Form baut, muss das Material kennen, aus dem sie entsteht; wer eine Schrift zeichnet, muss sie im Blei gießen können. Farbe war keine Dekoration, sondern Struktur. Typografie war keine Illustration, sondern ein Baustoff.</p>
+
+    <div class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="bar" aria-hidden="true"></div>
+
+    <section class="shape-zone" aria-label="Formwandel">
+      <button class="morph s0" id="morph" type="button" aria-label="Form verändern: Rechteck, Dreieck, Kreis"></button>
+      <div class="tag"><em id="tagName">Form 01</em> <span id="tagGeo">Viereck</span> <span class="n" id="tagN">01/03</span></div>
+      <div class="hint">Zeigen oder Tastatur — die Form wandelt sich</div>
+    </section>
+
+    <div class="half" aria-hidden="true"></div>
+  </main>
+
+  <div class="strip">
+    <div><b>Vorkurs</b><small>Formlehre · Material · Analysis</small></div>
+    <div><b>Werkstatt</b><small>Glas · Metall · Holz · Stoff · Farbe</small></div>
+    <div><b>Dessau</b><small>Umzug 4. April 1925</small></div>
+    <div><b>1933</b><small>Auflösung nach vierzehn Jahren</small></div>
+  </div>
+  <div class="cur" id="cur" aria-hidden="true"></div>
+</div>
+<noscript><p>OHNE JAVASCRIPT BLEIBT DAS PLAKAT STATISCH — DIE FORM WECHSELT NICHT UND DER EIGENE ZEIGER FEHLT.</p></noscript>
+
+<script>
+(function(){
+  "use strict";
+  var m=document.getElementById('morph'),cur=document.getElementById('cur'),st=0,lock=0;
+  var names=['Viereck','Dreieck','Kreis'],sets=['s0','s1','s2'];
+  function morph(){
+    if(performance.now()<lock)return;
+    lock=performance.now()+820;
+    st=(st+1)%3;
+    m.className='morph '+sets[st];
+    m.style.setProperty('--rot',(st*120)+'deg');
+    document.getElementById('tagName').textContent='Form 0'+(st+1);
+    document.getElementById('tagGeo').textContent=names[st];
+    document.getElementById('tagN').textContent='0'+(st+1)+'/03';
+  }
+  m.addEventListener('mouseenter',morph);
+  m.addEventListener('click',morph);
+  m.addEventListener('mouseenter',function(){cur.classList.add('hot')});
+  m.addEventListener('mouseleave',function(){cur.classList.remove('hot')});
+  window.addEventListener('pointermove',function(e){
+    cur.style.transform='translate('+e.clientX+'px,'+e.clientY+'px)';
+  });
+  window.addEventListener('pointerdown',function(){cur.style.width='15px';cur.style.height='15px';cur.style.margin='-7.5px 0 0 -7.5px'});
+  window.addEventListener('pointerup',function(){cur.style.width=cur.style.height=cur.style.margin=''});
+  window.addEventListener('keydown',function(e){
+    if((e.key===' '||e.key==='Enter')&&document.activeElement!==m){e.preventDefault();m.focus();morph()}
+  });
+})();
+</script>
+</body>
+</html>

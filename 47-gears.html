@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MOVEMENT 18&frac12; &mdash; Gear Train, Exploded</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--paper:#f2e8d4;--ink:#20344f;--fine:#3a5170;--hot:#b8412f}
+  html,body{height:100%}
+  body{background:#c9bda3;color:var(--ink);font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+    display:grid;grid-template-columns:272px 1fr;overflow:hidden;
+    background-image:radial-gradient(70% 60% at 50% 30%,#d6cbb2,#b3a68a)}
+  aside{border-right:1px solid #9b8f78;padding:24px 20px;overflow:auto;background:rgba(242,232,212,.5)}
+  aside h1{font-size:13px;letter-spacing:.2em;text-transform:uppercase;font-weight:600}
+  aside .sub{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#6d6552;margin-top:7px;line-height:1.9}
+  .keys{margin-top:20px;border-top:1px solid #9b8f78;padding-top:12px}
+  .key{display:grid;grid-template-columns:22px 1fr;gap:9px;padding:7px 0;cursor:pointer;
+    border-bottom:1px dotted #b3a68a;transition:.14s}
+  .key:hover{background:rgba(32,52,79,.07)}
+  .key.on{background:rgba(184,65,47,.13)}
+  .key i{font-style:normal;width:20px;height:20px;border:1px solid var(--fine);border-radius:99px;
+    display:grid;place-items:center;font-size:9px;background:var(--paper);align-self:start}
+  .key.on i{background:var(--hot);color:var(--paper);border-color:var(--hot)}
+  .key b{font-size:11px;font-weight:500;display:block;line-height:1.25}
+  .key span{font-size:9px;color:#6d6552;display:block;margin-top:3px;line-height:1.5}
+  .detail{margin-top:16px;border:1px solid var(--fine);padding:13px;background:rgba(255,255,255,.32);min-height:210px}
+  .detail h2{font-size:14px;font-weight:600;line-height:1.2;margin:2px 0 4px}
+  .detail .pn{font-size:8.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--hot)}
+  .detail dl{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:10px;margin:11px 0 9px}
+  .detail dt{color:#6d6552;letter-spacing:.1em;text-transform:uppercase;font-size:8.5px;align-self:center}
+  .detail dd{text-align:right;font-variant-numeric:tabular-nums}
+  .detail p{font-size:10.5px;line-height:1.72;color:#3d4a5c}
+  .legend{margin-top:16px;font-size:9px;line-height:2.1;color:#6d6552;letter-spacing:.06em}
+  .legend kbd{border:1px solid #9b8f78;padding:0 4px;background:var(--paper)}
+  main{position:relative;overflow:hidden;display:grid;place-items:center;padding:22px}
+  .sheet{position:relative;width:min(1200px,100%);aspect-ratio:1000/700;background:var(--paper);
+    box-shadow:0 30px 60px -30px rgba(40,30,15,.7);border:1px solid #8f8367}
+  .sheet::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.42;z-index:4;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 0.44 0 0 0 0 0.37 0 0 0 0 0.25 0 0 0 0.26 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23p)'/%3E%3C/svg%3E")}
+  svg{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+  svg:active{cursor:grabbing}
+  .gear{transition:opacity .2s}
+  .gear path{fill:rgba(255,255,255,.34);stroke:var(--fine);stroke-width:1.15;stroke-linejoin:round}
+  .gear .win{fill:rgba(242,232,212,.95);stroke:var(--fine);stroke-width:.85}
+  .gear.sel path{fill:rgba(184,65,47,.22);stroke:var(--hot);stroke-width:1.8}
+  .gear.sel .win{fill:rgba(184,65,47,.14);stroke:var(--hot)}
+  .gear.dim{opacity:.13}
+  .lead{stroke:var(--fine);stroke-width:.85;fill:none}
+  .numb circle{fill:var(--paper);stroke:var(--fine);stroke-width:1}
+  .numb text{font:600 11px "IBM Plex Mono",monospace;fill:var(--fine);text-anchor:middle;dominant-baseline:central}
+  .numb.sel circle,.numb.sel .lead{fill:var(--hot);stroke:var(--hot)}
+  .numb.sel text{fill:var(--paper)}
+  .cap{font:400 9.5px "IBM Plex Mono",monospace;fill:#6d6552;letter-spacing:.13em}
+  .cap.big{font-size:16px;fill:var(--ink);letter-spacing:.3em;font-weight:500}
+  .dimln{stroke:#6d6552;stroke-width:.6;fill:none}
+  .ctr{stroke:#7b6a4a;stroke-width:.7;stroke-dasharray:16 4 3 4;fill:none;opacity:.7}
+  .jwl{fill:url(#jh)}
+  .scr{fill:none;stroke:#2c2c2c;stroke-width:1.2}
+  .hint{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);font-size:9px;letter-spacing:.24em;
+    text-transform:uppercase;color:#6d6552;z-index:5;pointer-events:none}
+  @media (max-width:900px){body{grid-template-columns:1fr;overflow:auto}aside{border-right:0;border-bottom:1px solid #9b8f78}}
+</style>
+</head>
+<body>
+<aside>
+  <h1>Parts key</h1>
+  <div class="sub">Clock movement, 18&frac12; lines<br>Train, escapement &middot; sheet 1 of 1</div>
+  <div class="keys" id="keys"></div>
+  <div class="detail" id="detail"></div>
+  <div class="legend"><kbd>drag</kbd> spin the train &nbsp; <kbd>click</kbd> isolate<br><kbd>esc</kbd> release all</div>
+</aside>
+<main>
+  <div class="sheet">
+    <svg id="dr" viewBox="0 0 1000 700" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="jh" cx="36%" cy="32%">
+          <stop offset="0" stop-color="#e4705f"/><stop offset="1" stop-color="#8e231c"/>
+        </radialGradient>
+      </defs>
+      <g id="grid"></g><g id="plate"></g><g id="gears"></g><g id="esc"></g>
+      <g id="leads"></g><g id="title"></g>
+    </svg>
+    <div class="hint">Click a wheel to isolate it &middot; drag to spin the train</div>
+  </div>
+</main>
+
+<script>
+const SVGNS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  parent.appendChild(e);
+  return e;
+}
+const plateEl = document.getElementById("plate"), gridEl = document.getElementById("grid"),
+      gearsEl = document.getElementById("gears"), escEl = document.getElementById("esc"),
+      leadsEl = document.getElementById("leads"), titleEl = document.getElementById("title");
+for (let x = 0; x <= 1000; x += 25) el("line", { x1: x, y1: 0, x2: x, y2: 700, stroke: "#cdc0a4", "stroke-width": .4 }, gridEl);
+for (let y = 0; y <= 700; y += 25) el("line", { x1: 0, y1: y, x2: 1000, y2: y, stroke: "#cdc0a4", "stroke-width": .4 }, gridEl);
+el("rect", { x: 20, y: 20, width: 960, height: 660, fill: "none", stroke: "#20344f", "stroke-width": 1.5 }, plateEl);
+el("rect", { x: 28, y: 28, width: 944, height: 644, fill: "none", stroke: "#20344f", "stroke-width": .5 }, plateEl);
+
+const PA = 20 * Math.PI / 180;
+const rpd = (N, m) => m * N / 2;
+function gearPath(N, m) {
+  const rp = rpd(N, m), rb = rp * Math.cos(PA), ra = rp + m, rf = Math.max(1.5, rp - 1.25 * m);
+  const hBase = Math.PI / (2 * N) + (Math.tan(PA) - PA);
+  const tmax = Math.sqrt(Math.max(1e-6, (ra / rb) * (ra / rb) - 1));
+  const hTip = Math.max(.012, hBase - (tmax - Math.atan(tmax)));
+  const step = 8, pts = [];
+  const push = (ang, r) => { pts.push((r * Math.cos(ang)).toFixed(2) + "," + (r * Math.sin(ang)).toFixed(2)); };
+  for (let k = 0; k < N; k++) {
+    const ph = k * 2 * Math.PI / N;
+    push(ph - hBase, rf); push(ph - hBase, rb);
+    for (let i = 0; i <= step; i++) { const t = tmax * i / step; push(ph - hBase + (t - Math.atan(t)), rb * Math.sqrt(1 + t * t)); }
+    for (let i = 0; i <= 4; i++) push(ph - hTip + 2 * hTip * i / 4, ra);
+    for (let i = step; i >= 0; i--) { const t = tmax * i / step; push(ph + hBase - (t - Math.atan(t)), rb * Math.sqrt(1 + t * t)); }
+    push(ph + hBase, rb); push(ph + hBase, rf);
+    for (let i = 1; i < 4; i++) push(ph + hBase + (2 * Math.PI / N - 2 * hBase) * i / 4, rf);
+  }
+  return "M" + pts.join("L") + "Z";
+}
+function windows(r1, r2, n, gap) {
+  let d = "", step = 2 * Math.PI / n, g = gap * Math.PI / 180;
+  const p = (a, r) => (r * Math.cos(a)).toFixed(1) + "," + (r * Math.sin(a)).toFixed(1);
+  for (let i = 0; i < n; i++) {
+    const a0 = i * step + g, a1 = (i + 1) * step - g;
+    d += "M" + p(a0, r2) + "A" + r2 + "," + r2 + " 0 0 1 " + p(a1, r2) + "L" + p(a1, r1) + "A" + r1 + "," + r1 + " 0 0 0 " + p(a0, r1) + "Z";
+  }
+  return d;
+}
+const snap = (a, ref, N) => ref + Math.round((a - ref) / (2 * Math.PI / N)) * (2 * Math.PI / N);
+const MW = 4.2, MP = 2.0;
+const T = {
+  bar: { n: 64, m: MW }, rat: { n: 20, m: 2.6 }, pin1: { n: 10, m: MP },
+  ctr: { n: 45, m: MW }, pin2: { n: 8, m: MP }, thrd: { n: 40, m: MW },
+  pin3: { n: 7, m: MP }, esc: { n: 15, m: 4.6 }
+};
+const P1 = [268, 392];
+const d12 = rpd(T.bar.n, T.bar.m) + rpd(T.pin1.n, T.pin1.m);
+const a1 = snap(-47 * Math.PI / 180, 0, T.bar.n);
+const P2 = [P1[0] + d12 * Math.cos(a1), P1[1] + d12 * Math.sin(a1)];
+const PHI = { a: a1, b: 0, c: 0, d: 0 };
+PHI.b = a1 + Math.PI - Math.PI / T.pin1.n;
+const d23 = rpd(T.ctr.n, T.ctr.m) + rpd(T.pin2.n, T.pin2.m);
+const a2 = snap(9 * Math.PI / 180, PHI.b, T.ctr.n);
+const P3 = [P2[0] + d23 * Math.cos(a2), P2[1] + d23 * Math.sin(a2)];
+PHI.c = a2 + Math.PI - Math.PI / T.pin2.n;
+const d34 = rpd(T.thrd.n, T.thrd.m) + rpd(T.pin3.n, T.pin3.m);
+const a3 = snap(60 * Math.PI / 180, PHI.c, T.thrd.n);
+const P4 = [P3[0] + d34 * Math.cos(a3), P3[1] + d34 * Math.sin(a3)];
+PHI.d = a3 + Math.PI - Math.PI / T.pin3.n;
+const PF = [P4[0] + 64, P4[1] - 22];
+
+const PARTS = [
+  { id: 1, key: "bar", name: "Mainspring barrel", pos: P1, ar: 1.86, T: T.bar, w: 0, ar2: 1,
+    fn: "Holds the mainspring and hands torque to the train. One full turn of the barrel runs the clock for about forty minutes. Nothing else in the movement stores energy." },
+  { id: 2, key: "rat", name: "Ratchet and click", pos: [P1[0], P1[1] - 88], ar: 2.1, T: T.rat, w: 5, ar2: 1,
+    fn: "Twenty teeth on the barrel arbor. The click drops between them so the barrel winds in one direction only, and the whole train can be set without back-driving the spring through the escapement." },
+  { id: 3, key: "pin1", name: "Centre pinion", pos: P2, ar: 2.55, T: T.pin1, w: 0, ar2: 2,
+    fn: "Ten leaves, the smallest steel wheel in the train. It takes the barrel's sixty-four teeth and multiplies the speed by six and a half, then passes that straight on to the centre wheel on the same arbor." },
+  { id: 4, key: "ctr", name: "Centre wheel", pos: P2, ar: 0.5, T: T.ctr, w: 4, ar2: 2,
+    fn: "Forty-five teeth, one turn per hour. The minute hand is friction-fitted to this arbor, which is why you can set the minutes without disturbing the rest of the train." },
+  { id: 5, key: "pin2", name: "Third pinion", pos: P3, ar: 1.95, T: T.pin2, w: 0, ar2: 3,
+    fn: "Eight leaves, cut deep and running on polished steel. From here on the train is only ever being asked to go faster, which is the easy direction to be wrong in." },
+  { id: 6, key: "thrd", name: "Third wheel", pos: P3, ar: 5.55, T: T.thrd, w: 4, ar2: 3,
+    fn: "Forty teeth, one turn every seven and a half minutes. Everything past this wheel exists for one reason only: to make the escapement beat fast enough to be heard across a room." },
+  { id: 7, key: "pin3", name: "Escape pinion", pos: P4, ar: 2.95, T: T.pin3, w: 0, ar2: 4,
+    fn: "Seven leaves, and the biggest lever in the movement. It converts the last of the train's speed into the stepping of the escape wheel." },
+  { id: 8, key: "esc", name: "Escape wheel", pos: P4, ar: 1.45, T: T.esc, w: 0, ar2: 4,
+    fn: "Fifteen teeth, two released per second at the pallet, so one turn every twelve seconds. It is the only wheel in the movement that is ever allowed to stop." },
+  { id: 9, key: "fork", name: "Anchor and pallet fork", pos: PF, ar: 0.42, ar2: 5,
+    fn: "Two ruby pallet stones and a fork to the crutch. It rocks about seven degrees each way, lets go of one tooth, and locks again. That lock is the sound a clock makes." },
+  { id: 10, key: "jwl", name: "Jewelled bearing", pos: P2, ar: 4.35, w: 0, ar2: 0,
+    fn: "A synthetic ruby with an olive-shaped hole, pressed into the plate. Steel pivots run in oil, not in metal. Anything turning this fast in a clock is a hole worn in brass." },
+  { id: 11, key: "scr", name: "Plate screw, blued", pos: [200, 186], ar: 1.9, w: 0, ar2: 0,
+    fn: "Four of them hold the plates together and the movement into the case. Blued because a black finish does not glare at the observer and does not show the scars of a poor screwdriver." }
+];
+
+const nodes = {};
+PARTS.forEach(p => {
+  if (!p.T) return;
+  const g = el("g", { class: "gear", transform: "translate(" + p.pos[0].toFixed(1) + "," + p.pos[1].toFixed(1) + ")" }, p.key === "esc" ? escEl : gearsEl);
+  el("path", { d: gearPath(p.T.n, p.T.m) }, g);
+  const rm = rpd(p.T.n, p.T.m);
+  if (p.w) el("path", { class: "win", d: windows(rm * .27, rm * .74, p.w, 22) }, g);
+  el("circle", { r: rm * .2, fill: "none", stroke: "#3a5170", "stroke-width": .6, opacity: .55 }, g);
+  el("circle", { r: rm * .55, fill: "none", stroke: "#3a5170", "stroke-width": .45, "stroke-dasharray": "5 4", opacity: .5 }, g);
+  el("circle", { r: 4.6, class: "jwl", stroke: "#20344f", "stroke-width": .7 }, g);
+  g.style.cursor = "pointer";
+  g.addEventListener("click", ev => { ev.stopPropagation(); select(p.id); });
+  nodes[p.id] = { g, p };
+});
+
+const forkG = el("g", { class: "gear", transform: "translate(" + PF[0].toFixed(1) + "," + PF[1].toFixed(1) + ")" }, escEl);
+el("path", { d: "M44,-3 L20,-8 L6,-18 L-24,-24 L-33,-17 L-31,-6 L-8,-9 L-14,16 L-22,24 L-29,17 L-25,1 L14,5 Z" }, forkG);
+el("rect", { x: -35, y: -26, width: 11, height: 8, fill: "#b8352c", opacity: .85, transform: "rotate(-22 -29 -22)" }, forkG);
+el("rect", { x: -30, y: 15, width: 11, height: 8, fill: "#b8352c", opacity: .85, transform: "rotate(24 -24 19)" }, forkG);
+el("circle", { r: 3.8, class: "jwl", stroke: "#20344f", "stroke-width": .7 }, forkG);
+forkG.style.cursor = "pointer";
+forkG.addEventListener("click", ev => { ev.stopPropagation(); select(9); });
+nodes[9] = { g: forkG, p: PARTS[8] };
+
+const jewG = el("g", { class: "gear", transform: "translate(" + P2[0] + "," + P2[1] + ")" }, plateEl);
+[[0, -13], [11, 6.5], [-11, 6.5]].forEach(o => {
+  const gg = el("g", { transform: "translate(" + o[0] + "," + o[1] + ")" }, jewG);
+  el("circle", { r: 4.6, class: "jwl" }, gg);
+  el("circle", { r: 1.6, fill: "#3a0f0b" }, gg);
+  el("circle", { r: 1, cx: -1.3, cy: -1.5, fill: "#fff", opacity: .75 }, gg);
+});
+jewG.style.cursor = "pointer";
+jewG.addEventListener("click", ev => { ev.stopPropagation(); select(10); });
+nodes[10] = { g: jewG, p: PARTS[9] };
+
+const scrG = el("g", { class: "gear", transform: "translate(200,186)" }, plateEl);
+el("circle", { r: 9.5, class: "scr" }, scrG);
+el("line", { x1: -7.2, y1: 0, x2: 7.2, y2: 0, class: "scr", transform: "rotate(26)" }, scrG);
+el("circle", { r: 3.4, class: "scr", "stroke-width": .9 }, scrG);
+scrG.style.cursor = "pointer";
+scrG.addEventListener("click", ev => { ev.stopPropagation(); select(11); });
+nodes[11] = { g: scrG, p: PARTS[10] };
+
+[[P1], [P2], [P3], [P4], [PF]].forEach(c => {
+  el("path", { class: "ctr", d: "M" + (c[0][0] - 160) + "," + c[0][1] + "H" + (c[0][0] + 160) + "M" +
+    c[0][0] + "," + (c[0][1] - 160) + "V" + (c[0][1] + 160) }, plateEl);
+});
+[[78, 78], [922, 78], [78, 622], [922, 622]].forEach(s => {
+  const g = el("g", { transform: "translate(" + s[0] + "," + s[1] + ")" }, plateEl);
+  el("circle", { r: 8, class: "scr" }, g);
+  el("line", { x1: -6, y1: 0, x2: 6, y2: 0, class: "scr", transform: "rotate(22)" }, g);
+  el("circle", { r: 3, class: "scr", "stroke-width": .9 }, g);
+});
+[[P1, P2], [P2, P3], [P3, P4], [P4, PF]].forEach(s => {
+  el("path", { class: "dimln", d: "M" + s[0][0] + "," + s[0][1] + "L" + s[1][0] + "," + s[1][1] }, plateEl);
+});
+el("circle", { cx: P4[0], cy: P4[1], r: rpd(T.esc.n, T.esc.m) + 5, fill: "none", stroke: "#6d6552",
+  "stroke-width": .6, "stroke-dasharray": "4 4" }, plateEl);
+const dl = Math.hypot(P4[0] - PF[0], P4[1] - PF[1]) / 3;
+el("text", { class: "cap", x: (P4[0] + PF[0]) / 2 + 6, y: (P4[1] + PF[1]) / 2 - 6 }, titleEl).textContent = dl.toFixed(1) + " mm";
+el("text", { class: "cap", x: 48, y: 52 }, titleEl).textContent = "MOVEMENT, 18\u00bd LINES \u2014 TRAIN AND ESCAPEMENT";
+el("text", { class: "cap big", x: 48, y: 80 }, titleEl).textContent = "FIG. 4";
+el("text", { class: "cap", x: 48, y: 652 }, titleEl).textContent = "PRESSURE ANGLE 20\u00b0 \u00b7 MODULE 4.2 WHEELS, 2.0 PINIONS, 4.6 ESCAPE \u00b7 BEAT 0.40 s";
+const tb = el("g", { transform: "translate(648,552)" }, titleEl);
+el("rect", { width: 300, height: 112, fill: "none", stroke: "#20344f", "stroke-width": 1.2 }, tb);
+el("line", { x1: 0, y1: 32, x2: 300, y2: 32, stroke: "#20344f", "stroke-width": .8 }, tb);
+el("line", { x1: 0, y1: 72, x2: 300, y2: 72, stroke: "#20344f", "stroke-width": .8 }, tb);
+el("line", { x1: 158, y1: 72, x2: 158, y2: 112, stroke: "#20344f", "stroke-width": .8 }, tb);
+el("line", { x1: 158, y1: 0, x2: 158, y2: 32, stroke: "#20344f", "stroke-width": .8 }, tb);
+[[20, "DRAWN", "E. Haldane", 158], [52, "CHECKED", "M. Okonkwo", 158], [64, "SCALE", "3 : 1", 158],
+ [96, "SHEET 1 OF 1", "12 MAR 2026", 158]].forEach(t => {
+  el("text", { class: "cap", x: 10, y: t[0] }, tb).textContent = t[1];
+  el("text", { class: "cap", x: t[3] + 10, y: t[0] }, tb).textContent = t[2];
+});
+
+const keysEl = document.getElementById("keys");
+PARTS.forEach(p => {
+  const row = document.createElement("div");
+  row.className = "key";
+  const sub = p.T ? p.T.n + " teeth \u00b7 module " + p.T.m.toFixed(1) :
+    p.id === 9 ? "steel \u00b7 two ruby pallets" : p.id === 10 ? "synthetic ruby" : "blued steel";
+  row.innerHTML = "<i>" + p.id + "</i><div><b>" + p.name + "</b><span>" + sub + "</span></div>";
+  row.onclick = () => select(p.id);
+  keysEl.appendChild(row);
+  p.row = row;
+  const g = el("g", { class: "numb" }, leadsEl);
+  const L = 168, nx = p.pos[0] + Math.cos(p.ar) * L, ny = p.pos[1] + Math.sin(p.ar) * L;
+  el("line", { class: "lead", x1: p.pos[0], y1: p.pos[1], x2: nx, y2: ny }, g);
+  el("circle", { cx: nx, cy: ny, r: 11 }, g);
+  el("text", { x: nx, y: ny + .5 }, g).textContent = p.id;
+  p.numG = g;
+});
+let selId = 0;
+function select(id) {
+  selId = selId === id ? 0 : id;
+  for (const k in nodes) {
+    nodes[k].g.classList.toggle("dim", !!selId && +k !== selId);
+    nodes[k].g.classList.toggle("sel", +k === selId);
+  }
+  PARTS.forEach(p => { p.numG.classList.toggle("sel", p.id === selId); p.row.classList.toggle("on", p.id === selId); });
+  const d = document.getElementById("detail");
+  if (!selId) {
+    d.innerHTML = '<div class="pn">Selection</div><h2>Whole movement</h2><dl>' +
+      "<dt>Arbors</dt><dd>4</dd><dt>Toothed wheels</dt><dd>8</dd><dt>Pallet stones</dt><dd>2</dd>" +
+      "<dt>Train ratio</dt><dd>205.7 : 1</dd><dt>Beat</dt><dd>0.40 s</dd></dl>" +
+      "<p>The barrel turns slowest, the escape wheel fastest, and the ratio between them is two hundred and six " +
+      "to one. Click any wheel in the drawing or any line in this key to pull it out on its own.</p>";
+    return;
+  }
+  const p = PARTS.find(x => x.id === selId);
+  if (p.T) {
+    const dia = (p.T.n * p.T.m).toFixed(1);
+    d.innerHTML = '<div class="pn">Part ' + String(p.id).padStart(2, "0") + " of 11</div><h2>" + p.name + "</h2><dl>" +
+      "<dt>Teeth</dt><dd>" + p.T.n + "</dd><dt>Module</dt><dd>" + p.T.m.toFixed(1) + "</dd>" +
+      "<dt>Pitch &empty;</dt><dd>" + dia + " mm</dd><dt>Tip &empty;</dt><dd>" + (dia / 2 + p.T.m).toFixed(1) + " mm</dd>" +
+      "<dt>Pressure</dt><dd>20&deg;</dd><dt>Arbor</dt><dd>" + (p.ar2 || "\u2014") + "</dd></dl><p>" + p.fn + "</p>";
+  } else {
+    d.innerHTML = '<div class="pn">Part ' + String(p.id).padStart(2, "0") + " of 11</div><h2>" + p.name + "</h2><p>" + p.fn + "</p>";
+  }
+}
+select(0);
+
+const TICK = 0.40, K = 10 * 8 * 7 / (64 * 45 * 40);
+let spin = 0, spinV = 0, dragging = false, lastX = 0, last = performance.now(), acc = 0, beat = 0, forkSide = 0;
+const svg = document.getElementById("dr");
+svg.addEventListener("pointerdown", e => { dragging = true; lastX = e.clientX; svg.setPointerCapture(e.pointerId); });
+svg.addEventListener("pointermove", e => { if (!dragging) return; spinV += (e.clientX - lastX) * 0.0007; lastX = e.clientX; });
+const stopD = () => dragging = false;
+svg.addEventListener("pointerup", stopD);
+svg.addEventListener("pointercancel", stopD);
+svg.addEventListener("click", e => { if (e.target === svg) select(0); });
+addEventListener("keydown", e => { if (e.key === "Escape") select(0); });
+const deg = r => (r * 180 / Math.PI).toFixed(2);
+function setRot(id, ang) { nodes[id].g.setAttribute("transform", "translate(" + nodes[id].p.pos[0].toFixed(1) + "," + nodes[id].p.pos[1].toFixed(1) + ") rotate(" + deg(ang) + ")"); }
+function frame(now) {
+  const dt = Math.min(.1, (now - last) / 1000); last = now;
+  acc += dt;
+  const tk = Math.floor(acc / TICK);
+  if (tk !== beat) { beat = tk; forkSide = (beat % 2) ? 1 : -1; }
+  spin += spinV; spinV *= dragging ? 0.84 : 0.9; if (!dragging) spin *= 0.962;
+  const A4 = Math.floor(beat / 2) * (Math.PI / T.esc.n) + spin;
+  setRot(1, PHI.a - A4 * K);
+  setRot(2, PHI.b + A4 * K * 6.4);
+  setRot(4, PHI.b + A4 * K * 6.4);
+  setRot(5, PHI.c - A4 * K * 36);
+  setRot(6, PHI.c - A4 * K * 36);
+  setRot(8, PHI.d + A4 + Math.PI / T.esc.n);
+  setRot(7, PHI.d + A4);
+  forkG.setAttribute("transform", "translate(" + PF[0].toFixed(1) + "," + PF[1].toFixed(1) + ") rotate(" + deg(forkSide * 7) + ")");
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
